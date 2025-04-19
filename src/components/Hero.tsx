@@ -54,7 +54,7 @@ const Hero: React.FC = () => {
           <div className={`relative ${isMobile ? "mt-8" : ""}`}>
             <div className="relative rounded-xl overflow-hidden shadow-xl border border-gray-100">
               <img 
-                src="/lovable-uploads/7bf7018f-d205-4e14-908e-4a964a9c0f23.png"
+                src="/lovable-uploads/e55e99bf-e708-4619-aead-4688dcd27672.png"
                 alt="RoboQuant dashboard visualization" 
                 className="w-full h-auto"
               />
