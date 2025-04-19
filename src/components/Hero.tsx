@@ -1,31 +1,17 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 
 const Hero: React.FC = () => {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-full">
-        <div className="relative w-full h-full scale-[1.2] origin-center">
-          <div className="absolute inset-0 bg-black/20 z-[1]"></div>
-          {/* Using a more reliable embed format with error handling */}
-          <div className="absolute inset-0 w-full h-full">
-            <iframe 
-              className="absolute top-0 left-0 w-full h-full"
-              src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&mute=1&loop=1&controls=0&playlist=f14SlGPD4gM&showinfo=0&rel=0&modestbranding=1&vq=hd1080" 
-              title="Background Video"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              frameBorder="0"
-              loading="lazy"
-              onError={(e) => {
-                console.error("YouTube embed error:", e);
-                e.currentTarget.style.display = 'none';
-              }}
-            ></iframe>
-          </div>
-        </div>
-      </div>
+      {/* Replace YouTube embed with a gradient background */}
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-900 via-black to-purple-900"></div>
       
+      {/* Add a subtle pattern overlay for texture */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-10" 
+           style={{backgroundImage: "url('data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.2' fill-rule='evenodd'%3E%3Cpath d='M0 20L20 0h10L0 30zm0 10L30 0h10L0 40zM10 0L0 10v10L20 0zm10 0l20 20v10L20 0z'/%3E%3C/g%3E%3C/svg%3E')"}}></div>
+      
+      {/* Keep the bottom gradient for smooth transition */}
       <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-charcoal to-transparent z-[2]"></div>
       
       <div className="relative z-10 text-center px-4">
