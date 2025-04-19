@@ -18,7 +18,7 @@ const Hero: React.FC = () => {
       </div>
       
       <div className="relative z-10 text-center px-4">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 gradient-text">
           Master Quantitative Trading
         </h1>
         <p className="text-xl md:text-2xl max-w-2xl mx-auto mb-8 text-white/90">
