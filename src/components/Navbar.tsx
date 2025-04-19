@@ -2,15 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, ArrowRight, Moon, Sun } from 'lucide-react';
-import { Switch } from "@/components/ui/switch";
-import { useTheme } from "next-themes";
+import { Menu, ArrowRight } from 'lucide-react';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,16 +17,6 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Add this useEffect to check theme changes for debugging
-  useEffect(() => {
-    console.log("Current theme:", theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-    console.log("Theme toggled to:", theme === 'dark' ? 'light' : 'dark');
-  };
 
   const menuItems = [
     { name: "Why RoboQuant", href: "#why" },
@@ -42,31 +29,23 @@ const Navbar = () => {
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-      scrolled ? 'bg-white dark:bg-charcoal shadow-md py-2' : 'py-4 sm:py-6'
+      scrolled ? 'bg-white shadow-md py-2' : 'py-4 sm:py-6'
     }`}>
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
           <img 
-            src="/lovable-uploads/d61420a0-3c02-4250-ac6e-0872bcbeffdc.png" 
+            src="/lovable-uploads/b3b1dadc-ed0c-42df-adde-6a3707f08171.png" 
             alt="RoboQuant Academy" 
-            className="h-8 sm:h-12 object-contain"
+            className="h-8 sm:h-20"
           />
         </div>
 
         {isMobile ? (
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Sun className="h-4 w-4 dark:hidden" />
-              <Switch 
-                checked={theme === 'dark'}
-                onCheckedChange={toggleTheme}
-              />
-              <Moon className="h-4 w-4 hidden dark:block" />
-            </div>
             <Button 
               variant="ghost" 
               size="icon"
-              className="text-robo-dark dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800" 
+              className="text-robo-dark hover:bg-gray-100" 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <Menu className="h-6 w-6" />
@@ -79,19 +58,11 @@ const Navbar = () => {
                 <a 
                   key={item.name} 
                   href={item.href} 
-                  className="text-robo-dark dark:text-white hover:gradient-text transition-all l-bracket-accent py-1 px-2"
+                  className="text-robo-dark hover:gradient-text transition-all l-bracket-accent py-1 px-2"
                 >
                   {item.name}
                 </a>
               ))}
-              <div className="flex items-center gap-2">
-                <Sun className="h-4 w-4 dark:hidden" />
-                <Switch 
-                  checked={theme === 'dark'}
-                  onCheckedChange={toggleTheme}
-                />
-                <Moon className="h-4 w-4 hidden dark:block" />
-              </div>
             </div>
             <Button className="cta-button text-white">
               Enroll Now <ArrowRight className="ml-1 h-4 w-4" />
@@ -100,13 +71,13 @@ const Navbar = () => {
         )}
 
         {isMobile && isMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-white dark:bg-charcoal shadow-lg py-4 animate-fade-in">
+          <div className="absolute top-full left-0 w-full bg-white shadow-lg py-4 animate-fade-in">
             <div className="container mx-auto px-4 flex flex-col space-y-4">
               {menuItems.map((item) => (
                 <a 
                   key={item.name}
                   href={item.href} 
-                  className="text-robo-dark dark:text-white hover:gradient-text transition-all py-2"
+                  className="text-robo-dark hover:gradient-text transition-all py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
