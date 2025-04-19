@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -58,7 +58,7 @@ const Hero: React.FC = () => {
                 alt="RoboQuant dashboard visualization" 
                 className="w-full h-auto"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-robo-blue/20 to-robo-aqua/20"></div>
+              {/* Removed the overlay div */}
             </div>
             <div className="absolute -z-10 -bottom-6 -right-6 w-full h-full rounded-xl border-2 border-dashed border-robo-aqua"></div>
           </div>
