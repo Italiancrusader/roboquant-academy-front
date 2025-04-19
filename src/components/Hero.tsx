@@ -5,14 +5,11 @@ import { Button } from "@/components/ui/button";
 const Hero: React.FC = () => {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      <div className="video-container absolute inset-0 z-0">
-        <iframe 
-          className="absolute top-0 left-0 w-full h-full object-cover"
-          src="https://www.youtube.com/embed/iftiNS7WOtI?autoplay=1&mute=1&loop=1&playlist=iftiNS7WOtI&controls=0" 
-          frameBorder="0"
-          allow="autoplay; encrypted-media"
-          title="RoboQuant Trading Background"
-        />
+      <div className="video-container">
+        <video autoPlay muted loop playsInline>
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-stock-trading-monitor-data-1171-large.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       </div>
       
       <div className="relative z-10 text-center px-4">
