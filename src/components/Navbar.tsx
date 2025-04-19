@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -23,9 +22,9 @@ const Navbar = () => {
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
           <img 
-            src="/lovable-uploads/4c216359-4b16-4bab-96e9-d1add3ebb2c8.png" 
+            src="/lovable-uploads/b3b1dadc-ed0c-42df-adde-6a3707f08171.png" 
             alt="RoboQuant Academy" 
-            className="h-16 sm:h-40"  // Increased size by 4x from original h-8 sm:h-10
+            className="h-16 sm:h-40"
           />
         </div>
 
@@ -75,4 +74,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
