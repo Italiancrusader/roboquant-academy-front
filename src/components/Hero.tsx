@@ -7,14 +7,14 @@ const Hero: React.FC = () => {
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       <div className="video-container">
         <video autoPlay muted loop playsInline>
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-stock-trading-monitor-data-1171-large.mp4" type="video/mp4" />
+          <source src="https://www.youtube.com/embed/iftiNS7WOtI" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>
       
       <div className="relative z-10 text-center px-4">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-          <span className="gradient-text">Master Quantitative Trading</span>
+          Master Quantitative Trading
         </h1>
         <p className="text-xl md:text-2xl max-w-2xl mx-auto mb-8 text-white/90">
           Learn algorithmic trading strategies and systems with our comprehensive lifetime access course.
