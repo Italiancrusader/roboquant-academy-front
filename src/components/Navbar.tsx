@@ -25,7 +25,7 @@ const Navbar = () => {
           <img 
             src="/lovable-uploads/4c216359-4b16-4bab-96e9-d1add3ebb2c8.png" 
             alt="RoboQuant Academy" 
-            className="h-24 sm:h-30"  // Increased size by 3x from original h-8 sm:h-10
+            className="h-16 sm:h-40"  // Increased size by 4x from original h-8 sm:h-10
           />
         </div>
 
@@ -75,3 +75,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
