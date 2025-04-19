@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -24,7 +25,7 @@ const Navbar = () => {
           <img 
             src="/lovable-uploads/4c216359-4b16-4bab-96e9-d1add3ebb2c8.png" 
             alt="RoboQuant Academy" 
-            className="h-48 sm:h-60"  // Increased size by 2x from previous h-24 sm:h-30
+            className="h-24 sm:h-30"  // Increased size by 3x from original h-8 sm:h-10
           />
         </div>
 
