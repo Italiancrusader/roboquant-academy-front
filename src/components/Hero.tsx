@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 
@@ -14,8 +13,6 @@ const Hero: React.FC = () => {
           title="RoboQuant Trading Background"
         />
       </div>
-      
-      <div className="absolute inset-0 bg-gradient-to-t from-charcoal to-transparent z-[1]"></div>
       
       <div className="relative z-10 text-center px-4">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
