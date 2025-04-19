@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 
@@ -7,7 +8,6 @@ const Hero: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       // If video doesn't load within 3 seconds, fallback to gradient
-      // Note: We just use the timer as a fallback mechanism
       setVideoError(true);
     }, 3000);
     
@@ -32,8 +32,8 @@ const Hero: React.FC = () => {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 loading="lazy"
                 referrerPolicy="no-referrer"
-                onLoad={() => setVideoError(false)} // Clear error if iframe loads successfully
-                onError={() => setVideoError(true)} // Set error if iframe fails to load
+                onLoad={() => setVideoError(false)} 
+                onError={() => setVideoError(true)}
               ></iframe>
             </div>
           </div>
@@ -76,3 +76,4 @@ const Hero: React.FC = () => {
 };
 
 export default Hero;
+
