@@ -32,8 +32,8 @@ const Hero: React.FC = () => {
         </div>
       </div>
       
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <a href="#features" className="text-white opacity-80 hover:opacity-100 transition-opacity">
+      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 pb-4">
+        <a href="#features" className="text-white opacity-80 hover:opacity-100 transition-opacity block">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
           </svg>
