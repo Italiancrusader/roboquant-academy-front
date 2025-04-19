@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 
@@ -7,13 +8,21 @@ const Hero: React.FC = () => {
       <div className="absolute top-0 left-0 w-full h-full">
         <div className="relative w-full h-full scale-[1.2] origin-center">
           <div className="absolute inset-0 bg-black/20 z-[1]"></div>
-          <iframe 
-            className="absolute top-0 left-0 w-full h-full object-cover"
-            src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&mute=1&loop=1&controls=0&playlist=f14SlGPD4gM&showinfo=0&rel=0&modestbranding=1&vq=hd1080" 
-            title="Background Video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            frameBorder="0"
-          ></iframe>
+          {/* Using a more reliable embed format with error handling */}
+          <div className="absolute inset-0 w-full h-full">
+            <iframe 
+              className="absolute top-0 left-0 w-full h-full"
+              src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&mute=1&loop=1&controls=0&playlist=f14SlGPD4gM&showinfo=0&rel=0&modestbranding=1&vq=hd1080" 
+              title="Background Video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              frameBorder="0"
+              loading="lazy"
+              onError={(e) => {
+                console.error("YouTube embed error:", e);
+                e.currentTarget.style.display = 'none';
+              }}
+            ></iframe>
+          </div>
         </div>
       </div>
       
