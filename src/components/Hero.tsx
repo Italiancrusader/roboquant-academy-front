@@ -1,11 +1,46 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 
 const Hero: React.FC = () => {
+  const [videoError, setVideoError] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // If video doesn't load within 3 seconds, fallback to gradient
+      const iframe = document.querySelector('iframe');
+      if (iframe && !iframe.complete) {
+        setVideoError(true);
+      }
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Replace YouTube embed with a gradient background */}
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-900 via-black to-purple-900"></div>
+      {videoError ? (
+        // Fallback gradient background
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-900 via-black to-purple-900"></div>
+      ) : (
+        // Video background with reduced quality to prevent errors
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="relative w-full h-full">
+            <div className="absolute inset-0 bg-black/30 z-[1]"></div>
+            <div className="w-full h-full overflow-hidden">
+              <iframe 
+                className="w-full h-full scale-[1.2] origin-center"
+                src="https://www.youtube-nocookie.com/embed/f14SlGPD4gM?autoplay=1&mute=1&loop=1&controls=0&playlist=f14SlGPD4gM&modestbranding=1&vq=hd720" 
+                title="Background Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                onError={() => setVideoError(true)}
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Add a subtle pattern overlay for texture */}
       <div className="absolute top-0 left-0 w-full h-full opacity-10" 
