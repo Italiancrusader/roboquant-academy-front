@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu } from 'lucide-react';
+import { Menu, ArrowRight } from 'lucide-react';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -17,8 +18,19 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const menuItems = [
+    { name: "Why RoboQuant", href: "#why" },
+    { name: "Outcomes", href: "#outcomes" },
+    { name: "Curriculum", href: "#curriculum" },
+    { name: "Testimonials", href: "#testimonials" },
+    { name: "Pricing", href: "#pricing" },
+    { name: "FAQ", href: "#faq" }
+  ];
+
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-charcoal/90 backdrop-blur-md py-3' : 'py-4 sm:py-6'}`}>
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+      scrolled ? 'bg-white shadow-md py-2' : 'py-4 sm:py-6'
+    }`}>
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
           <img 
@@ -33,7 +45,7 @@ const Navbar = () => {
             <Button 
               variant="ghost" 
               size="icon"
-              className="text-white hover:bg-white/10" 
+              className="text-robo-dark hover:bg-gray-100" 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <Menu className="h-6 w-6" />
@@ -42,28 +54,37 @@ const Navbar = () => {
         ) : (
           <>
             <div className="hidden md:flex space-x-8">
-              <a href="#features" className="text-white-primary hover:gradient-text transition-all">Features</a>
-              <a href="#benefits" className="text-white-primary hover:gradient-text transition-all">Benefits</a>
-              <a href="#curriculum" className="text-white-primary hover:gradient-text transition-all">Curriculum</a>
-              <a href="#testimonials" className="text-white-primary hover:gradient-text transition-all">Testimonials</a>
-              <a href="#pricing" className="text-white-primary hover:gradient-text transition-all">Pricing</a>
+              {menuItems.map((item) => (
+                <a 
+                  key={item.name} 
+                  href={item.href} 
+                  className="text-robo-dark hover:gradient-text transition-all l-bracket-accent py-1 px-2"
+                >
+                  {item.name}
+                </a>
+              ))}
             </div>
-            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
-              Enroll Now
+            <Button className="cta-button text-white">
+              Enroll Now <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </>
         )}
 
         {isMobile && isMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-charcoal/95 backdrop-blur-md py-4 border-t border-white/10 animate-fade-in">
+          <div className="absolute top-full left-0 w-full bg-white shadow-lg py-4 animate-fade-in">
             <div className="container mx-auto px-4 flex flex-col space-y-4">
-              <a href="#features" className="text-white-primary hover:gradient-text transition-all py-2">Features</a>
-              <a href="#benefits" className="text-white-primary hover:gradient-text transition-all py-2">Benefits</a>
-              <a href="#curriculum" className="text-white-primary hover:gradient-text transition-all py-2">Curriculum</a>
-              <a href="#testimonials" className="text-white-primary hover:gradient-text transition-all py-2">Testimonials</a>
-              <a href="#pricing" className="text-white-primary hover:gradient-text transition-all py-2">Pricing</a>
-              <Button className="bg-gradient-primary hover:opacity-90 transition-opacity w-full">
-                Enroll Now
+              {menuItems.map((item) => (
+                <a 
+                  key={item.name}
+                  href={item.href} 
+                  className="text-robo-dark hover:gradient-text transition-all py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </a>
+              ))}
+              <Button className="cta-button text-white w-full">
+                Enroll Now <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
           </div>

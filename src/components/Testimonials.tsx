@@ -1,28 +1,37 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const testimonials = [
   {
-    quote: "The RoboQuant Academy transformed my trading approach completely. I went from discretionary trading to having fully automated systems that perform consistently.",
-    name: "Alex Chen",
-    title: "Algorithmic Trader, Former Software Engineer"
+    quote: "I was spending $4,000+ per strategy on freelance developers. After RoboQuant Academy, I've built 6 bots myself with better performance than what I was paying for.",
+    name: "Michael T.",
+    title: "Forex Trader, 3 years experience",
+    rating: 5,
+    result: "+28% ROI in first 3 months"
   },
   {
-    quote: "The curriculum structure makes complex concepts digestible. I especially valued the risk management and portfolio construction modules - they've been game-changing.",
-    name: "Sarah Williams",
-    title: "Quantitative Analyst"
+    quote: "The no-code approach finally made algorithmic trading accessible to me. My first bot is up and running with a +12% return, and I've never written a line of code.",
+    name: "Sarah K.",
+    title: "Part-time Trader",
+    rating: 5,
+    result: "First bot built in 5 days"
   },
   {
-    quote: "After years of inconsistent results, this program gave me the systematic approach I needed. The community is incredibly supportive and the instructors are world-class.",
-    name: "Michael Rodriguez",
-    title: "Independent Trader"
+    quote: "I'm now selling my own custom EAs to my trading community. This course paid for itself 10x over in the first month alone.",
+    name: "James L.",
+    title: "Trading Education Creator",
+    rating: 5,
+    result: "$5,800 in EA sales first month"
   },
   {
-    quote: "Worth every penny for the institutional knowledge alone. The insights on execution algorithms helped me reduce slippage by 23% on my existing strategies.",
-    name: "Jennifer Taylor",
-    title: "Hedge Fund Analyst"
+    quote: "The back-testing module alone was worth the investment. I discovered flaws in my strategy that would have cost me thousands if I'd gone live without fixing them.",
+    name: "Rebecca M.",
+    title: "Former Discretionary Trader",
+    rating: 4,
+    result: "Avoided $12k potential loss"
   }
 ];
 
@@ -46,26 +55,20 @@ const Testimonials: React.FC = () => {
   return (
     <section 
       id="testimonials" 
-      className="section-padding relative bg-gradient-to-b from-charcoal/80 to-charcoal overflow-hidden"
+      className="section-padding bg-gray-50"
       ref={ref as React.RefObject<HTMLElement>}
     >
-      {/* Background elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-        <div className="absolute top-[-300px] right-[-300px] w-[600px] h-[600px] rounded-full bg-blue-primary/10 blur-[120px]"></div>
-        <div className="absolute bottom-[-200px] left-[-200px] w-[400px] h-[400px] rounded-full bg-teal-primary/10 blur-[100px]"></div>
-      </div>
-      
-      <div className="container mx-auto relative">
+      <div className="container mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            What Our <span className="gradient-text">Students Say</span>
+            <span className="gradient-text">Success Stories</span>
           </h2>
-          <p className="text-xl text-white-primary/80 max-w-2xl mx-auto">
-            Success stories from our community of quantitative traders.
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Hear from traders who have transformed their approach with RoboQuant Academy.
           </p>
         </div>
         
-        <div className="relative">
+        <div className={`relative ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
           <div 
             className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -75,20 +78,28 @@ const Testimonials: React.FC = () => {
                 key={index} 
                 className="w-full flex-shrink-0 px-4"
               >
-                <div className={`glass-card p-8 md:p-10 rounded-2xl max-w-3xl mx-auto ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
-                  <div className="mb-6">
-                    <svg className="w-10 h-10 text-teal-primary opacity-80" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                    </svg>
+                <div className="testimonial-card bg-white max-w-3xl mx-auto">
+                  <div className="flex mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                      />
+                    ))}
                   </div>
-                  <p className="text-xl md:text-2xl mb-6 leading-relaxed">{testimonial.quote}</p>
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mr-4">
-                      <span className="font-bold text-lg">{testimonial.name.charAt(0)}</span>
+                  <p className="text-xl md:text-2xl mb-6 leading-relaxed text-gray-700">{testimonial.quote}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-gradient-to-r from-robo-blue to-robo-aqua rounded-full flex items-center justify-center mr-4 text-white">
+                        <span className="font-bold text-lg">{testimonial.name.charAt(0)}</span>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-800">{testimonial.name}</h4>
+                        <p className="text-gray-500 text-sm">{testimonial.title}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold">{testimonial.name}</h4>
-                      <p className="text-white-primary/70 text-sm">{testimonial.title}</p>
+                    <div className="bg-green-50 py-1 px-3 rounded-full">
+                      <p className="text-green-700 font-medium text-sm">{testimonial.result}</p>
                     </div>
                   </div>
                 </div>
@@ -99,7 +110,7 @@ const Testimonials: React.FC = () => {
           {/* Navigation arrows */}
           <button
             onClick={prevSlide}
-            className="absolute top-1/2 left-0 -translate-y-1/2 transform p-2 rounded-full bg-charcoal/50 border border-white/10 text-white-primary/80 hover:text-white-primary transition-all z-20"
+            className="absolute top-1/2 left-0 -translate-y-1/2 transform p-2 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-robo-blue transition-all z-20 shadow-md"
             aria-label="Previous testimonial"
           >
             <ArrowLeft className="w-6 h-6" />
@@ -107,7 +118,7 @@ const Testimonials: React.FC = () => {
           
           <button
             onClick={nextSlide}
-            className="absolute top-1/2 right-0 -translate-y-1/2 transform p-2 rounded-full bg-charcoal/50 border border-white/10 text-white-primary/80 hover:text-white-primary transition-all z-20"
+            className="absolute top-1/2 right-0 -translate-y-1/2 transform p-2 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-robo-blue transition-all z-20 shadow-md"
             aria-label="Next testimonial"
           >
             <ArrowRight className="w-6 h-6" />
@@ -120,12 +131,20 @@ const Testimonials: React.FC = () => {
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={`w-3 h-3 mx-1 rounded-full transition-all ${
-                  currentSlide === index ? 'bg-gradient-primary scale-125' : 'bg-white/30'
+                  currentSlide === index ? 'bg-gradient-to-r from-robo-blue to-robo-aqua scale-125' : 'bg-gray-300'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               ></button>
             ))}
           </div>
+        </div>
+        
+        <div className="mt-16 text-center">
+          <a href="#pricing">
+            <Button className="cta-button text-white py-5 px-8">
+              See Pricing & Enroll <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </a>
         </div>
       </div>
     </section>

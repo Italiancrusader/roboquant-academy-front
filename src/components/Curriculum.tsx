@@ -1,28 +1,66 @@
 
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 
 const curriculumModules = [
   {
-    title: 'Foundations of Quantitative Finance',
-    description: 'Build a solid understanding of financial markets, statistics, and programming fundamentals necessary for quantitative trading.',
-    topics: ['Market Mechanics', 'Statistical Analysis', 'Python for Finance', 'Data Structures']
+    title: "Unit 1: Trading Foundations",
+    description: "Master the essential concepts that form the foundation of algorithmic trading.",
+    topics: [
+      "Market mechanics and price action theory",
+      "Identifying high-probability trading setups",
+      "Risk management principles for algorithms",
+      "Setting measurable performance objectives"
+    ]
   },
   {
-    title: 'Strategy Development & Backtesting',
-    description: 'Learn to design algorithmic strategies and rigorously test them against historical data to validate performance.',
-    topics: ['Strategy Design Patterns', 'Backtesting Frameworks', 'Overfitting Prevention', 'Performance Metrics']
+    title: "Unit 2: Strategy Discovery",
+    description: "Learn how to transform manual trading ideas into algorithmic strategies.",
+    topics: [
+      "Converting discretionary rules to precise algorithms",
+      "Entry and exit logic formulation",
+      "Conditional logic and rule-based systems",
+      "Filtering for optimal market conditions"
+    ]
   },
   {
-    title: 'Risk Management & Portfolio Construction',
-    description: 'Master advanced techniques to manage risk and optimize portfolio allocation for consistent returns.',
-    topics: ['Position Sizing', 'Risk Metrics', 'Portfolio Optimization', 'Diversification Strategies']
+    title: "Unit 3: AI-assisted Coding",
+    description: "Use our no-code tools to build your trading algorithms without programming.",
+    topics: [
+      "Using our drag-and-drop strategy builder",
+      "Implementing technical indicators and filters",
+      "Setting up custom alerts and notifications",
+      "Configuring money management rules"
+    ]
   },
   {
-    title: 'Algorithmic Execution & Implementation',
-    description: 'Deploy your trading systems in live markets with efficient execution algorithms and infrastructure.',
-    topics: ['Execution Algorithms', 'API Integration', 'Latency Optimization', 'Infrastructure Setup']
+    title: "Unit 4: Back-testing & Optimization",
+    description: "Validate your strategies with professional-grade back-testing.",
+    topics: [
+      "Historical data preparation and cleaning",
+      "Walk-forward analysis methodology",
+      "Avoiding over-optimization and curve-fitting",
+      "Statistical validation of results"
+    ]
   },
+  {
+    title: "Unit 5: Deployment & Scaling",
+    description: "Take your strategies live and learn how to manage a portfolio of bots.",
+    topics: [
+      "Setting up reliable trading infrastructure",
+      "MT4/MT5 and cTrader deployment walkthrough",
+      "Monitoring live performance metrics",
+      "Portfolio management across multiple bots"
+    ]
+  }
 ];
 
 const Curriculum: React.FC = () => {
@@ -31,7 +69,7 @@ const Curriculum: React.FC = () => {
   return (
     <section 
       id="curriculum" 
-      className="section-padding"
+      className="section-padding bg-gray-50"
       ref={ref as React.RefObject<HTMLElement>}
     >
       <div className="container mx-auto">
@@ -39,36 +77,42 @@ const Curriculum: React.FC = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Comprehensive <span className="gradient-text">Curriculum</span>
           </h2>
-          <p className="text-xl text-white-primary/80 max-w-2xl mx-auto">
-            Our meticulously structured program takes you from fundamentals to mastery.
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Our five-unit program takes you from fundamentals to fully-deployed trading bots.
           </p>
         </div>
         
-        <div className="space-y-12">
-          {curriculumModules.map((module, index) => (
-            <div 
-              key={index}
-              className={`flex flex-col md:flex-row gap-8 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}
-              style={{ animationDelay: `${index * 200}ms` }}
-            >
-              <div className="md:w-1/2">
-                <div className="h-1 w-20 bg-gradient-primary rounded mb-4"></div>
-                <h3 className="text-2xl font-bold mb-3">{module.title}</h3>
-                <p className="text-white-primary/70 mb-4">{module.description}</p>
-              </div>
-              <div className="md:w-1/2 glass-card p-6 rounded-xl">
-                <h4 className="text-lg font-semibold mb-3 gradient-text">Key Topics</h4>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {module.topics.map((topic, i) => (
-                    <li key={i} className="flex items-center">
-                      <span className="w-1.5 h-1.5 bg-teal-primary rounded-full mr-2"></span>
-                      {topic}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
+        <div className={`max-w-3xl mx-auto ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
+          <Accordion type="single" collapsible className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            {curriculumModules.map((module, index) => (
+              <AccordionItem key={index} value={`item-${index}`} className="border-b border-gray-200 last:border-0">
+                <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 text-left">
+                  <div>
+                    <h3 className="font-bold text-lg">{module.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1">{module.description}</p>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <ul className="space-y-2 text-gray-700">
+                    {module.topics.map((topic, i) => (
+                      <li key={i} className="flex items-start">
+                        <span className="inline-block w-1.5 h-1.5 bg-robo-aqua rounded-full mr-2 mt-2"></span>
+                        <span>{topic}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+          
+          <div className="mt-12 text-center">
+            <a href="#calculator">
+              <Button className="cta-button text-white py-5 px-8">
+                Calculate Your Savings <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </a>
+          </div>
         </div>
       </div>
     </section>

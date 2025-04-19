@@ -1,53 +1,73 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { ArrowRight, Play } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
   
   return (
-    <section className="relative h-[100svh] flex items-center justify-center overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-full">
-        <div className="relative w-full h-full scale-[2.2] sm:scale-[1.2] origin-center">
-          <div className="absolute inset-0 bg-black/40 z-[1]"></div>
-          <iframe 
-            className={`absolute top-0 left-0 w-full h-full object-cover ${isMobile ? 'rotate-90' : ''}`}
-            src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&mute=1&loop=1&controls=0&playlist=f14SlGPD4gM&showinfo=0&rel=0&modestbranding=1&vq=hd720" 
-            title="Background Video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            frameBorder="0"
-          ></iframe>
-        </div>
-      </div>
-      
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-charcoal to-transparent z-[2]"></div>
-      
-      <div className="relative z-10 text-center px-4 max-w-[90%] sm:max-w-none mx-auto">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 gradient-text leading-tight">
-          Master Quantitative Trading
-        </h1>
-        <p className="text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto mb-6 sm:mb-8 text-white/90">
-          Learn algorithmic trading strategies and systems with our comprehensive lifetime access course.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-          <Button 
-            className="bg-gradient-primary hover:opacity-90 transition-opacity text-base sm:text-lg py-5 sm:py-6 px-6 sm:px-8 w-full sm:w-auto"
-          >
-            Enroll Now
-          </Button>
-          <Button 
-            variant="outline" 
-            className="border-white/20 hover:bg-white/5 text-base sm:text-lg py-5 sm:py-6 px-6 sm:px-8 w-full sm:w-auto"
-          >
-            Explore Curriculum
-          </Button>
+    <section className="relative min-h-[100vh] flex items-center pt-24 pb-16 overflow-hidden">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="text-left max-w-[90%] sm:max-w-none">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
+              Build & launch profitable trading bots — <span className="gradient-text">without writing code</span>.
+            </h1>
+            <p className="text-lg sm:text-xl max-w-xl mb-8 text-gray-700">
+              Create, test and deploy algorithmic trading strategies that run 24/7 — even if you've never coded before.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a href="#pricing">
+                <Button 
+                  className="cta-button text-white text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
+                >
+                  Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </a>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
+                  >
+                    <Play className="mr-2 h-5 w-5" /> Watch Demo
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
+                  <div className="video-container">
+                    <iframe
+                      src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&rel=0"
+                      title="RoboQuant Academy Demo"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+          
+          <div className={`relative ${isMobile ? "mt-8" : ""}`}>
+            <div className="relative rounded-xl overflow-hidden shadow-xl border border-gray-100">
+              <img 
+                src="https://images.unsplash.com/photo-1642790551116-18e150f248e5?w=800&auto=format&fit=crop"
+                alt="RoboQuant dashboard visualization" 
+                className="w-full h-auto"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-robo-blue/20 to-robo-aqua/20"></div>
+            </div>
+            <div className="absolute -z-10 -bottom-6 -right-6 w-full h-full rounded-xl border-2 border-dashed border-robo-aqua"></div>
+          </div>
         </div>
       </div>
       
       {!isMobile && (
         <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <a href="#features" className="text-white opacity-80 hover:opacity-100 transition-opacity">
+          <a href="#why" className="text-gray-400 hover:text-robo-blue transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
             </svg>

@@ -2,17 +2,17 @@
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from "@/components/ui/button";
-import { Check } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
 
 const features = [
   'Lifetime access to all course modules',
-  'Interactive quizzes and assignments',
-  'Trading simulation environment',
-  'Real-time market data integration',
+  'Interactive no-code bot builder',
+  'MT4/MT5 & cTrader compatibility',
+  'Professional back-testing suite',
+  'Strategy optimization tools',
   'Private community access',
-  'Strategy backtesting tools',
-  'Certificate of completion',
-  'Regular content updates',
+  '60+ pre-built strategy templates',
+  '14-day money-back guarantee',
 ];
 
 const Pricing: React.FC = () => {
@@ -27,40 +27,56 @@ const Pricing: React.FC = () => {
       <div className="container mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Simple, <span className="gradient-text">Transparent Pricing</span>
+            <span className="gradient-text">Pricing & Guarantee</span>
           </h2>
-          <p className="text-xl text-white-primary/80 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             One-time payment for lifetime access to all course materials.
           </p>
         </div>
         
         <div className={`max-w-xl mx-auto ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
-          <div className="glass-card rounded-2xl p-8 md:p-10 border border-white/10">
+          <div className="bg-white rounded-2xl p-8 md:p-10 border border-gray-200 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-gradient-to-r from-robo-blue to-robo-aqua text-white py-1 px-6 transform translate-x-8 translate-y-4 rotate-45">
+              <span className="text-sm font-bold">Save $500</span>
+            </div>
+            
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold">Lifetime Access</h3>
+              <h3 className="text-2xl font-bold">RoboQuant Academy</h3>
               <div className="text-right">
-                <span className="text-white-primary/70 text-sm line-through">$1,999</span>
-                <div className="text-3xl font-bold gradient-text">$1,499</div>
+                <span className="text-gray-500 text-sm line-through">$1,997</span>
+                <div className="text-3xl font-bold gradient-text">$1,497</div>
+                <div className="text-sm text-gray-500">one-time payment</div>
               </div>
             </div>
             
-            <div className="h-px w-full bg-white/10 my-6"></div>
+            <div className="h-px w-full bg-gray-200 my-6"></div>
             
             <ul className="space-y-4 mb-8">
               {features.map((feature, index) => (
-                <li key={index} className="flex items-center">
-                  <Check className="w-5 h-5 text-teal-primary mr-2 flex-shrink-0" />
-                  <span>{feature}</span>
+                <li key={index} className="flex items-start">
+                  <Check className="w-5 h-5 text-robo-aqua mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">{feature}</span>
                 </li>
               ))}
             </ul>
             
-            <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity py-6 text-lg font-medium">
-              Enroll Now
+            <Button className="w-full cta-button text-white py-6 text-lg font-medium">
+              Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <div className="text-center mt-4 text-white-primary/60 text-sm">
-              Secure payment • 30-day money-back guarantee
+            
+            <div className="text-center mt-4 text-gray-500 text-sm flex items-center justify-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              Secure payment • 14-day money-back guarantee
             </div>
+          </div>
+          
+          <div className="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+            <h4 className="font-bold text-lg mb-2">Our Risk-Free Guarantee</h4>
+            <p className="text-gray-600">
+              If you're not completely satisfied with the course within 14 days of purchase, simply email us for a full refund, no questions asked.
+            </p>
           </div>
         </div>
       </div>
