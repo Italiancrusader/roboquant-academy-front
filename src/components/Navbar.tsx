@@ -24,7 +24,7 @@ const Navbar = () => {
           <img 
             src="/lovable-uploads/b3b1dadc-ed0c-42df-adde-6a3707f08171.png" 
             alt="RoboQuant Academy" 
-            className="h-16 sm:h-40"
+            className="h-8 sm:h-20"
           />
         </div>
 
