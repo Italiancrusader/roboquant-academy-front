@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 
@@ -7,6 +6,7 @@ const Hero: React.FC = () => {
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full">
         <div className="relative w-full h-full scale-[1.2] origin-center">
+          <div className="absolute inset-0 bg-black/20 z-[1]"></div>
           <iframe 
             className="absolute top-0 left-0 w-full h-full object-cover"
             src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&mute=1&loop=1&controls=0&playlist=f14SlGPD4gM&showinfo=0&rel=0&modestbranding=1&vq=hd1080" 
@@ -16,6 +16,8 @@ const Hero: React.FC = () => {
           ></iframe>
         </div>
       </div>
+      
+      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-charcoal to-transparent z-[2]"></div>
       
       <div className="relative z-10 text-center px-4">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 gradient-text">
