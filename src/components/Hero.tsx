@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 
@@ -7,7 +6,7 @@ const Hero: React.FC = () => {
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       <div className="video-container">
         <video autoPlay muted loop playsInline>
-          <source src="https://www.youtube.com/embed/iftiNS7WOtI" type="video/mp4" />
+          <source src="https://www.youtube.com/watch?v=iftiNS7WOtI" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>
