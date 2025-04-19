@@ -21,6 +21,16 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Add this useEffect to check theme changes for debugging
+  useEffect(() => {
+    console.log("Current theme:", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+    console.log("Theme toggled to:", theme === 'dark' ? 'light' : 'dark');
+  };
+
   const menuItems = [
     { name: "Why RoboQuant", href: "#why" },
     { name: "Outcomes", href: "#outcomes" },
@@ -49,7 +59,7 @@ const Navbar = () => {
               <Sun className="h-4 w-4 dark:hidden" />
               <Switch 
                 checked={theme === 'dark'}
-                onCheckedChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                onCheckedChange={toggleTheme}
               />
               <Moon className="h-4 w-4 hidden dark:block" />
             </div>
@@ -78,7 +88,7 @@ const Navbar = () => {
                 <Sun className="h-4 w-4 dark:hidden" />
                 <Switch 
                   checked={theme === 'dark'}
-                  onCheckedChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  onCheckedChange={toggleTheme}
                 />
                 <Moon className="h-4 w-4 hidden dark:block" />
               </div>
