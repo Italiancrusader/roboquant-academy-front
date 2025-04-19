@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -22,7 +21,11 @@ const Navbar = () => {
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-charcoal/90 backdrop-blur-md py-3' : 'py-4 sm:py-6'}`}>
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
-          <h1 className="text-xl sm:text-[1.75rem] font-bold gradient-text">RoboQuant Academy</h1>
+          <img 
+            src="/lovable-uploads/4c216359-4b16-4bab-96e9-d1add3ebb2c8.png" 
+            alt="RoboQuant Academy" 
+            className="h-8 sm:h-10"
+          />
         </div>
 
         {isMobile ? (
@@ -51,7 +54,6 @@ const Navbar = () => {
           </>
         )}
 
-        {/* Mobile Menu */}
         {isMobile && isMenuOpen && (
           <div className="absolute top-full left-0 w-full bg-charcoal/95 backdrop-blur-md py-4 border-t border-white/10 animate-fade-in">
             <div className="container mx-auto px-4 flex flex-col space-y-4">
