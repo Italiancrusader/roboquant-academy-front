@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 const Hero: React.FC = () => {
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative flex items-center justify-center overflow-hidden" style={{ minHeight: '100vh', marginBottom: '-1px' }}>
       <div className="video-container absolute inset-0 z-0">
         <iframe 
           className="absolute top-0 left-0 w-full h-full object-cover"
