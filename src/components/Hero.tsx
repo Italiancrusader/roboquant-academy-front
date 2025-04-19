@@ -12,7 +12,7 @@ const Hero: React.FC = () => {
         <div className="relative w-full h-full scale-[3] sm:scale-[1.2] origin-center">
           <div className="absolute inset-0 bg-black/40 z-[1]"></div>
           <iframe 
-            className="absolute top-0 left-0 w-full h-full object-cover rotate-90"
+            className={`absolute top-0 left-0 w-full h-full object-cover ${isMobile ? 'rotate-90' : ''}`}
             src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&mute=1&loop=1&controls=0&playlist=f14SlGPD4gM&showinfo=0&rel=0&modestbranding=1&vq=hd720" 
             title="Background Video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
