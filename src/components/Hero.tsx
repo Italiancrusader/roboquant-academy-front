@@ -9,7 +9,7 @@ const Hero: React.FC = () => {
         <div className="relative w-full h-full scale-[1.2] origin-center">
           <iframe 
             className="absolute top-0 left-0 w-full h-full object-cover"
-            src="https://www.youtube.com/embed/iftiNS7WOtI?autoplay=1&mute=1&loop=1&controls=0&playlist=iftiNS7WOtI&showinfo=0&rel=0&modestbranding=1&vq=hd1080" 
+            src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&mute=1&loop=1&controls=0&playlist=f14SlGPD4gM&showinfo=0&rel=0&modestbranding=1&vq=hd1080" 
             title="Background Video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             frameBorder="0"
