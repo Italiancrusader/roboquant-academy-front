@@ -34,9 +34,9 @@ const Navbar = () => {
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
           <img 
-            src="/lovable-uploads/b3b1dadc-ed0c-42df-adde-6a3707f08171.png" 
+            src="/lovable-uploads/1c61b595-e702-4709-ac92-9c8743241f37.png" 
             alt="RoboQuant Academy" 
-            className="h-8 sm:h-20"
+            className="h-10 sm:h-12 object-contain"
           />
         </div>
 
