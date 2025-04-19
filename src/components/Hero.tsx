@@ -9,7 +9,7 @@ const Hero: React.FC = () => {
   return (
     <section className="relative h-[100svh] flex items-center justify-center overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full">
-        <div className="relative w-full h-full scale-[2] sm:scale-[1.2] origin-center">
+        <div className="relative w-full h-full scale-[3] sm:scale-[1.2] origin-center">
           <div className="absolute inset-0 bg-black/40 z-[1]"></div>
           <iframe 
             className="absolute top-0 left-0 w-full h-full object-cover rotate-90"
