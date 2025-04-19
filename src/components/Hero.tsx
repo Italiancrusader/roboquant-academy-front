@@ -1,14 +1,18 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 
 const Hero: React.FC = () => {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      <div className="video-container">
-        <video autoPlay muted loop playsInline>
-          <source src="https://www.youtube.com/watch?v=iftiNS7WOtI" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+      <div className="absolute top-0 left-0 w-full h-full">
+        <iframe 
+          className="absolute top-0 left-0 w-full h-full object-cover"
+          src="https://www.youtube.com/embed/iftiNS7WOtI?autoplay=1&mute=1&loop=1&controls=0&playlist=iftiNS7WOtI" 
+          title="Background Video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          frameBorder="0"
+        ></iframe>
       </div>
       
       <div className="relative z-10 text-center px-4">
