@@ -1,23 +1,24 @@
 
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { Banknote, Zap, Copy } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Banknote, Zap, Copy } from 'lucide-react';
 
 const features = [
   {
     title: 'No Dev Hire Fees',
     description: 'Save $10k+ per project by building trading bots yourself without hiring expensive developers.',
-    icon: <Banknote className="w-12 h-12 text-robo-blue mb-4" />
+    icon: <Banknote className="w-12 h-12 text-blue-primary mb-4" />
   },
   {
     title: 'Faster to Market',
     description: 'Take your trading idea from concept to live bot in less than one week, not months.',
-    icon: <Zap className="w-12 h-12 text-robo-blue mb-4" />
+    icon: <Zap className="w-12 h-12 text-blue-primary mb-4" />
   },
   {
     title: 'Scale Unlimited Strategies',
     description: 'Clone, tweak, and deploy as many strategies as you want without additional development costs.',
-    icon: <Copy className="w-12 h-12 text-robo-blue mb-4" />
+    icon: <Copy className="w-12 h-12 text-blue-primary mb-4" />
   },
 ];
 
@@ -27,7 +28,7 @@ const WhyRoboQuant: React.FC = () => {
   return (
     <section 
       id="why" 
-      className="section-padding bg-gray-50"
+      className="section-padding bg-section-dark"
       ref={ref as React.RefObject<HTMLElement>}
     >
       <div className="container mx-auto">
@@ -35,7 +36,7 @@ const WhyRoboQuant: React.FC = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Why <span className="gradient-text">RoboQuant Academy</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             We turn manual traders into algorithm creators without the coding learning curve.
           </p>
         </div>
@@ -44,16 +45,16 @@ const WhyRoboQuant: React.FC = () => {
           {features.map((item, index) => (
             <div 
               key={index}
-              className={`bg-white p-8 rounded-2xl shadow-lg border border-gray-100 lift-on-hover ${
+              className={`glass-card p-8 rounded-2xl ${
                 isVisible ? 'animate-fade-in' : 'opacity-0'
               }`}
               style={{ animationDelay: `${index * 200}ms` }}
             >
-              <div className="bg-gray-50 w-20 h-20 flex items-center justify-center rounded-full mb-6">
+              <div className="bg-accent/50 w-20 h-20 flex items-center justify-center rounded-full mb-6">
                 {item.icon}
               </div>
-              <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-              <p className="text-gray-600">{item.description}</p>
+              <h3 className="text-xl font-bold mb-3 text-white">{item.title}</h3>
+              <p className="text-gray-300">{item.description}</p>
             </div>
           ))}
         </div>
@@ -71,7 +72,3 @@ const WhyRoboQuant: React.FC = () => {
 };
 
 export default WhyRoboQuant;
-
-// Importing Button from shadcn
-import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';

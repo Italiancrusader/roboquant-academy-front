@@ -55,15 +55,15 @@ const Testimonials: React.FC = () => {
   return (
     <section 
       id="testimonials" 
-      className="section-padding bg-gray-50"
+      className="section-padding bg-background"
       ref={ref as React.RefObject<HTMLElement>}
     >
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
             <span className="gradient-text">Success Stories</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Hear from traders who have transformed their approach with RoboQuant Academy.
           </p>
         </div>
@@ -78,28 +78,28 @@ const Testimonials: React.FC = () => {
                 key={index} 
                 className="w-full flex-shrink-0 px-4"
               >
-                <div className="testimonial-card bg-white max-w-3xl mx-auto">
+                <div className="glass-card max-w-3xl mx-auto">
                   <div className="flex mb-4">
                     {[...Array(5)].map((_, i) => (
                       <Star 
                         key={i} 
-                        className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                        className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600'}`}
                       />
                     ))}
                   </div>
-                  <p className="text-xl md:text-2xl mb-6 leading-relaxed text-gray-700">{testimonial.quote}</p>
+                  <p className="text-xl md:text-2xl mb-6 leading-relaxed text-white">{testimonial.quote}</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className="w-12 h-12 bg-gradient-to-r from-robo-blue to-robo-aqua rounded-full flex items-center justify-center mr-4 text-white">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-primary to-teal-primary rounded-full flex items-center justify-center mr-4 text-white">
                         <span className="font-bold text-lg">{testimonial.name.charAt(0)}</span>
                       </div>
                       <div>
-                        <h4 className="font-bold text-gray-800">{testimonial.name}</h4>
-                        <p className="text-gray-500 text-sm">{testimonial.title}</p>
+                        <h4 className="font-bold text-white">{testimonial.name}</h4>
+                        <p className="text-gray-400 text-sm">{testimonial.title}</p>
                       </div>
                     </div>
-                    <div className="bg-green-50 py-1 px-3 rounded-full">
-                      <p className="text-green-700 font-medium text-sm">{testimonial.result}</p>
+                    <div className="bg-accent/30 py-1 px-3 rounded-full">
+                      <p className="text-teal-primary font-medium text-sm">{testimonial.result}</p>
                     </div>
                   </div>
                 </div>

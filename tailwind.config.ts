@@ -27,6 +27,7 @@ export default {
         foreground: '#F8F9FA',
         'blue-primary': '#0080FF',
         'teal-primary': '#00E5FF',
+        'section-dark': '#1A1F2C',
         primary: {
           DEFAULT: '#0080FF',
           foreground: '#FFFFFF'

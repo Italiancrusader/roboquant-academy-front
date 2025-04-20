@@ -45,27 +45,27 @@ const FAQ: React.FC = () => {
   return (
     <section 
       id="faq" 
-      className="section-padding bg-gray-50"
+      className="section-padding bg-section-dark"
       ref={ref as React.RefObject<HTMLElement>}
     >
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
             Frequently Asked <span className="gradient-text">Questions</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Everything you need to know about RoboQuant Academy.
           </p>
         </div>
         
         <div className={`max-w-3xl mx-auto ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
-          <Accordion type="single" collapsible className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <Accordion type="single" collapsible className="bg-card rounded-2xl shadow-lg border border-border/20 overflow-hidden">
             {faqItems.map((item, index) => (
-              <AccordionItem key={index} value={`faq-${index}`} className="border-b border-gray-200 last:border-0">
-                <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 text-left text-gray-800 font-semibold">
+              <AccordionItem key={index} value={`faq-${index}`} className="border-b border-border/20 last:border-0">
+                <AccordionTrigger className="px-6 py-4 hover:bg-accent/50 text-left text-white font-semibold">
                   {item.question}
                 </AccordionTrigger>
-                <AccordionContent className="px-6 text-gray-600">
+                <AccordionContent className="px-6 text-gray-300">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>
