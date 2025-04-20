@@ -9,7 +9,7 @@ const CTA: React.FC = () => {
   
   return (
     <section 
-      className="section-padding relative bg-gradient-to-r from-robo-blue to-robo-aqua overflow-hidden"
+      className="section-padding relative bg-gradient-to-r from-blue-primary to-teal-primary overflow-hidden"
       ref={ref as React.RefObject<HTMLElement>}
     >
       {/* Background elements */}
@@ -29,7 +29,7 @@ const CTA: React.FC = () => {
             Join thousands of traders who have transformed their trading with RoboQuant Academy.
           </p>
           
-          <Button className="bg-white text-robo-blue hover:bg-gray-100 py-6 px-10 text-lg font-semibold">
+          <Button className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold">
             Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           
