@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
@@ -10,14 +11,14 @@ const Hero: React.FC = () => {
   return (
     <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       {/* Video Background */}
-      <div className="fixed inset-0 w-full h-full">
+      <div className="absolute top-0 inset-x-0 h-[calc(100vh+5rem)] w-full">
         <div className="absolute inset-0 bg-black/40 z-0" /> {/* Dark overlay */}
         <div className="absolute bottom-0 w-full h-96 bg-gradient-to-t from-background via-background/95 to-transparent z-0" /> {/* Bottom gradient */}
         <iframe 
           className="w-full h-full"
           src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&controls=0&mute=1&loop=1&playlist=f14SlGPD4gM&playsinline=1"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          style={{ pointerEvents: 'none' }}
+          style={{ pointerEvents: 'none', transform: 'scale(1.5)', transformOrigin: 'center center' }}
         />
       </div>
 
