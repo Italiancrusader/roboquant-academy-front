@@ -8,11 +8,11 @@ const Hero: React.FC = () => {
   const isMobile = useIsMobile();
 
   return (
-    <section className="relative min-h-[100vh] flex items-center pt-24 pb-16 overflow-hidden">
+    <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       {/* Video Background */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <div className="absolute inset-0 bg-black/40 z-10" /> {/* Dark overlay */}
-        <div className="absolute bottom-0 w-full h-48 bg-gradient-to-t from-background to-transparent z-10" /> {/* Bottom gradient */}
+      <div className="fixed inset-0 w-full h-full">
+        <div className="absolute inset-0 bg-black/40 z-0" /> {/* Dark overlay */}
+        <div className="absolute bottom-0 w-full h-96 bg-gradient-to-t from-background via-background/95 to-transparent z-0" /> {/* Bottom gradient */}
         <iframe 
           className="w-full h-full"
           src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&controls=0&mute=1&loop=1&playlist=f14SlGPD4gM&playsinline=1"
@@ -22,7 +22,7 @@ const Hero: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 relative z-20">
+      <div className="container mx-auto px-4 relative z-20 mt-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="text-left max-w-[90%] sm:max-w-none">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
