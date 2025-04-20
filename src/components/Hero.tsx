@@ -3,10 +3,26 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
-  return <section className="relative min-h-[100vh] flex items-center pt-24 pb-16 overflow-hidden">
-      <div className="container mx-auto px-4">
+
+  return (
+    <section className="relative min-h-[100vh] flex items-center pt-24 pb-16 overflow-hidden">
+      {/* Video Background */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <div className="absolute inset-0 bg-black/40 z-10" /> {/* Dark overlay */}
+        <div className="absolute bottom-0 w-full h-48 bg-gradient-to-t from-background to-transparent z-10" /> {/* Bottom gradient */}
+        <iframe 
+          className="w-full h-full"
+          src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&controls=0&mute=1&loop=1&playlist=f14SlGPD4gM&playsinline=1"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          style={{ pointerEvents: 'none' }}
+        />
+      </div>
+
+      {/* Content */}
+      <div className="container mx-auto px-4 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="text-left max-w-[90%] sm:max-w-none">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
@@ -54,13 +70,18 @@ const Hero: React.FC = () => {
         </div>
       </div>
       
-      {!isMobile && <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+      {/* Scroll indicator */}
+      {!isMobile && (
+        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
           <a href="#why" className="text-gray-400 hover:text-robo-blue transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
             </svg>
           </a>
-        </div>}
-    </section>;
+        </div>
+      )}
+    </section>
+  );
 };
+
 export default Hero;
