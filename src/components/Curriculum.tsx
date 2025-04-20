@@ -69,34 +69,34 @@ const Curriculum: React.FC = () => {
   return (
     <section 
       id="curriculum" 
-      className="section-padding bg-gray-50"
+      className="section-padding bg-background"
       ref={ref as React.RefObject<HTMLElement>}
     >
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
             Comprehensive <span className="gradient-text">Curriculum</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Our five-unit program takes you from fundamentals to fully-deployed trading bots.
           </p>
         </div>
         
         <div className={`max-w-3xl mx-auto ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
-          <Accordion type="single" collapsible className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <Accordion type="single" collapsible className="bg-card rounded-2xl shadow-lg border border-border/20 overflow-hidden">
             {curriculumModules.map((module, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="border-b border-gray-200 last:border-0">
-                <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 text-left">
+              <AccordionItem key={index} value={`item-${index}`} className="border-b border-border/20 last:border-0">
+                <AccordionTrigger className="px-6 py-4 hover:bg-accent/50 text-left">
                   <div>
-                    <h3 className="font-bold text-lg">{module.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{module.description}</p>
+                    <h3 className="font-bold text-lg text-foreground">{module.title}</h3>
+                    <p className="text-sm text-gray-400 mt-1">{module.description}</p>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-6 pb-6">
-                  <ul className="space-y-2 text-gray-700">
+                  <ul className="space-y-2 text-gray-300">
                     {module.topics.map((topic, i) => (
                       <li key={i} className="flex items-start">
-                        <span className="inline-block w-1.5 h-1.5 bg-robo-aqua rounded-full mr-2 mt-2"></span>
+                        <span className="inline-block w-1.5 h-1.5 bg-blue-primary rounded-full mr-2 mt-2"></span>
                         <span>{topic}</span>
                       </li>
                     ))}

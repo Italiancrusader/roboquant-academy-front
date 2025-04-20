@@ -10,7 +10,7 @@ const AboutInstructor: React.FC = () => {
   return (
     <section 
       id="about" 
-      className="section-padding"
+      className="section-padding bg-background"
       ref={ref as React.RefObject<HTMLElement>}
     >
       <div className="container mx-auto">
@@ -23,27 +23,27 @@ const AboutInstructor: React.FC = () => {
                   alt="Alexander Wright, Founder of RoboQuant Academy" 
                   className="rounded-2xl shadow-lg"
                 />
-                <div className="absolute -z-10 -bottom-4 -right-4 w-full h-full rounded-2xl border-2 border-dashed border-robo-aqua"></div>
+                <div className="absolute -z-10 -bottom-4 -right-4 w-full h-full rounded-2xl border-2 border-dashed border-teal-primary"></div>
               </div>
             </div>
             
             <div className="md:w-2/3">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
                 About the <span className="gradient-text">Instructor</span>
               </h2>
               
-              <p className="text-gray-700 mb-4">
+              <p className="text-gray-300 mb-4">
                 Alexander Wright is a former hedge fund algorithmic trader with 12+ years of experience building trading systems. After managing over $180M in algorithmic strategies, he founded RoboQuant Academy to make institutional-grade trading technology accessible to retail traders.
               </p>
               
               <div className="flex flex-wrap gap-3 mb-6">
-                <div className="bg-gray-100 py-1 px-3 rounded-full text-sm text-gray-700">
+                <div className="bg-accent/30 py-1 px-3 rounded-full text-sm text-gray-300">
                   MT4/MT5 Certified Developer
                 </div>
-                <div className="bg-gray-100 py-1 px-3 rounded-full text-sm text-gray-700">
+                <div className="bg-accent/30 py-1 px-3 rounded-full text-sm text-gray-300">
                   Former Hedge Fund Quant
                 </div>
-                <div className="bg-gray-100 py-1 px-3 rounded-full text-sm text-gray-700">
+                <div className="bg-accent/30 py-1 px-3 rounded-full text-sm text-gray-300">
                   3,500+ Students Taught
                 </div>
               </div>

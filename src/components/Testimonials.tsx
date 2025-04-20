@@ -60,7 +60,7 @@ const Testimonials: React.FC = () => {
     >
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
             <span className="gradient-text">Success Stories</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -110,7 +110,7 @@ const Testimonials: React.FC = () => {
           {/* Navigation arrows */}
           <button
             onClick={prevSlide}
-            className="absolute top-1/2 left-0 -translate-y-1/2 transform p-2 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-robo-blue transition-all z-20 shadow-md"
+            className="absolute top-1/2 left-0 -translate-y-1/2 transform p-2 rounded-full bg-card border border-border/20 text-gray-300 hover:text-blue-primary transition-all z-20 shadow-md"
             aria-label="Previous testimonial"
           >
             <ArrowLeft className="w-6 h-6" />
@@ -118,7 +118,7 @@ const Testimonials: React.FC = () => {
           
           <button
             onClick={nextSlide}
-            className="absolute top-1/2 right-0 -translate-y-1/2 transform p-2 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-robo-blue transition-all z-20 shadow-md"
+            className="absolute top-1/2 right-0 -translate-y-1/2 transform p-2 rounded-full bg-card border border-border/20 text-gray-300 hover:text-blue-primary transition-all z-20 shadow-md"
             aria-label="Next testimonial"
           >
             <ArrowRight className="w-6 h-6" />
@@ -131,7 +131,7 @@ const Testimonials: React.FC = () => {
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={`w-3 h-3 mx-1 rounded-full transition-all ${
-                  currentSlide === index ? 'bg-gradient-to-r from-robo-blue to-robo-aqua scale-125' : 'bg-gray-300'
+                  currentSlide === index ? 'bg-gradient-to-r from-blue-primary to-teal-primary scale-125' : 'bg-gray-600'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               ></button>

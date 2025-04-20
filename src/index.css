@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -143,11 +144,11 @@
 
 /* FAQ Accordion Styles */
 .faq-accordion {
-  @apply border-b border-gray-700;
+  @apply border-b border-border/20;
 }
 
 .faq-accordion-trigger {
-  @apply flex w-full justify-between items-center py-4 text-left font-semibold focus:outline-none text-white;
+  @apply flex w-full justify-between items-center py-4 text-left font-semibold focus:outline-none text-foreground;
 }
 
 .faq-accordion-content {

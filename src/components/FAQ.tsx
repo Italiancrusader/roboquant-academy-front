@@ -45,12 +45,12 @@ const FAQ: React.FC = () => {
   return (
     <section 
       id="faq" 
-      className="section-padding bg-section-dark"
+      className="section-padding bg-background"
       ref={ref as React.RefObject<HTMLElement>}
     >
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
             Frequently Asked <span className="gradient-text">Questions</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -62,7 +62,7 @@ const FAQ: React.FC = () => {
           <Accordion type="single" collapsible className="bg-card rounded-2xl shadow-lg border border-border/20 overflow-hidden">
             {faqItems.map((item, index) => (
               <AccordionItem key={index} value={`faq-${index}`} className="border-b border-border/20 last:border-0">
-                <AccordionTrigger className="px-6 py-4 hover:bg-accent/50 text-left text-white font-semibold">
+                <AccordionTrigger className="px-6 py-4 hover:bg-accent/50 text-left text-foreground font-semibold">
                   {item.question}
                 </AccordionTrigger>
                 <AccordionContent className="px-6 text-gray-300">
