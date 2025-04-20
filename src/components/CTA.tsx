@@ -14,7 +14,7 @@ const CTA: React.FC = () => {
     >
       {/* Background elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-20"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-black/10 opacity-20"></div>
         <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full border-8 border-white/10"></div>
         <div className="absolute top-20 left-20 w-40 h-40 rounded-full border-4 border-white/10"></div>
       </div>
