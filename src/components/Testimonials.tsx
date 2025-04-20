@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { ArrowLeft, ArrowRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 const testimonials = [
   {
@@ -78,31 +79,33 @@ const Testimonials: React.FC = () => {
                 key={index} 
                 className="w-full flex-shrink-0 px-4"
               >
-                <div className="glass-card max-w-3xl mx-auto">
-                  <div className="flex mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600'}`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xl md:text-2xl mb-6 leading-relaxed text-white">{testimonial.quote}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-primary to-teal-primary rounded-full flex items-center justify-center mr-4 text-white">
-                        <span className="font-bold text-lg">{testimonial.name.charAt(0)}</span>
+                <Card className="bg-gradient-to-br from-card/80 to-secondary/50 backdrop-blur-sm border border-white/5 max-w-3xl mx-auto p-6 md:p-8">
+                  <CardContent className="p-0">
+                    <div className="flex mb-4">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600'}`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xl md:text-2xl mb-8 leading-relaxed text-white italic">{testimonial.quote}</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-primary to-teal-primary rounded-full flex items-center justify-center mr-4 shadow-glow">
+                          <span className="font-bold text-lg text-white">{testimonial.name.charAt(0)}</span>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white">{testimonial.name}</h4>
+                          <p className="text-gray-400 text-sm">{testimonial.title}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-white">{testimonial.name}</h4>
-                        <p className="text-gray-400 text-sm">{testimonial.title}</p>
+                      <div className="bg-gradient-to-r from-blue-primary/20 to-teal-primary/20 py-2 px-4 rounded-full self-start sm:self-auto">
+                        <p className="text-teal-primary font-medium text-sm">{testimonial.result}</p>
                       </div>
                     </div>
-                    <div className="bg-accent/30 py-1 px-3 rounded-full">
-                      <p className="text-teal-primary font-medium text-sm">{testimonial.result}</p>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </div>
             ))}
           </div>
@@ -110,7 +113,7 @@ const Testimonials: React.FC = () => {
           {/* Navigation arrows */}
           <button
             onClick={prevSlide}
-            className="absolute top-1/2 left-0 -translate-y-1/2 transform p-2 rounded-full bg-card border border-border/20 text-gray-300 hover:text-blue-primary transition-all z-20 shadow-md"
+            className="absolute top-1/2 left-2 md:left-4 -translate-y-1/2 transform p-2 rounded-full bg-gradient-to-br from-card to-secondary/70 border border-white/5 text-gray-300 hover:text-teal-primary transition-all z-20 shadow-lg shadow-black/20"
             aria-label="Previous testimonial"
           >
             <ArrowLeft className="w-6 h-6" />
@@ -118,7 +121,7 @@ const Testimonials: React.FC = () => {
           
           <button
             onClick={nextSlide}
-            className="absolute top-1/2 right-0 -translate-y-1/2 transform p-2 rounded-full bg-card border border-border/20 text-gray-300 hover:text-blue-primary transition-all z-20 shadow-md"
+            className="absolute top-1/2 right-2 md:right-4 -translate-y-1/2 transform p-2 rounded-full bg-gradient-to-br from-card to-secondary/70 border border-white/5 text-gray-300 hover:text-teal-primary transition-all z-20 shadow-lg shadow-black/20"
             aria-label="Next testimonial"
           >
             <ArrowRight className="w-6 h-6" />
@@ -131,7 +134,9 @@ const Testimonials: React.FC = () => {
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={`w-3 h-3 mx-1 rounded-full transition-all ${
-                  currentSlide === index ? 'bg-gradient-to-r from-blue-primary to-teal-primary scale-125' : 'bg-gray-600'
+                  currentSlide === index 
+                    ? 'bg-gradient-to-r from-blue-primary to-teal-primary scale-125 shadow-glow' 
+                    : 'bg-gray-600 hover:bg-gray-500'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               ></button>

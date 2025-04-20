@@ -115,6 +115,10 @@
     @apply scale-105;
     background-position: right center;
   }
+  
+  .shadow-glow {
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+  }
 }
 
 #root {
