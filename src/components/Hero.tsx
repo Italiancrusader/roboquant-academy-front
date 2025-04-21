@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
@@ -14,7 +13,7 @@ const Hero: React.FC = () => {
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
         {/* Darker overlay */}
         <div className="absolute inset-0 bg-black/75 backdrop-blur-[2px] z-0" />
-        {/* Video - rotate on mobile only */}
+        {/* Video - rotate and zoom on mobile */}
         <iframe
           className={`w-full h-full 
             ${isMobile ? "rotate-90" : ""}
@@ -25,7 +24,7 @@ const Hero: React.FC = () => {
             isMobile
               ? {
                   pointerEvents: 'none',
-                  transform: 'rotate(90deg) scale(1.1)',
+                  transform: 'rotate(90deg) scale(3)',
                   transformOrigin: 'center center',
                 }
               : { pointerEvents: 'none', transform: 'scale(1.5)', transformOrigin: 'center center' }
