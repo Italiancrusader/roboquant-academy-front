@@ -14,12 +14,22 @@ const Hero: React.FC = () => {
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
         {/* Darker overlay */}
         <div className="absolute inset-0 bg-black/75 backdrop-blur-[2px] z-0" />
-        {/* Video */}
+        {/* Video - rotate on mobile only */}
         <iframe
-          className="w-full h-full"
+          className={`w-full h-full 
+            ${isMobile ? "rotate-90" : ""}
+          `}
           src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&controls=0&mute=1&loop=1&playlist=f14SlGPD4gM&playsinline=1&vq=hd2160"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          style={{ pointerEvents: 'none', transform: 'scale(1.5)', transformOrigin: 'center center' }}
+          style={
+            isMobile
+              ? {
+                  pointerEvents: 'none',
+                  transform: 'rotate(90deg) scale(1.1)',
+                  transformOrigin: 'center center',
+                }
+              : { pointerEvents: 'none', transform: 'scale(1.5)', transformOrigin: 'center center' }
+          }
           title="RoboQuant Academy Background Video"
         />
       </div>
@@ -54,13 +64,13 @@ const Hero: React.FC = () => {
               </Dialog>
             </div>
           </div>
-          {/* Only the image, no container/graphics, increased size */}
+          {/* Single image only, bigger */}
           <div className={`flex justify-center items-center ${isMobile ? "mt-8" : ""}`}>
             <img
               src="/lovable-uploads/e55e99bf-e708-4619-aead-4688dcd27672.png"
               alt="RoboQuant dashboard visualization"
-              className="w-full max-w-3xl h-auto object-contain"
-              style={{ minHeight: '320px' }}
+              className="w-full max-w-4xl h-auto object-contain"
+              style={{ minHeight: '360px' }}
             />
           </div>
         </div>
@@ -88,4 +98,3 @@ const Hero: React.FC = () => {
 };
 
 export default Hero;
-
