@@ -64,7 +64,7 @@ const Hero: React.FC = () => {
             </div>
           </div>
           {/* Single image only, bigger */}
-          <div className={`flex justify-center items-center ${isMobile ? "mt-8" : ""}`}>
+          <div className={`flex justify-center items-center ${isMobile ? "my-2" : "mt-8"}`}>
             <img
               src="/lovable-uploads/e55e99bf-e708-4619-aead-4688dcd27672.png"
               alt="RoboQuant dashboard visualization"
