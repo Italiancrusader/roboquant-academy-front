@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from 'lucide-react';
@@ -18,7 +18,7 @@ const instructors = [
   },
   {
     name: "Alexander Wright",
-    image: "/lovable-uploads/4c216359-4b16-4bab-96e9-d1add3ebb2c8.png",
+    image: "/lovable-uploads/6ff6bfc8-1f54-44dc-a27a-11d6ae5557b7.png",
     alt: "Alexander Wright, Co-Founder of RoboQuant Academy",
     bio: "Alexander Wright is a trader and software engineer who has architected automated trading platforms for funds and brokers across Europe and Asia. He brings deep technical expertise in building multi-asset, high-frequency systems.",
     badges: [
@@ -30,10 +30,12 @@ const instructors = [
 ];
 
 const AboutInstructor: React.FC = () => {
-  const {
-    ref,
-    isVisible
-  } = useIntersectionObserver();
+  const { ref, isVisible } = useIntersectionObserver();
+  const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null);
+
+  const handleSelectInstructor = (name: string) => {
+    setSelectedInstructor(name);
+  };
 
   return (
     <section id="about" className="section-padding bg-background" ref={ref as React.RefObject<HTMLElement>}>
@@ -45,8 +47,23 @@ const AboutInstructor: React.FC = () => {
             </h2>
             {/* Show both instructors side-by-side on desktop, stacked on mobile */}
             <div className="flex flex-col md:flex-row gap-8 w-full justify-center">
-              {instructors.map((instructor, idx) => (
-                <div key={instructor.name} className="flex-1 bg-accent/10 rounded-2xl shadow-lg p-6 flex flex-col items-center min-w-[280px]">
+              {instructors.map((instructor) => (
+                <div
+                  key={instructor.name}
+                  className={`flex-1 bg-accent/10 rounded-2xl shadow-lg p-6 flex flex-col items-center min-w-[280px] cursor-pointer
+                    ${selectedInstructor === instructor.name ? 'ring-4 ring-teal-primary' : ''}
+                  `}
+                  onClick={() => handleSelectInstructor(instructor.name)}
+                  tabIndex={0}
+                  role="button"
+                  aria-pressed={selectedInstructor === instructor.name}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelectInstructor(instructor.name);
+                    }
+                  }}
+                >
                   <div className="relative w-44 h-44 mb-4">
                     <img
                       alt={instructor.alt}
