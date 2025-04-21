@@ -23,9 +23,7 @@ const AboutInstructor: React.FC = () => {
                 About the <span className="gradient-text">Instructor</span>
               </h2>
               
-              <p className="text-gray-300 mb-4">
-                Alexander Wright is a former hedge fund algorithmic trader with 12+ years of experience building trading systems. After managing over $180M in algorithmic strategies, he founded RoboQuant Academy to make institutional-grade trading technology accessible to retail traders.
-              </p>
+              <p className="text-gray-300 mb-4">Tim Hutter is a former hedge fund algorithmic trader with 12+ years of experience building trading systems. After managing over $180M in algorithmic strategies, he founded RoboQuant Academy to make institutional-grade trading technology accessible to retail traders.</p>
               
               <div className="flex flex-wrap gap-3 mb-6">
                 <div className="bg-accent/30 py-1 px-3 rounded-full text-sm text-gray-300">
