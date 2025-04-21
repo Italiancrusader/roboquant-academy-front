@@ -53,17 +53,14 @@ const Hero: React.FC = () => {
               </Dialog>
             </div>
           </div>
-          <div className={`relative ${isMobile ? "mt-8" : ""}`}>
-            <div className="relative rounded-xl overflow-hidden shadow-xl transform hover:scale-105 transition-transform duration-500">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-primary/20 to-teal-primary/20 mix-blend-overlay"></div>
-                <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,229,255,0.2)]"></div>
-                <img src="/lovable-uploads/e55e99bf-e708-4619-aead-4688dcd27672.png" alt="RoboQuant dashboard visualization" className="w-full h-auto relative z-0" />
-              </div>
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-blue-primary/20 to-teal-primary/20 rounded-full blur-2xl"></div>
-              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-gradient-to-br from-teal-primary/20 to-blue-primary/20 rounded-full blur-2xl"></div>
-            </div>
-            <div className="absolute -z-10 -bottom-6 -right-6 w-full h-full rounded-xl border-2 border-dashed border-robo-aqua opacity-50"></div>
+          {/* Only the image, no container/graphics, increased size */}
+          <div className={`flex justify-center items-center ${isMobile ? "mt-8" : ""}`}>
+            <img
+              src="/lovable-uploads/e55e99bf-e708-4619-aead-4688dcd27672.png"
+              alt="RoboQuant dashboard visualization"
+              className="w-full max-w-3xl h-auto object-contain"
+              style={{ minHeight: '320px' }}
+            />
           </div>
         </div>
       </div>
