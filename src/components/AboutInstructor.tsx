@@ -1,28 +1,19 @@
-
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from 'lucide-react';
-
 const AboutInstructor: React.FC = () => {
-  const { ref, isVisible } = useIntersectionObserver();
-  
-  return (
-    <section 
-      id="about" 
-      className="section-padding bg-background"
-      ref={ref as React.RefObject<HTMLElement>}
-    >
+  const {
+    ref,
+    isVisible
+  } = useIntersectionObserver();
+  return <section id="about" className="section-padding bg-background" ref={ref as React.RefObject<HTMLElement>}>
       <div className="container mx-auto">
         <div className="max-w-4xl mx-auto">
           <div className={`flex flex-col md:flex-row gap-8 items-center ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
             <div className="md:w-1/3">
               <div className="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop" 
-                  alt="Alexander Wright, Founder of RoboQuant Academy" 
-                  className="rounded-2xl shadow-lg"
-                />
+                <img alt="Alexander Wright, Founder of RoboQuant Academy" className="rounded-2xl shadow-lg" src="/lovable-uploads/35d7b99c-022e-4185-a4c5-9e837f1e329f.png" />
                 <div className="absolute -z-10 -bottom-4 -right-4 w-full h-full rounded-2xl border-2 border-dashed border-teal-primary"></div>
               </div>
             </div>
@@ -55,8 +46,6 @@ const AboutInstructor: React.FC = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default AboutInstructor;
