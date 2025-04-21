@@ -12,14 +12,15 @@ const Hero: React.FC = () => {
     <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       {/* Video + Overlay in Hero */}
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
-        {/* Slight overlay */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] z-0" />
+        {/* Darker overlay */}
+        <div className="absolute inset-0 bg-black/75 backdrop-blur-[2px] z-0" />
         {/* Video */}
         <iframe
           className="w-full h-full"
-          src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&controls=0&mute=1&loop=1&playlist=f14SlGPD4gM&playsinline=1"
+          src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&controls=0&mute=1&loop=1&playlist=f14SlGPD4gM&playsinline=1&vq=hd2160"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           style={{ pointerEvents: 'none', transform: 'scale(1.5)', transformOrigin: 'center center' }}
+          title="RoboQuant Academy Background Video"
         />
       </div>
 
@@ -87,3 +88,4 @@ const Hero: React.FC = () => {
 };
 
 export default Hero;
+
