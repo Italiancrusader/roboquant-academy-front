@@ -17,10 +17,10 @@ const instructors = [
     ]
   },
   {
-    name: "Alexander Wright",
+    name: "Gabriel Venturini",
     image: "/lovable-uploads/6ff6bfc8-1f54-44dc-a27a-11d6ae5557b7.png",
-    alt: "Alexander Wright, Co-Founder of RoboQuant Academy",
-    bio: "Alexander Wright is a trader and software engineer who has architected automated trading platforms for funds and brokers across Europe and Asia. He brings deep technical expertise in building multi-asset, high-frequency systems.",
+    alt: "Gabriel Venturini, Co-Founder of RoboQuant Academy",
+    bio: "Gabriel Venturini is a trader and software engineer who has architected automated trading platforms for funds and brokers across Europe and Asia. He brings deep technical expertise in building multi-asset, high-frequency systems.",
     badges: [
       "Ex-Prop Trading Developer",
       "Automation Architect",
@@ -95,3 +95,4 @@ const AboutInstructor: React.FC = () => {
 };
 
 export default AboutInstructor;
+
