@@ -8,17 +8,17 @@ const features = [
   {
     title: 'No Dev Hire Fees',
     description: 'Save $10k+ per project by building trading bots yourself without hiring expensive developers.',
-    icon: <Banknote className="w-12 h-12 text-blue-primary mb-4" />
+    icon: <Banknote className="w-12 h-12 text-blue-primary" />
   },
   {
     title: 'Faster to Market',
     description: 'Take your trading idea from concept to live bot in less than one week, not months.',
-    icon: <Zap className="w-12 h-12 text-blue-primary mb-4" />
+    icon: <Zap className="w-12 h-12 text-blue-primary" />
   },
   {
     title: 'Scale Unlimited Strategies',
     description: 'Clone, tweak, and deploy as many strategies as you want without additional development costs.',
-    icon: <Copy className="w-12 h-12 text-blue-primary mb-4" />
+    icon: <Copy className="w-12 h-12 text-blue-primary" />
   },
 ];
 
@@ -72,3 +72,4 @@ const WhyRoboQuant: React.FC = () => {
 };
 
 export default WhyRoboQuant;
+
