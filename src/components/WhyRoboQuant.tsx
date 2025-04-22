@@ -2,9 +2,14 @@
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Banknote, Zap, Copy } from 'lucide-react';
+import { ArrowRight, Banknote, Zap, Copy, HelpCircle } from 'lucide-react';
 
 const features = [
+  {
+    title: 'No Prior Trading or Coding Experience Required',
+    description: 'We guide you from absolute basics—learn, develop, and automate trading strategies even if you have never traded manually or coded before.',
+    icon: <HelpCircle className="w-12 h-12 text-blue-primary" />
+  },
   {
     title: 'No Dev Hire Fees',
     description: 'Save $10k+ per project by building trading bots yourself without hiring expensive developers.',
@@ -32,23 +37,26 @@ const WhyRoboQuant: React.FC = () => {
       ref={ref as React.RefObject<HTMLElement>}
     >
       <div className="container mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+        <div className="flex flex-col items-center mb-16">
+          <span className="inline-block bg-blue-primary/80 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 shadow-md">
+            No Prior Trading or Coding Experience Required
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground text-center">
             Why <span className="gradient-text">RoboQuant Academy</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            We turn manual traders into algorithm creators without the coding learning curve.
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto text-center">
+            We turn aspiring traders and beginners into algorithm creators—no manual trading or programming background needed. You'll learn to discover, build, and even license profitable bots, all shown step-by-step.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((item, index) => (
             <div 
               key={index}
               className={`glass-card p-8 rounded-2xl ${
                 isVisible ? 'animate-fade-in' : 'opacity-0'
               }`}
-              style={{ animationDelay: `${index * 200}ms` }}
+              style={{ animationDelay: `${index * 180}ms` }}
             >
               <div className="bg-accent/50 w-20 h-20 flex items-center justify-center rounded-full mb-6">
                 {item.icon}
