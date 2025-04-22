@@ -8,111 +8,111 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle2, Clock, Code, Server } from 'lucide-react';
+import { ArrowRight, Check, Clock, Code, Terminal, BookOpen, FileText, Settings } from 'lucide-react';
 
 const curriculumModules = [
   {
     title: "Introduction",
     status: "100% Complete",
-    description: "Getting started with your algorithmic trading journey",
-    icon: CheckCircle2,
+    description: "An overview of the program and how to proceed.",
+    icon: Check,
     subModules: [
-      { title: "Start Here!", duration: "2:35" }
+      { title: "Welcome & Orientation", duration: "2:35" }
     ]
   },
   {
     title: "Trading Basics",
     status: "0% Complete",
-    description: "Foundational knowledge for algorithmic trading",
-    icon: Clock,
+    description: "Foundational knowledge to get started.",
+    icon: BookOpen,
     subModules: [
-      { title: "Complete Beginner Course", duration: "1:40" },
-      { title: "Setting Up TradingView", duration: "13:32" }
+      { title: "Beginner's Guide", duration: "1:40" },
+      { title: "Platform Setup", duration: "13:32" }
     ]
   },
   {
     title: "Advanced Trading Concepts",
     status: "0% Complete",
-    description: "Deep dive into market mechanics and trading theory",
-    icon: Code,
+    description: "Deepen your understanding of the markets.",
+    icon: BookOpen,
     subModules: [
-      { title: "Introduction", duration: "3:24" },
-      { title: "The Market Is Fractal", duration: "8:07" },
-      { title: "Liquidity Moves The Market", duration: "10:44" },
-      { title: "The AMD Cycle", duration: "11:41" },
-      { title: "Imbalances & Inversions", duration: "11:44" },
-      { title: "Quick Knowledge Check", duration: null }
+      { title: "Advanced Introduction", duration: "3:24" },
+      { title: "Market Structure Concepts", duration: "8:07" },
+      { title: "Liquidity & Movement", duration: "10:44" },
+      { title: "Cycles In The Market", duration: "11:41" },
+      { title: "Imbalance & Reversals", duration: "11:44" },
+      { title: "Knowledge Check", duration: null }
     ]
   },
   {
-    title: "Pinescript Basics",
+    title: "Pine Script Fundamentals",
     status: "0% Complete",
-    description: "Learn the fundamentals of Pinescript programming",
+    description: "Introduction to scripting for automation.",
     icon: Code,
     subModules: [
-      { title: "Pinescript Basics Part 1", duration: "27:09" },
-      { title: "Pinescript Resources", duration: null },
-      { title: "Pinescript Basics Part 2", duration: "23:37" },
+      { title: "Scripting Basics Part 1", duration: "27:09" },
+      { title: "Resources Overview", duration: null },
+      { title: "Scripting Basics Part 2", duration: "23:37" },
       { title: "Knowledge Check", duration: null }
     ]
   },
   {
     title: "Strategy Development",
     status: "0% Complete",
-    description: "Transform trading ideas into algorithmic strategies",
-    icon: Server,
+    description: "Turning trading ideas into automated strategies.",
+    icon: Terminal,
     subModules: [
-      { title: "Strategy Development Intro", duration: "6:06" },
-      { title: "Turn Initial Idea Into an Indicator", duration: "9:02" },
-      { title: "Coding a Simple Strategy", duration: "26:18" },
-      { title: "Automated Backtesting", duration: "10:19" },
-      { title: "Finalizing the Strategy", duration: "22:42" },
-      { title: "Optimizing the Strategy", duration: "18:38" },
-      { title: "Publishing on TradingView", duration: "7:11" },
-      { title: "Bonus: Add Performance Table", duration: "4:07" },
+      { title: "Module Introduction", duration: "6:06" },
+      { title: "From Idea to Indicator", duration: "9:02" },
+      { title: "Strategy Coding", duration: "26:18" },
+      { title: "Automated Testing", duration: "10:19" },
+      { title: "Strategy Finalization", duration: "22:42" },
+      { title: "Optimization Techniques", duration: "18:38" },
+      { title: "Publishing Guide", duration: "7:11" },
+      { title: "Performance Enhancements", duration: "4:07" },
       { title: "Knowledge Check", duration: null }
     ]
   },
   {
-    title: "TradingView Automation",
+    title: "Automation Techniques",
     status: "0% Complete",
-    description: "Advanced automation across different trading platforms",
-    icon: Server,
+    description: "Automating strategies and processes.",
+    icon: Terminal,
     subModules: [
-      { title: "Automated Futures Trading on Tradeovate", duration: "10:05" },
-      { title: "Automated Crypto Trading", duration: "10:33" }
+      { title: "Futures Trading Automation", duration: "10:05" },
+      { title: "Crypto Trading Automation", duration: "10:33" }
     ]
   },
   {
-    title: "MT5 Expert Advisors",
+    title: "Expert Advisors",
     status: "0% Complete",
-    description: "Master MetaTrader 5 bot development",
-    icon: Code,
+    description: "Automation on advanced trading platforms.",
+    icon: Settings,
     subModules: [
-      { title: "VPS Setup", duration: "4:23" },
-      { title: "Getting Started with MT5", duration: "3:54" },
-      { title: "What are Expert Advisors in Trading?", duration: "5:27" },
-      { title: "The Different Type of Trading Bots", duration: "6:48" },
-      { title: "Setting Up Your AI Code Assistant", duration: "5:39" },
-      { title: "Which AI Model To Use", duration: "6:23" },
-      { title: "Create Strategy Parameters and Prompt", duration: "5:03" },
-      { title: "Producing Code With Cursor", duration: "10:25" },
-      { title: "Debugging Common EA issues", duration: "12:19" },
-      { title: "Git Setup", duration: "9:53" }
+      { title: "Remote Environment Setup", duration: "4:23" },
+      { title: "Getting Started", duration: "3:54" },
+      { title: "Advisor Overview", duration: "5:27" },
+      { title: "Automated Bots Explained", duration: "6:48" },
+      { title: "Setup Assistance", duration: "5:39" },
+      { title: "Choosing Models", duration: "6:23" },
+      { title: "Strategy Parameterization", duration: "5:03" },
+      { title: "Producing Solutions", duration: "10:25" },
+      { title: "Debugging Practices", duration: "12:19" },
+      { title: "Version Control Basics", duration: "9:53" }
     ]
   },
   {
-    title: "Python Programming for Trading",
+    title: "Python for Trading",
     status: "0% Complete",
-    description: "Learn Python for advanced trading automation",
+    description: "Using Python for advanced automation.",
     icon: Code,
     subModules: [
-      { title: "What is Python?", duration: null },
-      { title: "When to use Python?", duration: null },
-      { title: "Python Installation & Setup", duration: null },
-      { title: "Setting Up Your Python Code Assistant", duration: null },
-      { title: "Pulling & Processing Data from an API using Python", duration: null },
-      { title: "Sending Telegram Messages from Python", duration: null }
+      { title: "Introduction to Python", duration: null },
+      { title: "Applications of Python", duration: null },
+      { title: "Installation & Setup", duration: null },
+      { title: "Python Automation Guide", duration: null },
+      { title: "API Data Processing", duration: null },
+      { title: "Messaging Automation", duration: null }
     ]
   }
 ];
@@ -191,3 +191,4 @@ const Curriculum: React.FC = () => {
 };
 
 export default Curriculum;
+
