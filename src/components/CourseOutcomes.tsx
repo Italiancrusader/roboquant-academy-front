@@ -1,30 +1,30 @@
 
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { Terminal, Code, AlertCircle, Rocket, Briefcase, Users, TrendingUp, GraduationCap } from 'lucide-react';
+import { Terminal, BarChart4, AlertCircle, Rocket, Briefcase, Users, TrendingUp, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 
 const outcomes = [
   {
-    title: 'MT4/MT5 Bot Development',
-    description: 'Create advanced trading bots for MetaTrader 4 and 5 platforms.',
+    title: 'Launch MT4/MT5 & cTrader Bots',
+    description: 'Build fully-automated trading systems for major platforms with our no-code approach.',
     icon: <Terminal className="w-10 h-10 text-teal-primary" />
   },
   {
-    title: 'PineScript Strategy Creation',
-    description: 'Design and implement trading strategies using TradingView\'s PineScript language.',
-    icon: <Code className="w-10 h-10 text-teal-primary" />
+    title: 'Back-test With Pro Workflows',
+    description: 'Test your strategies against historical data with institutional-grade methodology.',
+    icon: <BarChart4 className="w-10 h-10 text-teal-primary" />
   },
   {
-    title: 'cTrader & NinjaTrader Bots',
-    description: 'Develop automated trading systems for cTrader and NinjaTrader platforms.',
-    icon: <Rocket className="w-10 h-10 text-teal-primary" />
-  },
-  {
-    title: 'Multi-Platform Bot Strategy',
-    description: 'Learn to adapt and deploy bots across different trading platforms.',
+    title: 'Avoid Fatal Algo-Trading Mistakes',
+    description: 'Learn to sidestep the top 7 critical errors that sink most algorithmic traders.',
     icon: <AlertCircle className="w-10 h-10 text-teal-primary" />
+  },
+  {
+    title: 'Deploy & Scale Your Systems',
+    description: 'Put your bots into production and manage them efficiently as you scale.',
+    icon: <Rocket className="w-10 h-10 text-teal-primary" />
   },
   {
     title: 'Freelance Bot Development',
