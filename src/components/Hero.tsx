@@ -64,7 +64,13 @@ const Hero: React.FC = () => {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
                   <div className="video-container">
-                    <iframe src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&rel=0" title="RoboQuant Academy Demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                    <iframe 
+                      src="https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=1&rel=0" 
+                      title="RoboQuant Academy Demo" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                      className="w-full aspect-video"
+                    ></iframe>
                   </div>
                 </DialogContent>
               </Dialog>
