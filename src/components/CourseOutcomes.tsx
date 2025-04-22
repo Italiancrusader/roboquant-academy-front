@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { Terminal, BarChart4, AlertCircle, Rocket } from 'lucide-react';
+import { Terminal, BarChart4, AlertCircle, Rocket, Briefcase, Users, TrendingUp, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 
@@ -25,6 +25,26 @@ const outcomes = [
     title: 'Deploy & Scale Your Systems',
     description: 'Put your bots into production and manage them efficiently as you scale.',
     icon: <Rocket className="w-10 h-10 text-teal-primary" />
+  },
+  {
+    title: 'Freelance Bot Development',
+    description: 'Sell your bot creation skills by working as a freelancer for clients worldwide.',
+    icon: <Briefcase className="w-10 h-10 text-teal-primary" />
+  },
+  {
+    title: 'Create Bot Business',
+    description: 'Build and sell trading robots with licensing, creating a scalable digital product.',
+    icon: <Users className="w-10 h-10 text-teal-primary" />
+  },
+  {
+    title: 'Quant Trading Career',
+    description: 'Begin your journey towards a professional career in quantitative trading.',
+    icon: <TrendingUp className="w-10 h-10 text-teal-primary" />
+  },
+  {
+    title: 'Advanced Trading Education',
+    description: 'Continue studying to potentially work in banks, hedge funds, or financial institutions.',
+    icon: <GraduationCap className="w-10 h-10 text-teal-primary" />
   }
 ];
 
