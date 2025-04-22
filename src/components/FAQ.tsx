@@ -36,6 +36,23 @@ const faqItems = [
   {
     question: "What if the course isn't right for me?",
     answer: "We offer a 14-day no-questions-asked money-back guarantee. If you're not completely satisfied, simply email our support team for a full refund."
+  },
+  // Added helpful Q&A
+  {
+    question: "How much time do I need to learn and develop bots with this course?",
+    answer: "Once you've learned the skills taught, it takes just minutes to develop strategies. Typically, you can go from a strategy idea to a working MT4/MT5 bot within 10-15 minutes."
+  },
+  {
+    question: "Will there be support if I get stuck along the way?",
+    answer: "Yes, we provide support through course materials, future updates, and a private community to help you overcome challenges."
+  },
+  {
+    question: "Can I build and sell trading bots commercially after taking this course?",
+    answer: "Yes, you receive all source codes developed in the course, enabling you to use, license, and sell your bots commercially."
+  },
+  {
+    question: "Why is the course priced at $1,497 when other options are cheaper?",
+    answer: "The investment saves you tens of thousands of dollars in development costs. Hiring a developer can cost $1,000+ per bot with additional update fees, whereas our course empowers you to build bots yourself."
   }
 ];
 
@@ -78,3 +95,4 @@ const FAQ: React.FC = () => {
 };
 
 export default FAQ;
+
