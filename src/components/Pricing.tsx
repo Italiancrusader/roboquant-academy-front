@@ -12,7 +12,7 @@ const features = [
   'Strategy optimization tools',
   'Private community access',
   '60+ pre-built strategy templates',
-  '14-day money-back guarantee',
+  '30-day money-back guarantee',
 ];
 
 const Pricing: React.FC = () => {
@@ -31,6 +31,9 @@ const Pricing: React.FC = () => {
           </h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             One-time payment for lifetime access to all course materials.
+          </p>
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto mt-4">
+            You can have your first working robot within 30 days, or get a full refund — no questions asked.
           </p>
         </div>
         
@@ -68,14 +71,17 @@ const Pricing: React.FC = () => {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
               </svg>
-              Secure payment • 14-day money-back guarantee
+              Secure payment • 30-day money-back guarantee
             </div>
           </div>
           
           <div className="mt-8 p-6 bg-card rounded-xl border border-border/20">
             <h4 className="font-bold text-lg mb-2 text-foreground">Our Risk-Free Guarantee</h4>
             <p className="text-gray-300">
-              If you're not completely satisfied with the course within 14 days of purchase, simply email us for a full refund, no questions asked.
+              If you're not completely satisfied with the course within 30 days of purchase, simply email us for a full refund, no questions asked.
+            </p>
+            <p className="text-gray-300 mt-2">
+              Most users have their first working trading robot within the first 30 days.
             </p>
           </div>
         </div>
@@ -85,3 +91,4 @@ const Pricing: React.FC = () => {
 };
 
 export default Pricing;
+
