@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
@@ -9,10 +10,16 @@ const Hero: React.FC = () => {
 
   return (
     <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
-      {/* Video + Overlay in Hero */}
+      {/* Video + Enhanced Overlay in Hero */}
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
-        {/* Darker overlay */}
-        <div className="absolute inset-0 bg-black/75 backdrop-blur-[2px] z-0" />
+        {/* Enhanced Black Overlay with Blur */}
+        <div className="absolute inset-0 z-0"
+          style={{
+            background: 'rgba(0,0,0,0.70)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
+        />
         {/* Video - rotate and zoom on mobile */}
         <iframe
           className={`w-full h-full 
