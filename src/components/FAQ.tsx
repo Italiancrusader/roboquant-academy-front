@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import {
@@ -19,7 +18,7 @@ const faqItems = [
   },
   {
     question: "Which trading platforms are supported?",
-    answer: "The course teaches you to build bots for MT4, MT5, and cTrader platforms, which cover the vast majority of retail trading brokers worldwide."
+    answer: "The course teaches you to build bots for MT4, MT5, TradingView, NinjaTrader, and is adaptable for any other platform."
   },
   {
     question: "How does the back-testing module work?",
@@ -37,22 +36,33 @@ const faqItems = [
     question: "What if the course isn't right for me?",
     answer: "We offer a 14-day no-questions-asked money-back guarantee. If you're not completely satisfied, simply email our support team for a full refund."
   },
-  // Added helpful Q&A
   {
     question: "How much time do I need to learn and develop bots with this course?",
-    answer: "Once you've learned the skills taught, it takes just minutes to develop strategies. Typically, you can go from a strategy idea to a working MT4/MT5 bot within 10-15 minutes."
+    answer: "Once you've learned the skills taught, it takes just minutes to develop strategies. Typically, you can go from a strategy idea to a working MT4/MT5 bot within 10-15 minutes. Time requirements can vary if you're brainstorming or debugging, but a step-by-step module is included demonstrating a real strategy from start to finish."
   },
   {
     question: "Will there be support if I get stuck along the way?",
-    answer: "Yes, we provide support through course materials, future updates, and a private community to help you overcome challenges."
+    answer: "Yes, we provide support through course materials, future updates, and a private community. Our aim is to help you overcome challenges as you go."
   },
   {
     question: "Can I build and sell trading bots commercially after taking this course?",
-    answer: "Yes, you receive all source codes developed in the course, enabling you to use, license, and sell your bots commercially."
+    answer: "Yes, you receive all source codes developed in the course, enabling you to use, license, and sell your bots commercially. You'll also learn about licensing and selling."
   },
   {
     question: "Why is the course priced at $1,497 when other options are cheaper?",
-    answer: "The investment saves you tens of thousands of dollars in development costs. Hiring a developer can cost $1,000+ per bot with additional update fees, whereas our course empowers you to build bots yourself."
+    answer: "The investment saves you tens of thousands of dollars in development costs. Hiring a developer can cost $1,250+ per bot with additional update fees, whereas our course empowers you to build bots yourself."
+  },
+  {
+    question: "Is this course useful if I don't have my own manual strategies?",
+    answer: "Absolutely. The course not only teaches how to automate strategies but also how to develop and optimize profitable trading strategies from scratch, even if you don't trade manually."
+  },
+  {
+    question: "Do I get something ready to use immediately after purchase?",
+    answer: "Yes. Along with the step-by-step instruction, you get access to real bot examples, source code, and practical tools to start building or deploying bots right away."
+  },
+  {
+    question: "How is this different from tools like AlgoBuilder AI?",
+    answer: "AlgoBuilder AI is a software product, but our academy teaches you a transferable skill set—you're not restricted by someone's tool or AI limitations. You have full creative freedom and total platform flexibility."
   }
 ];
 
@@ -95,4 +105,3 @@ const FAQ: React.FC = () => {
 };
 
 export default FAQ;
-
