@@ -9,22 +9,22 @@ const outcomes = [
   {
     title: 'Launch MT4/MT5 & cTrader Bots',
     description: 'Build fully-automated trading systems for major platforms with our no-code approach.',
-    icon: <Terminal className="w-10 h-10 text-teal-primary mb-4" />
+    icon: <Terminal className="w-10 h-10 text-teal-primary" />
   },
   {
     title: 'Back-test With Pro Workflows',
     description: 'Test your strategies against historical data with institutional-grade methodology.',
-    icon: <BarChart4 className="w-10 h-10 text-teal-primary mb-4" />
+    icon: <BarChart4 className="w-10 h-10 text-teal-primary" />
   },
   {
     title: 'Avoid Fatal Algo-Trading Mistakes',
     description: 'Learn to sidestep the top 7 critical errors that sink most algorithmic traders.',
-    icon: <AlertCircle className="w-10 h-10 text-teal-primary mb-4" />
+    icon: <AlertCircle className="w-10 h-10 text-teal-primary" />
   },
   {
     title: 'Deploy & Scale Your Systems',
     description: 'Put your bots into production and manage them efficiently as you scale.',
-    icon: <Rocket className="w-10 h-10 text-teal-primary mb-4" />
+    icon: <Rocket className="w-10 h-10 text-teal-primary" />
   }
 ];
 
