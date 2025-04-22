@@ -12,12 +12,12 @@ const Hero: React.FC = () => {
     <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       {/* Video + Enhanced Overlay in Hero */}
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
-        {/* Enhanced Black Overlay with Blur */}
+        {/* Enhanced Black Overlay with Increased Blur */}
         <div className="absolute inset-0 z-0"
           style={{
-            background: 'rgba(0,0,0,0.70)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            background: 'rgba(0,0,0,0.75)', // Slightly darker overlay
+            backdropFilter: 'blur(12px)', // Increased blur from 8px to 12px
+            WebkitBackdropFilter: 'blur(12px)',
           }}
         />
         {/* Video - rotate and zoom on mobile */}
