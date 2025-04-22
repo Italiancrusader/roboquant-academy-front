@@ -7,8 +7,8 @@ import { ArrowRight } from 'lucide-react';
 
 const outcomes = [
   {
-    title: 'Launch MT4/MT5 & cTrader Bots',
-    description: 'Build fully-automated trading systems for major platforms with our no-code approach.',
+    title: 'Build Bots Across Multiple Trading Platforms',
+    description: 'Create automated trading systems for MetaTrader 4/5, TradingView, NinjaTrader, and adaptable to any other platform.',
     icon: <Terminal className="w-10 h-10 text-teal-primary" />
   },
   {
