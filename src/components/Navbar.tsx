@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, ArrowRight } from 'lucide-react';
-
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -15,7 +13,6 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   const menuItems = [{
     name: "Why RoboQuant",
     href: "#why"
@@ -35,11 +32,10 @@ const Navbar = () => {
     name: "FAQ",
     href: "#faq"
   }];
-
   return <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-background/95 backdrop-blur-md shadow-md py-2' : 'py-4 sm:py-6'}`}>
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
-          <img alt="RoboQuant Academy" className="h-30 sm:h-36 object-contain" src="/lovable-uploads/b44287c9-5ee5-4379-92f2-d23b86163d67.png" />
+          <img alt="RoboQuant Academy" className="h-10 sm:h-12 object-contain" src="/lovable-uploads/b44287c9-5ee5-4379-92f2-d23b86163d67.png" />
         </div>
 
         {isMobile ? <div className="flex items-center gap-4">
@@ -70,5 +66,4 @@ const Navbar = () => {
       </div>
     </nav>;
 };
-
 export default Navbar;
