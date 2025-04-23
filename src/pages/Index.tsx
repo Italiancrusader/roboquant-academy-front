@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
@@ -25,7 +26,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-segoe overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground font-neulis overflow-x-hidden">
       <Navbar />
       <Hero />
       <WhyRoboQuant />
