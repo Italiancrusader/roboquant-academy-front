@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Loader } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Drawer, DrawerTrigger, DrawerContent } from "@/components/ui/drawer";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
@@ -50,13 +50,13 @@ const Hero: React.FC = () => {
                 </Button>
               </a>
               {isMobile ? (
-                <Drawer>
-                  <DrawerTrigger asChild>
+                <Sheet>
+                  <SheetTrigger asChild>
                     <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
                       <Play className="mr-2 h-5 w-5" /> Watch Demo
                     </Button>
-                  </DrawerTrigger>
-                  <DrawerContent className="p-0 bg-background">
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="p-0 bg-background">
                     <div className="video-container relative w-full aspect-video bg-black/90 pt-6">
                       {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -75,8 +75,8 @@ const Hero: React.FC = () => {
                         onLoad={() => setIsLoading(false)}
                       ></iframe>
                     </div>
-                  </DrawerContent>
-                </Drawer>
+                  </SheetContent>
+                </Sheet>
               ) : (
                 <Dialog>
                   <DialogTrigger asChild>
