@@ -1,6 +1,5 @@
-
 import React from "react";
-import { FileText, Gavel, ShieldCheck, FileLock, Book } from "lucide-react";
+import { FileText, Gavel, ShieldCheck, FileLock, Book, Mail } from "lucide-react";
 
 const Section = ({
   icon: Icon,
