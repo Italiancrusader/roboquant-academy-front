@@ -20,11 +20,11 @@ const instructors = [
     name: "Gabriel Venturini",
     image: "/lovable-uploads/6ff6bfc8-1f54-44dc-a27a-11d6ae5557b7.png",
     alt: "Gabriel Venturini, Co-Founder of RoboQuant Academy",
-    bio: "Gabriel Venturini is a trader and software engineer who has architected automated trading platforms for funds and brokers across Europe and Asia. He brings deep technical expertise in building multi-asset, high-frequency systems.",
+    bio: "With 6+ years of experience in finance and forex trading, Gabriel brings a strong tech background and deep interest in automation. As a former Chief Technology Officer for private equity funds, he has built hundreds of high-end trading algorithms. Working alongside Tim since 2020, he also successfully runs e-commerce businesses.",
     badges: [
-      "Ex-Prop Trading Developer",
-      "Automation Architect",
-      "Investor & Mentor"
+      "6+ Years Finance Experience",
+      "Hundreds of Trading Algorithms",
+      "Tech & Trading Expert"
     ]
   }
 ];
