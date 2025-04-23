@@ -1,9 +1,10 @@
 
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Loader, Volume2, VolumeX, Pause } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { preconnectToDomains } from '@/utils/performance';
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
@@ -12,29 +13,69 @@ const Hero: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [videoElement, setVideoElement] = useState<HTMLIFrameElement | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const vimeoRef = useRef<HTMLIFrameElement>(null);
   
+  // Handle Vimeo player API messages
   useEffect(() => {
-    if (videoElement) {
-      const timer = setTimeout(() => {
-        videoElement.contentWindow?.postMessage({ method: 'unmute' }, '*');
-      }, 500);
+    const handleMessage = (event: MessageEvent) => {
+      // Only handle messages from Vimeo
+      if (!event.origin.includes('player.vimeo.com')) return;
       
-      return () => clearTimeout(timer);
-    }
-  }, [videoElement]);
+      try {
+        // Parse the message data
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        
+        // Handle Vimeo player events
+        if (data.event === 'ready' && vimeoRef.current) {
+          // After player is ready, set up communication with the iframe
+          const player = vimeoRef.current;
+          
+          // Unmute the video (crucial step)
+          player.contentWindow?.postMessage(
+            JSON.stringify({ method: 'setVolume', value: 1 }),
+            '*'
+          );
+          
+          // Set initial state
+          setIsPlaying(true);
+          setIsMuted(false);
+          
+          console.log('Vimeo player ready, audio unmuted');
+        }
+      } catch (error) {
+        console.error('Error handling Vimeo message:', error);
+      }
+    };
+    
+    // Add event listener
+    window.addEventListener('message', handleMessage);
+    
+    // Clean up
+    return () => {
+      window.addEventListener('message', handleMessage);
+    };
+  }, []);
 
+  // Toggle play/pause
   const togglePlay = () => {
-    if (videoElement) {
+    if (vimeoRef.current) {
       const message = isPlaying ? 'pause' : 'play';
-      videoElement.contentWindow?.postMessage({ method: message }, '*');
+      vimeoRef.current.contentWindow?.postMessage(
+        JSON.stringify({ method: message }), 
+        '*'
+      );
       setIsPlaying(!isPlaying);
     }
   };
 
+  // Toggle mute/unmute
   const toggleMute = () => {
-    if (videoElement) {
-      const message = isMuted ? 'unmute' : 'mute';
-      videoElement.contentWindow?.postMessage({ method: message }, '*');
+    if (vimeoRef.current) {
+      const volume = isMuted ? 1 : 0;
+      vimeoRef.current.contentWindow?.postMessage(
+        JSON.stringify({ method: 'setVolume', value: volume }),
+        '*'
+      );
       setIsMuted(!isMuted);
     }
   };
@@ -46,21 +87,16 @@ const Hero: React.FC = () => {
     dashboardImg.src = "/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png";
     dashboardImg.onload = () => setImageLoaded(true);
     
-    // Preconnect to YouTube
-    const preconnectLink = document.createElement('link');
-    preconnectLink.rel = 'preconnect';
-    preconnectLink.href = 'https://www.youtube.com';
-    document.head.appendChild(preconnectLink);
-    
-    // Preconnect to Vimeo
-    const preconnectVimeo = document.createElement('link');
-    preconnectVimeo.rel = 'preconnect';
-    preconnectVimeo.href = 'https://player.vimeo.com';
-    document.head.appendChild(preconnectVimeo);
+    // Preconnect to various domains
+    const cleanupPreconnect = preconnectToDomains([
+      'https://www.youtube.com',
+      'https://player.vimeo.com',
+      'https://i.vimeocdn.com',
+      'https://f.vimeocdn.com'
+    ]);
     
     return () => {
-      document.head.removeChild(preconnectLink);
-      document.head.removeChild(preconnectVimeo);
+      cleanupPreconnect();
     };
   }, []);
 
@@ -120,8 +156,8 @@ const Hero: React.FC = () => {
                         </div>
                       )}
                       <iframe
-                        ref={(el) => setVideoElement(el)}
-                        src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
+                        ref={vimeoRef}
+                        src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=0"
                         className="absolute top-0 left-0 w-full h-full"
                         allow="autoplay; fullscreen; picture-in-picture"
                         loading="lazy"
@@ -171,11 +207,11 @@ const Hero: React.FC = () => {
                         </div>
                       )}
                       <iframe
-                        ref={(el) => setVideoElement(el)}
-                        src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
+                        ref={vimeoRef}
+                        src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=0"
                         className="absolute top-0 left-0 w-full h-full"
-                        loading="lazy"
                         allow="autoplay; fullscreen; picture-in-picture"
+                        loading="lazy"
                         style={{
                           border: 'none',
                           opacity: isLoading ? 0 : 1,
