@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Loader, Volume2, VolumeX, Pause } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -10,6 +11,7 @@ const Hero: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [videoElement, setVideoElement] = useState<HTMLIFrameElement | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
   
   useEffect(() => {
     if (videoElement) {
@@ -37,6 +39,31 @@ const Hero: React.FC = () => {
     }
   };
 
+  // Preload critical resources
+  useEffect(() => {
+    // Preload dashboard image
+    const dashboardImg = new Image();
+    dashboardImg.src = "/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png";
+    dashboardImg.onload = () => setImageLoaded(true);
+    
+    // Preconnect to YouTube
+    const preconnectLink = document.createElement('link');
+    preconnectLink.rel = 'preconnect';
+    preconnectLink.href = 'https://www.youtube.com';
+    document.head.appendChild(preconnectLink);
+    
+    // Preconnect to Vimeo
+    const preconnectVimeo = document.createElement('link');
+    preconnectVimeo.rel = 'preconnect';
+    preconnectVimeo.href = 'https://player.vimeo.com';
+    document.head.appendChild(preconnectVimeo);
+    
+    return () => {
+      document.head.removeChild(preconnectLink);
+      document.head.removeChild(preconnectVimeo);
+    };
+  }, []);
+
   return <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
         <div className="absolute inset-0 z-0" style={{
@@ -46,15 +73,20 @@ const Hero: React.FC = () => {
       }} />
         <iframe className={`w-full h-full 
             ${isMobile ? "rotate-90" : ""}
-          `} src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&controls=0&mute=1&loop=1&playlist=f14SlGPD4gM&playsinline=1&vq=hd1080" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style={isMobile ? {
-        pointerEvents: 'none',
-        transform: 'rotate(90deg) scale(3)',
-        transformOrigin: 'center center'
-      } : {
-        pointerEvents: 'none',
-        transform: 'scale(1.5)',
-        transformOrigin: 'center center'
-      }} title="RoboQuant Academy Background Video" />
+          `} 
+          src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&controls=0&mute=1&loop=1&playlist=f14SlGPD4gM&playsinline=1&vq=hd1080" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          loading="lazy"
+          style={isMobile ? {
+            pointerEvents: 'none',
+            transform: 'rotate(90deg) scale(3)',
+            transformOrigin: 'center center'
+          } : {
+            pointerEvents: 'none',
+            transform: 'scale(1.5)',
+            transformOrigin: 'center center'
+          }} 
+          title="RoboQuant Academy Background Video" />
       </div>
 
       <div className="container mx-auto px-4 relative z-20 mt-24">
@@ -92,6 +124,7 @@ const Hero: React.FC = () => {
                         src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
                         className="absolute top-0 left-0 w-full h-full"
                         allow="autoplay; fullscreen; picture-in-picture"
+                        loading="lazy"
                         style={{
                           border: 'none',
                           opacity: isLoading ? 0 : 1,
@@ -141,6 +174,7 @@ const Hero: React.FC = () => {
                         ref={(el) => setVideoElement(el)}
                         src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
                         className="absolute top-0 left-0 w-full h-full"
+                        loading="lazy"
                         allow="autoplay; fullscreen; picture-in-picture"
                         style={{
                           border: 'none',
@@ -176,9 +210,17 @@ const Hero: React.FC = () => {
             </div>
           </div>
           <div className={`flex justify-center items-center ${isMobile ? "my-2" : "mt-8"}`}>
-            <img alt="RoboQuant dashboard visualization" className="w-full max-w-[4800px] h-auto object-contain" style={{
-            minHeight: '432px'
-          }} src="/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png" />
+            <img 
+              alt="RoboQuant dashboard visualization" 
+              className={`w-full max-w-[4800px] h-auto object-contain ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              style={{
+                minHeight: '432px',
+                transition: 'opacity 0.3s ease-in-out'
+              }} 
+              src="/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png" 
+              loading="lazy"
+              onLoad={() => setImageLoaded(true)}
+            />
           </div>
         </div>
       </div>
