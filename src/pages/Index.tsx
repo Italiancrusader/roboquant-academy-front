@@ -63,8 +63,9 @@ const Index = () => {
                 className="text-gray-400 hover:text-blue-primary" 
                 aria-label="Discord"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14.82 4.32a9 9 0 0 0-5.84-1.84 9 9 0 0 0-7 3.18 9 9 0 0 0-1.53 9.53 9 9 0 0 0 2.63 3.58l-1.58 1.58a0.5 0.5 0 0 0 .35.85h8a9 9 0 0 0 8.71-6.62 9 9 0 0 0-3.44-10.86Z" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                  <path d="M15 12.5a1 1 0 1 0 2 0 1 1 0 1 0-2 0zM9 12.5a1 1 0 1 0 2 0 1 1 0 1 0-2 0z"/>
+                  <path d="M12.125 3c.53 0 1.045.04 1.533.12a9 9 0 0 1 8.242 9.777 9 9 0 0 1-3.899 6.713l-1.58 1.58a.5.5 0 0 1-.854-.353v-3.058a9 9 0 0 1-8.47-14.95l.14-.14a9 9 0 0 1 4.88-2.69zm-1.687 2.8a7 7 0 0 0 10.562 8.962.5.5 0 0 1 .565-.077l1 .5a7 7 0 1 1-8.54-9.79l.014-.595z"/>
                 </svg>
               </a>
               <a 
