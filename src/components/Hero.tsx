@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Loader, Volume2, VolumeX, Pause } from 'lucide-react';
@@ -130,6 +131,7 @@ const Hero: React.FC = () => {
                         </div>
                       )}
                       <iframe
+                        ref={(el) => setVideoElement(el)}
                         src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
                         className="absolute top-0 left-0 w-full h-full"
                         allow="autoplay; fullscreen; picture-in-picture"
@@ -140,6 +142,26 @@ const Hero: React.FC = () => {
                         }}
                         onLoad={() => setIsLoading(false)}
                       ></iframe>
+                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                        <div className="flex items-center justify-center gap-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={togglePlay}
+                            className="text-white hover:bg-white/20"
+                          >
+                            {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={toggleMute}
+                            className="text-white hover:bg-white/20"
+                          >
+                            {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </DialogContent>
                 </Dialog>
