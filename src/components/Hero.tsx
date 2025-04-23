@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Play, Loader } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
+  const [isLoading, setIsLoading] = useState(true);
   
   return <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       {/* Video + Enhanced Overlay in Hero */}
@@ -53,14 +54,22 @@ const Hero: React.FC = () => {
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
-                  <div className="video-container relative w-full aspect-video">
+                  <div className="video-container relative w-full aspect-video bg-black/90">
+                    {isLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Loader className="w-8 h-8 animate-spin text-blue-primary" />
+                      </div>
+                    )}
                     <iframe
                       src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
                       className="absolute top-0 left-0 w-full h-full"
                       allow="autoplay; fullscreen; picture-in-picture"
                       style={{
-                        border: 'none'
+                        border: 'none',
+                        opacity: isLoading ? 0 : 1,
+                        transition: 'opacity 0.3s ease-in-out'
                       }}
+                      onLoad={() => setIsLoading(false)}
                     ></iframe>
                   </div>
                 </DialogContent>
