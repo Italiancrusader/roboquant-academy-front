@@ -11,7 +11,7 @@ import FAQ from '../components/FAQ';
 import AboutInstructor from '../components/AboutInstructor';
 import CTA from '../components/CTA';
 import { Link } from "react-router-dom";
-import { Discord, Instagram, Send } from 'lucide-react';
+import { Instagram, Send } from 'lucide-react';
 
 const Index = () => {
   useEffect(() => {
@@ -63,7 +63,9 @@ const Index = () => {
                 className="text-gray-400 hover:text-blue-primary" 
                 aria-label="Discord"
               >
-                <Discord className="w-5 h-5" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.82 4.32a9 9 0 0 0-5.84-1.84 9 9 0 0 0-7 3.18 9 9 0 0 0-1.53 9.53 9 9 0 0 0 2.63 3.58l-1.58 1.58a0.5 0.5 0 0 0 .35.85h8a9 9 0 0 0 8.71-6.62 9 9 0 0 0-3.44-10.86Z" />
+                </svg>
               </a>
               <a 
                 href="https://www.instagram.com/timhutter.official/" 
