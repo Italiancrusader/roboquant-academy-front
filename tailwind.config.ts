@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -58,7 +57,8 @@ export default {
         }
       },
       fontFamily: {
-        'segoe': ['"Segoe UI"', 'system-ui', 'sans-serif']
+        'segoe': ['"Segoe UI"', 'system-ui', 'sans-serif'],
+        'neulis': ['neulis-sans', 'sans-serif']
       },
       borderRadius: {
         lg: 'var(--radius)',
