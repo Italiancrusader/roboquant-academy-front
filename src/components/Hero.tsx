@@ -1,17 +1,26 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Loader, Volume2, VolumeX, Pause } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [videoElement, setVideoElement] = useState<HTMLIFrameElement | null>(null);
   
+  useEffect(() => {
+    if (videoElement) {
+      const timer = setTimeout(() => {
+        videoElement.contentWindow?.postMessage({ method: 'unmute' }, '*');
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [videoElement]);
+
   const togglePlay = () => {
     if (videoElement) {
       const message = isPlaying ? 'pause' : 'play';
@@ -29,15 +38,12 @@ const Hero: React.FC = () => {
   };
 
   return <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
-      {/* Video + Enhanced Overlay in Hero */}
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
-        {/* Enhanced Black Overlay with Increased Blur */}
         <div className="absolute inset-0 z-0" style={{
         background: 'rgba(0,0,0,0.75)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)'
       }} />
-        {/* Video - rotate and zoom on mobile */}
         <iframe className={`w-full h-full 
             ${isMobile ? "rotate-90" : ""}
           `} src="https://www.youtube.com/embed/f14SlGPD4gM?autoplay=1&controls=0&mute=1&loop=1&playlist=f14SlGPD4gM&playsinline=1&vq=hd1080" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style={isMobile ? {
@@ -51,7 +57,6 @@ const Hero: React.FC = () => {
       }} title="RoboQuant Academy Background Video" />
       </div>
 
-      {/* Hero Content */}
       <div className="container mx-auto px-4 relative z-20 mt-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="text-left max-w-[90%] sm:max-w-none">
@@ -75,6 +80,7 @@ const Hero: React.FC = () => {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[90%] p-4 bg-background border-2">
+                    <DialogTitle className="sr-only">Watch Demo Video</DialogTitle>
                     <div className="video-container relative w-full aspect-video bg-black/90">
                       {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -124,6 +130,7 @@ const Hero: React.FC = () => {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
+                    <DialogTitle className="sr-only">Watch Demo Video</DialogTitle>
                     <div className="video-container relative w-full aspect-video bg-black/90">
                       {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center">
