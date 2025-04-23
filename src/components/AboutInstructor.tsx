@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from "@/components/ui/button";
@@ -45,7 +44,6 @@ const AboutInstructor: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-6 text-foreground text-center w-full">
               About the <span className="gradient-text">Instructors</span>
             </h2>
-            {/* Show both instructors side-by-side on desktop, stacked on mobile */}
             <div className="flex flex-col md:flex-row gap-8 w-full justify-center">
               {instructors.map((instructor) => (
                 <div
@@ -84,7 +82,10 @@ const AboutInstructor: React.FC = () => {
                 </div>
               ))}
             </div>
-            <Button className="cta-button text-white mt-4">
+            <Button 
+              className="cta-button text-white mt-4"
+              onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
+            >
               Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
@@ -95,4 +96,3 @@ const AboutInstructor: React.FC = () => {
 };
 
 export default AboutInstructor;
-

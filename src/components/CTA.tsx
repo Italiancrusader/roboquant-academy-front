@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
@@ -29,7 +28,10 @@ const CTA: React.FC = () => {
             Join thousands of traders who have transformed their trading with RoboQuant Academy.
           </p>
           
-          <Button className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold">
+          <Button 
+            className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold"
+            onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
+          >
             Enroll Now – $2,000 <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           

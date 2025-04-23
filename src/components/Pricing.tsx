@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from "@/components/ui/button";
@@ -63,7 +62,10 @@ const Pricing: React.FC = () => {
               ))}
             </ul>
             
-            <Button className="w-full cta-button text-white py-6 text-lg font-medium">
+            <Button 
+              className="w-full cta-button text-white py-6 text-lg font-medium"
+              onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
+            >
               Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             
@@ -91,4 +93,3 @@ const Pricing: React.FC = () => {
 };
 
 export default Pricing;
-
