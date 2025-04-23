@@ -35,7 +35,7 @@ const Navbar = () => {
   return <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-background/95 backdrop-blur-md shadow-md py-2' : 'py-4 sm:py-6'}`}>
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
-          <img alt="RoboQuant Academy" className="h-10 sm:h-12 object-contain" src="/lovable-uploads/62fd5230-8b9c-4351-93de-3eb7a214ae6c.png" />
+          <img alt="RoboQuant Academy" className="h-10 sm:h-12 object-contain" src="/lovable-uploads/b44287c9-5ee5-4379-92f2-d23b86163d67.png" />
         </div>
 
         {isMobile ? <div className="flex items-center gap-4">
