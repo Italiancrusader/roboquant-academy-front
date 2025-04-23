@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
@@ -81,8 +80,8 @@ const Hero: React.FC = () => {
             <img
               src="/lovable-uploads/e55e99bf-e708-4619-aead-4688dcd27672.png"
               alt="RoboQuant dashboard visualization"
-              className="w-full max-w-4xl h-auto object-contain"
-              style={{ minHeight: '360px' }}
+              className="w-full max-w-[4800px] h-auto object-contain"
+              style={{ minHeight: '432px' }}
             />
           </div>
         </div>
