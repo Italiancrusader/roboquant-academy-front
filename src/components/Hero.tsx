@@ -1,27 +1,10 @@
-
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, X } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
-  const [videoPlaying, setVideoPlaying] = useState(false);
-  const [showVideo, setShowVideo] = useState(false);
-
-  const handleCloseVideo = () => {
-    setVideoPlaying(false);
-    setShowVideo(false);
-  };
-  
-  const handleOpenVideo = () => {
-    setVideoPlaying(true);
-    setShowVideo(true);
-  };
-
   return <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       {/* Video + Enhanced Overlay in Hero */}
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
@@ -63,102 +46,18 @@ const Hero: React.FC = () => {
                   Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </a>
-              {isMobile ? (
-                <Sheet open={showVideo && isMobile} onOpenChange={setShowVideo}>
-                  <SheetTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
-                      onClick={handleOpenVideo}
-                    >
-                      <Play className="mr-2 h-5 w-5" /> Watch Demo
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="p-0 bg-black border-0 h-[80vh]">
-                    <div className="relative w-full h-full">
-                      <button 
-                        className="absolute top-4 right-4 z-50 bg-black/70 text-white p-2 rounded-full hover:bg-black/90 transition-colors"
-                        onClick={handleCloseVideo}
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                      <div className="w-full h-full flex items-center justify-center bg-black">
-                        {/* Custom video player container */}
-                        <div className="relative w-full h-full">
-                          {/* Overlay to prevent interaction with YouTube controls */}
-                          <div className="absolute inset-0 z-10" onClick={handleCloseVideo}></div>
-                          {/* Custom styled iframe wrapper */}
-                          <div className="absolute inset-0 overflow-hidden">
-                            {showVideo && (
-                              <iframe 
-                                className="w-full h-full absolute"
-                                src={`https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=0&color=white&iv_load_policy=3&disablekb=1${videoPlaying ? '' : '&mute=1'}`}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                style={{
-                                  pointerEvents: "none", // This prevents interaction with YouTube controls
-                                  width: "300%",
-                                  height: "300%",
-                                  top: "-100%",
-                                  left: "-100%"
-                                }}
-                                title="RoboQuant Demo Video"
-                              ></iframe>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </SheetContent>
-                </Sheet>
-              ) : (
-                <AlertDialog open={showVideo && !isMobile} onOpenChange={setShowVideo}>
-                  <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
-                      onClick={handleOpenVideo}
-                    >
-                      <Play className="mr-2 h-5 w-5" /> Watch Demo
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="sm:max-w-[900px] p-0 bg-black border-0">
-                    <AlertDialogTitle className="sr-only">Demo Video</AlertDialogTitle>
-                    <div className="relative w-full aspect-video">
-                      <button 
-                        className="absolute top-4 right-4 z-50 bg-black/70 text-white p-2 rounded-full hover:bg-black/90 transition-colors"
-                        onClick={handleCloseVideo}
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                      <div className="w-full h-full">
-                        {/* Custom video player container */}
-                        <div className="relative w-full h-full">
-                          {/* Overlay to prevent interaction with YouTube controls */}
-                          <div className="absolute inset-0 z-10" onClick={handleCloseVideo}></div>
-                          {/* Custom styled iframe wrapper */}
-                          <div className="absolute inset-0 overflow-hidden">
-                            {showVideo && (
-                              <iframe 
-                                className="w-full h-full absolute"
-                                src={`https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=0&color=white&iv_load_policy=3&disablekb=1${videoPlaying ? '' : '&mute=1'}`}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                style={{
-                                  pointerEvents: "none", // This prevents interaction with YouTube controls
-                                  width: "150%",
-                                  height: "150%", 
-                                  top: "-25%",
-                                  left: "-25%"
-                                }}
-                                title="RoboQuant Demo Video"
-                              ></iframe>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
+                    <Play className="mr-2 h-5 w-5" /> Watch Demo
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
+                  <div className="video-container">
+                    <iframe src="https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=1&rel=0" title="RoboQuant Academy Demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full aspect-video"></iframe>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           {/* Single image only, bigger */}
@@ -183,5 +82,4 @@ const Hero: React.FC = () => {
         </div>}
     </section>;
 };
-
 export default Hero;
