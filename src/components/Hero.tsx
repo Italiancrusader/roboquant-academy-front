@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Loader } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Drawer, DrawerTrigger, DrawerContent } from "@/components/ui/drawer";
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
@@ -47,33 +49,63 @@ const Hero: React.FC = () => {
                   Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </a>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
-                    <Play className="mr-2 h-5 w-5" /> Watch Demo
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
-                  <div className="video-container relative w-full aspect-video bg-black/90">
-                    {isLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Loader className="w-8 h-8 animate-spin text-blue-primary" />
-                      </div>
-                    )}
-                    <iframe
-                      src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
-                      className="absolute top-0 left-0 w-full h-full"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      style={{
-                        border: 'none',
-                        opacity: isLoading ? 0 : 1,
-                        transition: 'opacity 0.3s ease-in-out'
-                      }}
-                      onLoad={() => setIsLoading(false)}
-                    ></iframe>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              {isMobile ? (
+                <Drawer>
+                  <DrawerTrigger asChild>
+                    <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
+                      <Play className="mr-2 h-5 w-5" /> Watch Demo
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent className="p-0 bg-background">
+                    <div className="video-container relative w-full aspect-video bg-black/90 pt-6">
+                      {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Loader className="w-8 h-8 animate-spin text-blue-primary" />
+                        </div>
+                      )}
+                      <iframe
+                        src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
+                        className="absolute top-0 left-0 w-full h-full"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        style={{
+                          border: 'none',
+                          opacity: isLoading ? 0 : 1,
+                          transition: 'opacity 0.3s ease-in-out'
+                        }}
+                        onLoad={() => setIsLoading(false)}
+                      ></iframe>
+                    </div>
+                  </DrawerContent>
+                </Drawer>
+              ) : (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
+                      <Play className="mr-2 h-5 w-5" /> Watch Demo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
+                    <div className="video-container relative w-full aspect-video bg-black/90">
+                      {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Loader className="w-8 h-8 animate-spin text-blue-primary" />
+                        </div>
+                      )}
+                      <iframe
+                        src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
+                        className="absolute top-0 left-0 w-full h-full"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        style={{
+                          border: 'none',
+                          opacity: isLoading ? 0 : 1,
+                          transition: 'opacity 0.3s ease-in-out'
+                        }}
+                        onLoad={() => setIsLoading(false)}
+                      ></iframe>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </div>
           <div className={`flex justify-center items-center ${isMobile ? "my-2" : "mt-8"}`}>
