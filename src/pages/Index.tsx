@@ -11,6 +11,7 @@ import Pricing from '../components/Pricing';
 import FAQ from '../components/FAQ';
 import AboutInstructor from '../components/AboutInstructor';
 import CTA from '../components/CTA';
+import { Link } from "react-router-dom";
 
 const Index = () => {
   // Google Analytics Page View
@@ -46,8 +47,8 @@ const Index = () => {
               <p className="text-sm text-gray-400">Build Trading Bots Without Code</p>
             </div>
             <div className="flex flex-wrap gap-4 justify-center md:justify-end">
-              <a href="#" className="text-sm text-gray-400 hover:text-blue-primary">Privacy Policy</a>
-              <a href="#" className="text-sm text-gray-400 hover:text-blue-primary">Terms of Service</a>
+              <Link to="/privacy-policy" className="text-sm text-gray-400 hover:text-blue-primary">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="text-sm text-gray-400 hover:text-blue-primary">Terms of Service</Link>
               <a href="#" className="text-sm text-gray-400 hover:text-blue-primary">Contact Us</a>
             </div>
           </div>
