@@ -1,12 +1,23 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Play, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
+  const [videoPlaying, setVideoPlaying] = useState(false);
+
+  const handleCloseVideo = () => {
+    setVideoPlaying(false);
+  };
+  
+  const handleOpenVideo = () => {
+    setVideoPlaying(true);
+  };
+
   return <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       {/* Video + Enhanced Overlay in Hero */}
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
@@ -48,24 +59,70 @@ const Hero: React.FC = () => {
                   Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </a>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
-                    <Play className="mr-2 h-5 w-5" /> Watch Demo
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
-                  <div className="video-container">
-                    <iframe 
-                      src="https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=1&rel=0&modestbranding=1&showinfo=0&color=white&iv_load_policy=3&fs=1&disablekb=1" 
-                      title="RoboQuant Academy Demo" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                      allowFullScreen 
-                      className="w-full aspect-video"
-                    ></iframe>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              {isMobile ? (
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
+                      <Play className="mr-2 h-5 w-5" /> Watch Demo
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="p-0 bg-black border-0 h-[80vh]" onOpenAutoFocus={(e) => e.preventDefault()}>
+                    <div className="relative w-full h-full">
+                      <button 
+                        className="absolute top-4 right-4 z-50 bg-black/50 text-white p-2 rounded-full hover:bg-black/80 transition-colors"
+                        onClick={handleCloseVideo}
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                      <div className="w-full h-full flex items-center justify-center bg-black">
+                        {/* We create an overlay div that captures clicks */}
+                        <div className="absolute inset-0 z-10"></div>
+                        <iframe 
+                          className="w-full h-full"
+                          src={`https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=1&rel=0&modestbranding=1&showinfo=0&color=white&iv_load_policy=3&controls=0${videoPlaying ? '' : '&mute=1'}`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          style={{
+                            pointerEvents: "none" // This prevents interaction with YouTube controls
+                          }}
+                        ></iframe>
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              ) : (
+                <Dialog>
+                  <DialogTrigger asChild onClick={handleOpenVideo}>
+                    <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
+                      <Play className="mr-2 h-5 w-5" /> Watch Demo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[900px] p-0 bg-black border-0" onCloseAutoFocus={(e) => {
+                    e.preventDefault();
+                    handleCloseVideo();
+                  }}>
+                    <div className="relative w-full aspect-video">
+                      <button 
+                        className="absolute top-4 right-4 z-50 bg-black/50 text-white p-2 rounded-full hover:bg-black/80 transition-colors"
+                        onClick={handleCloseVideo}
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                      <div className="w-full h-full">
+                        {/* We create an overlay div that captures clicks */}
+                        <div className="absolute inset-0 z-10"></div>
+                        <iframe 
+                          className="w-full aspect-video"
+                          src={`https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=1&rel=0&modestbranding=1&showinfo=0&color=white&iv_load_policy=3&controls=0${videoPlaying ? '' : '&mute=1'}`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          style={{
+                            pointerEvents: "none" // This prevents interaction with YouTube controls
+                          }}
+                        ></iframe>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </div>
           {/* Single image only, bigger */}
