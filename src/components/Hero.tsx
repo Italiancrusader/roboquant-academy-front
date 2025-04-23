@@ -1,15 +1,32 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Loader } from 'lucide-react';
+import { ArrowRight, Play, Loader, Volume2, VolumeX, Pause } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [videoElement, setVideoElement] = useState<HTMLIFrameElement | null>(null);
   
+  const togglePlay = () => {
+    if (videoElement) {
+      const message = isPlaying ? 'pause' : 'play';
+      videoElement.contentWindow?.postMessage({ method: message }, '*');
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoElement) {
+      const message = isMuted ? 'unmute' : 'mute';
+      videoElement.contentWindow?.postMessage({ method: message }, '*');
+      setIsMuted(!isMuted);
+    }
+  };
+
   return <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       {/* Video + Enhanced Overlay in Hero */}
       <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none">
@@ -50,20 +67,21 @@ const Hero: React.FC = () => {
                 </Button>
               </a>
               {isMobile ? (
-                <Sheet>
-                  <SheetTrigger asChild>
+                <Dialog>
+                  <DialogTrigger asChild>
                     <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
                       <Play className="mr-2 h-5 w-5" /> Watch Demo
                     </Button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="p-0 bg-background">
-                    <div className="video-container relative w-full aspect-video bg-black/90 pt-6">
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[90%] p-4 bg-background border-2">
+                    <div className="video-container relative w-full aspect-video bg-black/90">
                       {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <Loader className="w-8 h-8 animate-spin text-blue-primary" />
                         </div>
                       )}
                       <iframe
+                        ref={(el) => setVideoElement(el)}
                         src="https://player.vimeo.com/video/1077981253?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&background=1"
                         className="absolute top-0 left-0 w-full h-full"
                         allow="autoplay; fullscreen; picture-in-picture"
@@ -74,9 +92,29 @@ const Hero: React.FC = () => {
                         }}
                         onLoad={() => setIsLoading(false)}
                       ></iframe>
+                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                        <div className="flex items-center justify-center gap-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={togglePlay}
+                            className="text-white hover:bg-white/20"
+                          >
+                            {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={toggleMute}
+                            className="text-white hover:bg-white/20"
+                          >
+                            {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                  </SheetContent>
-                </Sheet>
+                  </DialogContent>
+                </Dialog>
               ) : (
                 <Dialog>
                   <DialogTrigger asChild>
