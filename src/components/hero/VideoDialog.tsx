@@ -2,10 +2,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Loader } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const VideoDialog: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const vimeoRef = useRef<HTMLIFrameElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -27,7 +29,7 @@ const VideoDialog: React.FC = () => {
   }, []);
 
   return (
-    <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
+    <DialogContent className={`${isMobile ? 'w-[95vw] max-w-[95vw]' : 'sm:max-w-[900px]'} p-0 bg-transparent border-0`}>
       <DialogTitle className="sr-only">Watch Demo Video</DialogTitle>
       <div className="video-container relative w-full aspect-video bg-black/90">
         {isLoading && (
@@ -54,4 +56,3 @@ const VideoDialog: React.FC = () => {
 };
 
 export default VideoDialog;
-

@@ -33,7 +33,7 @@ const Hero: React.FC = () => {
       <VideoBackground />
       <Dialog>
         <HeroContent imageLoaded={imageLoaded} />
-        {!isMobile && <VideoDialog />}
+        <VideoDialog />
       </Dialog>
       
       <div 
