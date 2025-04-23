@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
@@ -56,7 +57,7 @@ const Hero: React.FC = () => {
                 <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-0">
                   <div className="video-container">
                     <iframe 
-                      src="https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=1&rel=0&modestbranding=1&showinfo=0" 
+                      src="https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=1&rel=0&modestbranding=1&showinfo=0&color=white&iv_load_policy=3&fs=1&disablekb=1" 
                       title="RoboQuant Academy Demo" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                       allowFullScreen 
