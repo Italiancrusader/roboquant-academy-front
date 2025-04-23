@@ -63,10 +63,11 @@ const Index = () => {
                 className="text-gray-400 hover:text-blue-primary" 
                 aria-label="Discord"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                  <path d="M15 12.5a1 1 0 1 0 2 0 1 1 0 1 0-2 0zM9 12.5a1 1 0 1 0 2 0 1 1 0 1 0-2 0z"/>
-                  <path d="M12.125 3c.53 0 1.045.04 1.533.12a9 9 0 0 1 8.242 9.777 9 9 0 0 1-3.899 6.713l-1.58 1.58a.5.5 0 0 1-.854-.353v-3.058a9 9 0 0 1-8.47-14.95l.14-.14a9 9 0 0 1 4.88-2.69zm-1.687 2.8a7 7 0 0 0 10.562 8.962.5.5 0 0 1 .565-.077l1 .5a7 7 0 1 1-8.54-9.79l.014-.595z"/>
-                </svg>
+                <img 
+                  src="/lovable-uploads/966ee0cf-2ede-4285-959d-bcf325b244bb.png" 
+                  alt="Discord" 
+                  className="w-5 h-5" 
+                />
               </a>
               <a 
                 href="https://www.instagram.com/timhutter.official/" 
