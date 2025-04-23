@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Check, ArrowRight } from 'lucide-react';
 
 const features = [
-  'Lifetime access to all course modules',
-  'Interactive no-code bot builder',
-  'MT4/MT5 & cTrader compatibility',
-  'Professional back-testing suite',
-  'Strategy optimization tools',
-  'Private community access',
-  '60+ pre-built strategy templates',
+  'Lifetime access to all current & future course modules',
+  'Interactive no-code bot builder (no programming skills required)',
+  'MT4, MT5, and cTrader platform compatibility',
+  'Professional backtesting & strategy optimization tools',
+  'Access to a private trader community',
+  '60+ pre-built, customizable strategy templates',
   '30-day money-back guarantee',
+  'Build, pass, and manage prop firm accounts with your own bots',
+  'Offer prop firm challenge passing services or sell bots to clients',
 ];
 
 const Pricing: React.FC = () => {
