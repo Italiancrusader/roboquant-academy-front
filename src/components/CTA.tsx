@@ -30,11 +30,11 @@ const CTA: React.FC = () => {
           </p>
           
           <Button className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold">
-            Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
+            Enroll Now – $2,000 <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           
           <p className="mt-6 text-white/80 text-sm">
-            One-time payment • Lifetime access • 14-day money-back guarantee
+            One-time payment • Lifetime access • 30-day money-back guarantee
           </p>
         </div>
       </div>

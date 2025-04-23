@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import {
@@ -34,7 +35,7 @@ const faqItems = [
   },
   {
     question: "What if the course isn't right for me?",
-    answer: "We offer a 14-day no-questions-asked money-back guarantee. If you're not completely satisfied, simply email our support team for a full refund."
+    answer: "We offer a 30-day no-questions-asked money-back guarantee. If you're not completely satisfied, simply email our support team for a full refund."
   },
   {
     question: "How much time do I need to learn and develop bots with this course?",
@@ -49,7 +50,7 @@ const faqItems = [
     answer: "Yes, you receive all source codes developed in the course, enabling you to use, license, and sell your bots commercially. You'll also learn about licensing and selling."
   },
   {
-    question: "Why is the course priced at $1,497 when other options are cheaper?",
+    question: "Why is the course priced at $2,000 when other options are cheaper?",
     answer: "The investment saves you tens of thousands of dollars in development costs. Hiring a developer can cost $1,250+ per bot with additional update fees, whereas our course empowers you to build bots yourself."
   },
   {

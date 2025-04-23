@@ -46,8 +46,8 @@ const Pricing: React.FC = () => {
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold text-foreground">RoboQuant Academy</h3>
               <div className="text-right">
-                <span className="text-gray-400 text-sm line-through">$1,997</span>
-                <div className="text-3xl font-bold gradient-text">$1,497</div>
+                <span className="text-gray-400 text-sm line-through">$2,500</span>
+                <div className="text-3xl font-bold gradient-text">$2,000</div>
                 <div className="text-sm text-gray-400">one-time payment</div>
               </div>
             </div>
@@ -91,4 +91,3 @@ const Pricing: React.FC = () => {
 };
 
 export default Pricing;
-
