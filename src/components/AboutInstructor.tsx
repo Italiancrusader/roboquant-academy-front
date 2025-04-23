@@ -9,11 +9,11 @@ const instructors = [
     name: "Tim Hutter",
     image: "/lovable-uploads/35d7b99c-022e-4185-a4c5-9e837f1e329f.png",
     alt: "Tim Hutter, Co-Founder of RoboQuant Academy",
-    bio: "Tim Hutter is a former hedge fund algorithmic trader with 12+ years of experience building trading systems. After managing over $180M in algorithmic strategies, he founded RoboQuant Academy to make institutional-grade trading technology accessible to retail traders.",
+    bio: "A veteran trader with 10 years of experience in forex and crypto markets, Tim has developed hundreds of trading robots and successfully run a trading business. Renowned for his reliability, high reputation, and transparent 'no BS' approach. His thriving Discord community boasts over 3,300 members.",
     badges: [
-      "MT4/MT5 Certified Developer",
-      "Former Hedge Fund Quant",
-      "3,500+ Students Taught"
+      "10+ Years Trading Experience",
+      "300+ Trading Robots Developed",
+      "3,300+ Discord Community"
     ]
   },
   {
