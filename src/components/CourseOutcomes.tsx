@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { Terminal, BarChart4, AlertCircle, Rocket, Briefcase, Users, TrendingUp, GraduationCap, Code, FileText } from 'lucide-react';
+import { Terminal, BarChart4, AlertCircle, Rocket, Briefcase, Users, TrendingUp, GraduationCap, Code, FileText, HandCoins, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, HelpCircle } from 'lucide-react';
 
 const outcomes = [
   {
     title: 'Develop Profitable Bots (Even If You’re Brand New)',
-    description: 'Learn from scratch—no manual strategy, no coding background needed. We show you how to discover, design, and automate winning trading strategies.',
+    description: "Learn from scratch—no manual strategy, no coding background needed. We show you how to discover, design, and automate winning trading strategies.",
     icon: <HelpCircle className="w-10 h-10 text-teal-primary" />
   },
   {
@@ -55,6 +55,16 @@ const outcomes = [
     title: 'Advanced Trading Education',
     description: 'Continue studying to potentially work in banks, hedge funds, or financial institutions.',
     icon: <GraduationCap className="w-10 h-10 text-teal-primary" />
+  },
+  {
+    title: 'Pass & Manage Prop Firm Accounts',
+    description: 'Use the bots you build to pass prop firm challenges and manage accounts for yourself.',
+    icon: <HandCoins className="w-10 h-10 text-teal-primary" />
+  },
+  {
+    title: 'Offer Prop Firm Passing Services',
+    description: "Help others by offering services to pass prop firm challenges or by selling your bots to clients.",
+    icon: <Handshake className="w-10 h-10 text-teal-primary" />
   }
 ];
 
@@ -121,4 +131,3 @@ const CourseOutcomes: React.FC = () => {
 };
 
 export default CourseOutcomes;
-
