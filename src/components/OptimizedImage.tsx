@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface OptimizedImageProps {
   src: string;
@@ -22,8 +22,29 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   style = {},
   onLoad,
 }) => {
-  const [loaded, setLoaded] = useState(priority); // Start as loaded if priority
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  
+  useEffect(() => {
+    setLoaded(false);
+    setError(false);
+    
+    if (priority) {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        setLoaded(true);
+        if (onLoad) onLoad();
+      };
+      img.onerror = () => setError(true);
+    }
+  }, [src, priority, onLoad]);
+  
+  const imageStyle: React.CSSProperties = {
+    ...style,
+    opacity: loaded ? 1 : 0,
+    transition: 'opacity 0.3s ease-in-out',
+  };
   
   const handleLoad = () => {
     console.log('Image loaded:', src);
@@ -36,24 +57,16 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setError(true);
   };
   
-  // Only show placeholder if not priority and not loaded yet
-  const showPlaceholder = !priority && !loaded && !error;
-  
-  const imageStyle: React.CSSProperties = {
-    ...style,
-    opacity: loaded || priority ? 1 : 0, // Show immediately if priority
-  };
-  
   const placeholderStyle: React.CSSProperties = {
     backgroundColor: '#1A1F2C',
     width: width ? `${width}px` : '100%',
     height: height ? `${height}px` : style.height as string || 'auto',
-    display: showPlaceholder ? 'block' : 'none',
+    display: loaded ? 'none' : 'block',
   };
   
   return (
     <div className="relative inline-block w-full h-full flex items-center justify-center" style={{ maxWidth: width ? `${width}px` : 'auto' }}>
-      {showPlaceholder && (
+      {!loaded && !error && (
         <div className="absolute inset-0" style={placeholderStyle}></div>
       )}
       
@@ -72,8 +85,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           onLoad={handleLoad}
           onError={handleError}
           style={imageStyle}
-          fetchPriority={priority ? "high" : "auto"}
-          decoding={priority ? "sync" : "async"}
+          decoding="async"
         />
       )}
     </div>

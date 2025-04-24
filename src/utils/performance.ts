@@ -11,10 +11,6 @@ export const preconnectToDomains = (domains: string[]): (() => void) => {
   const preconnectLinks: HTMLLinkElement[] = [];
   
   domains.forEach(domain => {
-    if (document.querySelector(`link[rel="preconnect"][href="${domain}"]`)) {
-      return; // Skip if already exists
-    }
-    
     const link = document.createElement('link');
     link.rel = 'preconnect';
     link.href = domain;
@@ -42,14 +38,9 @@ export const preloadResources = (urls: string[], type: 'image' | 'font' | 'style
   const preloadLinks: HTMLLinkElement[] = [];
   
   urls.forEach(url => {
-    if (document.querySelector(`link[rel="preload"][href="${url}"]`)) {
-      return; // Skip if already exists
-    }
-    
     const link = document.createElement('link');
     link.rel = 'preload';
     link.href = url;
-    link.setAttribute('fetchpriority', 'high');
     
     if (type === 'image') {
       link.as = 'image';
@@ -74,29 +65,4 @@ export const preloadResources = (urls: string[], type: 'image' | 'font' | 'style
       }
     });
   };
-};
-
-/**
- * Load a script asynchronously
- * @param src Script source URL
- * @param id Optional ID for the script tag
- */
-export const loadScriptAsync = (src: string, id?: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    // Check if script already exists
-    if (id && document.getElementById(id)) {
-      resolve();
-      return;
-    }
-    
-    const script = document.createElement('script');
-    script.src = src;
-    script.async = true;
-    if (id) script.id = id;
-    
-    script.onload = () => resolve();
-    script.onerror = (e) => reject(e);
-    
-    document.body.appendChild(script);
-  });
 };
