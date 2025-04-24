@@ -65,7 +65,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
   
   return (
-    <div className="relative inline-block" style={{ width: width ? `${width}px` : 'auto', height: height ? `${height}px` : 'auto' }}>
+    <div className="relative inline-block w-full h-full flex items-center justify-center" style={{ maxWidth: width ? `${width}px` : 'auto' }}>
       {!loaded && !error && (
         <div className="absolute inset-0" style={placeholderStyle}></div>
       )}
