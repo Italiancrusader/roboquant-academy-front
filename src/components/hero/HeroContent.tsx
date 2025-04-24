@@ -1,9 +1,9 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
 import { DialogTrigger } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { removeBackground, loadImage } from '@/utils/imageProcessing';
 
 interface HeroContentProps {
   imageLoaded: boolean;
@@ -11,6 +11,30 @@ interface HeroContentProps {
 
 const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded }) => {
   const isMobile = useIsMobile();
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const processImage = async () => {
+      try {
+        const response = await fetch('/lovable-uploads/ea79a8d4-e8c1-442b-b1b0-5a4773c81ca0.png');
+        const blob = await response.blob();
+        const img = await loadImage(blob);
+        const processedBlob = await removeBackground(img);
+        const url = URL.createObjectURL(processedBlob);
+        setProcessedImageUrl(url);
+      } catch (error) {
+        console.error('Error processing image:', error);
+      }
+    };
+
+    processImage();
+
+    return () => {
+      if (processedImageUrl) {
+        URL.revokeObjectURL(processedImageUrl);
+      }
+    };
+  }, []);
 
   return (
     <div className="container mx-auto px-4 relative z-20 mt-24">
@@ -46,7 +70,7 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded }) => {
               minHeight: '432px',
               transition: 'opacity 0.3s ease-in-out'
             }}
-            src="/lovable-uploads/ea79a8d4-e8c1-442b-b1b0-5a4773c81ca0.png"
+            src={processedImageUrl || '/lovable-uploads/ea79a8d4-e8c1-442b-b1b0-5a4773c81ca0.png'}
             loading="lazy"
           />
         </div>
