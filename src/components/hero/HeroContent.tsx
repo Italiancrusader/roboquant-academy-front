@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
@@ -35,7 +34,7 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
             </DialogTrigger>
           </div>
         </div>
-        <div className={`flex justify-center items-center ${isMobile ? "my-2" : "mt-8"}`}>
+        <div className="flex justify-center items-center h-full">
           <OptimizedImage 
             alt="RoboQuant mobile app interface"
             className="w-full max-w-[480px] h-auto object-contain"
