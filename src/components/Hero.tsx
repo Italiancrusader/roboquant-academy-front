@@ -12,20 +12,17 @@ const Hero: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    // Use a more reliable approach to check if the SVG is accessible
-    fetch('/Phone Mockup Roboquant.svg')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`SVG fetch failed with status: ${response.status}`);
-        }
-        console.log('Hero SVG fetch successful');
-        setImageLoaded(true);
-      })
-      .catch(err => {
-        console.error('Error accessing hero SVG:', err);
-        // Set as loaded anyway to prevent showing a blank space
-        setImageLoaded(true);
-      });
+    const dashboardImg = new Image();
+    dashboardImg.src = "/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png";
+    dashboardImg.onload = () => {
+      console.log('Dashboard image preloaded');
+      setImageLoaded(true);
+    };
+    dashboardImg.onerror = (err) => {
+      console.error('Error preloading dashboard image:', err);
+      // Set as loaded anyway to prevent showing a blank space
+      setImageLoaded(true);
+    };
     
     const cleanupPreconnect = preconnectToDomains([
       'https://www.youtube.com',

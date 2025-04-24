@@ -22,15 +22,8 @@ export const isAllowedImageType = (file: File): boolean => {
     type: fileType, 
     extension: fileExtension,
     isTypeAllowed: ALLOWED_IMAGE_TYPES.includes(fileType), 
-    isExtensionAllowed: ALLOWED_IMAGE_TYPES.includes(fileExtension),
-    allowedTypes: ALLOWED_IMAGE_TYPES
+    isExtensionAllowed: ALLOWED_IMAGE_TYPES.includes(fileExtension)
   });
-  
-  // Special handling for SVG files
-  if (fileType === 'image/svg+xml' || fileExtension === '.svg') {
-    console.log('SVG file detected:', file.name);
-    return true;
-  }
   
   return ALLOWED_IMAGE_TYPES.includes(fileType) || ALLOWED_IMAGE_TYPES.includes(fileExtension);
 };

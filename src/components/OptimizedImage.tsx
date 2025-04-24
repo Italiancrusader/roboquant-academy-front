@@ -29,22 +29,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     // Reset states when src changes
     setLoaded(false);
     setError(false);
-
-    // For SVGs, we can try to validate accessibility
-    if (src.toLowerCase().endsWith('.svg')) {
-      console.log('Checking SVG accessibility:', src);
-      fetch(src)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`SVG fetch failed with status: ${response.status}`);
-          }
-          console.log('SVG is accessible:', src);
-        })
-        .catch(err => {
-          console.error('SVG is not accessible:', src, err);
-          setError(true);
-        });
-    }
   }, [src]);
   
   const imageStyle: React.CSSProperties = {
@@ -81,46 +65,17 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <div className="absolute inset-0" style={placeholderStyle}></div>
       )}
       
-      {isSvg ? (
-        <object
-          type="image/svg+xml"
-          data={src}
-          className={className}
-          width={width}
-          height={height}
-          onLoad={handleLoad}
-          style={imageStyle}
-          aria-label={alt}
-        >
-          {/* Fallback for browsers that don't support SVG */}
-          <img
-            src="/placeholder.svg"
-            alt={alt}
-            className={className}
-            width={width}
-            height={height}
-            style={imageStyle}
-          />
-        </object>
-      ) : (
-        <img
-          src={src}
-          alt={alt}
-          className={className}
-          width={width}
-          height={height}
-          loading={priority ? "eager" : "lazy"}
-          onLoad={handleLoad}
-          onError={handleError}
-          style={imageStyle}
-        />
-      )}
-      
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white p-2 text-xs text-center">
-          Failed to load image: {src.split('/').pop()}
-        </div>
-      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className} ${isSvg ? 'w-full h-full' : ''}`}
+        width={width}
+        height={height}
+        loading={priority ? "eager" : "lazy"}
+        onLoad={handleLoad}
+        onError={handleError}
+        style={imageStyle}
+      />
     </div>
   );
 };

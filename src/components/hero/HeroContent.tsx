@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
 import { DialogTrigger } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
+import OptimizedImage from '@/components/OptimizedImage';
 
 const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
   const isMobile = useIsMobile();
@@ -35,29 +35,20 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
           </div>
         </div>
         <div className={`flex justify-center items-center ${isMobile ? "my-2" : "mt-8"}`}>
-          <div 
-            className="w-full max-w-[480px] min-h-[432px]" 
+          <OptimizedImage 
+            alt="RoboQuant dashboard visualization"
+            className="w-full max-w-[480px] h-auto object-contain"
             style={{
+              minHeight: '432px',
               opacity: imageLoaded ? 1 : 0,
               transition: 'opacity 0.3s ease-in-out'
             }}
-          >
-            <object 
-              type="image/svg+xml" 
-              data="./Phone Mockup Roboquant.svg" 
-              className="w-full h-auto object-contain"
-              aria-label="RoboQuant dashboard visualization"
-              onLoad={() => console.log('SVG object loaded')}
-              onError={() => console.error('SVG object failed to load')}
-            >
-              {/* Fallback for browsers that don't support SVG */}
-              <img 
-                src="./lovable-uploads/75ec0136-6eac-4af5-a2ef-798104dbc59a.png" 
-                alt="RoboQuant dashboard visualization"
-                className="w-full h-auto object-contain"
-              />
-            </object>
-          </div>
+            src="/Phone Mockup Roboquant.svg"
+            priority={true}
+            onLoad={() => {
+              console.log('Hero image loaded in component');
+            }}
+          />
         </div>
       </div>
     </div>
