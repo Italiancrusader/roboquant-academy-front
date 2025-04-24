@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
@@ -6,11 +5,7 @@ import { DialogTrigger } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
 import OptimizedImage from '@/components/OptimizedImage';
 
-interface HeroContentProps {
-  imageLoaded: boolean;
-}
-
-const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded }) => {
+const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
   const isMobile = useIsMobile();
 
   return (
@@ -42,13 +37,13 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded }) => {
         <div className={`flex justify-center items-center ${isMobile ? "my-2" : "mt-8"}`}>
           <OptimizedImage 
             alt="RoboQuant dashboard visualization"
-            className="w-full max-w-[4800px] h-auto object-contain"
+            className="w-full max-w-[480px] h-auto object-contain"
             style={{
               minHeight: '432px',
               opacity: imageLoaded ? 1 : 0,
               transition: 'opacity 0.3s ease-in-out'
             }}
-            src="/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png"
+            src="/Phone Mockup Roboquant.svg"
             priority={true}
             onLoad={() => {
               console.log('Hero image loaded in component');
