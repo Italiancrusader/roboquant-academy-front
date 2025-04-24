@@ -30,22 +30,22 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setLoaded(false);
     setError(false);
 
-    // For SVGs, we can try to preload them
+    // For SVGs, we can try to validate accessibility
     if (src.toLowerCase().endsWith('.svg')) {
-      console.log('Preloading SVG:', src);
-      const img = new Image();
-      img.src = src;
-      img.onload = () => {
-        console.log('SVG preloaded successfully:', src);
-        setLoaded(true);
-        if (onLoad) onLoad();
-      };
-      img.onerror = (err) => {
-        console.error('Failed to preload SVG:', src, err);
-        setError(true);
-      };
+      console.log('Checking SVG accessibility:', src);
+      fetch(src)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`SVG fetch failed with status: ${response.status}`);
+          }
+          console.log('SVG is accessible:', src);
+        })
+        .catch(err => {
+          console.error('SVG is not accessible:', src, err);
+          setError(true);
+        });
     }
-  }, [src, onLoad]);
+  }, [src]);
   
   const imageStyle: React.CSSProperties = {
     ...style,
@@ -81,21 +81,44 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <div className="absolute inset-0" style={placeholderStyle}></div>
       )}
       
-      <img
-        src={src}
-        alt={alt}
-        className={`${className} ${isSvg ? 'w-full h-full' : ''}`}
-        width={width}
-        height={height}
-        loading={priority ? "eager" : "lazy"}
-        onLoad={handleLoad}
-        onError={handleError}
-        style={imageStyle}
-      />
+      {isSvg ? (
+        <object
+          type="image/svg+xml"
+          data={src}
+          className={className}
+          width={width}
+          height={height}
+          onLoad={handleLoad}
+          style={imageStyle}
+          aria-label={alt}
+        >
+          {/* Fallback for browsers that don't support SVG */}
+          <img
+            src="/placeholder.svg"
+            alt={alt}
+            className={className}
+            width={width}
+            height={height}
+            style={imageStyle}
+          />
+        </object>
+      ) : (
+        <img
+          src={src}
+          alt={alt}
+          className={className}
+          width={width}
+          height={height}
+          loading={priority ? "eager" : "lazy"}
+          onLoad={handleLoad}
+          onError={handleError}
+          style={imageStyle}
+        />
+      )}
       
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white p-2 text-xs text-center">
-          Failed to load image
+          Failed to load image: {src.split('/').pop()}
         </div>
       )}
     </div>

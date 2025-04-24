@@ -12,18 +12,20 @@ const Hero: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    // Preload SVG directly
-    const heroSvg = new Image();
-    heroSvg.src = "/Phone Mockup Roboquant.svg";
-    heroSvg.onload = () => {
-      console.log('Hero SVG preloaded successfully');
-      setImageLoaded(true);
-    };
-    heroSvg.onerror = (err) => {
-      console.error('Error preloading hero SVG:', err);
-      // Set as loaded anyway to prevent showing a blank space
-      setImageLoaded(true);
-    };
+    // Use a more reliable approach to check if the SVG is accessible
+    fetch('/Phone Mockup Roboquant.svg')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`SVG fetch failed with status: ${response.status}`);
+        }
+        console.log('Hero SVG fetch successful');
+        setImageLoaded(true);
+      })
+      .catch(err => {
+        console.error('Error accessing hero SVG:', err);
+        // Set as loaded anyway to prevent showing a blank space
+        setImageLoaded(true);
+      });
     
     const cleanupPreconnect = preconnectToDomains([
       'https://www.youtube.com',
