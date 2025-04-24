@@ -37,15 +37,17 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
         </div>
         <div className={`flex justify-center items-center ${isMobile ? "my-2" : "mt-8"}`}>
           <OptimizedImage 
-            alt="RoboQuant dashboard visualization"
+            alt="RoboQuant mobile app interface"
             className="w-full max-w-[480px] h-auto object-contain"
             style={{
               minHeight: '432px',
               opacity: imageLoaded ? 1 : 0,
               transition: 'opacity 0.3s ease-in-out'
             }}
-            src="/Phone Mockup Roboquant.svg"
+            src="/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png"
             priority={true}
+            width={480}
+            height={960}
             onLoad={() => {
               console.log('Hero image loaded in component');
             }}

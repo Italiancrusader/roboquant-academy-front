@@ -26,13 +26,19 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [error, setError] = useState(false);
   
   useEffect(() => {
-    // Reset states when src changes
     setLoaded(false);
     setError(false);
-  }, [src]);
-  
-  // Handle SVG paths to ensure they work correctly
-  const imgSrc = src.startsWith('http') ? src : src;
+    
+    if (priority) {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        setLoaded(true);
+        if (onLoad) onLoad();
+      };
+      img.onerror = () => setError(true);
+    }
+  }, [src, priority, onLoad]);
   
   const imageStyle: React.CSSProperties = {
     ...style,
@@ -41,20 +47,16 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
   
   const handleLoad = () => {
-    console.log('Image loaded:', imgSrc);
+    console.log('Image loaded:', src);
     setLoaded(true);
     if (onLoad) onLoad();
   };
   
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error(`Failed to load image: ${imgSrc}`, e);
+    console.error(`Failed to load image: ${src}`, e);
     setError(true);
   };
   
-  // Check if the image is an SVG
-  const isSvg = src.toLowerCase().endsWith('.svg') || src.includes('image/svg+xml');
-  
-  // Placeholder dimensions
   const placeholderStyle: React.CSSProperties = {
     backgroundColor: '#1A1F2C',
     width: width ? `${width}px` : '100%',
@@ -74,15 +76,16 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         </div>
       ) : (
         <img
-          src={imgSrc}
+          src={src}
           alt={alt}
-          className={`${className} ${isSvg ? 'w-full h-full' : ''}`}
+          className={className}
           width={width}
           height={height}
           loading={priority ? "eager" : "lazy"}
           onLoad={handleLoad}
           onError={handleError}
           style={imageStyle}
+          decoding="async"
         />
       )}
     </div>

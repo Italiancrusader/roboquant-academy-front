@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -21,26 +20,9 @@ const Hero: React.FC = () => {
     };
     dashboardImg.onerror = (err) => {
       console.error('Error preloading dashboard image:', err);
-      // Set as loaded anyway to prevent showing a blank space
       setImageLoaded(true);
     };
-    
-    // Preload the SVG mockup image with proper error handling
-    const svgImg = new Image();
-    // Using absolute path without domain for SVG
-    svgImg.src = "/Phone Mockup Roboquant.svg";
-    svgImg.onload = () => {
-      console.log('SVG image successfully preloaded:', svgImg.src);
-    };
-    svgImg.onerror = (err) => {
-      console.error('Error preloading SVG image:', err);
-      // Try fallback approach
-      const fallbackSvg = new Image();
-      fallbackSvg.src = "Phone Mockup Roboquant.svg"; // Try without leading slash
-      fallbackSvg.onload = () => console.log('SVG loaded with fallback path');
-      fallbackSvg.onerror = () => console.error('SVG failed even with fallback path');
-    };
-    
+
     const cleanupPreconnect = preconnectToDomains([
       'https://www.youtube.com',
       'https://player.vimeo.com',
