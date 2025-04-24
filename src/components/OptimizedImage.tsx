@@ -31,7 +31,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setError(false);
   }, [src]);
   
-  // Generate inline styles
   const imageStyle: React.CSSProperties = {
     ...style,
     opacity: loaded ? 1 : 0,
@@ -47,6 +46,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setError(true);
     console.error(`Failed to load image: ${src}`);
   };
+  
+  // Check if the image is an SVG
+  const isSvg = src.toLowerCase().endsWith('.svg');
   
   // Placeholder dimensions
   const placeholderStyle: React.CSSProperties = {
@@ -65,7 +67,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       <img
         src={src}
         alt={alt}
-        className={className}
+        className={`${className} ${isSvg ? 'w-full h-full' : ''}`}
         width={width}
         height={height}
         loading={priority ? "eager" : "lazy"}
