@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,35 +9,27 @@ import VideoDialog from './hero/VideoDialog';
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(true); // Start with true to avoid waiting for image
 
   useEffect(() => {
-    // Preload the dashboard image
-    const dashboardImg = new Image();
-    dashboardImg.src = `/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png`;
-    dashboardImg.onload = () => {
-      console.log('Dashboard image preloaded');
-      setImageLoaded(true);
-    };
-    dashboardImg.onerror = (err) => {
-      console.error('Error preloading dashboard image:', err);
-      setImageLoaded(true);
-    };
-
-    const cleanupPreconnect = preconnectToDomains([
+    // Prioritize preconnecting to important domains first
+    preconnectToDomains([
       'https://www.youtube.com',
       'https://player.vimeo.com',
       'https://i.vimeocdn.com',
       'https://f.vimeocdn.com'
     ]);
     
-    return () => {
-      cleanupPreconnect();
+    // Preload happens after main content is already visible
+    const dashboardImg = new Image();
+    dashboardImg.src = `/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png`;
+    dashboardImg.onload = () => {
+      console.log('Dashboard image preloaded');
     };
   }, []);
 
   return (
-    <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center pb-16 overflow-hidden">
       <VideoBackground />
       <Dialog>
         <HeroContent imageLoaded={imageLoaded} />
