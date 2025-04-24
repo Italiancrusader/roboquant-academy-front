@@ -97,6 +97,10 @@ export default {
         'gradient-shift': {
           '0%': { backgroundPosition: '0% 50%' },
           '100%': { backgroundPosition: '100% 50%' },
+        },
+        'spin-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
         }
       },
       animation: {
@@ -106,6 +110,7 @@ export default {
         'hover-lift': 'hover-lift 0.3s ease-out forwards',
         'tilt': 'tilt 0.3s ease-out forwards',
         'gradient-shift': 'gradient-shift 3s ease infinite alternate',
+        'spin-slow': 'spin-slow 3s linear infinite'
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(to right, #0080FF, #00E5FF)',
