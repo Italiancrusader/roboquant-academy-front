@@ -29,7 +29,10 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded }) => {
               </Button>
             </a>
             <DialogTrigger asChild>
-              <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
+              <Button 
+                variant="outline" 
+                className="border-gray-300 text-white hover:text-white hover:bg-gray-700 text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
+              >
                 <Play className="mr-2 h-5 w-5" /> Watch Demo
               </Button>
             </DialogTrigger>
