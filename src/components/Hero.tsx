@@ -12,14 +12,15 @@ const Hero: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    const dashboardImg = new Image();
-    dashboardImg.src = "/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png";
-    dashboardImg.onload = () => {
-      console.log('Dashboard image preloaded');
+    // Preload SVG directly
+    const heroSvg = new Image();
+    heroSvg.src = "/Phone Mockup Roboquant.svg";
+    heroSvg.onload = () => {
+      console.log('Hero SVG preloaded successfully');
       setImageLoaded(true);
     };
-    dashboardImg.onerror = (err) => {
-      console.error('Error preloading dashboard image:', err);
+    heroSvg.onerror = (err) => {
+      console.error('Error preloading hero SVG:', err);
       // Set as loaded anyway to prevent showing a blank space
       setImageLoaded(true);
     };

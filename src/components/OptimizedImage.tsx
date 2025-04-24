@@ -29,7 +29,23 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     // Reset states when src changes
     setLoaded(false);
     setError(false);
-  }, [src]);
+
+    // For SVGs, we can try to preload them
+    if (src.toLowerCase().endsWith('.svg')) {
+      console.log('Preloading SVG:', src);
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        console.log('SVG preloaded successfully:', src);
+        setLoaded(true);
+        if (onLoad) onLoad();
+      };
+      img.onerror = (err) => {
+        console.error('Failed to preload SVG:', src, err);
+        setError(true);
+      };
+    }
+  }, [src, onLoad]);
   
   const imageStyle: React.CSSProperties = {
     ...style,
@@ -76,6 +92,12 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         onError={handleError}
         style={imageStyle}
       />
+      
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white p-2 text-xs text-center">
+          Failed to load image
+        </div>
+      )}
     </div>
   );
 };
