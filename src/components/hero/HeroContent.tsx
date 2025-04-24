@@ -46,7 +46,7 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded }) => {
               minHeight: '432px',
               transition: 'opacity 0.3s ease-in-out'
             }}
-            src="/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png"
+            src="/lovable-uploads/ea79a8d4-e8c1-442b-b1b0-5a4773c81ca0.png"
             loading="lazy"
           />
         </div>
