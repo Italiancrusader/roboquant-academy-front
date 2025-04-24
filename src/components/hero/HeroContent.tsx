@@ -10,7 +10,7 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
 
   return (
     <div className="container mx-auto px-4 relative z-20 mt-24">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[600px]">
         <div className="text-left max-w-[90%] sm:max-w-none">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
             Build & launch profitable trading bots — <span className="gradient-text">without writing code</span>.
@@ -34,12 +34,13 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
             </DialogTrigger>
           </div>
         </div>
-        <div className="flex justify-center items-center h-full">
+        <div className="flex justify-center items-center">
           <OptimizedImage 
             alt="RoboQuant mobile app interface"
             className="w-full max-w-[480px] h-auto object-contain"
             style={{
               minHeight: '432px',
+              maxHeight: '600px',
               opacity: imageLoaded ? 1 : 0,
               transition: 'opacity 0.3s ease-in-out'
             }}
