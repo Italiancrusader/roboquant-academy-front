@@ -44,7 +44,7 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
               opacity: imageLoaded ? 1 : 0,
               transition: 'opacity 0.3s ease-in-out'
             }}
-            src={`${window.location.origin}/Phone Mockup Roboquant.svg`}
+            src="/Phone Mockup Roboquant.svg"
             priority={true}
             onLoad={() => {
               console.log('Hero image loaded in component');

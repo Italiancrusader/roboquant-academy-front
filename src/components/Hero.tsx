@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -24,12 +25,12 @@ const Hero: React.FC = () => {
     };
     
     const svgImg = new Image();
-    svgImg.src = `${window.location.origin}/Phone Mockup Roboquant.svg`;
+    svgImg.src = "/Phone Mockup Roboquant.svg";
     svgImg.onload = () => {
-      console.log('SVG image preloaded:', svgImg.src);
+      console.log('SVG image preloaded with absolute path:', svgImg.src);
     };
     svgImg.onerror = (err) => {
-      console.error('Error preloading SVG image:', err, svgImg.src);
+      console.error('Error preloading SVG image with absolute path:', err, svgImg.src);
     };
     
     const cleanupPreconnect = preconnectToDomains([
