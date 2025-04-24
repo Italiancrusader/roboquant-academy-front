@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
@@ -11,8 +10,8 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
 
   return (
     <div className="container mx-auto px-4 relative z-20 mt-16">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[700px]">
-        <div className="text-left max-w-[90%] sm:max-w-none py-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center min-h-[700px]">
+        <div className="text-left max-w-[90%] sm:max-w-none py-8 sm:py-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
             Build & launch profitable trading bots — <span className="gradient-text">without writing code</span>.
           </h1>
@@ -35,13 +34,13 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
             </DialogTrigger>
           </div>
         </div>
-        <div className="flex justify-center items-center lg:h-full py-8 lg:py-0">
+        <div className="flex justify-center items-center lg:h-full py-4 sm:py-8 lg:py-0">
           <div className="flex items-center justify-center h-full">
             <OptimizedImage 
               alt="RoboQuant mobile app interface"
               className="w-full max-w-[480px] h-auto object-contain"
               style={{
-                minHeight: isMobile ? '380px' : '500px',
+                minHeight: isMobile ? '320px' : '500px',
                 maxHeight: '600px',
                 opacity: imageLoaded ? 1 : 0,
                 transition: 'opacity 0.3s ease-in-out',
