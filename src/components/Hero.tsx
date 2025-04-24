@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -13,7 +12,7 @@ const Hero: React.FC = () => {
 
   useEffect(() => {
     const dashboardImg = new Image();
-    dashboardImg.src = "/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png";
+    dashboardImg.src = `${window.location.origin}/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png`;
     dashboardImg.onload = () => {
       console.log('Dashboard image preloaded');
       setImageLoaded(true);
@@ -22,6 +21,15 @@ const Hero: React.FC = () => {
       console.error('Error preloading dashboard image:', err);
       // Set as loaded anyway to prevent showing a blank space
       setImageLoaded(true);
+    };
+    
+    const svgImg = new Image();
+    svgImg.src = `${window.location.origin}/Phone Mockup Roboquant.svg`;
+    svgImg.onload = () => {
+      console.log('SVG image preloaded:', svgImg.src);
+    };
+    svgImg.onerror = (err) => {
+      console.error('Error preloading SVG image:', err, svgImg.src);
     };
     
     const cleanupPreconnect = preconnectToDomains([
