@@ -20,12 +20,8 @@ const Hero: React.FC = () => {
       'https://f.vimeocdn.com'
     ]);
     
-    // Preload happens after main content is already visible
-    const dashboardImg = new Image();
-    dashboardImg.src = `/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png`;
-    dashboardImg.onload = () => {
-      console.log('Dashboard image preloaded');
-    };
+    // No longer need this as we're using direct <img> with fetchPriority
+    // and preloading in main.tsx
   }, []);
 
   return (

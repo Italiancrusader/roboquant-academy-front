@@ -7,10 +7,10 @@ const VideoBackground: React.FC = () => {
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
   
   useEffect(() => {
-    // Defer video loading to improve initial page load
+    // Ensure LCP elements are loaded first by further deferring video
     const timer = setTimeout(() => {
       setShouldLoadVideo(true);
-    }, 1000); // Load video after 1 second
+    }, 3000); // Delay video loading for 3 seconds to prioritize LCP
     
     return () => clearTimeout(timer);
   }, []);
