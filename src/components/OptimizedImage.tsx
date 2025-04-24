@@ -31,6 +31,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setError(false);
   }, [src]);
   
+  // Handle SVG paths to ensure they work correctly
+  const imgSrc = src.startsWith('http') ? src : src;
+  
   const imageStyle: React.CSSProperties = {
     ...style,
     opacity: loaded ? 1 : 0,
@@ -38,14 +41,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
   
   const handleLoad = () => {
-    console.log('Image loaded:', src);
+    console.log('Image loaded:', imgSrc);
     setLoaded(true);
     if (onLoad) onLoad();
   };
   
-  const handleError = () => {
+  const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.error(`Failed to load image: ${imgSrc}`, e);
     setError(true);
-    console.error(`Failed to load image: ${src}`);
   };
   
   // Check if the image is an SVG
@@ -65,17 +68,23 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <div className="absolute inset-0" style={placeholderStyle}></div>
       )}
       
-      <img
-        src={src}
-        alt={alt}
-        className={`${className} ${isSvg ? 'w-full h-full' : ''}`}
-        width={width}
-        height={height}
-        loading={priority ? "eager" : "lazy"}
-        onLoad={handleLoad}
-        onError={handleError}
-        style={imageStyle}
-      />
+      {error ? (
+        <div className="flex items-center justify-center w-full h-full bg-gray-800 rounded" style={{ minHeight: '100px' }}>
+          <p className="text-sm text-gray-400">Image not available</p>
+        </div>
+      ) : (
+        <img
+          src={imgSrc}
+          alt={alt}
+          className={`${className} ${isSvg ? 'w-full h-full' : ''}`}
+          width={width}
+          height={height}
+          loading={priority ? "eager" : "lazy"}
+          onLoad={handleLoad}
+          onError={handleError}
+          style={imageStyle}
+        />
+      )}
     </div>
   );
 };

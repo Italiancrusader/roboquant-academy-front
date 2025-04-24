@@ -12,8 +12,9 @@ const Hero: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
+    // Preload the dashboard image
     const dashboardImg = new Image();
-    dashboardImg.src = `${window.location.origin}/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png`;
+    dashboardImg.src = `/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png`;
     dashboardImg.onload = () => {
       console.log('Dashboard image preloaded');
       setImageLoaded(true);
@@ -24,13 +25,20 @@ const Hero: React.FC = () => {
       setImageLoaded(true);
     };
     
+    // Preload the SVG mockup image with proper error handling
     const svgImg = new Image();
+    // Using absolute path without domain for SVG
     svgImg.src = "/Phone Mockup Roboquant.svg";
     svgImg.onload = () => {
-      console.log('SVG image preloaded with absolute path:', svgImg.src);
+      console.log('SVG image successfully preloaded:', svgImg.src);
     };
     svgImg.onerror = (err) => {
-      console.error('Error preloading SVG image with absolute path:', err, svgImg.src);
+      console.error('Error preloading SVG image:', err);
+      // Try fallback approach
+      const fallbackSvg = new Image();
+      fallbackSvg.src = "Phone Mockup Roboquant.svg"; // Try without leading slash
+      fallbackSvg.onload = () => console.log('SVG loaded with fallback path');
+      fallbackSvg.onerror = () => console.error('SVG failed even with fallback path');
     };
     
     const cleanupPreconnect = preconnectToDomains([
