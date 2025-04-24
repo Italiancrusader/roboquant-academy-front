@@ -49,8 +49,10 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded }) => {
               transition: 'opacity 0.3s ease-in-out'
             }}
             src="/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png"
-            priority={false}
-            onLoad={() => {}}
+            priority={true}
+            onLoad={() => {
+              console.log('Hero image loaded in component');
+            }}
           />
         </div>
       </div>

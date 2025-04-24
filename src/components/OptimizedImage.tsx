@@ -38,6 +38,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
   
   const handleLoad = () => {
+    console.log('Image loaded:', src);
     setLoaded(true);
     if (onLoad) onLoad();
   };
@@ -48,7 +49,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
   
   // Check if the image is an SVG
-  const isSvg = src.toLowerCase().endsWith('.svg');
+  const isSvg = src.toLowerCase().endsWith('.svg') || src.includes('image/svg+xml');
   
   // Placeholder dimensions
   const placeholderStyle: React.CSSProperties = {

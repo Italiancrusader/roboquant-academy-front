@@ -14,7 +14,15 @@ const Hero: React.FC = () => {
   useEffect(() => {
     const dashboardImg = new Image();
     dashboardImg.src = "/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png";
-    dashboardImg.onload = () => setImageLoaded(true);
+    dashboardImg.onload = () => {
+      console.log('Dashboard image preloaded');
+      setImageLoaded(true);
+    };
+    dashboardImg.onerror = (err) => {
+      console.error('Error preloading dashboard image:', err);
+      // Set as loaded anyway to prevent showing a blank space
+      setImageLoaded(true);
+    };
     
     const cleanupPreconnect = preconnectToDomains([
       'https://www.youtube.com',
