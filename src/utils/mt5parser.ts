@@ -1,4 +1,3 @@
-
 import { read, utils, write } from 'xlsx';
 import { MT5Trade, MT5Summary, ParsedMT5Report } from '@/types/mt5reportgenie';
 
@@ -36,12 +35,12 @@ const generateCSV = (trades: MT5Trade[]): string => {
     
     return [
       dateTime,
-      trade.order,
+      trade.order.toString(),
       trade.symbol || 'undefined',
       trade.side || '',
       trade.state || '',
-      trade.volumeLots || 'NAN',
-      trade.priceOpen || 'NAN',
+      trade.volumeLots !== undefined ? trade.volumeLots.toString() : 'NAN',
+      trade.priceOpen !== undefined ? trade.priceOpen.toString() : 'NAN',
       '',  // Order placeholder
       '0.00',  // Commission placeholder
       '0.00',  // Swap placeholder
@@ -166,7 +165,7 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
           
         trades.push({
           openTime,
-          order: Number(dealId),
+          order: Number(dealId) || 0,
           symbol: 'undefined',
           volumeLots: NaN,
           priceOpen: NaN,
@@ -210,7 +209,7 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
       // Parse trade data
       const trade: MT5Trade = {
         openTime,
-        order: Number(dealId),
+        order: Number(dealId) || 0,
         symbol: String(row[2]),
         side,
         volumeLots: Number(String(row[5]).replace(',', '.')),
