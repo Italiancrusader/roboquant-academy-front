@@ -3,23 +3,22 @@ import { read, utils, write } from 'xlsx';
 import { MT5Trade, MT5Summary, ParsedMT5Report } from '@/types/mt5reportgenie';
 
 /**
- * Format date and time in a more readable format
+ * Format date and time in a more readable format (MM/DD/YYYY HH:MM:SS)
  */
-const formatDateTime = (dateTimeStr: string): string => {
+const formatDateTime = (date: Date): string => {
   try {
-    const date = new Date(dateTimeStr);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).format(date);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
   } catch (e) {
     console.error('Error formatting date:', e);
-    return dateTimeStr;
+    return 'Invalid Date';
   }
 };
 
@@ -32,21 +31,25 @@ const generateCSV = (trades: MT5Trade[]): string => {
     'Price', 'Order', 'Commission', 'Swap', 'Profit', 'Balance', 'Comment'
   ];
 
-  const rows = trades.map(trade => [
-    formatDateTime(trade.openTime.toISOString()),
-    trade.order,
-    trade.symbol,
-    trade.side || '',
-    trade.state,
-    trade.volumeLots,
-    trade.priceOpen,
-    '',  // Order placeholder
-    '0.00',  // Commission placeholder
-    '0.00',  // Swap placeholder
-    trade.profit !== undefined ? trade.profit.toFixed(2) : '0.00',
-    trade.balance !== undefined ? trade.balance.toFixed(2) : '0.00',
-    trade.comment
-  ]);
+  const rows = trades.map(trade => {
+    const dateTime = formatDateTime(trade.openTime);
+    
+    return [
+      dateTime,
+      trade.order,
+      trade.symbol || 'undefined',
+      trade.side || '',
+      trade.state || '',
+      trade.volumeLots || 'NAN',
+      trade.priceOpen || 'NAN',
+      '',  // Order placeholder
+      '0.00',  // Commission placeholder
+      '0.00',  // Swap placeholder
+      trade.profit !== undefined ? trade.profit.toFixed(2) : '0.00',
+      trade.balance !== undefined ? trade.balance.toFixed(2) : '0.00',
+      trade.comment || ''
+    ];
+  });
 
   // Create workbook and worksheet
   const wb = utils.book_new();
@@ -54,6 +57,24 @@ const generateCSV = (trades: MT5Trade[]): string => {
   
   // Convert to CSV
   return utils.sheet_to_csv(ws);
+};
+
+/**
+ * Parse date string from MT5 format (DD.MM.YYYY HH:MM:SS) to JavaScript Date
+ */
+const parseMT5Date = (dateStr: string, timeStr: string): Date => {
+  try {
+    // Split the date and time components
+    const [day, month, year] = dateStr.split('.');
+    const [hours, minutes, seconds] = timeStr.split(':');
+    
+    // Create a new Date object (month is 0-indexed in JavaScript)
+    return new Date(Number(year), Number(month) - 1, Number(day), 
+                   Number(hours), Number(minutes), Number(seconds));
+  } catch (e) {
+    console.error('Error parsing date:', e, dateStr, timeStr);
+    return new Date(); // Return current date as fallback
+  }
 };
 
 /**
@@ -71,9 +92,6 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
   let isDealsSection = false;
   let headerRow: string[] = [];
   
-  // Group deals by symbol and then by order to pair INs and OUTs
-  const dealsBySymbol: { [key: string]: MT5Trade[] } = {};
-  
   // First pass - identify deals section and extract raw deals
   for (const row of rows) {
     if (!row || row.length === 0) continue;
@@ -85,7 +103,7 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
     }
 
     // Skip the header row but store it
-    if (isDealsSection && row[0] === 'Time') {
+    if (isDealsSection && (row[0] === 'Time' || row[1] === 'Deal')) {
       headerRow = row;
       continue;
     }
@@ -95,35 +113,120 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
       // Skip empty rows and summary rows
       if (row[0]?.toLowerCase().includes('summary')) continue;
       
-      // Process balance entries separately
-      if (row[2] === 'balance' || row[2] === '') {
-        // Add balance entry to summary info
-        const balanceValue = Number(String(row[11]).replace(',', '.'));
+      // Determine date and time columns - assuming first two columns contain date and time
+      let dateStr = row[0];
+      let timeStr = '';
+      let dealId = '';
+      
+      // Check if the deal ID is in the second column
+      if (isNaN(Number(row[0])) && !isNaN(Number(row[1]))) {
+        // Time split across first columns with Deal in column 2
+        if (row[0].includes('.')) {
+          dateStr = row[0];
+          timeStr = row[1];
+          dealId = row[2];
+        } else {
+          // Format like "MM/DD/YYYY HH:MM:SS" in first column
+          const parts = row[0].split(' ');
+          if (parts.length >= 2) {
+            dateStr = parts[0].replace(/["']/g, '');
+            timeStr = parts[1].replace(/["']/g, '');
+          }
+          dealId = row[1];
+        }
+      } else if (row[1] && row[1].includes(':')) {
+        // Time in second column
+        dateStr = row[0];
+        timeStr = row[1];
+        dealId = row[2];
+      } else {
+        // Deal ID in second column, assuming date and time are combined in first
+        dealId = row[1];
+        
+        // Try to split the first column if it contains both date and time
+        const firstCol = String(row[0]).replace(/["']/g, '');
+        if (firstCol.includes(' ')) {
+          const parts = firstCol.split(' ');
+          dateStr = parts[0];
+          timeStr = parts[1];
+        }
+      }
+      
+      // Process balance entry
+      if (row[2] === '' || row[2] === 'balance') {
+        const balanceValue = Number(String(row[11] || row[10]).replace(',', '.'));
         if (!isNaN(balanceValue)) {
           summary['Initial Balance'] = balanceValue;
         }
+        
+        // Still create a trade entry for balance rows
+        const openTime = dateStr.includes('/') 
+          ? new Date(dateStr.split('/')[2] + '-' + dateStr.split('/')[0] + '-' + dateStr.split('/')[1] + 'T' + timeStr)
+          : parseMT5Date(dateStr, timeStr);
+          
+        trades.push({
+          openTime,
+          order: Number(dealId),
+          symbol: 'undefined',
+          volumeLots: NaN,
+          priceOpen: NaN,
+          stopLoss: null,
+          takeProfit: null,
+          timeFlag: openTime,
+          state: '',
+          comment: row[12] || '',
+          balance: balanceValue,
+          profit: 0
+        });
+        
         continue;
+      }
+
+      // Parse date based on format
+      let openTime: Date;
+      if (dateStr.includes('/')) {
+        // MM/DD/YYYY format
+        const [month, day, year] = dateStr.split('/');
+        openTime = new Date(`${year}-${month}-${day}T${timeStr}`);
+      } else if (dateStr.includes('.')) {
+        // DD.MM.YYYY format
+        openTime = parseMT5Date(dateStr, timeStr);
+      } else {
+        // Fallback
+        openTime = new Date(dateStr + ' ' + timeStr);
+      }
+
+      // Determine side and state
+      let side: 'buy' | 'sell' | undefined;
+      let state: string = '';
+      
+      if (row[3] === 'buy' || row[3] === 'sell') {
+        side = row[3] as 'buy' | 'sell';
+        state = row[4] || ''; // Usually 'in'
+      } else {
+        state = row[4] || ''; // Usually 'out'
       }
 
       // Parse trade data
       const trade: MT5Trade = {
-        openTime: new Date(row[0].replace(/\./g, '-')), // Convert date format
-        order: Number(row[1]),
+        openTime,
+        order: Number(dealId),
         symbol: String(row[2]),
-        side: row[4] === 'in' ? row[3] as 'buy' | 'sell' : undefined,
-        volumeLots: Number(row[5]),
-        priceOpen: Number(String(row[6]).replace(',', '.')), // Handle decimal separator
+        side,
+        volumeLots: Number(String(row[5]).replace(',', '.')),
+        priceOpen: Number(String(row[6]).replace(',', '.')),
         stopLoss: null,
         takeProfit: null,
-        timeFlag: new Date(row[0].replace(/\./g, '-')),
-        state: row[4], // 'in' or 'out'
+        timeFlag: openTime,
+        state,
         comment: String(row[12] || ''),
       };
 
       // Parse stop loss and take profit from comment if available
-      if (trade.comment) {
-        const slMatch = trade.comment.match(/sl (\d+\.?\d*)/i);
-        const tpMatch = trade.comment.match(/tp (\d+\.?\d*)/i);
+      const comment = trade.comment;
+      if (comment) {
+        const slMatch = comment.match(/sl (\d+\.?\d*)/i);
+        const tpMatch = comment.match(/tp (\d+\.?\d*)/i);
         
         if (slMatch) {
           trade.stopLoss = Number(slMatch[1]);
@@ -134,8 +237,11 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
       }
 
       // Add profit and balance if present
-      const profit = Number(String(row[10]).replace(',', '.'));
-      const balance = Number(String(row[11]).replace(',', '.'));
+      const profitIndex = row.length > 10 ? 10 : 9;
+      const balanceIndex = row.length > 11 ? 11 : 10;
+      
+      const profit = Number(String(row[profitIndex]).replace(',', '.'));
+      const balance = Number(String(row[balanceIndex]).replace(',', '.'));
       
       if (!isNaN(profit)) {
         trade.profit = profit;
@@ -144,57 +250,54 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
         trade.balance = balance;
       }
 
-      // Group trades by symbol for later processing
-      if (!dealsBySymbol[trade.symbol]) {
-        dealsBySymbol[trade.symbol] = [];
-      }
-      dealsBySymbol[trade.symbol].push(trade);
+      trades.push(trade);
     }
   }
   
-  // Second pass - match IN and OUT deals to create complete trades
-  Object.values(dealsBySymbol).forEach(symbolTrades => {
-    // Sort by order ID and time to ensure correct matching
-    symbolTrades.sort((a, b) => a.order - b.order || a.openTime.getTime() - b.openTime.getTime());
+  // Calculate trade statistics
+  const inDeals = trades.filter(t => t.state === 'in');
+  const outDeals = trades.filter(t => t.state === 'out');
+  const completeTrades = Math.min(inDeals.length, outDeals.length);
+  const profitableTrades = trades.filter(t => t.profit && t.profit > 0);
+  const lossTrades = trades.filter(t => t.profit && t.profit < 0);
+  
+  // Update summary
+  summary['Total Deals'] = trades.length;
+  summary['In Deals'] = inDeals.length;
+  summary['Out Deals'] = outDeals.length;
+  summary['Complete Trades'] = completeTrades;
+  summary['Profitable Deals'] = profitableTrades.length;
+  summary['Loss Deals'] = lossTrades.length;
+  summary['Win Rate'] = completeTrades > 0 
+    ? (profitableTrades.length / outDeals.length * 100).toFixed(2) + '%'
+    : '0.00%';
+  
+  const totalProfit = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
+  summary['Total Net Profit'] = totalProfit;
+  
+  // Find the last balance value
+  let finalBalance = trades.length > 0 ? 
+    trades[trades.length - 1].balance : 
+    summary['Initial Balance'] || 0;
     
-    // Add each trade to the final list
-    trades.push(...symbolTrades);
-  });
+  // If undefined, calculate it
+  if (finalBalance === undefined) {
+    finalBalance = (summary['Initial Balance'] as number || 0) + totalProfit;
+  }
+  
+  summary['Final Balance'] = finalBalance;
 
-  // Generate CSV from cleaned data
+  // Generate CSV from processed data
   const csvContent = generateCSV(trades);
   
   // Create a Blob and downloadable URL for the CSV
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const csvUrl = URL.createObjectURL(blob);
 
-  // Calculate basic summary metrics
-  const profitableTrades = trades.filter(t => t.profit && t.profit > 0);
-  const lossTrades = trades.filter(t => t.profit && t.profit < 0);
-  
-  summary['Total Deals'] = trades.length;
-  summary['In Deals'] = trades.filter(t => t.state === 'in').length;
-  summary['Out Deals'] = trades.filter(t => t.state === 'out').length;
-  
-  // Calculate the number of complete trades (pairs of IN and OUT)
-  const completeTrades = Math.min(
-    trades.filter(t => t.state === 'in').length,
-    trades.filter(t => t.state === 'out').length
-  );
-  
-  summary['Complete Trades'] = completeTrades;
-  summary['Profitable Deals'] = profitableTrades.length;
-  summary['Loss Deals'] = lossTrades.length;
-  summary['Win Rate'] = completeTrades > 0 
-    ? (profitableTrades.length / completeTrades * 100).toFixed(2) + '%'
-    : '0.00%';
-  summary['Total Net Profit'] = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
-  summary['Final Balance'] = trades.length > 0 ? trades[trades.length - 1].balance || 0 : summary['Initial Balance'] || 0;
-
   return { 
     summary, 
     trades,
-    csvUrl  // Add the CSV URL to the return object
+    csvUrl
   };
 };
 
