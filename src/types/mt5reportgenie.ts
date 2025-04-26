@@ -130,4 +130,5 @@ export interface MT5Summary {
 export interface ParsedMT5Report {
   summary: MT5Summary;
   trades: MT5Trade[];
+  csvUrl: string;
 }

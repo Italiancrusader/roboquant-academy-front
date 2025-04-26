@@ -1,6 +1,36 @@
 
-import { read, utils } from 'xlsx';
+import { read, utils, write } from 'xlsx';
 import { MT5Trade, MT5Summary, ParsedMT5Report } from '@/types/mt5reportgenie';
+
+const generateCSV = (trades: MT5Trade[]): string => {
+  const headers = [
+    'Time', 'Deal', 'Symbol', 'Type', 'Direction', 'Volume',
+    'Price', 'Order', 'Commission', 'Swap', 'Profit', 'Balance', 'Comment'
+  ];
+
+  const rows = trades.map(trade => [
+    trade.openTime.toISOString(),
+    trade.order,
+    trade.symbol,
+    trade.side || '',
+    trade.state,
+    trade.volumeLots,
+    trade.priceOpen,
+    '',  // Order placeholder
+    '0.00',  // Commission placeholder
+    '0.00',  // Swap placeholder
+    trade.profit || '0.00',
+    trade.balance || '0.00',
+    trade.comment
+  ]);
+
+  // Create workbook and worksheet
+  const wb = utils.book_new();
+  const ws = utils.aoa_to_sheet([headers, ...rows]);
+  
+  // Convert to CSV
+  return utils.sheet_to_csv(ws);
+};
 
 export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
   // Read the Excel file
@@ -13,6 +43,7 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
   const trades: MT5Trade[] = [];
   let isDealsSection = false;
   let headerRow: string[] = [];
+  let dataRows: string[][] = [];
 
   for (const row of rows) {
     if (!row || row.length === 0) continue;
@@ -31,8 +62,8 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
 
     // Parse trades from the Deals section
     if (isDealsSection && headerRow.length > 0) {
-      // Skip balance entries and empty rows
-      if (row[2] === '' || row[2] === 'balance') continue;
+      // Skip balance entries, empty rows, and summary rows
+      if (row[2] === '' || row[2] === 'balance' || row[0]?.toLowerCase().includes('summary')) continue;
 
       const trade: MT5Trade = {
         openTime: new Date(row[0].replace(/\./g, '-')), // Convert date format
@@ -73,8 +104,16 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
       }
 
       trades.push(trade);
+      dataRows.push(row);
     }
   }
+
+  // Generate CSV from cleaned data
+  const csvContent = generateCSV(trades);
+  
+  // Create a Blob and downloadable URL for the CSV
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const csvUrl = URL.createObjectURL(blob);
 
   // Calculate basic summary metrics
   const profitableTrades = trades.filter(t => t.profit && t.profit > 0);
@@ -86,7 +125,11 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
   summary['Win Rate'] = (profitableTrades.length / trades.length * 100).toFixed(2) + '%';
   summary['Total Net Profit'] = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
 
-  return { summary, trades };
+  return { 
+    summary, 
+    trades,
+    csvUrl  // Add the CSV URL to the return object
+  };
 };
 
 export const validateMT5File = (file: File): boolean => {
