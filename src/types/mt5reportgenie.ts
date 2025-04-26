@@ -107,9 +107,11 @@ export interface StrategyReport {
 export interface MT5Trade {
   openTime: Date;
   order: number;
-  dealId?: string;  // Added dealId field to store the original deal ID string
+  dealId?: string;
   symbol: string;
-  side?: 'buy' | 'sell';
+  type?: string;      // Added type field (buy, sell, balance)
+  direction?: string; // Added direction field (in, out)
+  side?: 'buy' | 'sell'; // Keep for backward compatibility
   volumeLots: number;
   priceOpen: number;
   stopLoss: number | null;
@@ -119,6 +121,8 @@ export interface MT5Trade {
   comment: string;
   profit?: number;
   balance?: number;
+  commission?: number; // Added commission field
+  swap?: number;       // Added swap field
 }
 
 export interface MT5Summary {
