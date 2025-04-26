@@ -2,6 +2,30 @@
 import { read, utils, write } from 'xlsx';
 import { MT5Trade, MT5Summary, ParsedMT5Report } from '@/types/mt5reportgenie';
 
+/**
+ * Format date and time in a more readable format
+ */
+const formatDateTime = (dateTimeStr: string): string => {
+  try {
+    const date = new Date(dateTimeStr);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(date);
+  } catch (e) {
+    console.error('Error formatting date:', e);
+    return dateTimeStr;
+  }
+};
+
+/**
+ * Generate CSV content from processed trades
+ */
 const generateCSV = (trades: MT5Trade[]): string => {
   const headers = [
     'Time', 'Deal', 'Symbol', 'Type', 'Direction', 'Volume',
@@ -9,7 +33,7 @@ const generateCSV = (trades: MT5Trade[]): string => {
   ];
 
   const rows = trades.map(trade => [
-    trade.openTime.toISOString(),
+    formatDateTime(trade.openTime.toISOString()),
     trade.order,
     trade.symbol,
     trade.side || '',
@@ -19,8 +43,8 @@ const generateCSV = (trades: MT5Trade[]): string => {
     '',  // Order placeholder
     '0.00',  // Commission placeholder
     '0.00',  // Swap placeholder
-    trade.profit || '0.00',
-    trade.balance || '0.00',
+    trade.profit !== undefined ? trade.profit.toFixed(2) : '0.00',
+    trade.balance !== undefined ? trade.balance.toFixed(2) : '0.00',
     trade.comment
   ]);
 
@@ -32,6 +56,9 @@ const generateCSV = (trades: MT5Trade[]): string => {
   return utils.sheet_to_csv(ws);
 };
 
+/**
+ * Parses MT5 Excel file and extracts trades
+ */
 export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
   // Read the Excel file
   const buffer = await file.arrayBuffer();
@@ -43,8 +70,11 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
   const trades: MT5Trade[] = [];
   let isDealsSection = false;
   let headerRow: string[] = [];
-  let dataRows: string[][] = [];
-
+  
+  // Group deals by symbol and then by order to pair INs and OUTs
+  const dealsBySymbol: { [key: string]: MT5Trade[] } = {};
+  
+  // First pass - identify deals section and extract raw deals
   for (const row of rows) {
     if (!row || row.length === 0) continue;
 
@@ -60,11 +90,22 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
       continue;
     }
 
-    // Parse trades from the Deals section
+    // Process rows in the Deals section
     if (isDealsSection && headerRow.length > 0) {
-      // Skip balance entries, empty rows, and summary rows
-      if (row[2] === '' || row[2] === 'balance' || row[0]?.toLowerCase().includes('summary')) continue;
+      // Skip empty rows and summary rows
+      if (row[0]?.toLowerCase().includes('summary')) continue;
+      
+      // Process balance entries separately
+      if (row[2] === 'balance' || row[2] === '') {
+        // Add balance entry to summary info
+        const balanceValue = Number(String(row[11]).replace(',', '.'));
+        if (!isNaN(balanceValue)) {
+          summary['Initial Balance'] = balanceValue;
+        }
+        continue;
+      }
 
+      // Parse trade data
       const trade: MT5Trade = {
         openTime: new Date(row[0].replace(/\./g, '-')), // Convert date format
         order: Number(row[1]),
@@ -103,10 +144,22 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
         trade.balance = balance;
       }
 
-      trades.push(trade);
-      dataRows.push(row);
+      // Group trades by symbol for later processing
+      if (!dealsBySymbol[trade.symbol]) {
+        dealsBySymbol[trade.symbol] = [];
+      }
+      dealsBySymbol[trade.symbol].push(trade);
     }
   }
+  
+  // Second pass - match IN and OUT deals to create complete trades
+  Object.values(dealsBySymbol).forEach(symbolTrades => {
+    // Sort by order ID and time to ensure correct matching
+    symbolTrades.sort((a, b) => a.order - b.order || a.openTime.getTime() - b.openTime.getTime());
+    
+    // Add each trade to the final list
+    trades.push(...symbolTrades);
+  });
 
   // Generate CSV from cleaned data
   const csvContent = generateCSV(trades);
@@ -119,11 +172,24 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
   const profitableTrades = trades.filter(t => t.profit && t.profit > 0);
   const lossTrades = trades.filter(t => t.profit && t.profit < 0);
   
-  summary['Total Trades'] = trades.length;
-  summary['Profitable Trades'] = profitableTrades.length;
-  summary['Loss Trades'] = lossTrades.length;
-  summary['Win Rate'] = (profitableTrades.length / trades.length * 100).toFixed(2) + '%';
+  summary['Total Deals'] = trades.length;
+  summary['In Deals'] = trades.filter(t => t.state === 'in').length;
+  summary['Out Deals'] = trades.filter(t => t.state === 'out').length;
+  
+  // Calculate the number of complete trades (pairs of IN and OUT)
+  const completeTrades = Math.min(
+    trades.filter(t => t.state === 'in').length,
+    trades.filter(t => t.state === 'out').length
+  );
+  
+  summary['Complete Trades'] = completeTrades;
+  summary['Profitable Deals'] = profitableTrades.length;
+  summary['Loss Deals'] = lossTrades.length;
+  summary['Win Rate'] = completeTrades > 0 
+    ? (profitableTrades.length / completeTrades * 100).toFixed(2) + '%'
+    : '0.00%';
   summary['Total Net Profit'] = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
+  summary['Final Balance'] = trades.length > 0 ? trades[trades.length - 1].balance || 0 : summary['Initial Balance'] || 0;
 
   return { 
     summary, 

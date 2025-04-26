@@ -101,31 +101,31 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
           <h3 className="text-lg font-semibold text-primary">Debug Panel</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium mb-2">Uploaded Files</h4>
-              <pre className="bg-background p-3 rounded text-xs overflow-auto">
-                {JSON.stringify(files, null, 2)}
+              <h4 className="font-medium mb-2">Active File Info</h4>
+              <pre className="bg-background p-3 rounded text-xs overflow-auto max-h-60">
+                {JSON.stringify(activeFile, null, 2)}
               </pre>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Mock Metrics</h4>
-              <pre className="bg-background p-3 rounded text-xs overflow-auto">
-                {JSON.stringify(mockMetrics, null, 2)}
+              <h4 className="font-medium mb-2">Parsed Data</h4>
+              <pre className="bg-background p-3 rounded text-xs overflow-auto max-h-60">
+                {JSON.stringify(activeFile?.parsedData?.summary, null, 2)}
               </pre>
             </div>
           </div>
           <div>
             <Button 
               variant="outline" 
-              onClick={() => console.log('Debug Files:', files)}
+              onClick={() => console.log('Debug Active File:', activeFile)}
               className="mr-2"
             >
-              Log Files to Console
+              Log File to Console
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => console.log('Debug Metrics:', mockMetrics)}
+              onClick={() => console.log('Parsed Data:', activeFile?.parsedData)}
             >
-              Log Metrics to Console
+              Log Parsed Data to Console
             </Button>
           </div>
         </div>
@@ -197,6 +197,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
           <CsvViewer 
             csvUrl={activeFile?.parsedData?.csvUrl || null}
             fileName={activeFile?.name || 'report'}
+            parsedData={activeFile?.parsedData}
           />
         </TabsContent>
       </Tabs>
