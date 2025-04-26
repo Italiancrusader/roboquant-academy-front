@@ -1,4 +1,3 @@
-
 export interface FileType {
   id: string;
   name: string;
@@ -106,4 +105,29 @@ export interface StrategyReport {
   monthlyReturns: MonthlyReturn[];
   weekdayPerformance: WeekdayPerformance[];
   hourlyPerformance: HourlyPerformance[];
+}
+
+export interface MT5Trade {
+  openTime: Date;
+  order: number;
+  symbol: string;
+  side: 'buy' | 'sell';
+  volumeLots: number;
+  priceOpen: number;
+  stopLoss: number | null;
+  takeProfit: number | null;
+  timeFlag: Date;
+  state: string;
+  comment: string;
+  profit?: number;
+  balance?: number;
+}
+
+export interface MT5Summary {
+  [key: string]: number | string;
+}
+
+export interface ParsedMT5Report {
+  summary: MT5Summary;
+  trades: MT5Trade[];
 }
