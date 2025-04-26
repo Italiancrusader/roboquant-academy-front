@@ -1,5 +1,6 @@
 
-import React, { createRoot } from 'react-dom/client';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { lazy, Suspense } from 'react';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
@@ -26,11 +27,11 @@ const preloadAssets = async () => {
   await Promise.all([imagePromise, videoPromise]);
 };
 
-// Use lazy loading for the main App component
+// Use lazy loading for the main App component - fix to handle default export correctly
 const App = lazy(() => 
   // Wait for assets to load before showing the app
   Promise.all([
-    import('./App.tsx'),
+    import('./App'),
     preloadAssets()
   ]).then(([moduleExports]) => moduleExports)
 );
