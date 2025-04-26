@@ -8,7 +8,8 @@ interface RiskMetricsProps {
 }
 
 const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
-  const completedTrades = trades.filter(t => t.profit !== undefined && t.profit !== 0);
+  // Filter trades with profit data and that are "out" trades (completed)
+  const completedTrades = trades.filter(t => t.profit !== undefined && t.direction === 'out');
   
   const metrics = React.useMemo(() => {
     const profitableTrades = completedTrades.filter(t => t.profit && t.profit > 0);
@@ -17,21 +18,29 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
     const totalProfit = profitableTrades.reduce((sum, t) => sum + (t.profit || 0), 0);
     const totalLoss = Math.abs(lossTrades.reduce((sum, t) => sum + (t.profit || 0), 0));
     
-    const winRate = (profitableTrades.length / completedTrades.length) * 100;
+    const winRate = completedTrades.length ? (profitableTrades.length / completedTrades.length) * 100 : 0;
     const profitFactor = totalLoss ? totalProfit / totalLoss : 0;
     
-    const profits = completedTrades.map(t => t.profit || 0);
-    const avgProfit = totalProfit / profitableTrades.length;
-    const avgLoss = totalLoss / lossTrades.length;
+    const avgProfit = profitableTrades.length ? totalProfit / profitableTrades.length : 0;
+    const avgLoss = lossTrades.length ? totalLoss / lossTrades.length : 0;
     
     // Calculate maximum drawdown
     let peak = 0;
     let maxDrawdown = 0;
     let currentDrawdown = 0;
-    let balance = trades[0]?.balance || 0;
+    let balance = 0;
+    
+    // Find initial balance
+    for (let i = 0; i < trades.length; i++) {
+      if (trades[i].balance !== undefined) {
+        balance = trades[i].balance;
+        peak = balance;
+        break;
+      }
+    }
     
     trades.forEach(trade => {
-      if (trade.balance) {
+      if (trade.balance !== undefined) {
         balance = trade.balance;
         if (balance > peak) {
           peak = balance;
@@ -54,7 +63,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
       averageWin: avgProfit,
       averageLoss: avgLoss,
       maxDrawdown,
-      maxDrawdownPct: (maxDrawdown / peak) * 100,
+      maxDrawdownPct: peak ? (maxDrawdown / peak) * 100 : 0,
     };
   }, [trades, completedTrades]);
 
@@ -95,7 +104,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
         
         <Card className="p-4">
           <h3 className="text-sm font-medium text-muted-foreground">Average Win</h3>
-          <div className="mt-2 text-2xl font-bold text-success">
+          <div className="mt-2 text-2xl font-bold text-green-500">
             ${metrics.averageWin.toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
@@ -105,7 +114,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
         
         <Card className="p-4">
           <h3 className="text-sm font-medium text-muted-foreground">Average Loss</h3>
-          <div className="mt-2 text-2xl font-bold text-destructive">
+          <div className="mt-2 text-2xl font-bold text-red-500">
             ${metrics.averageLoss.toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
@@ -116,7 +125,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
         <Card className="p-4">
           <h3 className="text-sm font-medium text-muted-foreground">Reward/Risk</h3>
           <div className="mt-2 text-2xl font-bold">
-            {(Math.abs(metrics.averageWin / metrics.averageLoss)).toFixed(2)}
+            {(metrics.averageWin / metrics.averageLoss || 0).toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             Avg Win / Avg Loss

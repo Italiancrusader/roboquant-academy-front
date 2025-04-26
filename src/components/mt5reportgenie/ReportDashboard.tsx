@@ -47,7 +47,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
     }
     
     // Filter trades with profit data
-    const completedTrades = trades.filter(t => t.profit !== undefined && t.profit !== 0);
+    const completedTrades = trades.filter(t => t.profit !== undefined && t.direction === 'out');
     
     // Calculate key metrics
     const profitableTrades = completedTrades.filter(t => t.profit && t.profit > 0);
@@ -65,10 +65,19 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
     let peak = 0;
     let maxDrawdown = 0;
     let currentDrawdown = 0;
-    let balance = trades[0]?.balance || 0;
+    let balance = 0;
+    
+    // Find initial balance
+    for (let i = 0; i < trades.length; i++) {
+      if (trades[i].balance !== undefined) {
+        balance = trades[i].balance;
+        peak = balance;
+        break;
+      }
+    }
     
     trades.forEach(trade => {
-      if (trade.balance) {
+      if (trade.balance !== undefined) {
         balance = trade.balance;
         if (balance > peak) {
           peak = balance;
@@ -87,18 +96,20 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
     
     // Basic Sharpe ratio calculation (simplified)
     const returns = [];
-    let prevBalance = trades[0]?.balance || 0;
+    let prevBalance = null;
     
     trades.forEach(trade => {
-      if (trade.balance && prevBalance > 0) {
+      if (trade.balance && prevBalance !== null) {
         returns.push((trade.balance - prevBalance) / prevBalance);
+        prevBalance = trade.balance;
+      } else if (trade.balance) {
         prevBalance = trade.balance;
       }
     });
     
-    const returnsMean = returns.reduce((sum, r) => sum + r, 0) / returns.length;
+    const returnsMean = returns.reduce((sum, r) => sum + r, 0) / (returns.length || 1);
     const returnsStdDev = Math.sqrt(
-      returns.reduce((sum, r) => sum + Math.pow(r - returnsMean, 2), 0) / returns.length
+      returns.reduce((sum, r) => sum + Math.pow(r - returnsMean, 2), 0) / (returns.length || 1)
     );
     
     const sharpeRatio = returnsStdDev > 0 ? returnsMean / returnsStdDev * Math.sqrt(252) : 0; // Annualized
