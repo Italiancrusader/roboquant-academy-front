@@ -111,7 +111,7 @@ export interface MT5Trade {
   openTime: Date;
   order: number;
   symbol: string;
-  side: 'buy' | 'sell';
+  side?: 'buy' | 'sell';
   volumeLots: number;
   priceOpen: number;
   stopLoss: number | null;

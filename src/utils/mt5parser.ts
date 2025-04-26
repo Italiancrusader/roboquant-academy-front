@@ -11,59 +11,80 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
 
   const summary: MT5Summary = {};
   const trades: MT5Trade[] = [];
-  let isTradeTable = false;
+  let isDealsSection = false;
   let headerRow: string[] = [];
 
   for (const row of rows) {
     if (!row || row.length === 0) continue;
 
-    if (!isTradeTable) {
-      // Parse summary block
-      const label = row[0];
-      if (typeof label === 'string' && label.includes(':')) {
-        const key = label.replace(':', '').trim();
-        const value = row.slice(1).find(cell => cell !== undefined && cell !== '');
-        if (value !== undefined) {
-          const numValue = Number(value);
-          summary[key] = isNaN(numValue) ? value : numValue;
-        }
-      }
-      
-      // Check for trade table start
-      if (row.includes('Open Time')) {
-        isTradeTable = true;
-        headerRow = row.filter(cell => cell !== '');
-        continue;
-      }
-    } else {
-      // Parse trade records
-      if (headerRow.length === 0 || row.every(cell => !cell)) continue;
+    // Check for the start of the Deals section
+    if (row[0] === 'Deals') {
+      isDealsSection = true;
+      continue;
+    }
+
+    // Skip the header row but store it
+    if (isDealsSection && row[0] === 'Time') {
+      headerRow = row;
+      continue;
+    }
+
+    // Parse trades from the Deals section
+    if (isDealsSection && headerRow.length > 0) {
+      // Skip balance entries
+      if (row[2] === '') continue;
 
       const trade: MT5Trade = {
-        openTime: new Date(row[0]),
+        openTime: new Date(row[0].replace('.', '-')), // Convert date format
         order: Number(row[1]),
         symbol: String(row[2]),
-        side: String(row[3]).toLowerCase() as 'buy' | 'sell',
-        volumeLots: parseFloat(String(row[4]).split('/')[0]),
-        priceOpen: Number(row[6]),
-        stopLoss: row[7] === '—' ? null : Number(row[7]),
-        takeProfit: row[8] === '—' ? null : Number(row[8]),
-        timeFlag: new Date(row[9]),
-        state: String(row[11]),
+        side: row[4] === 'in' ? row[3] as 'buy' | 'sell' : undefined,
+        volumeLots: Number(row[5]),
+        priceOpen: Number(String(row[6]).replace(',', '.')), // Handle decimal separator
+        stopLoss: null, // These will be calculated from the 'Comment' field
+        takeProfit: null,
+        timeFlag: new Date(row[0].replace('.', '-')),
+        state: row[4], // 'in' or 'out'
         comment: String(row[12] || ''),
       };
 
-      // Handle profit and balance if present
-      if (row.length > 13) {
-        trade.profit = Number(row[13]);
-        if (row.length > 14) {
-          trade.balance = Number(row[14]);
+      // Parse stop loss and take profit from comment if available
+      if (trade.comment) {
+        const slMatch = trade.comment.match(/sl (\d+\.?\d*)/);
+        const tpMatch = trade.comment.match(/tp (\d+\.?\d*)/);
+        
+        if (slMatch) {
+          trade.stopLoss = Number(slMatch[1]);
         }
+        if (tpMatch) {
+          trade.takeProfit = Number(tpMatch[1]);
+        }
+      }
+
+      // Add profit and balance if present
+      const profit = Number(String(row[10]).replace(',', '.'));
+      const balance = Number(String(row[11]).replace(',', '.'));
+      
+      if (!isNaN(profit)) {
+        trade.profit = profit;
+      }
+      if (!isNaN(balance)) {
+        trade.balance = balance;
       }
 
       trades.push(trade);
     }
   }
+
+  // Calculate basic summary metrics
+  const profitableTrades = trades.filter(t => t.profit && t.profit > 0);
+  const lossTrades = trades.filter(t => t.profit && t.profit < 0);
+  
+  summary['Total Trades'] = trades.length;
+  summary['Profitable Trades'] = profitableTrades.length;
+  summary['Loss Trades'] = lossTrades.length;
+  summary['Win Rate'] = (profitableTrades.length / trades.length * 100).toFixed(2) + '%';
+  summary['Total Net Profit'] = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
 
   return { summary, trades };
 };
@@ -71,4 +92,3 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
 export const validateMT5File = (file: File): boolean => {
   return file.name.endsWith('.xlsx');
 };
-
