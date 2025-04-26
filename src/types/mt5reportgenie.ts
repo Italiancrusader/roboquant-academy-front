@@ -5,6 +5,7 @@ export interface FileType {
   type: string;
   file: File;
   dateUploaded: Date;
+  parsedData?: ParsedMT5Report;
 }
 
 export interface TradeType {
@@ -26,7 +27,6 @@ export interface TradeType {
 }
 
 export interface StrategyMetrics {
-  // Basic metrics
   totalNetProfit: number;
   grossProfit: number;
   grossLoss: number;
@@ -39,7 +39,6 @@ export interface StrategyMetrics {
   sortinoRatio: number;
   calmarRatio: number;
   
-  // Trade statistics
   tradesTotal: number;
   tradesShort: number;
   tradesLong: number;
@@ -50,20 +49,17 @@ export interface StrategyMetrics {
   largestWin: number;
   largestLoss: number;
   
-  // Additional metrics
   recoveryFactor: number;
   tradeDuration: string;
   commissionTotal: number;
   swapTotal: number;
   
-  // Distribution
   returnMean: number;
   returnMedian: number;
   returnSkew: number;
   returnKurtosis: number;
   tailRatio: number;
   
-  // Monte Carlo
   mcDrawdownExpected95: number;
   mcProfitablePct: number;
   mcRuinProbability: number;
