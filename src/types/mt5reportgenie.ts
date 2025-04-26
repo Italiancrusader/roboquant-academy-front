@@ -1,3 +1,4 @@
+
 export interface FileType {
   id: string;
   name: string;
@@ -106,6 +107,7 @@ export interface StrategyReport {
 export interface MT5Trade {
   openTime: Date;
   order: number;
+  dealId?: string;  // Added dealId field to store the original deal ID string
   symbol: string;
   side?: 'buy' | 'sell';
   volumeLots: number;
