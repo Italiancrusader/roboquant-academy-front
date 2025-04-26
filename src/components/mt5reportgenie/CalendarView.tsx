@@ -59,7 +59,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades }) => {
                 dataKey="profit"
                 stroke="hsl(var(--border))"
                 fill="hsl(var(--primary))"
-                valueKey="profit"
               >
                 <ChartTooltip
                   content={({ active, payload }) => {
