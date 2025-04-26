@@ -1,20 +1,96 @@
 
 import React from 'react';
+import { Card } from '@/components/ui/card';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts';
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
+import { MT5Trade } from '@/types/mt5reportgenie';
 
-const DistributionCharts: React.FC = () => {
+interface DistributionChartsProps {
+  trades: MT5Trade[];
+}
+
+const DistributionCharts: React.FC<DistributionChartsProps> = ({ trades }) => {
+  // Filter only completed trades with profit/loss
+  const completedTrades = trades.filter(trade => trade.profit !== undefined && trade.profit !== 0);
+  
+  // Create profit distribution data
+  const profitRanges = [-2000, -1000, -500, 0, 500, 1000, 2000];
+  const distributionData = profitRanges.slice(0, -1).map((min, i) => {
+    const max = profitRanges[i + 1];
+    const count = completedTrades.filter(t => 
+      t.profit && t.profit >= min && t.profit < max
+    ).length;
+    return {
+      range: `${min} to ${max}`,
+      count,
+      min,
+      max,
+    };
+  });
+
+  const config = {
+    distribution: {
+      label: 'Trade Distribution',
+      theme: {
+        light: 'hsl(var(--primary))',
+        dark: 'hsl(var(--primary))',
+      },
+    },
+  };
+
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Return Distribution Analysis</h2>
-      <div className="h-[400px] bg-muted/30 rounded-lg flex items-center justify-center">
-        <p className="text-muted-foreground">
-          Trade return distribution and scatter plots will be displayed here
-        </p>
-      </div>
-      <p className="text-sm text-muted-foreground">
-        This section analyzes the statistical distribution of your trade returns, including
-        histograms, kernel density estimation, scatter plots of trade duration vs. returns,
-        and other statistical metrics to understand the underlying patterns in your strategy.
-      </p>
+      <h2 className="text-xl font-semibold">Profit Distribution</h2>
+      <Card className="pt-6">
+        <div className="h-[400px]">
+          <ChartContainer config={config}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={distributionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <XAxis 
+                  dataKey="range"
+                  interval={0}
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                />
+                <YAxis allowDecimals={false} />
+                <ChartTooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null;
+                    const data = payload[0].payload;
+                    return (
+                      <div className="rounded-lg border bg-background p-2 shadow-sm">
+                        <div className="text-xs text-muted-foreground">
+                          Range: ${data.min} to ${data.max}
+                        </div>
+                        <div className="text-sm font-bold">
+                          {data.count} trades
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+                <Bar dataKey="count">
+                  {distributionData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`}
+                      fill={entry.min < 0 ? 'hsl(var(--destructive))' : 'hsl(var(--success))'}
+                      fillOpacity={0.6}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
+      </Card>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -156,7 +155,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
         <TabsContent value="equity">
           <Card>
             <CardContent className="p-6">
-              <EquityChart />
+              <EquityChart trades={activeFile?.parsedData?.trades || []} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -164,7 +163,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
         <TabsContent value="risk">
           <Card>
             <CardContent className="p-6">
-              <RiskMetrics />
+              <RiskMetrics trades={activeFile?.parsedData?.trades || []} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -172,7 +171,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
         <TabsContent value="distribution">
           <Card>
             <CardContent className="p-6">
-              <DistributionCharts />
+              <DistributionCharts trades={activeFile?.parsedData?.trades || []} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -180,7 +179,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
         <TabsContent value="calendar">
           <Card>
             <CardContent className="p-6">
-              <CalendarView />
+              <CalendarView trades={activeFile?.parsedData?.trades || []} />
             </CardContent>
           </Card>
         </TabsContent>
