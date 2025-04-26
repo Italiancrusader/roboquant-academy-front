@@ -17,7 +17,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades }) => {
   const monthlyData = trades.reduce((acc, trade) => {
     if (!trade.profit) return acc;
     
-    const date = new Date(trade.openTime);
+    const date = new Date(trade.timeFlag || trade.openTime);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     
     if (!acc[monthKey]) {
@@ -25,7 +25,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades }) => {
         name: monthKey,
         profit: 0,
         trades: 0,
-        children: [],
       };
     }
     
@@ -35,10 +34,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades }) => {
     return acc;
   }, {} as Record<string, any>);
 
-  const treeData = {
-    name: 'Monthly Returns',
-    children: Object.values(monthlyData),
-  };
+  // Convert to array format which is what Treemap expects
+  const treeData = Object.values(monthlyData);
 
   const config = {
     calendar: {
@@ -62,6 +59,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades }) => {
                 dataKey="profit"
                 stroke="hsl(var(--border))"
                 fill="hsl(var(--primary))"
+                valueKey="profit"
               >
                 <ChartTooltip
                   content={({ active, payload }) => {
