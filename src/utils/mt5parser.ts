@@ -31,27 +31,27 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
 
     // Parse trades from the Deals section
     if (isDealsSection && headerRow.length > 0) {
-      // Skip balance entries
-      if (row[2] === '') continue;
+      // Skip balance entries and empty rows
+      if (row[2] === '' || row[2] === 'balance') continue;
 
       const trade: MT5Trade = {
-        openTime: new Date(row[0].replace('.', '-')), // Convert date format
+        openTime: new Date(row[0].replace(/\./g, '-')), // Convert date format
         order: Number(row[1]),
         symbol: String(row[2]),
         side: row[4] === 'in' ? row[3] as 'buy' | 'sell' : undefined,
         volumeLots: Number(row[5]),
         priceOpen: Number(String(row[6]).replace(',', '.')), // Handle decimal separator
-        stopLoss: null, // These will be calculated from the 'Comment' field
+        stopLoss: null,
         takeProfit: null,
-        timeFlag: new Date(row[0].replace('.', '-')),
+        timeFlag: new Date(row[0].replace(/\./g, '-')),
         state: row[4], // 'in' or 'out'
         comment: String(row[12] || ''),
       };
 
       // Parse stop loss and take profit from comment if available
       if (trade.comment) {
-        const slMatch = trade.comment.match(/sl (\d+\.?\d*)/);
-        const tpMatch = trade.comment.match(/tp (\d+\.?\d*)/);
+        const slMatch = trade.comment.match(/sl (\d+\.?\d*)/i);
+        const tpMatch = trade.comment.match(/tp (\d+\.?\d*)/i);
         
         if (slMatch) {
           trade.stopLoss = Number(slMatch[1]);
