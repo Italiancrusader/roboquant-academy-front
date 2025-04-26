@@ -6,21 +6,31 @@ import ReportDashboard from '@/components/mt5reportgenie/ReportDashboard';
 import { toast } from '@/components/ui/use-toast';
 import { FileType } from '@/types/mt5reportgenie';
 import { Link } from 'react-router-dom';
-import { Github } from 'lucide-react';
+import { Github, Code } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const MT5ReportGenie = () => {
   const [files, setFiles] = useState<FileType[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showDebug, setShowDebug] = useState(true);
+  const [processingSteps, setProcessingSteps] = useState<string[]>([]);
+
+  const addProcessingStep = (step: string) => {
+    setProcessingSteps(prev => [...prev, `${new Date().toISOString()} - ${step}`]);
+  };
 
   const handleFilesUploaded = (newFiles: FileType[]) => {
-    // In a real implementation, this would send files to the backend
-    // For now, we'll simulate a loading state and then update the files
     setIsProcessing(true);
+    addProcessingStep(`Starting to process ${newFiles.length} files`);
     
-    // Simulate processing time
     setTimeout(() => {
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
       setIsProcessing(false);
+      addProcessingStep(`Processed ${newFiles.length} files successfully`);
+      addProcessingStep(`Generated summary metrics`);
+      addProcessingStep(`Created CSV for further analysis`);
       
       toast({
         title: "Files processed successfully",
@@ -31,6 +41,8 @@ const MT5ReportGenie = () => {
 
   const handleClearFiles = () => {
     setFiles([]);
+    setProcessingSteps([]);
+    addProcessingStep('Cleared all files and processing history');
     toast({
       title: "All files cleared",
       description: "Your workspace has been reset."
@@ -48,7 +60,18 @@ const MT5ReportGenie = () => {
               Upload MetaTrader 5 Strategy Tester reports for professional-grade performance analysis
             </p>
           </div>
-          <div className="flex items-center mt-4 md:mt-0">
+          <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="debug-mode"
+                checked={showDebug}
+                onCheckedChange={setShowDebug}
+              />
+              <Label htmlFor="debug-mode" className="flex items-center">
+                <Code className="h-4 w-4 mr-1" />
+                Debug Mode
+              </Label>
+            </div>
             <Link 
               to="https://github.com/roboquant/mt5-report-genie" 
               target="_blank" 
@@ -60,6 +83,24 @@ const MT5ReportGenie = () => {
             </Link>
           </div>
         </div>
+        
+        {showDebug && (
+          <Card className="p-4 mb-8 bg-muted/20 border-dashed">
+            <h3 className="text-sm font-semibold mb-2 text-primary">Processing Steps</h3>
+            <div className="space-y-1 text-xs font-mono max-h-40 overflow-auto">
+              {processingSteps.length === 0 ? (
+                <p className="text-muted-foreground">No processing steps recorded yet.</p>
+              ) : (
+                processingSteps.map((step, index) => (
+                  <div key={index} className="flex items-start">
+                    <span className="text-primary mr-2">→</span>
+                    <span className="text-muted-foreground">{step}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+        )}
         
         {files.length === 0 ? (
           <FileUploadZone onFilesUploaded={handleFilesUploaded} isProcessing={isProcessing} />

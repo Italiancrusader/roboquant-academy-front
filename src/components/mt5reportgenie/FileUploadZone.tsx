@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, File, FileUp, AlertCircle, Loader2 } from 'lucide-react';
@@ -10,11 +11,13 @@ import { parseMT5Excel, validateMT5File } from '@/utils/mt5parser';
 interface FileUploadZoneProps {
   onFilesUploaded: (files: FileType[]) => void;
   isProcessing: boolean;
+  onProcessingStep?: (step: string) => void;
 }
 
 const FileUploadZone: React.FC<FileUploadZoneProps> = ({ 
   onFilesUploaded,
-  isProcessing
+  isProcessing,
+  onProcessingStep
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   
@@ -46,10 +49,13 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     if (selectedFiles.length === 0) return;
     
     try {
+      onProcessingStep?.('Starting file parsing process');
       const processedFiles = await Promise.all(
         selectedFiles.map(async (file) => {
           try {
+            onProcessingStep?.(`Parsing file: ${file.name}`);
             const parsedData = await parseMT5Excel(file);
+            onProcessingStep?.(`Successfully parsed ${file.name}`);
             return {
               id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
               name: file.name,
@@ -61,6 +67,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
             };
           } catch (error) {
             console.error(`Error parsing file ${file.name}:`, error);
+            onProcessingStep?.(`Error parsing ${file.name}: ${error.message}`);
             toast({
               title: `Error parsing ${file.name}`,
               description: "The file format appears to be invalid. Please ensure it's an MT5 Strategy Tester report.",
@@ -73,11 +80,13 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
 
       const validFiles = processedFiles.filter(file => file !== null);
       if (validFiles.length > 0) {
+        onProcessingStep?.(`Successfully processed ${validFiles.length} files`);
         onFilesUploaded(validFiles as FileType[]);
         setSelectedFiles([]);
       }
     } catch (error) {
       console.error('Error processing files:', error);
+      onProcessingStep?.(`Processing failed: ${error.message}`);
       toast({
         title: "Processing failed",
         description: "There was an error processing the files. Please try again.",
