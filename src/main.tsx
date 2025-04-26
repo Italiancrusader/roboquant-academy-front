@@ -1,5 +1,5 @@
 
-import { createRoot } from 'react-dom/client';
+import React, { createRoot } from 'react-dom/client';
 import { lazy, Suspense } from 'react';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
@@ -37,7 +37,9 @@ const App = lazy(() =>
 
 // Mount app with Suspense boundary
 createRoot(document.getElementById("root")!).render(
-  <Suspense fallback={<LoadingAnimation />}>
-    <App />
-  </Suspense>
+  <React.StrictMode>
+    <Suspense fallback={<LoadingAnimation />}>
+      <App />
+    </Suspense>
+  </React.StrictMode>
 );
