@@ -5,77 +5,51 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Copy, Download, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const NarrativePanel: React.FC = () => {
-  const [apiKey, setApiKey] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [narrative, setNarrative] = useState<string>('');
   
-  const handleGenerateNarrative = () => {
-    if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your OpenAI API key to generate a narrative.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+  const handleGenerateNarrative = async () => {
     setIsGenerating(true);
     
-    // Simulate API call for demo purposes
-    setTimeout(() => {
-      const mockNarrative = `
-# MT5 Strategy Performance Executive Summary
+    try {
+      // Mock metrics for demo - in a real app, these would come from your actual data
+      const mockMetrics = {
+        totalNetProfit: 12547.89,
+        profitFactor: 3.35,
+        expectedPayoff: 47.91,
+        maxDrawdown: 15.3,
+        sharpeRatio: 1.89,
+        sortinoRatio: 2.34,
+        calmarRatio: 1.12,
+        tradesTotal: 262,
+        winRate: 68.7,
+        recoveryFactor: 3.67
+      };
 
-## 1. Overall Profitability & Risk
+      const { data, error } = await supabase.functions.invoke('generate-narrative', {
+        body: { metrics: mockMetrics }
+      });
 
-* **Net Profit**: $12,547.89 with a strong profit factor of 3.35
-* **Return Metrics**: The strategy delivered consistent returns with a Sharpe ratio of 1.89 and Sortino ratio of 2.34
-* **Drawdown Control**: Maximum drawdown was contained at 15.3% of equity, with quick recovery periods (recovery factor: 3.67)
-* **Trade Efficiency**: 262 total trades with 68.7% win rate and average profit of $47.89 per trade
-
-The strategy demonstrates a robust risk-reward profile with returns significantly outperforming the inherent volatility. The Calmar ratio of 1.12 indicates acceptable returns relative to maximum drawdown, though there's room for improvement in drawdown management.
-
-## 2. Statistical Robustness & Edge Stability
-
-* **Return Distribution**: Moderate positive skew (0.73) with acceptable kurtosis (2.84)
-* **Time-Series Consistency**: Rolling 30-trade Sharpe ratio shows stable performance across different market conditions
-* **Monte Carlo Simulation**: 95% confidence interval suggests drawdown unlikely to exceed 19.7% in future iterations
-* **Trade Duration Edge**: Statistical significance in the 4-6 hour trade duration bracket (p < 0.05)
-
-Bootstrap analysis of 1000 iterations confirms the strategy's edge is statistically significant and not the result of random chance. The positive expectancy remains consistent when applying various sampling methods.
-
-## 3. Notable Strengths & Weaknesses
-
-### Strengths:
-* Strong performance during trending market conditions
-* Excellent win rate on short positions (72.4% vs 64.1% for longs)
-* Consistent weekly performance with minimal variation between weekdays
-* Low correlation to overall market movements (0.23)
-
-### Weaknesses:
-* Underperformance during high volatility periods (VIX > 25)
-* Excessive drawdowns during January and October (seasonal pattern)
-* Trade duration outliers negatively impact profitability
-* Limited edge during Asian trading hours
-
-The strategy shows particular strength when trading short positions in trending markets, but demonstrates vulnerability during extreme volatility environments.
-
-## 4. Actionable Improvement Recommendations
-
-* **Entry Refinement**: Implement volatility filter to avoid entries when daily ATR exceeds 1.5x 20-day average
-* **Risk Management**: Consider dynamic position sizing based on volatility-adjusted stop distances
-* **Exit Optimization**: Implement scaled exits to capture larger moves; current single-exit approach leaves money on the table
-* **Time Filters**: Restrict trading during Asian session hours where edge is statistically insignificant
-* **Seasonal Adjustments**: Reduce position size by 30% during historically weak months (January, October)
-
-Further parameter optimization should focus on exit mechanisms and drawdown control rather than entry conditions, which already demonstrate statistical edge.
-`;
+      if (error) throw error;
       
-      setNarrative(mockNarrative);
+      setNarrative(data.narrative);
+      toast({
+        title: "Narrative generated",
+        description: "Your strategy analysis has been generated successfully."
+      });
+    } catch (error) {
+      console.error('Error generating narrative:', error);
+      toast({
+        title: "Generation failed",
+        description: "There was an error generating the narrative. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsGenerating(false);
-    }, 3000);
+    }
   };
   
   const handleCopyToClipboard = () => {
@@ -104,45 +78,34 @@ Further parameter optimization should focus on exit mechanisms and drawdown cont
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold">LLM-Generated Strategy Narrative</h2>
+        <h2 className="text-xl font-semibold">AI-Generated Strategy Analysis</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Get an AI-powered professional analysis of your trading strategy with actionable insights.
+          Get a professional analysis of your trading strategy with actionable insights.
         </p>
       </div>
       
       {!narrative ? (
         <Card>
-          <CardContent className="p-6 space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="api-key" className="text-sm font-medium">
-                OpenAI API Key (never stored)
-              </label>
-              <Textarea
-                id="api-key"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Enter your API key to generate a narrative"
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                Your API key is never stored and is only used for this request.
-                Alternatively, you can set the OPENAI_API_KEY environment variable.
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Click the button below to generate an in-depth analysis of your trading strategy using AI.
               </p>
-            </div>
-            <div className="flex justify-end">
-              <Button 
-                onClick={handleGenerateNarrative} 
-                disabled={isGenerating || !apiKey}
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  'Generate Strategy Narrative'
-                )}
-              </Button>
+              <div className="flex justify-end">
+                <Button 
+                  onClick={handleGenerateNarrative} 
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating Analysis...
+                    </>
+                  ) : (
+                    'Generate Strategy Analysis'
+                  )}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
