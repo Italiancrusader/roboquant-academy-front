@@ -29,8 +29,6 @@ const MT5ReportGenie = () => {
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
       setIsProcessing(false);
       addProcessingStep(`Processed ${newFiles.length} files successfully`);
-      addProcessingStep(`Generated summary metrics`);
-      addProcessingStep(`Created CSV for further analysis`);
       
       toast({
         title: "Files processed successfully",
@@ -103,7 +101,11 @@ const MT5ReportGenie = () => {
         )}
         
         {files.length === 0 ? (
-          <FileUploadZone onFilesUploaded={handleFilesUploaded} isProcessing={isProcessing} />
+          <FileUploadZone 
+            onFilesUploaded={handleFilesUploaded} 
+            isProcessing={isProcessing} 
+            onProcessingStep={addProcessingStep}
+          />
         ) : (
           <ReportDashboard files={files} onClearFiles={handleClearFiles} />
         )}

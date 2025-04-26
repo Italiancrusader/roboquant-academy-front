@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, File, FileUp, AlertCircle, Loader2 } from 'lucide-react';
@@ -35,8 +34,9 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     
     if (validFiles.length > 0) {
       setSelectedFiles(validFiles);
+      onProcessingStep?.('Files selected for upload');
     }
-  }, []);
+  }, [onProcessingStep]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop,
@@ -56,6 +56,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
             onProcessingStep?.(`Parsing file: ${file.name}`);
             const parsedData = await parseMT5Excel(file);
             onProcessingStep?.(`Successfully parsed ${file.name}`);
+            onProcessingStep?.(`Generated CSV for ${file.name}`);
             return {
               id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
               name: file.name,
@@ -146,6 +147,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
                   size="sm"
                   onClick={() => {
                     setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+                    onProcessingStep?.(`Removed file: ${file.name}`);
                   }}
                 >
                   Remove

@@ -1,16 +1,18 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileType } from '@/types/mt5reportgenie';
-import { Circle, BarChart2, TrendingDown, Calculator, FileText, Trash2 } from 'lucide-react';
+import { Circle, BarChart2, TrendingDown, Calculator, FileText, Trash2, Download } from 'lucide-react';
 import KpiCards from './KpiCards';
 import EquityChart from './EquityChart';
 import RiskMetrics from './RiskMetrics';
 import DistributionCharts from './DistributionCharts';
 import CalendarView from './CalendarView';
 import NarrativePanel from './NarrativePanel';
+import CsvViewer from './CsvViewer';
 
 interface ReportDashboardProps {
   files: FileType[];
@@ -130,7 +132,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       )}
       
       <Tabs defaultValue="equity" className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2">
           <TabsTrigger value="equity" className="flex items-center">
             <BarChart2 className="h-4 w-4 mr-2" /> Equity
           </TabsTrigger>
@@ -145,6 +147,9 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
           </TabsTrigger>
           <TabsTrigger value="narrative" className="flex items-center">
             <FileText className="h-4 w-4 mr-2" /> Narrative
+          </TabsTrigger>
+          <TabsTrigger value="csv" className="flex items-center">
+            <Download className="h-4 w-4 mr-2" /> Data
           </TabsTrigger>
         </TabsList>
         
@@ -186,6 +191,13 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
               <NarrativePanel />
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="csv">
+          <CsvViewer 
+            csvUrl={activeFile?.parsedData?.csvUrl || null}
+            fileName={activeFile?.name || 'report'}
+          />
         </TabsContent>
       </Tabs>
       
