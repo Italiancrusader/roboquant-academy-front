@@ -1,11 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, ArrowRight } from 'lucide-react';
+import { Link } from "react-router-dom";
+
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -13,6 +17,7 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  
   const menuItems = [{
     name: "Why RoboQuant",
     href: "#why"
@@ -31,39 +36,97 @@ const Navbar = () => {
   }, {
     name: "FAQ",
     href: "#faq"
+  }, {
+    name: "MT5 Report Genie",
+    href: "/mt5-report-genie"
   }];
-  return <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-background/95 backdrop-blur-md shadow-md py-2' : 'py-4 sm:py-6'}`}>
+  
+  return (
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-background/95 backdrop-blur-md shadow-md py-2' : 'py-4 sm:py-6'}`}>
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
-          <img alt="RoboQuant Academy" className="h-10 sm:h-12 object-contain" src="/lovable-uploads/75ec0136-6eac-4af5-a2ef-798104dbc59a.png" />
+          <Link to="/">
+            <img 
+              alt="RoboQuant Academy" 
+              className="h-10 sm:h-12 object-contain" 
+              src="/lovable-uploads/75ec0136-6eac-4af5-a2ef-798104dbc59a.png" 
+            />
+          </Link>
         </div>
 
-        {isMobile ? <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+        {isMobile ? 
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-foreground hover:bg-accent" 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
               <Menu className="h-6 w-6" />
             </Button>
-          </div> : <>
+          </div> 
+        : 
+          <>
             <div className="hidden md:flex space-x-8">
-              {menuItems.map(item => <a key={item.name} href={item.href} className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all l-bracket-accent py-1 px-2">
-                  {item.name}
-                </a>)}
+              {menuItems.map(item => 
+                item.href.startsWith('/') ? (
+                  <Link 
+                    key={item.name} 
+                    to={item.href} 
+                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all l-bracket-accent py-1 px-2"
+                  >
+                    {item.name}
+                  </Link>
+                ) : (
+                  <a 
+                    key={item.name} 
+                    href={item.href} 
+                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all l-bracket-accent py-1 px-2"
+                  >
+                    {item.name}
+                  </a>
+                )
+              )}
             </div>
             <Button className="cta-button text-white">
               Enroll Now <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
-          </>}
+          </>
+        }
 
-        {isMobile && isMenuOpen && <div className="absolute top-full left-0 w-full bg-background/95 backdrop-blur-md shadow-lg py-4 animate-fade-in">
+        {isMobile && isMenuOpen && 
+          <div className="absolute top-full left-0 w-full bg-background/95 backdrop-blur-md shadow-lg py-4 animate-fade-in">
             <div className="container mx-auto px-4 flex flex-col space-y-4">
-              {menuItems.map(item => <a key={item.name} href={item.href} className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all py-2" onClick={() => setIsMenuOpen(false)}>
-                  {item.name}
-                </a>)}
+              {menuItems.map(item => 
+                item.href.startsWith('/') ? (
+                  <Link 
+                    key={item.name} 
+                    to={item.href} 
+                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all py-2" 
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ) : (
+                  <a 
+                    key={item.name} 
+                    href={item.href} 
+                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all py-2" 
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </a>
+                )
+              )}
               <Button className="cta-button text-white w-full">
                 Enroll Now <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
-          </div>}
+          </div>
+        }
       </div>
-    </nav>;
+    </nav>
+  );
 };
+
 export default Navbar;

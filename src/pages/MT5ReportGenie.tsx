@@ -1,0 +1,85 @@
+
+import React, { useState } from 'react';
+import Navbar from '@/components/Navbar';
+import FileUploadZone from '@/components/mt5reportgenie/FileUploadZone';
+import ReportDashboard from '@/components/mt5reportgenie/ReportDashboard';
+import { toast } from '@/components/ui/use-toast';
+import { FileType } from '@/types/mt5reportgenie';
+import { Link } from 'react-router-dom';
+import { Github } from 'lucide-react';
+
+const MT5ReportGenie = () => {
+  const [files, setFiles] = useState<FileType[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleFilesUploaded = (newFiles: FileType[]) => {
+    // In a real implementation, this would send files to the backend
+    // For now, we'll simulate a loading state and then update the files
+    setIsProcessing(true);
+    
+    // Simulate processing time
+    setTimeout(() => {
+      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      setIsProcessing(false);
+      
+      toast({
+        title: "Files processed successfully",
+        description: `${newFiles.length} ${newFiles.length === 1 ? 'file' : 'files'} have been processed.`
+      });
+    }, 2000);
+  };
+
+  const handleClearFiles = () => {
+    setFiles([]);
+    toast({
+      title: "All files cleared",
+      description: "Your workspace has been reset."
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground font-neulis">
+      <Navbar />
+      <div className="container mx-auto px-4 pt-24 pb-12">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold gradient-text">MT5 Report Genie</h1>
+            <p className="text-muted-foreground mt-2">
+              Upload MetaTrader 5 Strategy Tester reports for professional-grade performance analysis
+            </p>
+          </div>
+          <div className="flex items-center mt-4 md:mt-0">
+            <Link 
+              to="https://github.com/roboquant/mt5-report-genie" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Github className="mr-2 h-5 w-5" />
+              <span>GitHub</span>
+            </Link>
+          </div>
+        </div>
+        
+        {files.length === 0 ? (
+          <FileUploadZone onFilesUploaded={handleFilesUploaded} isProcessing={isProcessing} />
+        ) : (
+          <ReportDashboard files={files} onClearFiles={handleClearFiles} />
+        )}
+      </div>
+      
+      <footer className="py-6 border-t border-border bg-secondary">
+        <div className="container mx-auto px-4">
+          <p className="text-sm text-muted-foreground text-center">
+            &copy; {new Date().getFullYear()} RoboQuant Academy MT5 Report Genie - 
+            <Link to="/" className="ml-1 text-blue-primary hover:text-teal-primary transition-colors">
+              Back to Home
+            </Link>
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default MT5ReportGenie;
