@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -22,31 +23,103 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
   const [activeFileId, setActiveFileId] = useState<string>(files[0]?.id);
   
   const activeFile = files.find(file => file.id === activeFileId);
+  const trades = activeFile?.parsedData?.trades || [];
   
-  const mockMetrics = {
-    totalNetProfit: 12547.89,
-    grossProfit: 17890.34,
-    grossLoss: -5342.45,
-    profitFactor: 3.35,
-    expectedPayoff: 47.91,
-    absoluteDrawdown: 1876.50,
-    maxDrawdown: 3421.67,
-    relativeDrawdown: 15.3, // percent
-    sharpeRatio: 1.89,
-    sortinoRatio: 2.34,
-    calmarRatio: 1.12,
-    tradesTotal: 262,
-    tradesShort: 145,
-    tradesLong: 117,
-    winRate: 68.7, // percent
-    avgTradeProfit: 47.89,
-    avgWinning: 104.62,
-    avgLosing: -69.38,
-    largestWin: 846.75,
-    largestLoss: -423.56,
-    recoveryFactor: 3.67,
-    tradeDuration: "4h 12m", // average
-  };
+  // Calculate metrics from actual data
+  const metrics = React.useMemo(() => {
+    if (!trades.length) {
+      return {
+        totalNetProfit: 0,
+        grossProfit: 0,
+        grossLoss: 0,
+        profitFactor: 0,
+        expectedPayoff: 0,
+        absoluteDrawdown: 0,
+        maxDrawdown: 0,
+        relativeDrawdown: 0,
+        sharpeRatio: 0,
+        tradesTotal: 0,
+        winRate: 0,
+        avgTradeProfit: 0,
+        recoveryFactor: 0,
+        tradeDuration: "0h 0m",
+      };
+    }
+    
+    // Filter trades with profit data
+    const completedTrades = trades.filter(t => t.profit !== undefined && t.profit !== 0);
+    
+    // Calculate key metrics
+    const profitableTrades = completedTrades.filter(t => t.profit && t.profit > 0);
+    const lossTrades = completedTrades.filter(t => t.profit && t.profit < 0);
+    
+    const totalNetProfit = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
+    const grossProfit = profitableTrades.reduce((sum, t) => sum + (t.profit || 0), 0);
+    const grossLoss = Math.abs(lossTrades.reduce((sum, t) => sum + (t.profit || 0), 0));
+    
+    const winRate = completedTrades.length ? (profitableTrades.length / completedTrades.length) * 100 : 0;
+    const profitFactor = grossLoss ? grossProfit / grossLoss : 0;
+    const avgTradeProfit = completedTrades.length ? totalNetProfit / completedTrades.length : 0;
+    
+    // Calculate drawdown
+    let peak = 0;
+    let maxDrawdown = 0;
+    let currentDrawdown = 0;
+    let balance = trades[0]?.balance || 0;
+    
+    trades.forEach(trade => {
+      if (trade.balance) {
+        balance = trade.balance;
+        if (balance > peak) {
+          peak = balance;
+          currentDrawdown = 0;
+        } else {
+          currentDrawdown = peak - balance;
+          if (currentDrawdown > maxDrawdown) {
+            maxDrawdown = currentDrawdown;
+          }
+        }
+      }
+    });
+    
+    const relativeDrawdown = peak ? (maxDrawdown / peak) * 100 : 0;
+    const recoveryFactor = maxDrawdown > 0 ? totalNetProfit / maxDrawdown : 0;
+    
+    // Basic Sharpe ratio calculation (simplified)
+    const returns = [];
+    let prevBalance = trades[0]?.balance || 0;
+    
+    trades.forEach(trade => {
+      if (trade.balance && prevBalance > 0) {
+        returns.push((trade.balance - prevBalance) / prevBalance);
+        prevBalance = trade.balance;
+      }
+    });
+    
+    const returnsMean = returns.reduce((sum, r) => sum + r, 0) / returns.length;
+    const returnsStdDev = Math.sqrt(
+      returns.reduce((sum, r) => sum + Math.pow(r - returnsMean, 2), 0) / returns.length
+    );
+    
+    const sharpeRatio = returnsStdDev > 0 ? returnsMean / returnsStdDev * Math.sqrt(252) : 0; // Annualized
+    
+    return {
+      totalNetProfit,
+      grossProfit,
+      grossLoss,
+      profitFactor,
+      expectedPayoff: avgTradeProfit,
+      absoluteDrawdown: maxDrawdown,
+      maxDrawdown,
+      relativeDrawdown,
+      sharpeRatio,
+      tradesTotal: completedTrades.length,
+      winRate,
+      avgTradeProfit,
+      recoveryFactor,
+      tradeDuration: "N/A", // Would need times for each trade to calculate this
+    };
+  }, [trades]);
 
   const [isDebugMode, setIsDebugMode] = useState(false);
 
@@ -80,7 +153,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
         </Button>
       </div>
       
-      <KpiCards metrics={mockMetrics} />
+      <KpiCards metrics={metrics} />
       
       <div className="flex items-center space-x-2 mb-4">
         <input 

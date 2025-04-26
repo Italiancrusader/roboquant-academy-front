@@ -35,17 +35,26 @@ interface KpiCardsProps {
 }
 
 const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
+  // Format number to handle possible NaN/Infinity values
+  const formatNumber = (value: number, decimals: number = 2): string => {
+    if (isNaN(value) || !isFinite(value)) return '0.00';
+    return value.toLocaleString(undefined, { 
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals 
+    });
+  };
+  
   const kpiData = [
     {
       title: 'Net Profit',
-      value: `$${metrics.totalNetProfit.toLocaleString()}`,
+      value: `$${formatNumber(metrics.totalNetProfit)}`,
       icon: TrendingUp,
-      iconColor: 'text-green-500',
+      iconColor: metrics.totalNetProfit >= 0 ? 'text-green-500' : 'text-red-500',
       tooltip: 'The total profit or loss of all completed trades'
     },
     {
       title: 'Profit Factor',
-      value: metrics.profitFactor.toFixed(2),
+      value: formatNumber(metrics.profitFactor),
       icon: BarChart,
       iconColor: 'text-blue-primary',
       tooltip: 'Ratio of gross profit to gross loss'
@@ -59,35 +68,35 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
     },
     {
       title: 'Win Rate',
-      value: `${metrics.winRate.toFixed(1)}%`,
+      value: `${formatNumber(metrics.winRate, 1)}%`,
       icon: Percent,
       iconColor: 'text-yellow-500',
       tooltip: 'Percentage of trades that were profitable'
     },
     {
       title: 'Avg Trade',
-      value: `$${metrics.avgTradeProfit.toFixed(2)}`,
+      value: `$${formatNumber(metrics.avgTradeProfit)}`,
       icon: Calculator,
       iconColor: 'text-purple-500',
       tooltip: 'Average profit/loss per trade'
     },
     {
       title: 'Max Drawdown',
-      value: `${metrics.relativeDrawdown.toFixed(1)}%`,
+      value: `${formatNumber(metrics.relativeDrawdown, 1)}%`,
       icon: TrendingDown,
       iconColor: 'text-red-500',
       tooltip: 'Maximum peak-to-valley drop in equity expressed as a percentage'
     },
     {
       title: 'Sharpe Ratio',
-      value: metrics.sharpeRatio.toFixed(2),
+      value: formatNumber(metrics.sharpeRatio),
       icon: Award,
       iconColor: 'text-amber-500',
       tooltip: 'Risk-adjusted return (higher is better)'
     },
     {
       title: 'Recovery Factor',
-      value: metrics.recoveryFactor.toFixed(2),
+      value: formatNumber(metrics.recoveryFactor),
       icon: AlertTriangle,
       iconColor: 'text-orange-500',
       tooltip: 'Net profit divided by maximum drawdown'
@@ -95,33 +104,35 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {kpiData.map((kpi) => (
-        <Card key={kpi.title} className="bg-card hover:bg-muted/80 transition-colors">
-          <CardContent className="flex items-center p-4">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${kpi.iconColor} bg-muted/30`}>
-              <kpi.icon className="h-6 w-6" />
-            </div>
-            <div className="ml-4">
-              <div className="flex items-center">
-                <p className="text-sm text-muted-foreground">{kpi.title}</p>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="ml-1 cursor-help">
-                      <HelpCircle className="h-3 w-3 text-muted-foreground/70" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs max-w-xs">{kpi.tooltip}</p>
-                  </TooltipContent>
-                </Tooltip>
+    <TooltipProvider>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {kpiData.map((kpi) => (
+          <Card key={kpi.title} className="bg-card hover:bg-muted/80 transition-colors">
+            <CardContent className="flex items-center p-4">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${kpi.iconColor} bg-muted/30`}>
+                <kpi.icon className="h-6 w-6" />
               </div>
-              <p className="text-xl font-bold mt-1">{kpi.value}</p>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+              <div className="ml-4">
+                <div className="flex items-center">
+                  <p className="text-sm text-muted-foreground">{kpi.title}</p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="ml-1 cursor-help">
+                        <HelpCircle className="h-3 w-3 text-muted-foreground/70" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs max-w-xs">{kpi.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-xl font-bold mt-1">{kpi.value}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </TooltipProvider>
   );
 };
 
