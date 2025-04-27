@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileType } from '@/types/mt5reportgenie';
-import { Circle, BarChart2, TrendingDown, Calculator, FileText, Trash2, Download } from 'lucide-react';
+import { Circle, BarChart2, TrendingDown, Calculator, FileText, Trash2, Download, Calendar } from 'lucide-react';
 import KpiCards from './KpiCards';
 import EquityChart from './EquityChart';
 import RiskMetrics from './RiskMetrics';
@@ -24,7 +24,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
   const activeFile = files.find(file => file.id === activeFileId);
   const trades = activeFile?.parsedData?.trades || [];
   
-  // Calculate metrics from actual data
   const metrics = React.useMemo(() => {
     if (!trades.length) {
       return {
@@ -47,11 +46,9 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       };
     }
     
-    // Get initial and final balance
     let initialBalance = 0;
     let finalBalance = 0;
     
-    // Find initial balance
     for (let i = 0; i < trades.length; i++) {
       if (trades[i].balance !== undefined) {
         initialBalance = trades[i].balance;
@@ -59,7 +56,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       }
     }
     
-    // Find final balance
     for (let i = trades.length - 1; i >= 0; i--) {
       if (trades[i].balance !== undefined) {
         finalBalance = trades[i].balance;
@@ -67,13 +63,10 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       }
     }
     
-    // Calculate net profit based on balances
     const totalNetProfit = finalBalance - initialBalance;
     
-    // Filter trades with profit data
     const completedTrades = trades.filter(t => t.profit !== undefined && t.direction === 'out');
     
-    // Calculate key metrics
     const profitableTrades = completedTrades.filter(t => t.profit && t.profit > 0);
     const lossTrades = completedTrades.filter(t => t.profit && t.profit < 0);
     
@@ -84,7 +77,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
     const profitFactor = grossLoss ? grossProfit / grossLoss : 0;
     const avgTradeProfit = completedTrades.length ? completedTrades.reduce((sum, t) => sum + (t.profit || 0), 0) / completedTrades.length : 0;
     
-    // Calculate drawdown
     let peak = initialBalance;
     let maxDrawdown = 0;
     let currentDrawdown = 0;
@@ -108,7 +100,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
     const relativeDrawdown = peak ? (maxDrawdown / peak) * 100 : 0;
     const recoveryFactor = maxDrawdown > 0 ? totalNetProfit / maxDrawdown : 0;
     
-    // Basic Sharpe ratio calculation (simplified)
     const returns = [];
     let prevBalance = null;
     
@@ -126,7 +117,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       returns.reduce((sum, r) => sum + Math.pow(r - returnsMean, 2), 0) / (returns.length || 1)
     );
     
-    const sharpeRatio = returnsStdDev > 0 ? returnsMean / returnsStdDev * Math.sqrt(252) : 0; // Annualized
+    const sharpeRatio = returnsStdDev > 0 ? returnsMean / returnsStdDev * Math.sqrt(252) : 0;
     
     return {
       totalNetProfit,
@@ -142,7 +133,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       winRate,
       avgTradeProfit,
       recoveryFactor,
-      tradeDuration: "N/A", // Would need times for each trade to calculate this
+      tradeDuration: "N/A",
       initialBalance,
       finalBalance,
     };
@@ -151,7 +142,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
   const [isDebugMode, setIsDebugMode] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       <div className="flex flex-col md:flex-row justify-between items-start">
         <div className="space-y-2 mb-4 md:mb-0">
           <h2 className="text-2xl font-bold">Strategy Analysis</h2>
@@ -182,18 +173,20 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       
       <KpiCards metrics={metrics} />
       
-      <div className="flex items-center space-x-2 mb-4">
-        <input 
-          type="checkbox" 
-          id="debug-mode" 
-          checked={isDebugMode}
-          onChange={() => setIsDebugMode(!isDebugMode)}
-          className="form-checkbox h-5 w-5 text-primary"
-        />
-        <label htmlFor="debug-mode" className="text-sm text-muted-foreground">
-          Enable Debug Mode
-        </label>
-      </div>
+      {isDebugMode && (
+        <div className="flex items-center space-x-2 mb-4">
+          <input 
+            type="checkbox" 
+            id="debug-mode" 
+            checked={isDebugMode}
+            onChange={() => setIsDebugMode(!isDebugMode)}
+            className="form-checkbox h-5 w-5 text-primary"
+          />
+          <label htmlFor="debug-mode" className="text-sm text-muted-foreground">
+            Debug Mode
+          </label>
+        </div>
+      )}
 
       {isDebugMode && (
         <div className="bg-secondary/20 p-6 rounded-lg border border-dashed border-primary/50 space-y-4">
@@ -231,7 +224,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       )}
       
       <Tabs defaultValue="equity" className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2">
+        <TabsList className="grid grid-cols-3 md:grid-cols-6 max-w-full overflow-x-auto">
           <TabsTrigger value="equity" className="flex items-center">
             <BarChart2 className="h-4 w-4 mr-2" /> Equity
           </TabsTrigger>
@@ -242,7 +235,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
             <Calculator className="h-4 w-4 mr-2" /> Distribution
           </TabsTrigger>
           <TabsTrigger value="calendar" className="flex items-center">
-            <Calculator className="h-4 w-4 mr-2" /> Calendar
+            <Calendar className="h-4 w-4 mr-2" /> Calendar
           </TabsTrigger>
           <TabsTrigger value="narrative" className="flex items-center">
             <FileText className="h-4 w-4 mr-2" /> Narrative
@@ -252,56 +245,58 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="equity">
-          <Card>
-            <CardContent className="p-6">
-              <EquityChart trades={activeFile?.parsedData?.trades || []} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="risk">
-          <Card>
-            <CardContent className="p-6">
-              <RiskMetrics trades={activeFile?.parsedData?.trades || []} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="distribution">
-          <Card>
-            <CardContent className="p-6">
-              <DistributionCharts trades={activeFile?.parsedData?.trades || []} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="calendar">
-          <Card>
-            <CardContent className="p-6">
-              <CalendarView trades={activeFile?.parsedData?.trades || []} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="narrative">
-          <Card>
-            <CardContent className="p-6">
-              <NarrativePanel />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="csv">
-          <CsvViewer 
-            csvUrl={activeFile?.parsedData?.csvUrl || null}
-            fileName={activeFile?.name || 'report'}
-            parsedData={activeFile?.parsedData}
-          />
-        </TabsContent>
+        <div className="max-h-[500px] overflow-y-auto">
+          <TabsContent value="equity" className="my-2">
+            <Card>
+              <CardContent className="p-4">
+                <EquityChart trades={activeFile?.parsedData?.trades || []} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="risk" className="my-2">
+            <Card>
+              <CardContent className="p-4">
+                <RiskMetrics trades={activeFile?.parsedData?.trades || []} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="distribution" className="my-2">
+            <Card>
+              <CardContent className="p-4">
+                <DistributionCharts trades={activeFile?.parsedData?.trades || []} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="calendar" className="my-2">
+            <Card>
+              <CardContent className="p-4">
+                <CalendarView trades={activeFile?.parsedData?.trades || []} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="narrative" className="my-2">
+            <Card>
+              <CardContent className="p-4">
+                <NarrativePanel />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="csv" className="my-2">
+            <CsvViewer 
+              csvUrl={activeFile?.parsedData?.csvUrl || null}
+              fileName={activeFile?.name || 'report'}
+              parsedData={activeFile?.parsedData}
+            />
+          </TabsContent>
+        </div>
       </Tabs>
       
-      <div className="flex justify-end space-x-3">
+      <div className="flex justify-end space-x-3 pt-4">
         <Button variant="outline">
           Export PDF Report
         </Button>

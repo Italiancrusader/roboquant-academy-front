@@ -50,8 +50,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades }) => {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Monthly Performance</h2>
-      <Card className="pt-6">
-        <div className="h-[400px]">
+      <Card className="pt-4">
+        <div className="h-[350px] w-full">
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
               <Treemap
@@ -59,6 +59,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades }) => {
                 dataKey="profit"
                 stroke="hsl(var(--border))"
                 fill="hsl(var(--primary))"
+                animationDuration={500}
               >
                 <ChartTooltip
                   content={({ active, payload }) => {

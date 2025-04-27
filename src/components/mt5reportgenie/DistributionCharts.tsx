@@ -48,19 +48,23 @@ const DistributionCharts: React.FC<DistributionChartsProps> = ({ trades }) => {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Profit Distribution</h2>
-      <Card className="pt-6">
-        <div className="h-[400px]">
+      <Card className="pt-4">
+        <div className="h-[350px] w-full">
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={distributionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <BarChart 
+                data={distributionData} 
+                margin={{ top: 10, right: 20, left: 20, bottom: 60 }}
+              >
                 <XAxis 
                   dataKey="range"
                   interval={0}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 11 }}
                   angle={-45}
                   textAnchor="end"
+                  height={60}
                 />
-                <YAxis allowDecimals={false} />
+                <YAxis allowDecimals={false} width={40} />
                 <ChartTooltip
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
@@ -77,7 +81,7 @@ const DistributionCharts: React.FC<DistributionChartsProps> = ({ trades }) => {
                     );
                   }}
                 />
-                <Bar dataKey="count">
+                <Bar dataKey="count" maxBarSize={50}>
                   {distributionData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`}

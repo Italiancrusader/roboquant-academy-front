@@ -57,11 +57,11 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
         </div>
       </div>
       
-      <Card className="pt-6">
-        <div className="h-[400px]">
+      <Card className="pt-4">
+        <div className="h-[350px] w-full">
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={equityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <AreaChart data={equityData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
                 <defs>
                   <linearGradient id="equity" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
@@ -71,6 +71,10 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 <XAxis 
                   dataKey="date"
                   tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                  height={40}
+                  tick={{ fontSize: 11 }}
+                  angle={-45}
+                  textAnchor="end"
                 />
                 <YAxis />
                 <ChartTooltip 

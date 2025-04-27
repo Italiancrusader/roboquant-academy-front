@@ -112,19 +112,19 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
 
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {kpiData.map((kpi) => (
           <Card key={kpi.title} className="bg-card hover:bg-muted/80 transition-colors">
-            <CardContent className="flex items-center p-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${kpi.iconColor} bg-muted/30`}>
-                <kpi.icon className="h-6 w-6" />
+            <CardContent className="flex items-center p-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${kpi.iconColor} bg-muted/30`}>
+                <kpi.icon className="h-5 w-5" />
               </div>
-              <div className="ml-4">
+              <div className="ml-4 min-w-0">
                 <div className="flex items-center">
-                  <p className="text-sm text-muted-foreground">{kpi.title}</p>
+                  <p className="text-sm text-muted-foreground truncate">{kpi.title}</p>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="ml-1 cursor-help">
+                      <span className="ml-1 cursor-help flex-shrink-0">
                         <HelpCircle className="h-3 w-3 text-muted-foreground/70" />
                       </span>
                     </TooltipTrigger>
@@ -133,7 +133,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <p className="text-xl font-bold mt-1">{kpi.value}</p>
+                <p className="text-lg font-bold mt-1 truncate">{kpi.value}</p>
               </div>
             </CardContent>
           </Card>
