@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -43,8 +42,33 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
         avgTradeProfit: 0,
         recoveryFactor: 0,
         tradeDuration: "0h 0m",
+        initialBalance: 0,
+        finalBalance: 0,
       };
     }
+    
+    // Get initial and final balance
+    let initialBalance = 0;
+    let finalBalance = 0;
+    
+    // Find initial balance
+    for (let i = 0; i < trades.length; i++) {
+      if (trades[i].balance !== undefined) {
+        initialBalance = trades[i].balance;
+        break;
+      }
+    }
+    
+    // Find final balance
+    for (let i = trades.length - 1; i >= 0; i--) {
+      if (trades[i].balance !== undefined) {
+        finalBalance = trades[i].balance;
+        break;
+      }
+    }
+    
+    // Calculate net profit based on balances
+    const totalNetProfit = finalBalance - initialBalance;
     
     // Filter trades with profit data
     const completedTrades = trades.filter(t => t.profit !== undefined && t.direction === 'out');
@@ -53,28 +77,18 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
     const profitableTrades = completedTrades.filter(t => t.profit && t.profit > 0);
     const lossTrades = completedTrades.filter(t => t.profit && t.profit < 0);
     
-    const totalNetProfit = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
     const grossProfit = profitableTrades.reduce((sum, t) => sum + (t.profit || 0), 0);
     const grossLoss = Math.abs(lossTrades.reduce((sum, t) => sum + (t.profit || 0), 0));
     
     const winRate = completedTrades.length ? (profitableTrades.length / completedTrades.length) * 100 : 0;
     const profitFactor = grossLoss ? grossProfit / grossLoss : 0;
-    const avgTradeProfit = completedTrades.length ? totalNetProfit / completedTrades.length : 0;
+    const avgTradeProfit = completedTrades.length ? completedTrades.reduce((sum, t) => sum + (t.profit || 0), 0) / completedTrades.length : 0;
     
     // Calculate drawdown
-    let peak = 0;
+    let peak = initialBalance;
     let maxDrawdown = 0;
     let currentDrawdown = 0;
-    let balance = 0;
-    
-    // Find initial balance
-    for (let i = 0; i < trades.length; i++) {
-      if (trades[i].balance !== undefined) {
-        balance = trades[i].balance;
-        peak = balance;
-        break;
-      }
-    }
+    let balance = initialBalance;
     
     trades.forEach(trade => {
       if (trade.balance !== undefined) {
@@ -129,6 +143,8 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       avgTradeProfit,
       recoveryFactor,
       tradeDuration: "N/A", // Would need times for each trade to calculate this
+      initialBalance,
+      finalBalance,
     };
   }, [trades]);
 

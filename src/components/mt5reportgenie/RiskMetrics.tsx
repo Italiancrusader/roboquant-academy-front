@@ -12,6 +12,29 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
   const completedTrades = trades.filter(t => t.profit !== undefined && t.direction === 'out');
   
   const metrics = React.useMemo(() => {
+    // Find initial and final balance
+    let initialBalance = 0;
+    let finalBalance = 0;
+    
+    // Get initial balance from first trade with balance data
+    for (let i = 0; i < trades.length; i++) {
+      if (trades[i].balance !== undefined) {
+        initialBalance = trades[i].balance;
+        break;
+      }
+    }
+    
+    // Get final balance from last trade with balance data
+    for (let i = trades.length - 1; i >= 0; i--) {
+      if (trades[i].balance !== undefined) {
+        finalBalance = trades[i].balance;
+        break;
+      }
+    }
+    
+    // Calculate total profit based on initial and final balance
+    const totalNetProfit = finalBalance - initialBalance;
+    
     const profitableTrades = completedTrades.filter(t => t.profit && t.profit > 0);
     const lossTrades = completedTrades.filter(t => t.profit && t.profit < 0);
     
@@ -28,16 +51,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
     let peak = 0;
     let maxDrawdown = 0;
     let currentDrawdown = 0;
-    let balance = 0;
-    
-    // Find initial balance
-    for (let i = 0; i < trades.length; i++) {
-      if (trades[i].balance !== undefined) {
-        balance = trades[i].balance;
-        peak = balance;
-        break;
-      }
-    }
+    let balance = initialBalance;
     
     trades.forEach(trade => {
       if (trade.balance !== undefined) {
@@ -64,6 +78,10 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
       averageLoss: avgLoss,
       maxDrawdown,
       maxDrawdownPct: peak ? (maxDrawdown / peak) * 100 : 0,
+      // Add the new metrics for consistency
+      totalNetProfit,
+      initialBalance,
+      finalBalance
     };
   }, [trades, completedTrades]);
 
@@ -130,6 +148,30 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
           <p className="text-xs text-muted-foreground mt-1">
             Avg Win / Avg Loss
           </p>
+        </Card>
+        
+        <Card className="p-4">
+          <h3 className="text-sm font-medium text-muted-foreground">Net Profit</h3>
+          <div className="mt-2 text-2xl font-bold text-green-500">
+            ${metrics.totalNetProfit.toFixed(2)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Final Balance - Initial Balance
+          </p>
+        </Card>
+        
+        <Card className="p-4">
+          <h3 className="text-sm font-medium text-muted-foreground">Initial Balance</h3>
+          <div className="mt-2 text-2xl font-bold">
+            ${metrics.initialBalance.toFixed(2)}
+          </div>
+        </Card>
+        
+        <Card className="p-4">
+          <h3 className="text-sm font-medium text-muted-foreground">Final Balance</h3>
+          <div className="mt-2 text-2xl font-bold">
+            ${metrics.finalBalance.toFixed(2)}
+          </div>
         </Card>
       </div>
     </div>

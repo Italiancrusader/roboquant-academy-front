@@ -31,6 +31,8 @@ interface KpiCardsProps {
     avgTradeProfit: number;
     recoveryFactor: number;
     tradeDuration: string;
+    initialBalance?: number;
+    finalBalance?: number;
   };
 }
 
@@ -44,13 +46,18 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
     });
   };
   
+  // Calculate net profit based on initial and final balance if available
+  const netProfit = metrics.finalBalance !== undefined && metrics.initialBalance !== undefined
+    ? metrics.finalBalance - metrics.initialBalance
+    : metrics.totalNetProfit;
+  
   const kpiData = [
     {
       title: 'Net Profit',
-      value: `$${formatNumber(metrics.totalNetProfit)}`,
+      value: `$${formatNumber(netProfit)}`,
       icon: TrendingUp,
-      iconColor: metrics.totalNetProfit >= 0 ? 'text-green-500' : 'text-red-500',
-      tooltip: 'The total profit or loss of all completed trades'
+      iconColor: netProfit >= 0 ? 'text-green-500' : 'text-red-500',
+      tooltip: 'The difference between final balance and initial balance'
     },
     {
       title: 'Profit Factor',
