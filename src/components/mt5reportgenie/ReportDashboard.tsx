@@ -141,8 +141,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
     };
   }, [trades]);
 
-  const [isDebugMode, setIsDebugMode] = useState(false);
-
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col md:flex-row justify-between items-start">
@@ -174,56 +172,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       </div>
       
       <KpiCards metrics={metrics} />
-      
-      {isDebugMode && (
-        <div className="flex items-center space-x-2 mb-4">
-          <input 
-            type="checkbox" 
-            id="debug-mode" 
-            checked={isDebugMode}
-            onChange={() => setIsDebugMode(!isDebugMode)}
-            className="form-checkbox h-5 w-5 text-primary"
-          />
-          <label htmlFor="debug-mode" className="text-sm text-muted-foreground">
-            Debug Mode
-          </label>
-        </div>
-      )}
-
-      {isDebugMode && (
-        <div className="bg-secondary/20 p-6 rounded-lg border border-dashed border-primary/50 space-y-4">
-          <h3 className="text-lg font-semibold text-primary">Debug Panel</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h4 className="font-medium mb-2">Active File Info</h4>
-              <pre className="bg-background p-3 rounded text-xs overflow-auto max-h-60">
-                {JSON.stringify(activeFile, null, 2)}
-              </pre>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Parsed Data</h4>
-              <pre className="bg-background p-3 rounded text-xs overflow-auto max-h-60">
-                {JSON.stringify(activeFile?.parsedData?.summary, null, 2)}
-              </pre>
-            </div>
-          </div>
-          <div>
-            <Button 
-              variant="outline" 
-              onClick={() => console.log('Debug Active File:', activeFile)}
-              className="mr-2"
-            >
-              Log File to Console
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => console.log('Parsed Data:', activeFile?.parsedData)}
-            >
-              Log Parsed Data to Console
-            </Button>
-          </div>
-        </div>
-      )}
       
       <Tabs defaultValue="equity" className="space-y-4">
         <TabsList className="grid grid-cols-2 md:grid-cols-5 max-w-full overflow-x-auto">

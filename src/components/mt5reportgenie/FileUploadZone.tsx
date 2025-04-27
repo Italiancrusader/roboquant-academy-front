@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { FileType } from '@/types/mt5reportgenie';
 import { toast } from '@/components/ui/use-toast';
 import { parseMT5Excel, validateMT5File } from '@/utils/mt5parser';
+import LoadingOverlay from './LoadingOverlay';
 
 interface FileUploadZoneProps {
   onFilesUploaded: (files: FileType[]) => void;
@@ -53,10 +54,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       const processedFiles = await Promise.all(
         selectedFiles.map(async (file) => {
           try {
-            onProcessingStep?.(`Parsing file: ${file.name}`);
             const parsedData = await parseMT5Excel(file);
-            onProcessingStep?.(`Successfully parsed ${file.name}`);
-            onProcessingStep?.(`Generated CSV for ${file.name}`);
             return {
               id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
               name: file.name,
@@ -68,7 +66,6 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
             };
           } catch (error) {
             console.error(`Error parsing file ${file.name}:`, error);
-            onProcessingStep?.(`Error parsing ${file.name}: ${error.message}`);
             toast({
               title: `Error parsing ${file.name}`,
               description: "The file format appears to be invalid. Please ensure it's an MT5 Strategy Tester report.",
@@ -81,13 +78,11 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
 
       const validFiles = processedFiles.filter(file => file !== null);
       if (validFiles.length > 0) {
-        onProcessingStep?.(`Successfully processed ${validFiles.length} files`);
         onFilesUploaded(validFiles as FileType[]);
         setSelectedFiles([]);
       }
     } catch (error) {
       console.error('Error processing files:', error);
-      onProcessingStep?.(`Processing failed: ${error.message}`);
       toast({
         title: "Processing failed",
         description: "There was an error processing the files. Please try again.",
@@ -98,6 +93,8 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
 
   return (
     <div className="space-y-8">
+      {isProcessing && <LoadingOverlay />}
+      
       <Card className="border-dashed border-2 bg-muted/30">
         <CardContent className="p-6">
           <div
