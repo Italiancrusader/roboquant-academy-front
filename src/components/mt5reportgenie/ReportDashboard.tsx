@@ -12,6 +12,8 @@ import DistributionCharts from './DistributionCharts';
 import CalendarView from './CalendarView';
 import NarrativePanel from './NarrativePanel';
 import CsvViewer from './CsvViewer';
+import MonthlyReturns from './MonthlyReturns';
+import SymbolMetrics from './SymbolMetrics';
 
 interface ReportDashboardProps {
   files: FileType[];
@@ -224,32 +226,29 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       )}
       
       <Tabs defaultValue="equity" className="space-y-4">
-        <TabsList className="grid grid-cols-3 md:grid-cols-6 max-w-full overflow-x-auto">
+        <TabsList className="grid grid-cols-2 md:grid-cols-5 max-w-full overflow-x-auto">
           <TabsTrigger value="equity" className="flex items-center">
             <BarChart2 className="h-4 w-4 mr-2" /> Equity
           </TabsTrigger>
           <TabsTrigger value="risk" className="flex items-center">
             <TrendingDown className="h-4 w-4 mr-2" /> Risk
           </TabsTrigger>
-          <TabsTrigger value="distribution" className="flex items-center">
-            <Calculator className="h-4 w-4 mr-2" /> Distribution
+          <TabsTrigger value="monthly" className="flex items-center">
+            <BarChart2 className="h-4 w-4 mr-2" /> Monthly
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="flex items-center">
-            <Calendar className="h-4 w-4 mr-2" /> Calendar
-          </TabsTrigger>
-          <TabsTrigger value="narrative" className="flex items-center">
-            <FileText className="h-4 w-4 mr-2" /> Narrative
+          <TabsTrigger value="symbols" className="flex items-center">
+            <Calculator className="h-4 w-4 mr-2" /> Symbols
           </TabsTrigger>
           <TabsTrigger value="csv" className="flex items-center">
             <Download className="h-4 w-4 mr-2" /> Data
           </TabsTrigger>
         </TabsList>
         
-        <div className="max-h-[500px] overflow-y-auto">
+        <div className="space-y-4">
           <TabsContent value="equity" className="my-2">
             <Card>
               <CardContent className="p-4">
-                <EquityChart trades={activeFile?.parsedData?.trades || []} />
+                <EquityChart trades={trades} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -257,31 +256,23 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
           <TabsContent value="risk" className="my-2">
             <Card>
               <CardContent className="p-4">
-                <RiskMetrics trades={activeFile?.parsedData?.trades || []} />
+                <RiskMetrics trades={trades} />
               </CardContent>
             </Card>
           </TabsContent>
           
-          <TabsContent value="distribution" className="my-2">
+          <TabsContent value="monthly" className="my-2">
             <Card>
               <CardContent className="p-4">
-                <DistributionCharts trades={activeFile?.parsedData?.trades || []} />
+                <MonthlyReturns trades={trades} />
               </CardContent>
             </Card>
           </TabsContent>
           
-          <TabsContent value="calendar" className="my-2">
+          <TabsContent value="symbols" className="my-2">
             <Card>
               <CardContent className="p-4">
-                <CalendarView trades={activeFile?.parsedData?.trades || []} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="narrative" className="my-2">
-            <Card>
-              <CardContent className="p-4">
-                <NarrativePanel />
+                <SymbolMetrics trades={trades} />
               </CardContent>
             </Card>
           </TabsContent>
