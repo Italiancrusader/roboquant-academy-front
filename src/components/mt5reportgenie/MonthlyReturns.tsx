@@ -74,22 +74,24 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Monthly Returns</h2>
-      <Card className="p-6">
-        <div className="h-[350px] w-full">
+      <Card className="p-6 bg-muted/30">
+        <div className="h-[400px] w-full">
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={data}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                margin={{ top: 20, right: 30, left: 40, bottom: 70 }}
               >
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                 <XAxis
                   dataKey="month"
                   angle={-45}
                   textAnchor="end"
-                  height={60}
+                  height={70}
                   interval={0}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                  tickLine={{ stroke: "hsl(var(--border))" }}
                   tickFormatter={(value) => {
                     const [year, month] = value.split('-');
                     const date = new Date(Number(year), Number(month) - 1);
@@ -98,9 +100,12 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 />
                 <YAxis 
                   domain={yDomain}
-                  tickFormatter={(value) => `$${value.toLocaleString()}`}
+                  tickFormatter={(value) => `$${Math.abs(value) >= 1000 ? (value / 1000).toFixed(1) + 'k' : value}`}
+                  tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                  tickLine={{ stroke: "hsl(var(--border))" }}
                 />
-                <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeWidth={2} />
+                <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeWidth={1} />
                 <ChartTooltip
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
@@ -130,14 +135,14 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                   dataKey="return"
                   fill="hsl(var(--primary))"
                   radius={[4, 4, 0, 0]}
-                  barSize={30}
-                  minPointSize={3}
+                  barSize={20}
+                  minPointSize={5}
                 >
                   {data.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={entry.return > 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'}
-                      fillOpacity={0.8}
+                      fillOpacity={0.85}
                     />
                   ))}
                 </Bar>

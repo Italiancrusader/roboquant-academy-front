@@ -6,15 +6,11 @@ import ReportDashboard from '@/components/mt5reportgenie/ReportDashboard';
 import { toast } from '@/components/ui/use-toast';
 import { FileType } from '@/types/mt5reportgenie';
 import { Link } from 'react-router-dom';
-import { Github, Code } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { Github } from 'lucide-react';
 
 const MT5ReportGenie = () => {
   const [files, setFiles] = useState<FileType[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showDebug, setShowDebug] = useState(true);
   const [processingSteps, setProcessingSteps] = useState<string[]>([]);
 
   const addProcessingStep = (step: string) => {
@@ -59,17 +55,6 @@ const MT5ReportGenie = () => {
             </p>
           </div>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="debug-mode"
-                checked={showDebug}
-                onCheckedChange={setShowDebug}
-              />
-              <Label htmlFor="debug-mode" className="flex items-center">
-                <Code className="h-4 w-4 mr-1" />
-                Debug Mode
-              </Label>
-            </div>
             <Link 
               to="https://github.com/roboquant/mt5-report-genie" 
               target="_blank" 
@@ -81,24 +66,6 @@ const MT5ReportGenie = () => {
             </Link>
           </div>
         </div>
-        
-        {showDebug && (
-          <Card className="p-4 mb-8 bg-muted/20 border-dashed">
-            <h3 className="text-sm font-semibold mb-2 text-primary">Processing Steps</h3>
-            <div className="space-y-1 text-xs font-mono max-h-40 overflow-auto">
-              {processingSteps.length === 0 ? (
-                <p className="text-muted-foreground">No processing steps recorded yet.</p>
-              ) : (
-                processingSteps.map((step, index) => (
-                  <div key={index} className="flex items-start">
-                    <span className="text-primary mr-2">→</span>
-                    <span className="text-muted-foreground">{step}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </Card>
-        )}
         
         {files.length === 0 ? (
           <FileUploadZone 
