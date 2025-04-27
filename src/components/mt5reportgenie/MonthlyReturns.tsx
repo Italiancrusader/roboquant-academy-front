@@ -8,6 +8,7 @@ import {
   YAxis,
   ResponsiveContainer,
   ReferenceLine,
+  Cell,
 } from 'recharts';
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { MT5Trade } from '@/types/mt5reportgenie';
