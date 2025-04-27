@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileType } from '@/types/mt5reportgenie';
-import { Circle, BarChart2, TrendingDown, Calculator, FileText, Trash2, Download, Calendar } from 'lucide-react';
+import { 
+  CircleDollarSign, 
+  BarChart2, 
+  TrendingDown, 
+  Layers, 
+  Calendar, 
+  FileText, 
+  Trash2, 
+  Download, 
+  Circle,
+  ChartBar,
+  Target,
+  Calculator,
+  Globe
+} from 'lucide-react';
+
 import KpiCards from './KpiCards';
 import EquityChart from './EquityChart';
 import RiskMetrics from './RiskMetrics';
-import DistributionCharts from './DistributionCharts';
-import CalendarView from './CalendarView';
-import NarrativePanel from './NarrativePanel';
-import CsvViewer from './CsvViewer';
 import MonthlyReturns from './MonthlyReturns';
 import SymbolMetrics from './SymbolMetrics';
+import CsvViewer from './CsvViewer';
+import TradeDistribution from './TradeDistribution';
+import PerformanceHeatmap from './PerformanceHeatmap';
+import DrawdownAnalysis from './DrawdownAnalysis';
+import CorrelationAnalysis from './CorrelationAnalysis';
 
 interface ReportDashboardProps {
   files: FileType[];
@@ -173,59 +189,83 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       
       <KpiCards metrics={metrics} />
       
-      <Tabs defaultValue="equity" className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 max-w-full overflow-x-auto">
-          <TabsTrigger value="equity" className="flex items-center">
-            <BarChart2 className="h-4 w-4 mr-2" /> Equity
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 max-w-full overflow-x-auto">
+          <TabsTrigger value="overview" className="flex items-center">
+            <BarChart2 className="h-4 w-4 mr-2" /> Overview
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center">
+            <ChartBar className="h-4 w-4 mr-2" /> Performance
           </TabsTrigger>
           <TabsTrigger value="risk" className="flex items-center">
             <TrendingDown className="h-4 w-4 mr-2" /> Risk
           </TabsTrigger>
-          <TabsTrigger value="monthly" className="flex items-center">
-            <BarChart2 className="h-4 w-4 mr-2" /> Monthly
+          <TabsTrigger value="instruments" className="flex items-center">
+            <Globe className="h-4 w-4 mr-2" /> Instruments
           </TabsTrigger>
-          <TabsTrigger value="symbols" className="flex items-center">
-            <Calculator className="h-4 w-4 mr-2" /> Symbols
+          <TabsTrigger value="distribution" className="flex items-center">
+            <Layers className="h-4 w-4 mr-2" /> Distribution
           </TabsTrigger>
-          <TabsTrigger value="csv" className="flex items-center">
-            <Download className="h-4 w-4 mr-2" /> Data
+          <TabsTrigger value="correlation" className="flex items-center">
+            <Target className="h-4 w-4 mr-2" /> Correlation
+          </TabsTrigger>
+          <TabsTrigger value="calendar" className="flex items-center">
+            <Calendar className="h-4 w-4 mr-2" /> Calendar
+          </TabsTrigger>
+          <TabsTrigger value="data" className="flex items-center">
+            <FileText className="h-4 w-4 mr-2" /> Raw Data
           </TabsTrigger>
         </TabsList>
         
         <div className="space-y-4">
-          <TabsContent value="equity" className="my-2">
-            <Card>
-              <CardContent className="p-4">
-                <EquityChart trades={trades} />
-              </CardContent>
+          <TabsContent value="overview" className="my-2">
+            <Card className="p-6">
+              <EquityChart trades={trades} />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="performance" className="my-2">
+            <Card className="p-6">
+              <MonthlyReturns trades={trades} />
             </Card>
           </TabsContent>
           
           <TabsContent value="risk" className="my-2">
-            <Card>
-              <CardContent className="p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card className="p-6">
                 <RiskMetrics trades={trades} />
-              </CardContent>
+              </Card>
+              <Card className="p-6">
+                <DrawdownAnalysis trades={trades} />
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="instruments" className="my-2">
+            <Card className="p-6">
+              <SymbolMetrics trades={trades} />
             </Card>
           </TabsContent>
           
-          <TabsContent value="monthly" className="my-2">
-            <Card>
-              <CardContent className="p-4">
-                <MonthlyReturns trades={trades} />
-              </CardContent>
+          <TabsContent value="distribution" className="my-2">
+            <Card className="p-6">
+              <TradeDistribution trades={trades} />
             </Card>
           </TabsContent>
           
-          <TabsContent value="symbols" className="my-2">
-            <Card>
-              <CardContent className="p-4">
-                <SymbolMetrics trades={trades} />
-              </CardContent>
+          <TabsContent value="correlation" className="my-2">
+            <Card className="p-6">
+              <CorrelationAnalysis trades={trades} />
             </Card>
           </TabsContent>
           
-          <TabsContent value="csv" className="my-2">
+          <TabsContent value="calendar" className="my-2">
+            <Card className="p-6">
+              <PerformanceHeatmap trades={trades} />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="data" className="my-2">
             <CsvViewer 
               csvUrl={activeFile?.parsedData?.csvUrl || null}
               fileName={activeFile?.name || 'report'}
@@ -237,13 +277,16 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       
       <div className="flex justify-end space-x-3 pt-4">
         <Button variant="outline">
+          <Download className="h-4 w-4 mr-2" />
           Export PDF Report
         </Button>
         <Button variant="outline">
-          Download Charts
+          <Calculator className="h-4 w-4 mr-2" />
+          Monte Carlo Simulation
         </Button>
         <Button>
-          Compare Strategies
+          <CircleDollarSign className="h-4 w-4 mr-2" />
+          Optimize Strategy
         </Button>
       </div>
     </div>

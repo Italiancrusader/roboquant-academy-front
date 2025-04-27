@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import FileUploadZone from '@/components/mt5reportgenie/FileUploadZone';
 import ReportDashboard from '@/components/mt5reportgenie/ReportDashboard';
+import LoadingOverlay from '@/components/mt5reportgenie/LoadingOverlay';
 import { toast } from '@/components/ui/use-toast';
 import { FileType } from '@/types/mt5reportgenie';
 import { Link } from 'react-router-dom';
@@ -11,20 +12,13 @@ import { Github } from 'lucide-react';
 const MT5ReportGenie = () => {
   const [files, setFiles] = useState<FileType[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingSteps, setProcessingSteps] = useState<string[]>([]);
-
-  const addProcessingStep = (step: string) => {
-    setProcessingSteps(prev => [...prev, `${new Date().toISOString()} - ${step}`]);
-  };
 
   const handleFilesUploaded = (newFiles: FileType[]) => {
     setIsProcessing(true);
-    addProcessingStep(`Starting to process ${newFiles.length} files`);
     
     setTimeout(() => {
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
       setIsProcessing(false);
-      addProcessingStep(`Processed ${newFiles.length} files successfully`);
       
       toast({
         title: "Files processed successfully",
@@ -35,8 +29,6 @@ const MT5ReportGenie = () => {
 
   const handleClearFiles = () => {
     setFiles([]);
-    setProcessingSteps([]);
-    addProcessingStep('Cleared all files and processing history');
     toast({
       title: "All files cleared",
       description: "Your workspace has been reset."
@@ -46,6 +38,8 @@ const MT5ReportGenie = () => {
   return (
     <div className="min-h-screen bg-background text-foreground font-neulis">
       <Navbar />
+      {isProcessing && <LoadingOverlay />}
+      
       <div className="container mx-auto px-4 pt-24 pb-12">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div>
@@ -70,8 +64,7 @@ const MT5ReportGenie = () => {
         {files.length === 0 ? (
           <FileUploadZone 
             onFilesUploaded={handleFilesUploaded} 
-            isProcessing={isProcessing} 
-            onProcessingStep={addProcessingStep}
+            isProcessing={isProcessing}
           />
         ) : (
           <ReportDashboard files={files} onClearFiles={handleClearFiles} />
