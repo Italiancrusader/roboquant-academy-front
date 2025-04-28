@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -36,9 +35,6 @@ const Navbar = () => {
   }, {
     name: "FAQ",
     href: "#faq"
-  }, {
-    name: "MT5 Report Genie",
-    href: "/mt5-report-genie"
   }];
   
   return (
