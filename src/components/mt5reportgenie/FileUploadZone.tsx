@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, File, FileUp, AlertCircle, Loader2 } from 'lucide-react';
@@ -36,10 +35,9 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     
     if (validFiles.length > 0) {
       setSelectedFiles(validFiles);
-      onProcessingStep?.('Files selected for upload');
       console.log("Files selected:", validFiles);
     }
-  }, [onProcessingStep]);
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop,
