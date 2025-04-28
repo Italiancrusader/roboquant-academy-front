@@ -219,7 +219,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
         
         <div className="space-y-4">
           <TabsContent value="overview" className="my-2">
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden">
               <EquityChart trades={trades} />
             </Card>
           </TabsContent>
@@ -275,7 +275,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
         </div>
       </Tabs>
       
-      <div className="flex justify-end space-x-3 pt-4">
+      <div className="flex justify-end space-x-3 pt-4 mt-6">
         <Button variant="outline">
           <Download className="h-4 w-4 mr-2" />
           Export PDF Report

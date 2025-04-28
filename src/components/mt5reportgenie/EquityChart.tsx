@@ -57,11 +57,15 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
         </div>
       </div>
       
-      <Card className="pt-4">
-        <div className="h-[350px] w-full">
+      <div className="w-full overflow-hidden">
+        <div className="h-[350px] w-full overflow-hidden">
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={equityData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+              <AreaChart 
+                data={equityData} 
+                margin={{ top: 10, right: 5, left: 0, bottom: 25 }}
+                style={{ overflow: 'visible' }}
+              >
                 <defs>
                   <linearGradient id="equity" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
@@ -70,13 +74,15 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 </defs>
                 <XAxis 
                   dataKey="date"
-                  tickFormatter={(date) => new Date(date).toLocaleDateString()}
-                  height={40}
-                  tick={{ fontSize: 11 }}
-                  angle={-45}
-                  textAnchor="end"
+                  tickFormatter={(date) => {
+                    const d = new Date(date);
+                    return `${d.getMonth()+1}/${d.getDate()}`;
+                  }}
+                  height={20}
+                  tick={{ fontSize: 10 }}
+                  tickMargin={5}
                 />
-                <YAxis />
+                <YAxis width={40} />
                 <ChartTooltip 
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
@@ -109,7 +115,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
             </ResponsiveContainer>
           </ChartContainer>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
