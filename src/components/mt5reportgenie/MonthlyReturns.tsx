@@ -21,9 +21,14 @@ interface MonthlyReturnsProps {
 }
 
 const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
+  // Filter out initial balance entries (type is 'balance' or empty)
+  const filteredTrades = React.useMemo(() => {
+    return trades.filter(trade => !(trade.type === 'balance' || trade.type === ''));
+  }, [trades]);
+
   const monthlyData = React.useMemo(() => {
     // Group trades by month
-    const monthlyGroups = trades.reduce((acc, trade) => {
+    const monthlyGroups = filteredTrades.reduce((acc, trade) => {
       if (!trade.profit) return acc;
       
       const date = new Date(trade.timeFlag || trade.openTime);
@@ -64,7 +69,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
     });
     
     return data;
-  }, [trades]);
+  }, [filteredTrades]);
 
   // Calculate statistical summary
   const summary = React.useMemo(() => {

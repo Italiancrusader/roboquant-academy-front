@@ -83,7 +83,9 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
     
     const totalNetProfit = finalBalance - initialBalance;
     
-    const completedTrades = trades.filter(t => t.profit !== undefined && t.direction === 'out');
+    const filteredTrades = trades.filter(trade => !(trade.type === 'balance' || trade.type === ''));
+    
+    const completedTrades = filteredTrades.filter(t => t.profit !== undefined && t.direction === 'out');
     
     const profitableTrades = completedTrades.filter(t => t.profit && t.profit > 0);
     const lossTrades = completedTrades.filter(t => t.profit && t.profit < 0);
@@ -122,7 +124,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
     let prevBalance = null;
     
     trades.forEach(trade => {
-      if (trade.balance && prevBalance !== null) {
+      if (trade.balance && prevBalance !== null && trade.type !== 'balance' && trade.type !== '') {
         returns.push((trade.balance - prevBalance) / prevBalance);
         prevBalance = trade.balance;
       } else if (trade.balance) {

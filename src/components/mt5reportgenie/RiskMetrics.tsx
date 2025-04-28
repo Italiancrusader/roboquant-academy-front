@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { MT5Trade } from '@/types/mt5reportgenie';
@@ -8,8 +7,13 @@ interface RiskMetricsProps {
 }
 
 const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
+  // Filter out initial balance entries (type is 'balance' or empty)
+  const filteredTrades = React.useMemo(() => {
+    return trades.filter(trade => !(trade.type === 'balance' || trade.type === ''));
+  }, [trades]);
+
   // Filter trades with profit data and that are "out" trades (completed)
-  const completedTrades = trades.filter(t => t.profit !== undefined && t.direction === 'out');
+  const completedTrades = filteredTrades.filter(t => t.profit !== undefined && t.direction === 'out');
   
   const metrics = React.useMemo(() => {
     // Find initial and final balance
@@ -48,7 +52,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
     const avgLoss = lossTrades.length ? totalLoss / lossTrades.length : 0;
     
     // Calculate maximum drawdown
-    let peak = 0;
+    let peak = initialBalance;
     let maxDrawdown = 0;
     let currentDrawdown = 0;
     let balance = initialBalance;
@@ -78,7 +82,6 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
       averageLoss: avgLoss,
       maxDrawdown,
       maxDrawdownPct: peak ? (maxDrawdown / peak) * 100 : 0,
-      // Add the new metrics for consistency
       totalNetProfit,
       initialBalance,
       finalBalance

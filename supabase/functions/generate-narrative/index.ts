@@ -21,6 +21,12 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
+    // Add a note about how metrics are calculated
+    const metricsWithNotes = {
+      ...metrics,
+      notes: "All performance metrics have been calculated excluding any initial balance entries to ensure accurate return calculations."
+    };
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -32,11 +38,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a professional trading strategy analyst. Generate a detailed markdown analysis report based on the provided metrics.'
+            content: 'You are a professional trading strategy analyst. Generate a detailed markdown analysis report based on the provided metrics. Make sure to note that all calculations exclude initial balance entries for accurate return calculations.'
           },
           {
             role: 'user',
-            content: `Please analyze these trading metrics and provide a detailed report:\n${JSON.stringify(metrics, null, 2)}`
+            content: `Please analyze these trading metrics and provide a detailed report:\n${JSON.stringify(metricsWithNotes, null, 2)}`
           }
         ],
         temperature: 0.7,
