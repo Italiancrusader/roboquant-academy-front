@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import {
   Area,
@@ -17,6 +17,9 @@ interface EquityChartProps {
 }
 
 const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
+  const [chartWidth, setChartWidth] = useState<number>(0);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  
   // Filter out initial balance entries
   const filteredTrades = trades.filter(trade => !(trade.type === 'balance' || trade.type === ''));
   
@@ -27,6 +30,28 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
       equity: trade.balance,
       profit: trade.profit || 0,
     }));
+
+  // Update chart width when component mounts or window resizes
+  useEffect(() => {
+    const updateChartWidth = () => {
+      if (chartContainerRef.current) {
+        const width = chartContainerRef.current.getBoundingClientRect().width;
+        setChartWidth(width);
+        console.log("Chart width is set to", width);
+      }
+    };
+    
+    // Initial width calculation
+    updateChartWidth();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', updateChartWidth);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', updateChartWidth);
+    };
+  }, []);
 
   const config = {
     equity: {
@@ -64,13 +89,16 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
         </div>
       </div>
       
-      <div className="w-full overflow-hidden">
-        <div className="h-[400px] w-full"> {/* Increased height for better visibility */}
+      <div 
+        ref={chartContainerRef} 
+        className="w-full overflow-visible"
+      >
+        <div className="h-[400px] w-full relative"> {/* Increased height and added relative positioning */}
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart 
                 data={equityData} 
-                margin={{ top: 20, right: 30, left: 65, bottom: 30 }} // Adjusted margins
+                margin={{ top: 20, right: 40, left: 10, bottom: 30 }} // Adjusted margins
               >
                 <defs>
                   <linearGradient id="equity" x1="0" y1="0" x2="0" y2="1">
@@ -88,15 +116,19 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   tick={{ fontSize: 12 }}
                   tickMargin={10}
                   stroke="hsl(var(--muted-foreground))"
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))' }}
                 />
                 <YAxis 
-                  width={60}
-                  tickFormatter={(value) => `$${value.toLocaleString()}`}
-                  domain={['dataMin - 1000', 'dataMax + 1000']}
+                  width={40} // Reduced width to save horizontal space
+                  tickFormatter={(value) => `$${value/1000}k`} // More compact format
+                  domain={['auto', 'auto']} // Auto-scale to data
                   padding={{ top: 20, bottom: 20 }}
                   tick={{ fontSize: 12 }}
                   tickMargin={5}
                   stroke="hsl(var(--muted-foreground))"
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))' }}
                 />
                 <ChartTooltip 
                   content={({ active, payload }) => {
