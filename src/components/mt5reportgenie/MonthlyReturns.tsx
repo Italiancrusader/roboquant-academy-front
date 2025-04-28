@@ -181,7 +181,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 axisLine={{ stroke: "hsl(var(--border))" }}
                 tickLine={{ stroke: "hsl(var(--border))" }}
               />
-              <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeWidth={1} />
+              <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeWidth={1} yAxisId="left" />
               <Tooltip
                 content={({ active, payload }) => {
                   if (!active || !payload?.length) return null;
