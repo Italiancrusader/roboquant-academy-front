@@ -45,11 +45,11 @@ const MT5ReportGenie = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-neulis">
+    <div className="flex flex-col min-h-screen bg-background text-foreground font-neulis">
       <Navbar />
       {isProcessing && <LoadingOverlay />}
       
-      <div className="container mx-auto px-4 pt-24 pb-12">
+      <main className="flex-grow container mx-auto px-4 pt-24 pb-20">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold gradient-text">MT5 Report Genie</h1>
@@ -70,18 +70,20 @@ const MT5ReportGenie = () => {
           </div>
         </div>
         
-        {files.length === 0 ? (
-          <FileUploadZone 
-            onFilesUploaded={handleFilesUploaded}
-            isProcessing={isProcessing}
-            onProcessingStep={handleProcessingStep}
-          />
-        ) : (
-          <ReportDashboard files={files} onClearFiles={handleClearFiles} />
-        )}
-      </div>
+        <div className="mb-20">
+          {files.length === 0 ? (
+            <FileUploadZone 
+              onFilesUploaded={handleFilesUploaded}
+              isProcessing={isProcessing}
+              onProcessingStep={handleProcessingStep}
+            />
+          ) : (
+            <ReportDashboard files={files} onClearFiles={handleClearFiles} />
+          )}
+        </div>
+      </main>
       
-      <footer className="py-6 border-t border-border bg-secondary">
+      <footer className="py-6 border-t border-border bg-secondary mt-auto">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
