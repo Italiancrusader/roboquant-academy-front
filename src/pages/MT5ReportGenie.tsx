@@ -15,7 +15,7 @@ const MT5ReportGenie = () => {
   const [processingSteps, setProcessingSteps] = useState<string>('');
 
   const handleFilesUploaded = (newFiles: FileType[]) => {
-    setIsProcessing(true);
+    // isProcessing is already set to true when processing step is triggered
     console.log("Processing files:", newFiles);
     
     // Add a slight delay to simulate processing
@@ -33,6 +33,8 @@ const MT5ReportGenie = () => {
 
   const handleProcessingStep = (step: string) => {
     console.log("Processing step:", step);
+    // Set processing state to true as soon as any processing step is initiated
+    setIsProcessing(true);
     setProcessingSteps(step);
   };
 
@@ -47,7 +49,7 @@ const MT5ReportGenie = () => {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-neulis">
       <Navbar />
-      {isProcessing && <LoadingOverlay />}
+      {isProcessing && <LoadingOverlay message={processingSteps} />}
       
       <main className="flex-grow container mx-auto px-4 pt-24 pb-20">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">

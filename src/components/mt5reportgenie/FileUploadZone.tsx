@@ -52,9 +52,14 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     if (selectedFiles.length === 0) return;
     
     try {
+      // Immediately show loading state before any processing starts
       setLocalProcessing(true);
-      onProcessingStep?.('Starting file parsing process');
-      console.log("Starting file parsing process");
+      // Signal to parent component to show loading overlay immediately
+      onProcessingStep?.('Starting file processing');
+      console.log("Starting file processing - showing loading overlay");
+      
+      // Small delay to ensure UI updates before heavy processing begins
+      await new Promise(resolve => setTimeout(resolve, 10));
       
       const processedFiles: FileType[] = [];
       
