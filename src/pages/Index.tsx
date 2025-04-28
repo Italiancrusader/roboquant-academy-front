@@ -47,6 +47,7 @@ const Index = () => {
               <p className="text-sm text-gray-400">Build Trading Bots Without Code</p>
             </div>
             <div className="flex flex-wrap gap-4 justify-center md:justify-end">
+              <Link to="/mt5-report-genie" className="text-sm text-gray-400 hover:text-blue-primary">MT5 Report Genie</Link>
               <Link to="/privacy-policy" className="text-sm text-gray-400 hover:text-blue-primary">Privacy Policy</Link>
               <Link to="/terms-of-service" className="text-sm text-gray-400 hover:text-blue-primary">Terms of Service</Link>
               <a href="#" className="text-sm text-gray-400 hover:text-blue-primary">Contact Us</a>
