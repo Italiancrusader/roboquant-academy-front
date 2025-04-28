@@ -39,6 +39,48 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
   const equityPadding = (maxEquity - minEquity) * 0.1;
   const yAxisMin = Math.max(0, minEquity - equityPadding);
   const yAxisMax = maxEquity + equityPadding;
+  
+  // Calculate nice round numbers for Y-axis ticks
+  const calculateYAxisTicks = () => {
+    if (equityData.length === 0) return [0];
+    
+    const range = yAxisMax - yAxisMin;
+    const tickCount = 5; // We want 5 evenly spaced ticks
+    const roughStep = range / (tickCount - 1);
+    
+    // Round step to a nice number (1, 2, 5, 10, 20, 50, etc.)
+    let magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+    let normalizedStep = roughStep / magnitude;
+    
+    // Choose a nice number close to the normalized step
+    if (normalizedStep < 1.5) normalizedStep = 1;
+    else if (normalizedStep < 3) normalizedStep = 2;
+    else if (normalizedStep < 7) normalizedStep = 5;
+    else normalizedStep = 10;
+    
+    const step = normalizedStep * magnitude;
+    
+    // Calculate start value (round down to the nearest step)
+    const startValue = Math.floor(yAxisMin / step) * step;
+    
+    // Generate ticks
+    const ticks = [];
+    for (let i = 0; i < tickCount; i++) {
+      const value = startValue + i * step;
+      if (value <= yAxisMax) {
+        ticks.push(value);
+      }
+    }
+    
+    // Ensure max value is included
+    if (ticks[ticks.length - 1] < yAxisMax) {
+      ticks.push(ticks[ticks.length - 1] + step);
+    }
+    
+    return ticks;
+  };
+  
+  const yAxisTicks = calculateYAxisTicks();
 
   // Update chart width when component mounts or window resizes
   useEffect(() => {
@@ -101,12 +143,12 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
         ref={chartContainerRef} 
         className="w-full"
       >
-        <div className="h-[500px] w-full"> {/* Increased height for better visibility */}
+        <div className="h-[500px] w-full"> {/* Fixed height for better visibility */}
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart 
                 data={equityData} 
-                margin={{ top: 20, right: 40, left: 10, bottom: 30 }}
+                margin={{ top: 20, right: 40, left: 10, bottom: 40 }} // Increased bottom margin for x-axis
               >
                 <defs>
                   <linearGradient id="equity" x1="0" y1="0" x2="0" y2="1">
@@ -120,12 +162,18 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                     const d = new Date(date);
                     return `${d.getMonth()+1}/${d.getDate()}`;
                   }}
-                  height={30}
+                  height={40}
                   tick={{ fontSize: 12 }}
-                  tickMargin={10}
+                  tickMargin={15}
                   stroke="hsl(var(--muted-foreground))"
-                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))', strokeWidth: 1.5 }}
                   tickLine={{ stroke: 'hsl(var(--border))' }}
+                  label={{ 
+                    value: 'Date', 
+                    position: 'insideBottom', 
+                    offset: -10, 
+                    fill: 'hsl(var(--muted-foreground))' 
+                  }}
                 />
                 <YAxis 
                   width={60}
@@ -135,13 +183,21 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                     }
                     return `$${value}`;
                   }}
-                  domain={[yAxisMin, yAxisMax]} /* Set calculated domain explicitly */
-                  padding={{ top: 0, bottom: 0 }}
+                  ticks={yAxisTicks}
+                  domain={[yAxisMin, yAxisMax]}
+                  padding={{ top: 20, bottom: 20 }}
                   tick={{ fontSize: 12 }}
                   tickMargin={5}
                   stroke="hsl(var(--muted-foreground))"
-                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))', strokeWidth: 1.5 }}
                   tickLine={{ stroke: 'hsl(var(--border))' }}
+                  label={{ 
+                    value: 'Equity ($)', 
+                    angle: -90, 
+                    position: 'insideLeft', 
+                    style: { textAnchor: 'middle' },
+                    fill: 'hsl(var(--muted-foreground))'
+                  }}
                 />
                 <ChartTooltip 
                   content={({ active, payload }) => {
