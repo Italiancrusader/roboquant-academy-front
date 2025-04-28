@@ -17,7 +17,10 @@ interface EquityChartProps {
 }
 
 const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
-  const equityData = trades
+  // Filter out initial balance entries
+  const filteredTrades = trades.filter(trade => !(trade.type === 'balance' || trade.type === ''));
+  
+  const equityData = filteredTrades
     .filter(trade => trade.balance)
     .map(trade => ({
       date: trade.openTime,
@@ -42,6 +45,10 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     },
   };
 
+  // Find initial and final equity values for display
+  const initialEquity = equityData.length > 0 ? equityData[0].equity : 0;
+  const finalEquity = equityData.length > 0 ? equityData[equityData.length - 1].equity : 0;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -49,22 +56,21 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
         <div className="text-sm text-muted-foreground">
           {equityData.length > 0 && (
             <>
-              Initial: ${equityData[0].equity.toLocaleString()}
+              Initial: ${initialEquity.toLocaleString()}
               <span className="mx-2">•</span>
-              Final: ${equityData[equityData.length - 1].equity.toLocaleString()}
+              Final: ${finalEquity.toLocaleString()}
             </>
           )}
         </div>
       </div>
       
       <div className="w-full overflow-hidden">
-        <div className="h-[350px] w-full overflow-hidden">
+        <div className="h-[350px] w-full">
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart 
                 data={equityData} 
-                margin={{ top: 10, right: 5, left: 0, bottom: 25 }}
-                style={{ overflow: 'visible' }}
+                margin={{ top: 10, right: 30, left: 15, bottom: 25 }}
               >
                 <defs>
                   <linearGradient id="equity" x1="0" y1="0" x2="0" y2="1">
@@ -82,7 +88,12 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   tick={{ fontSize: 10 }}
                   tickMargin={5}
                 />
-                <YAxis width={40} />
+                <YAxis 
+                  width={60} 
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  domain={['dataMin', 'dataMax']}
+                  padding={{ top: 20, bottom: 20 }}
+                />
                 <ChartTooltip 
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
