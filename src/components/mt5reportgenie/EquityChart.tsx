@@ -65,16 +65,16 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
       </div>
       
       <div className="w-full overflow-hidden">
-        <div className="h-[350px] w-full">
+        <div className="h-[400px] w-full"> {/* Increased height for better visibility */}
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart 
                 data={equityData} 
-                margin={{ top: 10, right: 30, left: 15, bottom: 25 }}
+                margin={{ top: 20, right: 30, left: 65, bottom: 30 }} // Adjusted margins
               >
                 <defs>
                   <linearGradient id="equity" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
@@ -84,30 +84,38 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                     const d = new Date(date);
                     return `${d.getMonth()+1}/${d.getDate()}`;
                   }}
-                  height={20}
-                  tick={{ fontSize: 10 }}
-                  tickMargin={5}
+                  height={30}
+                  tick={{ fontSize: 12 }}
+                  tickMargin={10}
+                  stroke="hsl(var(--muted-foreground))"
                 />
                 <YAxis 
-                  width={60} 
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                  domain={['dataMin', 'dataMax']}
+                  width={60}
+                  tickFormatter={(value) => `$${value.toLocaleString()}`}
+                  domain={['dataMin - 1000', 'dataMax + 1000']}
                   padding={{ top: 20, bottom: 20 }}
+                  tick={{ fontSize: 12 }}
+                  tickMargin={5}
+                  stroke="hsl(var(--muted-foreground))"
                 />
                 <ChartTooltip 
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
                     const data = payload[0].payload;
                     return (
-                      <div className="rounded-lg border bg-background p-2 shadow-sm">
+                      <div className="rounded-lg border bg-background/95 backdrop-blur-sm p-3 shadow-xl">
                         <div className="text-xs text-muted-foreground">
-                          {new Date(data.date).toLocaleDateString()}
+                          {new Date(data.date).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
                         </div>
-                        <div className="text-sm font-bold">
+                        <div className="text-sm font-bold mt-1">
                           ${data.equity.toLocaleString()}
                         </div>
                         {data.profit !== 0 && (
-                          <div className={`text-xs ${data.profit > 0 ? 'text-success' : 'text-destructive'}`}>
+                          <div className={`text-xs mt-1 ${data.profit > 0 ? 'text-green-500' : 'text-red-500'}`}>
                             {data.profit > 0 ? '+' : ''}{data.profit.toLocaleString()}
                           </div>
                         )}
@@ -119,8 +127,11 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   type="monotone"
                   dataKey="equity"
                   stroke="hsl(var(--primary))"
+                  strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#equity)"
+                  isAnimationActive={true}
+                  animationDuration={1000}
                 />
               </AreaChart>
             </ResponsiveContainer>
