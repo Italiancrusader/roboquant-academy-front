@@ -83,28 +83,6 @@
     @apply transition-transform duration-300 hover:translate-y-[-5px];
   }
   
-  .l-bracket-accent {
-    @apply relative;
-  }
-  
-  .l-bracket-accent::before {
-    content: '';
-    @apply absolute w-0 h-2 bg-gradient-primary top-0 left-0 transition-all duration-300;
-  }
-  
-  .l-bracket-accent::after {
-    content: '';
-    @apply absolute w-2 h-0 bg-gradient-primary top-0 left-0 transition-all duration-300;
-  }
-  
-  .l-bracket-accent:hover::before {
-    @apply w-16;
-  }
-  
-  .l-bracket-accent:hover::after {
-    @apply h-16;
-  }
-  
   .cta-button {
     @apply relative overflow-hidden transition-all duration-300 bg-gradient-to-r from-blue-primary to-teal-primary;
     background-size: 200% 200%;

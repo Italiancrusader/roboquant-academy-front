@@ -69,7 +69,7 @@ const Navbar = () => {
                   <Link 
                     key={item.name} 
                     to={item.href} 
-                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all l-bracket-accent py-1 px-2"
+                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all py-1 px-2"
                   >
                     {item.name}
                   </Link>
@@ -77,7 +77,7 @@ const Navbar = () => {
                   <a 
                     key={item.name} 
                     href={item.href} 
-                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all l-bracket-accent py-1 px-2"
+                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all py-1 px-2"
                   >
                     {item.name}
                   </a>
