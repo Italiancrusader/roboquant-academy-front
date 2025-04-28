@@ -12,10 +12,13 @@ import { Github } from 'lucide-react';
 const MT5ReportGenie = () => {
   const [files, setFiles] = useState<FileType[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingSteps, setProcessingSteps] = useState<string>('');
 
   const handleFilesUploaded = (newFiles: FileType[]) => {
     setIsProcessing(true);
+    console.log("Processing files:", newFiles);
     
+    // Add a slight delay to simulate processing
     setTimeout(() => {
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
       setIsProcessing(false);
@@ -24,7 +27,13 @@ const MT5ReportGenie = () => {
         title: "Files processed successfully",
         description: `${newFiles.length} ${newFiles.length === 1 ? 'file' : 'files'} have been processed.`
       });
+      console.log("Files processed and added to state");
     }, 2000);
+  };
+
+  const handleProcessingStep = (step: string) => {
+    console.log("Processing step:", step);
+    setProcessingSteps(step);
   };
 
   const handleClearFiles = () => {
@@ -63,8 +72,9 @@ const MT5ReportGenie = () => {
         
         {files.length === 0 ? (
           <FileUploadZone 
-            onFilesUploaded={handleFilesUploaded} 
+            onFilesUploaded={handleFilesUploaded}
             isProcessing={isProcessing}
+            onProcessingStep={handleProcessingStep}
           />
         ) : (
           <ReportDashboard files={files} onClearFiles={handleClearFiles} />
@@ -73,12 +83,25 @@ const MT5ReportGenie = () => {
       
       <footer className="py-6 border-t border-border bg-secondary">
         <div className="container mx-auto px-4">
-          <p className="text-sm text-muted-foreground text-center">
-            &copy; {new Date().getFullYear()} RoboQuant Academy MT5 Report Genie - 
-            <Link to="/" className="ml-1 text-blue-primary hover:text-teal-primary transition-colors">
-              Back to Home
-            </Link>
-          </p>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              &copy; {new Date().getFullYear()} RoboQuant Academy
+            </p>
+            <div className="flex items-center space-x-6">
+              <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Home
+              </Link>
+              <Link to="/mt5-report-genie" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                MT5 Report Genie
+              </Link>
+              <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Terms of Service
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

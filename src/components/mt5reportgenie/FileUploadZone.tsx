@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, File, FileUp, AlertCircle, Loader2 } from 'lucide-react';
@@ -6,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { FileType } from '@/types/mt5reportgenie';
 import { toast } from '@/components/ui/use-toast';
 import { parseMT5Excel, validateMT5File } from '@/utils/mt5parser';
-import LoadingOverlay from './LoadingOverlay';
 
 interface FileUploadZoneProps {
   onFilesUploaded: (files: FileType[]) => void;
@@ -20,6 +20,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   onProcessingStep
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [localProcessing, setLocalProcessing] = useState(false);
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Filter for .xlsx files
@@ -36,6 +37,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     if (validFiles.length > 0) {
       setSelectedFiles(validFiles);
       onProcessingStep?.('Files selected for upload');
+      console.log("Files selected:", validFiles);
     }
   }, [onProcessingStep]);
 
@@ -50,36 +52,49 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     if (selectedFiles.length === 0) return;
     
     try {
+      setLocalProcessing(true);
       onProcessingStep?.('Starting file parsing process');
-      const processedFiles = await Promise.all(
-        selectedFiles.map(async (file) => {
-          try {
-            const parsedData = await parseMT5Excel(file);
-            return {
-              id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              name: file.name,
-              size: file.size,
-              type: file.type,
-              file: file,
-              dateUploaded: new Date(),
-              parsedData
-            };
-          } catch (error) {
-            console.error(`Error parsing file ${file.name}:`, error);
-            toast({
-              title: `Error parsing ${file.name}`,
-              description: "The file format appears to be invalid. Please ensure it's an MT5 Strategy Tester report.",
-              variant: "destructive"
-            });
-            return null;
-          }
-        })
-      );
+      console.log("Starting file parsing process");
+      
+      const processedFiles: FileType[] = [];
+      
+      for (const file of selectedFiles) {
+        try {
+          onProcessingStep?.(`Parsing file: ${file.name}`);
+          console.log(`Parsing file: ${file.name}`);
+          
+          const parsedData = await parseMT5Excel(file);
+          console.log("Parsed data:", parsedData);
+          
+          processedFiles.push({
+            id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            file: file,
+            dateUploaded: new Date(),
+            parsedData
+          });
+        } catch (error) {
+          console.error(`Error parsing file ${file.name}:`, error);
+          toast({
+            title: `Error parsing ${file.name}`,
+            description: "The file format appears to be invalid. Please ensure it's an MT5 Strategy Tester report.",
+            variant: "destructive"
+          });
+        }
+      }
 
-      const validFiles = processedFiles.filter(file => file !== null);
-      if (validFiles.length > 0) {
-        onFilesUploaded(validFiles as FileType[]);
+      if (processedFiles.length > 0) {
+        console.log("Files processed successfully:", processedFiles);
+        onFilesUploaded(processedFiles);
         setSelectedFiles([]);
+      } else {
+        toast({
+          title: "No valid files found",
+          description: "None of the selected files could be processed. Please try different files.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error processing files:', error);
@@ -88,13 +103,13 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         description: "There was an error processing the files. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setLocalProcessing(false);
     }
   };
 
   return (
     <div className="space-y-8">
-      {isProcessing && <LoadingOverlay />}
-      
       <Card className="border-dashed border-2 bg-muted/30">
         <CardContent className="p-6">
           <div
@@ -155,10 +170,10 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
           <div className="flex justify-end">
             <Button 
               onClick={handleUpload} 
-              disabled={isProcessing}
+              disabled={isProcessing || localProcessing}
               className="px-6"
             >
-              {isProcessing ? (
+              {isProcessing || localProcessing ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Processing...
