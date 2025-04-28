@@ -31,13 +31,21 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
       profit: trade.profit || 0,
     }));
 
+  // Calculate min and max equity values to ensure proper y-axis scale
+  const minEquity = Math.min(...equityData.map(data => data.equity));
+  const maxEquity = Math.max(...equityData.map(data => data.equity));
+  
+  // Calculate padding to ensure all points are visible (10% padding)
+  const equityPadding = (maxEquity - minEquity) * 0.1;
+  const yAxisMin = Math.max(0, minEquity - equityPadding);
+  const yAxisMax = maxEquity + equityPadding;
+
   // Update chart width when component mounts or window resizes
   useEffect(() => {
     const updateChartWidth = () => {
       if (chartContainerRef.current) {
         const width = chartContainerRef.current.getBoundingClientRect().width;
         setChartWidth(width);
-        console.log("Chart width is set to", width);
       }
     };
     
@@ -91,14 +99,14 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
       
       <div 
         ref={chartContainerRef} 
-        className="w-full overflow-visible"
+        className="w-full"
       >
-        <div className="h-[400px] w-full relative"> {/* Increased height and added relative positioning */}
+        <div className="h-[500px] w-full"> {/* Increased height for better visibility */}
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart 
                 data={equityData} 
-                margin={{ top: 20, right: 40, left: 10, bottom: 30 }} // Adjusted margins
+                margin={{ top: 20, right: 40, left: 10, bottom: 30 }}
               >
                 <defs>
                   <linearGradient id="equity" x1="0" y1="0" x2="0" y2="1">
@@ -120,10 +128,15 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   tickLine={{ stroke: 'hsl(var(--border))' }}
                 />
                 <YAxis 
-                  width={40} // Reduced width to save horizontal space
-                  tickFormatter={(value) => `$${value/1000}k`} // More compact format
-                  domain={['auto', 'auto']} // Auto-scale to data
-                  padding={{ top: 20, bottom: 20 }}
+                  width={60}
+                  tickFormatter={(value) => {
+                    if (value >= 1000) {
+                      return `$${Math.round(value / 1000)}k`;
+                    }
+                    return `$${value}`;
+                  }}
+                  domain={[yAxisMin, yAxisMax]} /* Set calculated domain explicitly */
+                  padding={{ top: 0, bottom: 0 }}
                   tick={{ fontSize: 12 }}
                   tickMargin={5}
                   stroke="hsl(var(--muted-foreground))"
