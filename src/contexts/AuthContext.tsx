@@ -25,6 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("Auth state changed:", event);
         setSession(session);
         setUser(session?.user ?? null);
       }
@@ -32,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session ? "Session found" : "No session");
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
@@ -68,7 +70,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Use the full absolute URL with protocol for redirect
       const redirectTo = `${window.location.origin}/auth`;
       
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log("Initiating Google sign-in with redirect to:", redirectTo);
+      
+      const { error, data } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectTo,
@@ -80,9 +84,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
+        console.error("Google sign-in error:", error);
         throw error;
       }
     } catch (error: any) {
+      console.error("Google sign-in exception:", error);
       toast({
         title: "Google sign in failed",
         description: error.message,

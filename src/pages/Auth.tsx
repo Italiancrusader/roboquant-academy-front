@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -15,26 +17,35 @@ const Auth = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { signIn, signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Check for authentication error in URL params (from OAuth redirect)
+  // Parse and handle URL parameters for auth errors
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const errorDescription = url.searchParams.get('error_description');
-    
-    if (errorDescription) {
-      toast({
-        title: "Authentication Error",
-        description: errorDescription,
-        variant: "destructive",
-      });
+    const handleUrlErrors = () => {
+      const url = new URL(window.location.href);
+      const errorDescription = url.searchParams.get('error_description');
+      const error = url.searchParams.get('error');
       
-      // Clean up the URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
+      if (errorDescription || error) {
+        const errorMessage = errorDescription || error || 'Authentication error occurred';
+        setAuthError(errorMessage);
+        
+        toast({
+          title: "Authentication Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        
+        // Clean up the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+    
+    handleUrlErrors();
+  }, [location]);
   
   // If user is already logged in, redirect to home or the page they were trying to access
   useEffect(() => {
@@ -46,12 +57,14 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError(null);
     setIsLoading(true);
     try {
       await signIn(email, password);
       // Navigation will happen automatically in the useEffect above
-    } catch (error) {
+    } catch (error: any) {
       console.error("Sign in error:", error);
+      setAuthError(error.message || 'Failed to sign in');
     } finally {
       setIsLoading(false);
     }
@@ -59,24 +72,28 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError(null);
     setIsLoading(true);
     try {
       await signUp(email, password, firstName, lastName);
       // Don't navigate immediately after signup as the user may need to verify email
-    } catch (error) {
+    } catch (error: any) {
       console.error("Sign up error:", error);
+      setAuthError(error.message || 'Failed to create account');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
+    setAuthError(null);
     setIsLoading(true);
     try {
       await signInWithGoogle();
       // The redirect will happen automatically - we'll be taken to Google auth
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google sign in error:", error);
+      setAuthError(error.message || 'Google sign in failed');
       setIsLoading(false);
     }
   };
@@ -88,12 +105,23 @@ const Auth = () => {
           <CardTitle className="text-2xl font-bold">RoboQuant Academy</CardTitle>
           <CardDescription>Sign in to your account or create a new one</CardDescription>
         </CardHeader>
+        
+        {authError && (
+          <div className="px-6">
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           
+          {/* Sign In Tab */}
           <TabsContent value="signin">
             <form onSubmit={handleSignIn}>
               <CardContent className="space-y-4 pt-4">
@@ -106,6 +134,7 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -117,6 +146,7 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </CardContent>
@@ -169,6 +199,7 @@ const Auth = () => {
             </form>
           </TabsContent>
           
+          {/* Sign Up Tab */}
           <TabsContent value="signup">
             <form onSubmit={handleSignUp}>
               <CardContent className="space-y-4 pt-4">
@@ -180,6 +211,7 @@ const Auth = () => {
                       placeholder="First name"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
+                      disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -189,6 +221,7 @@ const Auth = () => {
                       placeholder="Last name"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -201,6 +234,7 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -212,6 +246,7 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </CardContent>
