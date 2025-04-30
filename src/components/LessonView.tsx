@@ -19,11 +19,20 @@ interface Lesson {
   sort_order: number;
 }
 
+// Create a simpler type for navigation between lessons
+interface LessonNavigation {
+  id: string;
+  title: string;
+  sort_order: number; // Adding sort_order to match the Lesson interface
+  description: string | null; // Adding description to match the Lesson interface
+  video_url: string | null; // Adding video_url to match the Lesson interface
+}
+
 const LessonView = () => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
   const [lesson, setLesson] = useState<Lesson | null>(null);
-  const [nextLesson, setNextLesson] = useState<Lesson | null>(null);
-  const [prevLesson, setPrevLesson] = useState<Lesson | null>(null);
+  const [nextLesson, setNextLesson] = useState<LessonNavigation | null>(null);
+  const [prevLesson, setPrevLesson] = useState<LessonNavigation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -60,7 +69,7 @@ const LessonView = () => {
         // Fetch next and previous lessons
         const { data: allLessons, error: lessonsError } = await supabase
           .from('lessons')
-          .select('id, title, sort_order')
+          .select('id, title, sort_order, description, video_url')
           .eq('course_id', courseId)
           .eq('is_published', true)
           .order('sort_order', { ascending: true });
@@ -72,28 +81,12 @@ const LessonView = () => {
           
           if (currentIndex > 0) {
             // Get previous lesson
-            const { data: prevData, error: prevError } = await supabase
-              .from('lessons')
-              .select('id, title')
-              .eq('id', allLessons[currentIndex - 1].id)
-              .single();
-
-            if (!prevError) {
-              setPrevLesson(prevData);
-            }
+            setPrevLesson(allLessons[currentIndex - 1]);
           }
 
           if (currentIndex < allLessons.length - 1) {
             // Get next lesson
-            const { data: nextData, error: nextError } = await supabase
-              .from('lessons')
-              .select('id, title')
-              .eq('id', allLessons[currentIndex + 1].id)
-              .single();
-
-            if (!nextError) {
-              setNextLesson(nextData);
-            }
+            setNextLesson(allLessons[currentIndex + 1]);
           }
         }
       } catch (error: any) {

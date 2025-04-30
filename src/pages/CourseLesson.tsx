@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
-import { Play, Check, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Play, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -78,7 +78,7 @@ const CourseLesson = () => {
           const progressMap: Record<string, boolean> = {};
           if (progressData) {
             progressData.forEach((item: Progress) => {
-              progressMap[item.lesson_id] = item.completed;
+              progressMap[item.lesson_id] = Boolean(item.completed);
             });
           }
           setProgress(progressMap);
@@ -110,9 +110,10 @@ const CourseLesson = () => {
           },
           (payload) => {
             if (payload.new) {
+              const newPayload = payload.new as { lesson_id: string; completed: boolean };
               setProgress(prev => ({
                 ...prev,
-                [payload.new.lesson_id]: payload.new.completed
+                [newPayload.lesson_id]: newPayload.completed
               }));
             }
           }
