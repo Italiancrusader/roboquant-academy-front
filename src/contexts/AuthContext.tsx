@@ -66,13 +66,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      // Properly format the redirect URL to ensure it works with Google OAuth
-      // Use the full absolute URL with protocol for redirect
-      const redirectTo = `${window.location.origin}/auth`;
+      // Get the current origin (protocol + hostname + port)
+      const origin = window.location.origin;
+      
+      // Explicitly construct the redirect URL to ensure proper format
+      const redirectTo = `${origin}/auth`;
       
       console.log("Initiating Google sign-in with redirect to:", redirectTo);
+      console.log("Current origin:", origin);
       
-      const { error, data } = await supabase.auth.signInWithOAuth({
+      // For debugging purposes, log the full URL that will be used
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectTo,
@@ -87,11 +91,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error("Google sign-in error:", error);
         throw error;
       }
+      
+      // Log the URL we're being redirected to
+      if (data?.url) {
+        console.log("Redirect URL generated:", data.url);
+      }
     } catch (error: any) {
       console.error("Google sign-in exception:", error);
       toast({
         title: "Google sign in failed",
-        description: error.message,
+        description: error.message || "Failed to connect to Google authentication service",
         variant: "destructive",
       });
       throw error;

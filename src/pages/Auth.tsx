@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Auth = () => {
@@ -28,9 +29,20 @@ const Auth = () => {
       const url = new URL(window.location.href);
       const errorDescription = url.searchParams.get('error_description');
       const error = url.searchParams.get('error');
+      const errorCode = url.searchParams.get('error_code');
       
-      if (errorDescription || error) {
-        const errorMessage = errorDescription || error || 'Authentication error occurred';
+      if (errorDescription || error || errorCode) {
+        let errorMessage = errorDescription || error || 'Authentication error occurred';
+        
+        // Add more specific messages for common errors
+        if (errorCode === '401') {
+          errorMessage = 'Authentication failed. Please check your credentials and try again.';
+        } else if (errorCode === '400' && errorDescription?.includes('validation_failed')) {
+          errorMessage = 'Google authentication is not properly configured. Please contact support.';
+        } else if (errorMessage.includes('refused to connect')) {
+          errorMessage = 'Connection to authentication server was refused. Please check your network settings or try again later.';
+        }
+        
         setAuthError(errorMessage);
         
         toast({
@@ -91,6 +103,11 @@ const Auth = () => {
     try {
       await signInWithGoogle();
       // The redirect will happen automatically - we'll be taken to Google auth
+      // Add a timeout to reset loading state if no redirect happens
+      setTimeout(() => {
+        setIsLoading(false);
+        setAuthError("Failed to redirect to Google. Please check your browser settings and try again.");
+      }, 5000);
     } catch (error: any) {
       console.error("Google sign in error:", error);
       setAuthError(error.message || 'Google sign in failed');
@@ -111,6 +128,17 @@ const Auth = () => {
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
+        {isLoading && (
+          <div className="px-6">
+            <Alert className="mb-4">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Please wait... {isLoading && "Processing authentication request."}
+              </AlertDescription>
             </Alert>
           </div>
         )}
