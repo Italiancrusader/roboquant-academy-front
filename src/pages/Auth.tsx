@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { toast } from '@/components/ui/use-toast';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -19,8 +19,25 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
+  // Check for authentication error in URL params (from OAuth redirect)
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const errorDescription = url.searchParams.get('error_description');
+    
+    if (errorDescription) {
+      toast({
+        title: "Authentication Error",
+        description: errorDescription,
+        variant: "destructive",
+      });
+      
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+  
   // If user is already logged in, redirect to home or the page they were trying to access
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       const from = (location.state as any)?.from?.pathname || '/';
       navigate(from, { replace: true });
