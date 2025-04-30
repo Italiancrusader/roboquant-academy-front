@@ -12,6 +12,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -117,26 +126,76 @@ const Navbar = () => {
           </div> 
         : 
           <>
-            <div className="hidden md:flex space-x-6">
-              {menuItems.map(item => 
-                item.href.startsWith('/') ? (
-                  <Link 
-                    key={item.name} 
-                    to={item.href} 
-                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all py-1 px-2"
-                  >
-                    {item.name}
-                  </Link>
-                ) : (
-                  <a 
-                    key={item.name} 
-                    href={item.href} 
-                    className="text-foreground/80 hover:text-foreground hover:gradient-text transition-all py-1 px-2"
-                  >
-                    {item.name}
-                  </a>
-                )
-              )}
+            <div className="hidden md:flex items-center space-x-4">
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="bg-transparent">About</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
+                        <li>
+                          <a href="/#why" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">Why RoboQuant</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">Learn about our unique approach to trading education</p>
+                          </a>
+                        </li>
+                        <li>
+                          <a href="/#outcomes" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">Outcomes</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">The results our students achieve</p>
+                          </a>
+                        </li>
+                        <li>
+                          <a href="/#testimonials" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">Testimonials</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">What our students say about us</p>
+                          </a>
+                        </li>
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="bg-transparent">Programs</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
+                        <li>
+                          <a href="/#curriculum" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">Curriculum</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">Our comprehensive learning path</p>
+                          </a>
+                        </li>
+                        <li>
+                          <Link to="/courses" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">All Courses</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">Browse our complete course catalog</p>
+                          </Link>
+                        </li>
+                        <li>
+                          <a href="/mt5-report-genie" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">MT5 Report Genie</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">Advanced trading analytics tool</p>
+                          </a>
+                        </li>
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link to="/courses" className={navigationMenuTriggerStyle()}>
+                      Courses
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <a href="/#pricing" className={navigationMenuTriggerStyle()}>
+                      Pricing
+                    </a>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <a href="/#faq" className={navigationMenuTriggerStyle()}>
+                      FAQ
+                    </a>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
             </div>
             <div className="flex items-center gap-2">
               {user ? (
