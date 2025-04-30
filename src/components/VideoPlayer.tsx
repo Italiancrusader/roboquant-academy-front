@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
 import { Play, Pause, RotateCcw, Loader } from 'lucide-react';
+import VimeoPlayer from './VimeoPlayer';
 
 interface VideoPlayerProps {
   lessonId: string;
@@ -13,6 +14,11 @@ interface VideoPlayerProps {
   videoUrl: string;
   onComplete?: () => void;
 }
+
+// Helper function to determine if a URL is a Vimeo URL
+const isVimeoUrl = (url: string): boolean => {
+  return url.includes('vimeo.com');
+};
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
   lessonId, 
@@ -27,7 +33,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [loading, setLoading] = useState(true);
   const [progressSaved, setProgressSaved] = useState(false);
   const { user } = useAuth();
-
+  
+  // Determine if this is a Vimeo video
+  const isVimeo = isVimeoUrl(videoUrl);
+  
   // Calculate progress percentage
   const progressPercentage = duration > 0 ? Math.round((currentTime / duration) * 100) : 0;
   
@@ -49,7 +58,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         
         if (data) {
           // Set the video to the last position
-          if (videoRef.current && data.last_position_seconds) {
+          if (videoRef.current && data.last_position_seconds && !isVimeo) {
             videoRef.current.currentTime = data.last_position_seconds;
             setCurrentTime(data.last_position_seconds);
           }
@@ -66,7 +75,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
     
     fetchProgress();
-  }, [user, lessonId, courseId]);
+  }, [user, lessonId, courseId, isVimeo]);
   
   // Update progress in Supabase
   const saveProgress = async (position: number, completed: boolean = false) => {
@@ -79,7 +88,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           user_id: user.id,
           lesson_id: lessonId,
           course_id: courseId,
-          last_position_seconds: position,
+          last_position_seconds: Math.floor(position),
           completed: completed,
           last_accessed_at: new Date().toISOString()
         }, {
@@ -101,7 +110,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
   
-  // Handle timeupdate event to track progress
+  // Handle timeupdate event to track progress for HTML5 video
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       const currentVideoTime = videoRef.current.currentTime;
@@ -120,7 +129,34 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
   
-  // Handle video metadata loaded
+  // Handle time updates from Vimeo player
+  const handleVimeoTimeUpdate = (currentVideoTime: number) => {
+    setCurrentTime(currentVideoTime);
+    
+    // Save progress every 10 seconds
+    if (Math.round(currentVideoTime) % 10 === 0) {
+      saveProgress(currentVideoTime);
+    }
+    
+    // Mark as completed when reaching 90% of the video
+    const completionThreshold = duration * 0.9;
+    if (currentVideoTime >= completionThreshold && !progressSaved) {
+      saveProgress(currentVideoTime, true);
+    }
+  };
+  
+  // Handle video complete for Vimeo
+  const handleVimeoComplete = () => {
+    saveProgress(duration, true);
+  };
+  
+  // Handle duration change for Vimeo
+  const handleVimeoDurationChange = (newDuration: number) => {
+    setDuration(newDuration);
+    setLoading(false);
+  };
+  
+  // Handle video metadata loaded for HTML5 video
   const handleMetadataLoaded = () => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration);
@@ -128,9 +164,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
   
-  // Play/pause toggle
+  // Play/pause toggle for HTML5 video
   const togglePlay = () => {
-    if (videoRef.current) {
+    if (!isVimeo && videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
@@ -140,9 +176,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
   
-  // Restart video
+  // Restart video for HTML5 video
   const restartVideo = () => {
-    if (videoRef.current) {
+    if (!isVimeo && videoRef.current) {
       videoRef.current.currentTime = 0;
       setCurrentTime(0);
       if (!isPlaying) {
@@ -161,48 +197,61 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   return (
     <div className="w-full bg-background rounded-lg overflow-hidden border">
-      <div className="relative aspect-video bg-black">
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-            <Loader className="h-10 w-10 text-primary animate-spin" />
-          </div>
-        )}
-        <video
-          ref={videoRef}
-          src={videoUrl}
-          className="w-full h-full"
-          onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleMetadataLoaded}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => {
-            setIsPlaying(false);
-            saveProgress(duration, true);
-          }}
+      {isVimeo ? (
+        <VimeoPlayer 
+          videoUrl={videoUrl} 
+          onComplete={handleVimeoComplete}
+          onTimeUpdate={handleVimeoTimeUpdate}
+          onDurationChange={handleVimeoDurationChange}
         />
-      </div>
+      ) : (
+        <div className="relative aspect-video bg-black">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <Loader className="h-10 w-10 text-primary animate-spin" />
+            </div>
+          )}
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            className="w-full h-full"
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleMetadataLoaded}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnded={() => {
+              setIsPlaying(false);
+              saveProgress(duration, true);
+            }}
+          />
+        </div>
+      )}
       
       <div className="p-4 space-y-2">
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={togglePlay}
-            disabled={loading}
-            className="h-8 w-8"
-          >
-            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={restartVideo}
-            disabled={loading}
-            className="h-8 w-8"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
+          {!isVimeo && (
+            <>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={togglePlay}
+                disabled={loading}
+                className="h-8 w-8"
+              >
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={restartVideo}
+                disabled={loading}
+                className="h-8 w-8"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </>
+          )}
           
           <span className="text-xs text-muted-foreground">
             {formatTime(currentTime)} / {formatTime(duration)}
