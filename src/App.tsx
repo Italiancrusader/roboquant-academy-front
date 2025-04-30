@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
+import CourseLesson from "./pages/CourseLesson";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -35,6 +36,14 @@ const App = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/courses/:courseId" element={<CourseDetail />} />
+              <Route 
+                path="/courses/:courseId/lessons/:lessonId" 
+                element={
+                  <ProtectedRoute>
+                    <CourseLesson />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="/mt5-report-genie" element={<MT5ReportGenie />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />

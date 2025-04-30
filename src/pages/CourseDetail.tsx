@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,6 +42,8 @@ const CourseDetail = () => {
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [firstLesson, setFirstLesson] = useState<string | null>(null);
+  const [lastAccessedLesson, setLastAccessedLesson] = useState<string | null>(null);
 
   useEffect(() => {
     if (!courseId) return;
@@ -69,6 +70,11 @@ const CourseDetail = () => {
 
         if (lessonsError) throw lessonsError;
         setLessons(lessonsData || []);
+        
+        // Get the first lesson ID
+        if (lessonsData && lessonsData.length > 0) {
+          setFirstLesson(lessonsData[0].id);
+        }
 
         // Check if user is enrolled
         if (user) {
@@ -81,6 +87,19 @@ const CourseDetail = () => {
 
           if (enrollmentError) throw enrollmentError;
           setEnrollment(enrollmentData);
+
+          // Find the last accessed lesson for this course
+          const { data: progressData, error: progressError } = await supabase
+            .from('progress')
+            .select('lesson_id, last_accessed_at')
+            .eq('course_id', courseId)
+            .eq('user_id', user.id)
+            .order('last_accessed_at', { ascending: false })
+            .limit(1);
+          
+          if (!progressError && progressData && progressData.length > 0) {
+            setLastAccessedLesson(progressData[0].lesson_id);
+          }
         }
       } catch (error: any) {
         toast({
@@ -122,6 +141,11 @@ const CourseDetail = () => {
         title: "Successfully enrolled",
         description: `You are now enrolled in ${course.title}`,
       });
+
+      // After successful enrollment, redirect to the first lesson if available
+      if (firstLesson) {
+        navigate(`/courses/${courseId}/lessons/${firstLesson}`);
+      }
     } catch (error: any) {
       toast({
         title: "Enrollment failed",
@@ -271,8 +295,17 @@ const CourseDetail = () => {
                 </div>
                 
                 {enrollment ? (
-                  <Button className="w-full bg-green-600 hover:bg-green-700" disabled>
-                    Already Enrolled
+                  <Button 
+                    className="w-full bg-green-600 hover:bg-green-700" 
+                    onClick={() => {
+                      if (lastAccessedLesson) {
+                        navigate(`/courses/${courseId}/lessons/${lastAccessedLesson}`);
+                      } else if (firstLesson) {
+                        navigate(`/courses/${courseId}/lessons/${firstLesson}`);
+                      }
+                    }}
+                  >
+                    {lastAccessedLesson ? "Continue Learning" : "Start Course"}
                   </Button>
                 ) : (
                   <Button 
