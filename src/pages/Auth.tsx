@@ -9,8 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
-import { AlertCircle, Info } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Info, ExternalLink } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +19,7 @@ const Auth = () => {
   const [lastName, setLastName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isRedirectError, setIsRedirectError] = useState(false);
   const { signIn, signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,6 +34,7 @@ const Auth = () => {
       
       if (errorDescription || error || errorCode) {
         let errorMessage = errorDescription || error || 'Authentication error occurred';
+        let isInvalidPath = false;
         
         // Add more specific messages for common errors
         if (errorCode === '401') {
@@ -41,9 +43,13 @@ const Auth = () => {
           errorMessage = 'Google authentication is not properly configured. Please contact support.';
         } else if (errorMessage.includes('refused to connect')) {
           errorMessage = 'Connection to authentication server was refused. Please check your network settings or try again later.';
+        } else if (errorMessage.includes('requested path is invalid') || error === 'invalid_redirect') {
+          errorMessage = 'Authentication redirect URL is not properly configured in Supabase. Please update your redirect URLs in the Supabase dashboard.';
+          isInvalidPath = true;
         }
         
         setAuthError(errorMessage);
+        setIsRedirectError(isInvalidPath);
         
         toast({
           title: "Authentication Error",
@@ -126,8 +132,21 @@ const Auth = () => {
         {authError && (
           <div className="px-6">
             <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{authError}</AlertDescription>
+              <AlertCircle className="h-4 w-4 mr-2" />
+              <div>
+                <AlertDescription>{authError}</AlertDescription>
+                {isRedirectError && (
+                  <div className="mt-2 text-sm flex flex-col space-y-1">
+                    <p>To fix this issue:</p>
+                    <ol className="list-decimal pl-5 space-y-1">
+                      <li>Go to your Supabase dashboard</li>
+                      <li>Navigate to Authentication &gt; URL Configuration</li>
+                      <li>Set your Site URL to: <code className="bg-muted px-1 rounded">{window.location.origin}</code></li>
+                      <li>Add to Redirect URLs: <code className="bg-muted px-1 rounded">{window.location.origin}/auth</code></li>
+                    </ol>
+                  </div>
+                )}
+              </div>
             </Alert>
           </div>
         )}
@@ -135,7 +154,7 @@ const Auth = () => {
         {isLoading && (
           <div className="px-6">
             <Alert className="mb-4">
-              <Info className="h-4 w-4" />
+              <Info className="h-4 w-4 mr-2" />
               <AlertDescription>
                 Please wait... {isLoading && "Processing authentication request."}
               </AlertDescription>
