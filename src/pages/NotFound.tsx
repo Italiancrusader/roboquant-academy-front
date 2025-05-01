@@ -2,9 +2,13 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Home } from 'lucide-react';
+import { Home, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const NotFound = () => {
+  // Check if we're on the domain that might need configuration
+  const isDomainSetup = window.location.hostname === 'www.roboquant.ai';
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 font-neulis">
       <div className="max-w-md w-full text-center">
@@ -14,6 +18,23 @@ const NotFound = () => {
           <p className="text-gray-400 mb-8">
             The page you are looking for doesn't exist or has been moved.
           </p>
+
+          {isDomainSetup && (
+            <Alert variant="destructive" className="mb-8 text-left">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Domain Configuration Issue</AlertTitle>
+              <AlertDescription>
+                <p className="mb-2">It appears that www.roboquant.ai may not be properly configured with your hosting provider.</p>
+                <p className="mb-2">Please ensure:</p>
+                <ol className="list-decimal pl-5 space-y-1 mb-2">
+                  <li>Your domain is properly connected to your hosting service</li>
+                  <li>DNS settings are properly configured</li>
+                  <li>The build has been deployed to the correct environment</li>
+                </ol>
+                <p>If you're using a custom domain, make sure it's properly set up in your hosting provider.</p>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
         
         <Button 
