@@ -16,10 +16,16 @@ serve(async (req) => {
   try {
     const { courseId, courseTitle, price, userId, successUrl, cancelUrl } = await req.json();
     
+    if (!courseId || !courseTitle || !price) {
+      throw new Error("Required parameters missing: courseId, courseTitle, and price are required");
+    }
+    
     // Initialize Stripe with the secret key
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
+
+    console.log(`Creating checkout session for course: ${courseId}, user: ${userId || 'anonymous'}`);
 
     // Customer management - find or create
     let customerId;
@@ -30,6 +36,7 @@ serve(async (req) => {
 
       if (searchResult && searchResult.length > 0) {
         customerId = searchResult[0].id;
+        console.log(`Found existing Stripe customer: ${customerId}`);
       }
     }
 
@@ -61,6 +68,8 @@ serve(async (req) => {
         userId,
       },
     });
+
+    console.log(`✅ Checkout session created: ${session.id}`);
 
     // Return the session ID and URL
     return new Response(JSON.stringify({ 

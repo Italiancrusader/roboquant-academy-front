@@ -21,13 +21,14 @@ serve(async (req) => {
     apiVersion: "2023-10-16",
   });
   
-  // Create Supabase client with service role key
+  // Create Supabase client with service role key for admin operations
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   
   try {
     const signature = req.headers.get("stripe-signature");
     
     if (!signature) {
+      console.error("No signature provided");
       return new Response(JSON.stringify({ error: "No signature provided" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
@@ -37,10 +38,19 @@ serve(async (req) => {
     const body = await req.text();
     const endpointSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
     
+    if (!endpointSecret) {
+      console.error("Webhook secret not configured");
+      return new Response(JSON.stringify({ error: "Webhook secret not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+    
     // Verify the event
     let event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+      console.log(`✅ Event verified: ${event.type}`);
     } catch (err) {
       console.error(`⚠️ Webhook signature verification failed:`, err);
       return new Response(JSON.stringify({ error: "Invalid signature" }), {
@@ -49,40 +59,19 @@ serve(async (req) => {
       });
     }
     
-    // Handle checkout.session.completed event
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session;
-      
-      if (session.payment_status === 'paid' && session.metadata) {
-        const { userId, courseId } = session.metadata;
-        
-        // If user ID and course ID are present, create enrollment record
-        if (userId && courseId) {
-          // Check if enrollment already exists to avoid duplicates
-          const { data: existingEnrollment } = await supabase
-            .from('enrollments')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('course_id', courseId)
-            .single();
-          
-          if (!existingEnrollment) {
-            // Create enrollment record
-            const { error: enrollmentError } = await supabase
-              .from('enrollments')
-              .insert({
-                user_id: userId,
-                course_id: courseId,
-                stripe_session_id: session.id,
-                payment_status: 'completed'
-              });
-              
-            if (enrollmentError) {
-              console.error('Error creating enrollment:', enrollmentError);
-            }
-          }
-        }
-      }
+    // Handle different event types
+    switch (event.type) {
+      case 'checkout.session.completed':
+        await handleCheckoutSessionCompleted(supabase, event.data.object);
+        break;
+      case 'payment_intent.succeeded':
+        console.log('💰 Payment succeeded:', event.data.object.id);
+        break;
+      case 'payment_intent.payment_failed':
+        console.log('❌ Payment failed:', event.data.object.id);
+        break;
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
     }
     
     return new Response(JSON.stringify({ received: true }), {
@@ -97,3 +86,49 @@ serve(async (req) => {
     });
   }
 });
+
+async function handleCheckoutSessionCompleted(supabase: any, session: any) {
+  console.log(`🛒 Checkout session completed: ${session.id}`);
+  
+  if (session.payment_status === 'paid' && session.metadata) {
+    const { userId, courseId } = session.metadata;
+    
+    if (userId && courseId) {
+      try {
+        // Check if enrollment already exists to avoid duplicates
+        const { data: existingEnrollment } = await supabase
+          .from('enrollments')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('course_id', courseId)
+          .single();
+        
+        if (!existingEnrollment) {
+          // Create enrollment record
+          const { data, error } = await supabase
+            .from('enrollments')
+            .insert({
+              user_id: userId,
+              course_id: courseId,
+              stripe_session_id: session.id,
+              payment_status: 'completed'
+            });
+            
+          if (error) {
+            throw error;
+          }
+          
+          console.log(`✅ Enrollment created for user ${userId} and course ${courseId}`);
+        } else {
+          console.log(`⚠️ Enrollment already exists for user ${userId} and course ${courseId}`);
+        }
+      } catch (error) {
+        console.error('Error creating enrollment:', error);
+      }
+    } else {
+      console.error('Missing userId or courseId in session metadata');
+    }
+  } else {
+    console.log(`⚠️ Session ${session.id} is not paid or missing metadata`);
+  }
+}
