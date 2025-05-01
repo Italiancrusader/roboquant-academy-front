@@ -29,8 +29,13 @@ const Auth = () => {
       const error = url.searchParams.get('error');
       const errorCode = url.searchParams.get('error_code');
       
-      if (errorDescription || error || errorCode) {
-        let errorMessage = errorDescription || error || 'Authentication error occurred';
+      // Also check for hash fragment errors (used in OAuth redirects)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const hashError = hashParams.get('error');
+      const hashErrorDescription = hashParams.get('error_description');
+      
+      if (errorDescription || error || errorCode || hashError || hashErrorDescription) {
+        let errorMessage = errorDescription || error || hashErrorDescription || hashError || 'Authentication error occurred';
         let isInvalidPath = false;
         
         // Add more specific messages for common errors
@@ -40,7 +45,11 @@ const Auth = () => {
           errorMessage = 'Google authentication is not properly configured. Please contact support.';
         } else if (errorMessage.includes('refused to connect')) {
           errorMessage = 'Connection to authentication server was refused. Please check your network settings or try again later.';
-        } else if (errorMessage.includes('requested path is invalid') || error === 'invalid_redirect') {
+        } else if (
+          errorMessage.includes('requested path is invalid') || 
+          error === 'invalid_redirect' || 
+          window.location.href.includes('supabase.co/www')
+        ) {
           errorMessage = 'Authentication redirect URL is not properly configured in Supabase. Please add your domain to the allowed redirect URLs.';
           isInvalidPath = true;
         }
