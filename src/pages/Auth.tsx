@@ -50,11 +50,21 @@ const Auth = () => {
       // Special check for Google OAuth redirect issues
       const hasGoogleOAuthData = accessToken && (providerToken || providerRefreshToken);
       const isRootPath = window.location.pathname === '/';
-      const hasGoogleOAuthError = hasGoogleOAuthData && (hasSupabaseUrlError || isRootPath);
+      const isLovablePath = currentUrl.includes('lovableproject.com');
+      const hasGoogleOAuthError = hasGoogleOAuthData && (hasSupabaseUrlError || (isRootPath && !isLovablePath));
       
       if (errorDescription || error || errorCode || hashError || hashErrorDescription || hasSupabaseUrlError || hasGoogleOAuthError) {
         let errorMessage = errorDescription || error || hashErrorDescription || hashError || 'Authentication error occurred';
         let isInvalidPath = false;
+        
+        // Special handling for OAuth tokens in wrong location
+        if (hasGoogleOAuthData) {
+          if (isRootPath && !isLovablePath) {
+            console.log("OAuth tokens found at root path instead of /auth");
+            // This is actually handled in AuthContext now, so no need to treat as error
+            return;
+          }
+        }
         
         if (hasGoogleOAuthError) {
           console.error("Google OAuth redirect error detected. URL:", currentUrl);
@@ -62,7 +72,7 @@ const Auth = () => {
           isInvalidPath = true;
           
           // If we have tokens but landed on the root path instead of /auth
-          if (isRootPath && hasGoogleOAuthData) {
+          if (isRootPath && hasGoogleOAuthData && !isLovablePath) {
             errorMessage = 'Google login detected tokens in the URL but redirected to the root path instead of /auth. Check your redirect URLs in both Supabase and Google Cloud Console.';
           }
         } else if (errorCode === '401') {
@@ -99,6 +109,27 @@ const Auth = () => {
     
     handleUrlErrors();
   }, [location]);
+
+  useEffect(() => {
+    // Check if we have OAuth tokens in the hash, but on the wrong page
+    const recoverOAuthSession = async () => {
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        
+        if (accessToken) {
+          console.log("Found access token in auth page hash, letting AuthContext handle it");
+          // AuthContext will handle the session recovery
+          // Just clean up the URL here
+          setTimeout(() => {
+            window.history.replaceState(null, document.title, window.location.pathname);
+          }, 1000); // Small delay to ensure AuthContext has time to process
+        }
+      }
+    };
+    
+    recoverOAuthSession();
+  }, []);
   
   // If user is already logged in, redirect to home or the page they were trying to access
   useEffect(() => {
