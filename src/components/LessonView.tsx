@@ -39,8 +39,34 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
   const [prevLesson, setPrevLesson] = useState<Lesson | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is admin
+    const checkAdminStatus = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin',
+        });
+        
+        if (error) throw error;
+        setIsAdmin(!!data);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [user]);
 
   useEffect(() => {
     if (currentLesson) {
@@ -66,8 +92,8 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
           setLesson(lessonData);
         }
 
-        // Record that the user accessed this lesson
-        if (user) {
+        // Record that the user accessed this lesson (skip for admins if not enrolled)
+        if (user && (!isAdmin || (isAdmin && await checkIfEnrolled()))) {
           await supabase.from('progress').upsert({
             user_id: user.id,
             lesson_id: lessonId,
@@ -126,7 +152,26 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
     };
 
     fetchLessonData();
-  }, [courseId, lessonId, user, currentLesson]);
+  }, [courseId, lessonId, user, currentLesson, isAdmin]);
+
+  // Helper function to check if the user is enrolled in the course
+  const checkIfEnrolled = async () => {
+    if (!user || !courseId) return false;
+    
+    try {
+      const { data, error } = await supabase
+        .from('enrollments')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .single();
+        
+      if (error) return false;
+      return !!data;
+    } catch {
+      return false;
+    }
+  };
 
   const handleLessonComplete = () => {
     // Navigate to next lesson if available

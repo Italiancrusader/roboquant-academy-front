@@ -30,6 +30,36 @@ const EnrollmentCard = ({
 }: EnrollmentCardProps) => {
   const navigate = useNavigate();
   const [isEnrolling, setIsEnrolling] = React.useState(false);
+  const [isAdmin, setIsAdmin] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  // Check if the user is an admin
+  React.useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!userId) {
+        setIsAdmin(false);
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase.rpc('has_role', {
+          _user_id: userId,
+          _role: 'admin',
+        });
+        
+        if (error) throw error;
+        setIsAdmin(!!data);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [userId]);
 
   const handleEnroll = async () => {
     if (!userId) {
@@ -69,6 +99,70 @@ const EnrollmentCard = ({
       setIsEnrolling(false);
     }
   };
+
+  // Show loading state while checking admin status
+  if (isLoading) {
+    return (
+      <Card className="sticky top-24">
+        {coverImage && (
+          <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+            <img 
+              src={coverImage} 
+              alt={courseTitle} 
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        <CardContent className="pt-6 space-y-6">
+          <div className="flex justify-center items-center h-24">
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // For admin users, show they have automatic access
+  if (isAdmin) {
+    return (
+      <Card className="sticky top-24">
+        {coverImage && (
+          <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+            <img 
+              src={coverImage} 
+              alt={courseTitle} 
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        <CardContent className="pt-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <span className="text-2xl font-bold">Admin Access</span>
+          </div>
+          
+          <Button 
+            className="w-full bg-green-600 hover:bg-green-700" 
+            onClick={() => {
+              if (lastAccessedLesson) {
+                navigate(`/courses/${courseId}/lessons/${lastAccessedLesson}`);
+              } else if (firstLesson) {
+                navigate(`/courses/${courseId}/lessons/${firstLesson}`);
+              }
+            }}
+          >
+            Access Course
+          </Button>
+          
+          <div className="space-y-3">
+            <div className="flex items-center">
+              <Award className="h-4 w-4 mr-2 text-primary" />
+              <span className="text-sm">Admin access to all courses</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="sticky top-24">
