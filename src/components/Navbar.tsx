@@ -101,9 +101,11 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <span className={cn("text-lg font-bold", isScrolled ? "text-primary" : "text-white")}>
-                RoboQuant Academy
-              </span>
+              <img
+                src="/lovable-uploads/56e1912c-6199-4933-a4e9-409fbe7e9311.png"
+                alt="RoboQuant Academy"
+                className="h-8"
+              />
             </Link>
           </div>
 
@@ -276,4 +278,3 @@ const AdminLink = () => {
 }
 
 export default Navbar;
-
