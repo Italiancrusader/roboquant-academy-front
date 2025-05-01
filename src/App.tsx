@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -24,8 +25,16 @@ import MT5ReportGenie from "./pages/MT5ReportGenie";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import CourseManagement from "./pages/admin/CourseManagement";
 import LessonManagement from "./pages/admin/LessonManagement";
-import AllLessonsManagement from "./pages/admin/AllLessonsManagement"; // New import
+import AllLessonsManagement from "./pages/admin/AllLessonsManagement";
 import UserManagement from "./pages/admin/UserManagement";
+
+// New Admin Pages
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminPayments from "./pages/admin/AdminPayments";
+import AdminCertificates from "./pages/admin/AdminCertificates";
+import AdminCommunity from "./pages/admin/AdminCommunity";
+import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const App = () => {
   // Create a client inside the component to ensure React hooks work properly
@@ -83,6 +92,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/admin/analytics"
+                element={
+                  <AdminCheck>
+                    <AdminAnalytics />
+                  </AdminCheck>
+                }
+              />
+              <Route
                 path="/admin/courses"
                 element={
                   <AdminCheck>
@@ -111,6 +128,46 @@ const App = () => {
                 element={
                   <AdminCheck>
                     <UserManagement />
+                  </AdminCheck>
+                }
+              />
+              <Route
+                path="/admin/payments"
+                element={
+                  <AdminCheck>
+                    <AdminPayments />
+                  </AdminCheck>
+                }
+              />
+              <Route
+                path="/admin/certificates"
+                element={
+                  <AdminCheck>
+                    <AdminCertificates />
+                  </AdminCheck>
+                }
+              />
+              <Route
+                path="/admin/community"
+                element={
+                  <AdminCheck>
+                    <AdminCommunity />
+                  </AdminCheck>
+                }
+              />
+              <Route
+                path="/admin/notifications"
+                element={
+                  <AdminCheck>
+                    <AdminNotifications />
+                  </AdminCheck>
+                }
+              />
+              <Route
+                path="/admin/settings"
+                element={
+                  <AdminCheck>
+                    <AdminSettings />
                   </AdminCheck>
                 }
               />
