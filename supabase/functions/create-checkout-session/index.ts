@@ -26,6 +26,7 @@ serve(async (req) => {
     });
 
     console.log(`Creating checkout session for course: ${courseId}, user: ${userId || 'anonymous'}`);
+    console.log(`Test mode: ${isTestMode ? 'YES' : 'NO'}`);
 
     // Customer management - find or create
     let customerId;
@@ -92,6 +93,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create(sessionOptions);
 
     console.log(`✅ Checkout session created: ${session.id}`);
+    console.log(`🔍 Session metadata:`, session.metadata);
 
     // Return the session ID and URL
     return new Response(JSON.stringify({ 

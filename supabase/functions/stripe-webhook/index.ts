@@ -25,10 +25,12 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   
   try {
+    console.log("🔔 Webhook received");
+    
     const signature = req.headers.get("stripe-signature");
     
     if (!signature) {
-      console.error("No signature provided");
+      console.error("⚠️ No signature provided");
       return new Response(JSON.stringify({ error: "No signature provided" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
@@ -39,7 +41,7 @@ serve(async (req) => {
     const endpointSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
     
     if (!endpointSecret) {
-      console.error("Webhook secret not configured");
+      console.error("⚠️ Webhook secret not configured");
       return new Response(JSON.stringify({ error: "Webhook secret not configured" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
@@ -62,6 +64,7 @@ serve(async (req) => {
     // Handle different event types
     switch (event.type) {
       case 'checkout.session.completed':
+        console.log(`🔄 Processing checkout session completed: ${event.data.object.id}`);
         await handleCheckoutSessionCompleted(supabase, event.data.object);
         break;
       case 'payment_intent.succeeded':
@@ -71,7 +74,7 @@ serve(async (req) => {
         console.log('❌ Payment failed:', event.data.object.id);
         break;
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`ℹ️ Unhandled event type: ${event.type}`);
     }
     
     return new Response(JSON.stringify({ received: true }), {
@@ -79,7 +82,7 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error("Error handling webhook:", error);
+    console.error("❌ Error handling webhook:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
@@ -89,21 +92,31 @@ serve(async (req) => {
 
 async function handleCheckoutSessionCompleted(supabase: any, session: any) {
   console.log(`🛒 Checkout session completed: ${session.id}`);
+  console.log(`💳 Payment status: ${session.payment_status}`);
   
   if (session.payment_status === 'paid' && session.metadata) {
     const { userId, courseId } = session.metadata;
     
+    console.log(`👤 User ID: ${userId || 'Not provided'}`);
+    console.log(`📚 Course ID: ${courseId || 'Not provided'}`);
+    
     if (userId && courseId) {
       try {
         // Check if enrollment already exists to avoid duplicates
-        const { data: existingEnrollment } = await supabase
+        console.log(`🔍 Checking for existing enrollment: user=${userId}, course=${courseId}`);
+        const { data: existingEnrollment, error: queryError } = await supabase
           .from('enrollments')
           .select('*')
           .eq('user_id', userId)
           .eq('course_id', courseId)
           .single();
         
+        if (queryError) {
+          console.log(`⚠️ Query error: ${queryError.message}`);
+        }
+        
         if (!existingEnrollment) {
+          console.log(`➕ Creating new enrollment record`);
           // Create enrollment record
           const { data, error } = await supabase
             .from('enrollments')
@@ -115,6 +128,7 @@ async function handleCheckoutSessionCompleted(supabase: any, session: any) {
             });
             
           if (error) {
+            console.error(`❌ Error creating enrollment: ${error.message}`);
             throw error;
           }
           
@@ -123,10 +137,11 @@ async function handleCheckoutSessionCompleted(supabase: any, session: any) {
           console.log(`⚠️ Enrollment already exists for user ${userId} and course ${courseId}`);
         }
       } catch (error) {
-        console.error('Error creating enrollment:', error);
+        console.error('❌ Error creating enrollment:', error);
       }
     } else {
-      console.error('Missing userId or courseId in session metadata');
+      console.error('⚠️ Missing userId or courseId in session metadata');
+      console.log('Session metadata:', session.metadata);
     }
   } else {
     console.log(`⚠️ Session ${session.id} is not paid or missing metadata`);
