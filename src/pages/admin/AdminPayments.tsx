@@ -9,19 +9,20 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
-interface Enrollment {
+interface EnrollmentWithDetails {
   id: string;
   created_at: string;
   user_id: string;
   course_id: string;
-  stripe_session_id: string;
-  payment_status: string;
+  stripe_session_id: string | null;
+  payment_status: string | null;
   user_email?: string;
   course_title?: string;
+  price?: number;
 }
 
 const AdminPayments = () => {
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [enrollments, setEnrollments] = useState<EnrollmentWithDetails[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [monthlyRevenue, setMonthlyRevenue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +47,7 @@ const AdminPayments = () => {
         if (error) throw error;
 
         // Transform data to include user_email and course_title
-        const transformedData = data.map(item => ({
+        const transformedData: EnrollmentWithDetails[] = data.map(item => ({
           id: item.id,
           created_at: item.created_at,
           user_id: item.user_id,
