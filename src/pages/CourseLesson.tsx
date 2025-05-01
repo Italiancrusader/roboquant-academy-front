@@ -37,7 +37,7 @@ interface Course {
   id: string;
   title: string;
   description: string | null;
-  image_url: string | null;
+  cover_image: string | null; // Updated to match database column name
 }
 
 const CourseLesson = () => {
@@ -59,12 +59,12 @@ const CourseLesson = () => {
         // Fetch course details
         const { data: courseData, error: courseError } = await supabase
           .from('courses')
-          .select('id, title, description, image_url')
+          .select('id, title, description, cover_image') // Updated to use cover_image
           .eq('id', courseId)
           .single();
           
         if (courseError) throw courseError;
-        setCourse(courseData);
+        setCourse(courseData as Course);
         
         // Fetch all modules and lessons for the course
         const { data: modulesData, error: modulesError } = await supabase

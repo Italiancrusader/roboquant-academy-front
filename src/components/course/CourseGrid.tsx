@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 interface Course {
   id: string;
   title: string;
-  image_url: string | null;
+  cover_image: string | null; // Updated to match database column name
   progress: number;
   lessons_count: number;
 }
@@ -25,9 +25,9 @@ const CourseGrid: React.FC<CourseGridProps> = ({ courses, className }) => {
         <Link to={`/courses/${course.id}`} key={course.id}>
           <Card className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="aspect-video bg-muted relative">
-              {course.image_url ? (
+              {course.cover_image ? (
                 <img 
-                  src={course.image_url} 
+                  src={course.cover_image} 
                   alt={course.title} 
                   className="object-cover w-full h-full"
                 />

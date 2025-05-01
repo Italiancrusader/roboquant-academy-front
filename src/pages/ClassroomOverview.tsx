@@ -14,7 +14,7 @@ interface Course {
   id: string;
   title: string;
   description: string | null;
-  image_url: string | null;
+  cover_image: string | null; // Updated to match database column name
   modules_count: number;
   lessons_count: number;
   progress: number;
@@ -49,7 +49,7 @@ const ClassroomOverview = () => {
         // Fetch course details
         const { data: coursesData, error: coursesError } = await supabase
           .from('courses')
-          .select('id, title, description, image_url')
+          .select('id, title, description, cover_image') // Updated to use cover_image
           .in('id', courseIds);
           
         if (coursesError) throw coursesError;
@@ -85,7 +85,7 @@ const ClassroomOverview = () => {
               
             const completedLessons = progress?.length || 0;
             const progressPercentage = lessonsCount > 0 
-              ? Math.round((completedLessons / lessonsCount) * 100) 
+              ? Math.round((completedLessons / (lessonsCount || 1)) * 100) 
               : 0;
               
             return {
@@ -93,7 +93,7 @@ const ClassroomOverview = () => {
               modules_count: modulesCount || 0,
               lessons_count: lessonsCount || 0,
               progress: progressPercentage
-            };
+            } as Course;
           })
         );
         
@@ -143,9 +143,9 @@ const ClassroomOverview = () => {
               <Link to={`/courses/${course.id}`} key={course.id}>
                 <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="aspect-video bg-muted relative">
-                    {course.image_url ? (
+                    {course.cover_image ? (
                       <img 
-                        src={course.image_url} 
+                        src={course.cover_image} 
                         alt={course.title} 
                         className="object-cover w-full h-full"
                       />

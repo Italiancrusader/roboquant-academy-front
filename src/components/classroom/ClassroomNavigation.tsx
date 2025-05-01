@@ -14,6 +14,14 @@ interface ClassroomNavigationProps {
 const ClassroomNavigation: React.FC<ClassroomNavigationProps> = ({ courseName }) => {
   const { user } = useAuth();
   
+  // Helper function to get avatar fallback
+  const getAvatarFallback = () => {
+    if (user?.email) {
+      return user.email[0].toUpperCase();
+    }
+    return 'U';
+  };
+  
   return (
     <div className="flex items-center justify-between py-2 px-4 border-b">
       <div className="flex items-center space-x-4">
@@ -41,8 +49,8 @@ const ClassroomNavigation: React.FC<ClassroomNavigationProps> = ({ courseName })
         </Button>
         
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user?.avatar_url || ''} alt={user?.user_metadata?.name || 'User'} />
-          <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
+          <AvatarImage src={user?.user_metadata?.avatar_url || ''} alt={user?.user_metadata?.name || 'User'} />
+          <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
         </Avatar>
       </div>
     </div>
