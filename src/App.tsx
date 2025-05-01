@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import Index from './pages/Index';
@@ -27,7 +27,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import AdminNotifications from './pages/admin/AdminNotifications';
 import AdminCommunity from './pages/admin/AdminCommunity';
 import AdminCertificates from './pages/admin/AdminCertificates';
-import CourseConfigPage from './pages/admin/CourseConfigPage'; // Import the new page
+import CourseConfigPage from './pages/admin/CourseConfigPage';
 
 function App() {
   return (
@@ -43,7 +43,7 @@ function App() {
           <Route path="/courses/:courseId/lessons/:lessonId" element={<CourseLesson />} />
           
           {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/classroom" element={<ClassroomOverview />} />
             <Route path="/profile" element={<Profile />} />
@@ -51,19 +51,19 @@ function App() {
           </Route>
           
           {/* Admin Routes */}
-          <Route element={<AdminCheck />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<UserManagement />} />
-            <Route path="/admin/courses" element={<CourseManagement />} />
-            <Route path="/admin/courses/:courseId/lessons" element={<LessonManagement />} />
-            <Route path="/admin/courses/:courseId/configure" element={<CourseConfigPage />} /> {/* Add new route */}
-            <Route path="/admin/lessons" element={<AllLessonsManagement />} />
-            <Route path="/admin/analytics" element={<AdminAnalytics />} />
-            <Route path="/admin/payments" element={<AdminPayments />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/notifications" element={<AdminNotifications />} />
-            <Route path="/admin/community" element={<AdminCommunity />} />
-            <Route path="/admin/certificates" element={<AdminCertificates />} />
+          <Route path="/admin" element={<AdminCheck><Outlet /></AdminCheck>}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="courses" element={<CourseManagement />} />
+            <Route path="courses/:courseId/lessons" element={<LessonManagement />} />
+            <Route path="courses/:courseId/configure" element={<CourseConfigPage />} />
+            <Route path="lessons" element={<AllLessonsManagement />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="payments" element={<AdminPayments />} />
+            <Route path="settings" element={<AdminSettings />} />
+            <Route path="notifications" element={<AdminNotifications />} />
+            <Route path="community" element={<AdminCommunity />} />
+            <Route path="certificates" element={<AdminCertificates />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />
