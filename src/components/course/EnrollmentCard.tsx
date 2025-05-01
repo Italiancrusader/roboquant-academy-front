@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -174,7 +175,12 @@ const EnrollmentCard = ({
       )}
       <CardContent className="pt-6 space-y-6">
         <div className="flex justify-between items-center">
-          <span className="text-2xl font-bold">${price.toFixed(2)}</span>
+          <div>
+            <span className="text-2xl font-bold">${price.toFixed(2)}</span>
+            {price === 1500 && (
+              <span className="text-sm text-gray-400 ml-2 line-through">$2,000</span>
+            )}
+          </div>
         </div>
         
         {enrollment ? (

@@ -32,7 +32,7 @@ const Pricing: React.FC = () => {
     await handleStripeCheckout({
       courseId: 'premium', // Replace with your actual premium course ID
       courseTitle: 'RoboQuant Academy',
-      price: 2000, // $2,000
+      price: 1500, // $1,500 (updated from $2,000)
       userId: user.id,
     });
   };
@@ -65,8 +65,8 @@ const Pricing: React.FC = () => {
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold text-foreground">RoboQuant Academy</h3>
               <div className="text-right">
-                <span className="text-gray-400 text-sm line-through">$2,500</span>
-                <div className="text-3xl font-bold gradient-text">$2,000</div>
+                <span className="text-gray-400 text-sm line-through">$2,000</span>
+                <div className="text-3xl font-bold gradient-text">$1,500</div>
                 <div className="text-sm text-gray-400">one-time payment</div>
               </div>
             </div>

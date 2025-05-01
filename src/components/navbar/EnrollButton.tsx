@@ -25,7 +25,7 @@ export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
     await handleStripeCheckout({
       courseId: 'premium', // Replace with your actual premium course ID
       courseTitle: 'RoboQuant Academy',
-      price: 2000, // $2,000
+      price: 1500, // $1,500 (updated from $2,000)
       userId: user.id,
     });
   };

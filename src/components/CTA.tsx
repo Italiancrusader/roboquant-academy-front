@@ -21,7 +21,7 @@ const CTA: React.FC = () => {
     await handleStripeCheckout({
       courseId: 'premium', // Replace with your actual premium course ID
       courseTitle: 'RoboQuant Academy',
-      price: 2000, // $2,000
+      price: 1500, // $1,500 (updated from $2,000)
       userId: user.id,
     });
   };
@@ -52,7 +52,7 @@ const CTA: React.FC = () => {
             className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold"
             onClick={handleEnroll}
           >
-            Enroll Now – $2,000 <ArrowRight className="ml-2 h-5 w-5" />
+            Enroll Now – $1,500 <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           
           <p className="mt-6 text-white/80 text-sm">

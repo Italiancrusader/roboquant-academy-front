@@ -9,8 +9,8 @@ const CostCalculator: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
   const [botCount, setBotCount] = useState(3);
   
-  const devCostPerBot = 1250; // Updated average cost to hire a developer for one bot
-  const courseCost = 2000; // UPDATED course cost
+  const devCostPerBot = 1250; // Average cost to hire a developer for one bot
+  const courseCost = 1500; // UPDATED course cost from $2,000 to $1,500
   const totalSavings = (botCount * devCostPerBot) - courseCost;
   
   return (
