@@ -1,46 +1,33 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { lazy, Suspense } from 'react';
+import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
 
-// Preload critical assets
-const preloadAssets = async () => {
+// Preload critical assets in the background but don't block rendering
+const preloadAssets = () => {
   // Preload hero image
-  const imagePromise = new Promise((resolve) => {
-    const img = new Image();
-    img.src = '/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png';
-    img.onload = resolve;
-  });
-
-  // Preload video by creating a hidden iframe
-  const videoPromise = new Promise((resolve) => {
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = 'https://www.youtube.com/embed/f14SlGPD4gM?autoplay=0';
-    iframe.onload = resolve;
-    document.body.appendChild(iframe);
-    setTimeout(() => document.body.removeChild(iframe), 5000); // Clean up after load
-  });
-
-  await Promise.all([imagePromise, videoPromise]);
+  const img = new Image();
+  img.src = '/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png';
+  
+  // Preload video
+  const link = document.createElement('link');
+  link.rel = 'preload';
+  link.as = 'fetch';
+  link.href = 'https://www.youtube.com/embed/f14SlGPD4gM?autoplay=0';
+  document.head.appendChild(link);
+  setTimeout(() => document.head.removeChild(link), 5000); // Clean up after load
 };
 
-// Use lazy loading for the main App component - fix to handle default export correctly
-const App = lazy(() => 
-  // Wait for assets to load before showing the app
-  Promise.all([
-    import('./App'),
-    preloadAssets()
-  ]).then(([moduleExports]) => moduleExports)
-);
+// Start preloading assets in the background
+preloadAssets();
 
-// Mount app with Suspense boundary
+// Mount app immediately - no need to wait for assets to load
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Suspense fallback={<LoadingAnimation />}>
+    <React.Suspense fallback={<LoadingAnimation />}>
       <App />
-    </Suspense>
+    </React.Suspense>
   </React.StrictMode>
 );
