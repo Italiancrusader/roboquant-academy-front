@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
+import GoogleButton from './GoogleButton';
 
 interface SignInFormProps {
   isLoading: boolean;
