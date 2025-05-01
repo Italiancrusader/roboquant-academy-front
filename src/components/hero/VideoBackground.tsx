@@ -10,9 +10,9 @@ const VideoBackground: React.FC = () => {
       <div 
         className="absolute inset-0 z-0" 
         style={{
-          background: 'rgba(0,0,0,0.85)',
-          backdropFilter: 'blur(15px)',
-          WebkitBackdropFilter: 'blur(15px)'
+          background: 'rgba(0,0,0,0.75)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)'
         }} 
       />
       <iframe 

@@ -19,25 +19,15 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
   
   // Extract Vimeo ID from URL
   const getVimeoId = (url: string): string | null => {
-    // Support multiple Vimeo URL formats
-    const patterns = [
-      /vimeo\.com\/(\d+)/,
-      /player\.vimeo\.com\/video\/(\d+)/,
-      /vimeo\.com\/channels\/[^/]+\/(\d+)/,
-      /vimeo\.com\/groups\/[^/]+\/videos\/(\d+)/
-    ];
-    
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) return match[1];
-    }
-    
-    return null;
+    const regex = /vimeo\.com\/(\d+)/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
   };
   
   const vimeoId = getVimeoId(videoUrl);
   
   useEffect(() => {
+    // Create Vimeo player instance using the Vimeo Player API
     if (!vimeoId) return;
     
     // Load Vimeo API script if not already loaded
@@ -114,11 +104,10 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       )}
       <iframe
         id="vimeo-player"
-        src={`https://player.vimeo.com/video/${vimeoId}?autoplay=0&title=0&byline=0&portrait=0&dnt=1&color=0062ff&background=1`}
+        src={`https://player.vimeo.com/video/${vimeoId}?autoplay=0&title=0&byline=0&portrait=0&dnt=1`}
         className="absolute top-0 left-0 w-full h-full"
         allow="autoplay; fullscreen; picture-in-picture"
         allowFullScreen
-        style={{ width: '100%', height: '100%' }}
         title="Vimeo video player"
       />
     </div>

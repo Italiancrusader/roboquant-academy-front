@@ -39,7 +39,7 @@ const VideoDialog: React.FC = () => {
         )}
         <iframe
           ref={vimeoRef}
-          src="https://player.vimeo.com/video/1080278046?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0&color=0062ff&background=1"
+          src="https://player.vimeo.com/video/1080278046?h=3cfe782ae5&autoplay=1&title=0&byline=0&portrait=0"
           className="absolute top-0 left-0 w-full h-full"
           allow="autoplay; fullscreen; picture-in-picture"
           loading="lazy"

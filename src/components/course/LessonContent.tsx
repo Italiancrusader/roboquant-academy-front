@@ -2,22 +2,17 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Book } from 'lucide-react';
-import VideoPlayer from '@/components/VideoPlayer';
 
 interface LessonContentProps {
   title: string;
   description: string | null;
   videoUrl: string | null;
-  lessonId?: string;
-  courseId?: string;
 }
 
 const LessonContent: React.FC<LessonContentProps> = ({
   title,
   description,
-  videoUrl,
-  lessonId = '',
-  courseId = ''
+  videoUrl
 }) => {
   return (
     <div>
@@ -28,15 +23,7 @@ const LessonContent: React.FC<LessonContentProps> = ({
         )}
       </div>
 
-      {videoUrl ? (
-        <div className="mt-6 rounded-lg overflow-hidden border border-border">
-          <VideoPlayer 
-            videoUrl={videoUrl} 
-            lessonId={lessonId} 
-            courseId={courseId}
-          />
-        </div>
-      ) : (
+      {!videoUrl && (
         <Card className="p-8 text-center mt-6">
           <div className="flex flex-col items-center space-y-4">
             <Book className="h-12 w-12 text-muted-foreground" />
