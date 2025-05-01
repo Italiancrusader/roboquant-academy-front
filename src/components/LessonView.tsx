@@ -8,8 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { ChevronLeft, ChevronRight, Book } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ChevronLeft, ChevronRight, Book, FileText } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+
+interface Attachment {
+  id: string;
+  name: string;
+  file_url: string;
+  type: string;
+}
 
 interface Lesson {
   id: string;
@@ -19,40 +27,43 @@ interface Lesson {
   sort_order: number;
 }
 
-// Create a simpler type for navigation between lessons
-interface LessonNavigation {
-  id: string;
-  title: string;
-  sort_order: number; // Adding sort_order to match the Lesson interface
-  description: string | null; // Adding description to match the Lesson interface
-  video_url: string | null; // Adding video_url to match the Lesson interface
+interface LessonViewProps {
+  currentLesson?: Lesson | null;
 }
 
-const LessonView = () => {
+const LessonView = ({ currentLesson }: LessonViewProps) => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
   const [lesson, setLesson] = useState<Lesson | null>(null);
-  const [nextLesson, setNextLesson] = useState<LessonNavigation | null>(null);
-  const [prevLesson, setPrevLesson] = useState<LessonNavigation | null>(null);
+  const [nextLesson, setNextLesson] = useState<Lesson | null>(null);
+  const [prevLesson, setPrevLesson] = useState<Lesson | null>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (currentLesson) {
+      setLesson(currentLesson);
+      setIsLoading(false);
+    }
+    
     if (!courseId || !lessonId) return;
 
     const fetchLessonData = async () => {
       setIsLoading(true);
       try {
-        // Fetch current lesson
-        const { data: lessonData, error: lessonError } = await supabase
-          .from('lessons')
-          .select('*')
-          .eq('id', lessonId)
-          .eq('course_id', courseId)
-          .single();
+        // Fetch current lesson if not provided
+        if (!currentLesson) {
+          const { data: lessonData, error: lessonError } = await supabase
+            .from('lessons')
+            .select('*')
+            .eq('id', lessonId)
+            .eq('course_id', courseId)
+            .single();
 
-        if (lessonError) throw lessonError;
-        setLesson(lessonData);
+          if (lessonError) throw lessonError;
+          setLesson(lessonData);
+        }
 
         // Record that the user accessed this lesson
         if (user) {
@@ -89,6 +100,16 @@ const LessonView = () => {
             setNextLesson(allLessons[currentIndex + 1]);
           }
         }
+        
+        // Fetch attachments for the lesson
+        const { data: attachmentsData, error: attachmentsError } = await supabase
+          .from('lesson_attachments')
+          .select('*')
+          .eq('lesson_id', lessonId)
+          .order('created_at', { ascending: true });
+          
+        if (attachmentsError) throw attachmentsError;
+        setAttachments(attachmentsData || []);
       } catch (error: any) {
         toast({
           title: "Error loading lesson",
@@ -101,7 +122,7 @@ const LessonView = () => {
     };
 
     fetchLessonData();
-  }, [courseId, lessonId, user]);
+  }, [courseId, lessonId, user, currentLesson]);
 
   const handleLessonComplete = () => {
     // Navigate to next lesson if available
@@ -159,10 +180,57 @@ const LessonView = () => {
           </div>
         </Card>
       )}
-
-      <div className="prose prose-invert max-w-none">
-        {/* Additional lesson content can be added here */}
-      </div>
+      
+      <Tabs defaultValue="details" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="resources" className="relative">
+            Resources
+            {attachments.length > 0 && (
+              <span className="absolute top-0 right-1 transform translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {attachments.length}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="details" className="pt-4">
+          <div className="prose prose-invert max-w-none">
+            {lesson.description ? (
+              <div>
+                <h2>Description</h2>
+                <p>{lesson.description}</p>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No additional details available for this lesson.</p>
+            )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="resources" className="pt-4">
+          {attachments.length > 0 ? (
+            <div className="space-y-3">
+              {attachments.map((attachment) => (
+                <a 
+                  key={attachment.id} 
+                  href={attachment.file_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center p-3 border rounded-lg hover:bg-muted transition-colors"
+                >
+                  <FileText className="h-5 w-5 mr-3 text-primary" />
+                  <div>
+                    <p className="font-medium">{attachment.name}</p>
+                    <p className="text-xs text-muted-foreground">{attachment.type}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No resources available for this lesson.</p>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <Separator />
 
