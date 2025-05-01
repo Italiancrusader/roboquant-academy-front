@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -63,6 +62,7 @@ const EnrollmentCard = ({
 
   const handleEnroll = async () => {
     if (!userId) {
+      // With RLS, auth is now required
       navigate('/auth', { state: { from: `/courses/${courseId}` } });
       return;
     }

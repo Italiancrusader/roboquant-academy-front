@@ -49,7 +49,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           .select('id')
           .eq('user_id', user.id)
           .eq('course_id', courseId)
-          .single();
+          .maybeSingle();
 
         if (enrollmentError && enrollmentError.code !== 'PGRST116') {
           // PGRST116 is "no rows returned" error, which is expected if not enrolled
