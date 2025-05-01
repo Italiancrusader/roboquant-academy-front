@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
 import { Play, Pause, RotateCcw, Loader } from 'lucide-react';
 import VimeoPlayer from './VimeoPlayer';
+import { cn } from '@/lib/utils';
 
 interface VideoPlayerProps {
   lessonId: string;
@@ -253,16 +253,25 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             </>
           )}
           
-          <span className="text-xs text-muted-foreground">
-            {formatTime(currentTime)} / {formatTime(duration)}
-          </span>
-          
-          <div className="flex-1">
-            <Progress value={progressPercentage} />
+          <div className="flex flex-col w-full gap-1">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+            
+            <Progress 
+              value={progressPercentage} 
+              className={cn(
+                "h-2",
+                progressSaved ? "bg-green-500" : ""
+              )}
+            />
           </div>
           
           {progressSaved && (
-            <span className="text-xs text-green-500 font-medium">Completed</span>
+            <div className="flex items-center text-green-500">
+              <span className="text-xs font-medium">Completed</span>
+            </div>
           )}
         </div>
       </div>

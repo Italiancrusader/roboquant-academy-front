@@ -1,10 +1,7 @@
 
 import React from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import StatCards from '@/components/admin/dashboard/StatCards';
-import CourseEnrollmentChart from '@/components/admin/dashboard/CourseEnrollmentChart';
-import WeeklyEngagementChart from '@/components/admin/dashboard/WeeklyEngagementChart';
-import QuickTip from '@/components/admin/dashboard/QuickTip';
+import { StatCards, CourseEnrollmentChart, WeeklyEngagementChart, QuickTip } from '@/components/admin/dashboard';
 import { useDashboardData } from '@/hooks/admin/useDashboardData';
 
 const AdminDashboard = () => {

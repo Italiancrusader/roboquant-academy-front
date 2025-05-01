@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import LessonView from '@/components/LessonView';
@@ -8,9 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
-import { Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import CourseModule from '@/components/course/CourseModule';
+import ClassroomHeader from '@/components/classroom/ClassroomHeader';
+import ClassroomNavigation from '@/components/classroom/ClassroomNavigation';
 
 interface Module {
   id: string;
@@ -35,6 +36,8 @@ interface Lesson {
 interface Course {
   id: string;
   title: string;
+  description: string | null;
+  image_url: string | null;
 }
 
 const CourseLesson = () => {
@@ -46,6 +49,7 @@ const CourseLesson = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [progressPercentage, setProgressPercentage] = useState(0);
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<string>("classroom");
 
   useEffect(() => {
     if (!courseId) return;
@@ -55,7 +59,7 @@ const CourseLesson = () => {
         // Fetch course details
         const { data: courseData, error: courseError } = await supabase
           .from('courses')
-          .select('id, title')
+          .select('id, title, description, image_url')
           .eq('id', courseId)
           .single();
           
@@ -213,8 +217,16 @@ const CourseLesson = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 pt-24 pb-20">
-        <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 pt-16">
+        {course && (
+          <ClassroomHeader 
+            title={course.title} 
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        )}
+        
+        <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-8 mt-6">
           {/* Sidebar with modules and lessons */}
           <div className="md:col-span-1">
             <Card className="sticky top-24">
@@ -224,7 +236,7 @@ const CourseLesson = () => {
                   <p className="font-medium text-sm">Progress</p>
                   <Progress value={progressPercentage} className="h-2" />
                   <p className="text-sm text-muted-foreground">
-                    {progressPercentage}% complete. Keep it up.
+                    {progressPercentage}% complete
                   </p>
                 </div>
 
