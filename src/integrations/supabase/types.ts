@@ -77,14 +77,51 @@ export type Database = {
           },
         ]
       }
+      lesson_attachments: {
+        Row: {
+          created_at: string
+          file_url: string
+          id: string
+          lesson_id: string
+          name: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          file_url: string
+          id?: string
+          lesson_id: string
+          name: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          file_url?: string
+          id?: string
+          lesson_id?: string
+          name?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_attachments_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           course_id: string
           created_at: string
           description: string | null
           duration_minutes: number | null
+          has_attachments: boolean
           id: string
           is_published: boolean | null
+          module_id: string | null
           sort_order: number
           title: string
           updated_at: string
@@ -95,8 +132,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number | null
+          has_attachments?: boolean
           id?: string
           is_published?: boolean | null
+          module_id?: string | null
           sort_order: number
           title: string
           updated_at?: string
@@ -107,8 +146,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number | null
+          has_attachments?: boolean
           id?: string
           is_published?: boolean | null
+          module_id?: string | null
           sort_order?: number
           title?: string
           updated_at?: string
@@ -117,6 +158,48 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modules: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          sort_order: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modules_course_id_fkey"
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"

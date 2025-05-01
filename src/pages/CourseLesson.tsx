@@ -4,14 +4,13 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import LessonView from '@/components/LessonView';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
-import { Clock, CheckCircle2, Circle, FileText } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import CourseModule from '@/components/course/CourseModule';
 
 interface Module {
   id: string;
@@ -30,6 +29,7 @@ interface Lesson {
   is_published: boolean;
   module_id: string | null;
   has_attachments: boolean;
+  video_url: string | null;
 }
 
 interface Course {
@@ -62,10 +62,19 @@ const CourseLesson = () => {
         if (courseError) throw courseError;
         setCourse(courseData);
         
-        // Fetch all lessons for the course
+        // Fetch all modules and lessons for the course
+        const { data: modulesData, error: modulesError } = await supabase
+          .from('modules')
+          .select('*')
+          .eq('course_id', courseId)
+          .order('sort_order', { ascending: true });
+          
+        if (modulesError) throw modulesError;
+        
+        // Fetch all lessons 
         const { data: lessonsData, error: lessonsError } = await supabase
           .from('lessons')
-          .select('*, module:module_id(id, title, sort_order)')
+          .select('*')
           .eq('course_id', courseId)
           .eq('is_published', true)
           .order('sort_order', { ascending: true });
@@ -83,28 +92,46 @@ const CourseLesson = () => {
         // Group lessons by module
         const groupedModules: Record<string, Module> = {};
         
-        lessonsData?.forEach(lesson => {
-          const moduleId = lesson.module?.id || 'uncategorized';
-          const moduleTitle = lesson.module?.title || 'Uncategorized';
-          const moduleSortOrder = lesson.module?.sort_order || 999;
-          
-          if (!groupedModules[moduleId]) {
-            groupedModules[moduleId] = {
-              id: moduleId,
-              title: moduleTitle,
-              sort_order: moduleSortOrder,
+        // Initialize modules from fetched module data
+        if (modulesData) {
+          modulesData.forEach(module => {
+            groupedModules[module.id] = {
+              id: module.id,
+              title: module.title,
+              sort_order: module.sort_order,
               duration_minutes: 0,
               lessons: []
             };
-          }
-          
-          groupedModules[moduleId].lessons.push(lesson);
-          groupedModules[moduleId].duration_minutes = 
-            (groupedModules[moduleId].duration_minutes || 0) + (lesson.duration_minutes || 0);
-        });
+          });
+        }
+        
+        // Add uncategorized module if needed
+        if (!groupedModules['uncategorized']) {
+          groupedModules['uncategorized'] = {
+            id: 'uncategorized',
+            title: 'Uncategorized',
+            sort_order: 999,
+            duration_minutes: 0,
+            lessons: []
+          };
+        }
+        
+        // Distribute lessons to their modules
+        if (lessonsData) {
+          lessonsData.forEach(lesson => {
+            const moduleId = lesson.module_id || 'uncategorized';
+            // If module exists, add lesson to it, otherwise add to uncategorized
+            const targetModule = groupedModules[moduleId] || groupedModules['uncategorized'];
+            
+            targetModule.lessons.push(lesson);
+            targetModule.duration_minutes = 
+              (targetModule.duration_minutes || 0) + (lesson.duration_minutes || 0);
+          });
+        }
         
         // Convert to array and sort modules
         const moduleArray = Object.values(groupedModules)
+          .filter(module => module.lessons.length > 0) // Only show modules with lessons
           .sort((a, b) => a.sort_order - b.sort_order);
         
         setModules(moduleArray);
@@ -206,53 +233,15 @@ const CourseLesson = () => {
                 {/* Modules and lessons */}
                 <div className="space-y-6">
                   {modules.map((module) => (
-                    <div key={module.id} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <h3 className="font-semibold">{module.title}</h3>
-                        {module.duration_minutes ? (
-                          <div className="text-sm text-muted-foreground flex items-center">
-                            <Clock className="mr-1 h-3 w-3" />
-                            {module.duration_minutes} min
-                          </div>
-                        ) : null}
-                      </div>
-                      
-                      <nav className="space-y-1">
-                        {module.lessons.map((lesson) => (
-                          <Button
-                            key={lesson.id}
-                            variant="ghost"
-                            className={cn(
-                              "w-full justify-start px-2 py-1.5 h-auto text-sm",
-                              lessonId === lesson.id && "bg-muted font-medium",
-                              progress[lesson.id] && "text-green-400"
-                            )}
-                            asChild
-                          >
-                            <a href={`/courses/${courseId}/lessons/${lesson.id}`}>
-                              <div className="mr-2 p-1">
-                                {progress[lesson.id] ? (
-                                  <CheckCircle2 className="h-4 w-4 text-green-400" />
-                                ) : (
-                                  <Circle className="h-4 w-4" />
-                                )}
-                              </div>
-                              <div className="flex-grow text-left">
-                                <div className="line-clamp-1">{lesson.title}</div>
-                                {lesson.duration_minutes && (
-                                  <div className="text-xs text-muted-foreground">
-                                    {lesson.duration_minutes} min
-                                  </div>
-                                )}
-                              </div>
-                              {lesson.has_attachments && (
-                                <FileText className="h-4 w-4 text-muted-foreground ml-2" />
-                              )}
-                            </a>
-                          </Button>
-                        ))}
-                      </nav>
-                    </div>
+                    <CourseModule 
+                      key={module.id}
+                      title={module.title}
+                      lessons={module.lessons}
+                      courseId={courseId || ''}
+                      currentLessonId={lessonId}
+                      completedLessons={progress}
+                      durationMinutes={module.duration_minutes}
+                    />
                   ))}
                 </div>
               </CardContent>

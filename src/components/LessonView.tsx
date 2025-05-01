@@ -9,8 +9,9 @@ import { Card } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ChevronLeft, ChevronRight, Book, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Book } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import LessonAttachments from '@/components/course/LessonAttachments';
 
 interface Attachment {
   id: string;
@@ -105,11 +106,14 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
         const { data: attachmentsData, error: attachmentsError } = await supabase
           .from('lesson_attachments')
           .select('*')
-          .eq('lesson_id', lessonId)
-          .order('created_at', { ascending: true });
+          .eq('lesson_id', lessonId);
           
         if (attachmentsError) throw attachmentsError;
-        setAttachments(attachmentsData || []);
+        
+        // Make sure we're setting the correct type for attachments
+        if (attachmentsData) {
+          setAttachments(attachmentsData as Attachment[]);
+        }
       } catch (error: any) {
         toast({
           title: "Error loading lesson",
@@ -208,27 +212,7 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
         </TabsContent>
         
         <TabsContent value="resources" className="pt-4">
-          {attachments.length > 0 ? (
-            <div className="space-y-3">
-              {attachments.map((attachment) => (
-                <a 
-                  key={attachment.id} 
-                  href={attachment.file_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center p-3 border rounded-lg hover:bg-muted transition-colors"
-                >
-                  <FileText className="h-5 w-5 mr-3 text-primary" />
-                  <div>
-                    <p className="font-medium">{attachment.name}</p>
-                    <p className="text-xs text-muted-foreground">{attachment.type}</p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground">No resources available for this lesson.</p>
-          )}
+          <LessonAttachments attachments={attachments} />
         </TabsContent>
       </Tabs>
 
