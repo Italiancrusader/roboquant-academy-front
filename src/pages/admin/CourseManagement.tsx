@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Edit, Trash, Video } from 'lucide-react';
+import { Plus, Edit, Trash, Settings, Copy } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -250,6 +249,10 @@ const CourseManagement = () => {
     navigate(`/admin/courses/${courseId}/lessons`);
   };
 
+  const configureCourse = (courseId: string) => {
+    navigate(`/admin/courses/${courseId}/configure`);
+  };
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -412,8 +415,8 @@ const CourseManagement = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
-                        <Button variant="ghost" size="icon" onClick={() => manageCourseLessons(course.id)}>
-                          <Video className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" onClick={() => configureCourse(course.id)}>
+                          <Settings className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => editCourse(course)}>
                           <Edit className="h-4 w-4" />
