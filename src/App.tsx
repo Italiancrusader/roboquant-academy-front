@@ -25,6 +25,7 @@ import MT5ReportGenie from "./pages/MT5ReportGenie";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import CourseManagement from "./pages/admin/CourseManagement";
 import LessonManagement from "./pages/admin/LessonManagement";
+import AllLessonsManagement from "./pages/admin/AllLessonsManagement"; // New import
 import UserManagement from "./pages/admin/UserManagement";
 
 const App = () => {
@@ -95,6 +96,15 @@ const App = () => {
                 element={
                   <AdminCheck>
                     <LessonManagement />
+                  </AdminCheck>
+                }
+              />
+              {/* New Route for All Lessons */}
+              <Route
+                path="/admin/lessons"
+                element={
+                  <AdminCheck>
+                    <AllLessonsManagement />
                   </AdminCheck>
                 }
               />

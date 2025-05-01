@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
   Book,
-  Video,
+  FileText,
   Users,
   Settings,
   LogOut
@@ -61,7 +61,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               variant={isActive('/admin/lessons') ? 'secondary' : 'ghost'}
               className="w-full justify-start px-4"
             >
-              <Video className="mr-2 h-4 w-4" />
+              <FileText className="mr-2 h-4 w-4" />
               Lessons
             </Button>
           </Link>
