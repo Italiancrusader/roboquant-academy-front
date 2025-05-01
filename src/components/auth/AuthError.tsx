@@ -23,8 +23,9 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
             <ol className="list-decimal pl-5 space-y-1">
               <li>Go to your Supabase dashboard</li>
               <li>Navigate to Authentication &gt; URL Configuration</li>
-              <li>Set your Site URL to: <code className="bg-muted px-1 rounded">{window.location.origin}</code></li>
-              <li>Add to Redirect URLs: <code className="bg-muted px-1 rounded">{window.location.origin}/auth</code></li>
+              <li>Set your Site URL to: <code className="bg-muted px-1 rounded text-xs">{window.location.origin}</code></li>
+              <li>Add to Redirect URLs: <code className="bg-muted px-1 rounded text-xs">{window.location.origin}/auth</code></li>
+              <li>If using production domain, also add: <code className="bg-muted px-1 rounded text-xs">https://www.roboquant.ai/auth</code></li>
             </ol>
           </div>
         )}

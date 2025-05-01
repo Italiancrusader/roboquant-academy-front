@@ -11,9 +11,10 @@ import GoogleButton from './GoogleButton';
 interface SignUpFormProps {
   isLoading: boolean;
   setAuthError: (error: string | null) => void;
+  setIsLoading: (isLoading: boolean) => void;
 }
 
-const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError }) => {
+const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsLoading }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -23,23 +24,28 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError }) => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
+    setIsLoading(true);
     try {
       await signUp(email, password, firstName, lastName);
       // Don't navigate immediately after signup as the user may need to verify email
     } catch (error: any) {
       console.error("Sign up error:", error);
       setAuthError(error.message || 'Failed to create account');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     setAuthError(null);
+    setIsLoading(true);
     try {
       await signInWithGoogle();
       // The redirect will happen automatically - we'll be taken to Google auth
     } catch (error: any) {
       console.error("Google sign in error:", error);
       setAuthError(error.message || 'Google sign in failed');
+      setIsLoading(false);
     }
   };
 

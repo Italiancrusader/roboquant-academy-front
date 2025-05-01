@@ -74,6 +74,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log("Initiating Google sign-in with redirect to:", redirectTo);
       console.log("Current origin:", origin);
+      console.log("Current host:", window.location.host);
+      console.log("Current hostname:", window.location.hostname);
       
       // For debugging purposes, log the full URL that will be used
       const { data, error } = await supabase.auth.signInWithOAuth({

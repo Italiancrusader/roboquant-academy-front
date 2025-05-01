@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 
-// Import our new components
+// Import our components
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
 import AuthError from '@/components/auth/AuthError';
@@ -41,7 +41,7 @@ const Auth = () => {
         } else if (errorMessage.includes('refused to connect')) {
           errorMessage = 'Connection to authentication server was refused. Please check your network settings or try again later.';
         } else if (errorMessage.includes('requested path is invalid') || error === 'invalid_redirect') {
-          errorMessage = 'Authentication redirect URL is not properly configured in Supabase. Please update your redirect URLs in the Supabase dashboard.';
+          errorMessage = 'Authentication redirect URL is not properly configured in Supabase. Please add your domain to the allowed redirect URLs.';
           isInvalidPath = true;
         }
         
@@ -104,6 +104,7 @@ const Auth = () => {
             <SignInForm 
               isLoading={isLoading}
               setAuthError={setAuthError}
+              setIsLoading={setIsLoading}
             />
           </TabsContent>
           
@@ -112,6 +113,7 @@ const Auth = () => {
             <SignUpForm 
               isLoading={isLoading}
               setAuthError={setAuthError}
+              setIsLoading={setIsLoading}
             />
           </TabsContent>
         </Tabs>
