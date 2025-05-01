@@ -12,8 +12,11 @@ interface AuthErrorProps {
 const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
   if (!error) return null;
 
-  // Check specifically for the "requested path is invalid" error
-  const isInvalidPathError = error.includes('requested path is invalid');
+  // Check for various forms of the invalid path error
+  const isInvalidPathError = 
+    error.includes('requested path is invalid') || 
+    error.includes('invalid_redirect') ||
+    error.includes('supabase.co/www');
   
   return (
     <Alert variant="destructive" className="mb-4">

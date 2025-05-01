@@ -24,6 +24,7 @@ const Auth = () => {
   // Parse and handle URL parameters for auth errors
   useEffect(() => {
     const handleUrlErrors = () => {
+      // Check URL query parameters for errors
       const url = new URL(window.location.href);
       const errorDescription = url.searchParams.get('error_description');
       const error = url.searchParams.get('error');
@@ -34,7 +35,11 @@ const Auth = () => {
       const hashError = hashParams.get('error');
       const hashErrorDescription = hashParams.get('error_description');
       
-      if (errorDescription || error || errorCode || hashError || hashErrorDescription) {
+      // Check if the current URL contains supabase.co/www which indicates a common misconfiguration
+      const currentUrl = window.location.href;
+      const hasSubapaseUrlError = currentUrl.includes('supabase.co/www');
+      
+      if (errorDescription || error || errorCode || hashError || hashErrorDescription || hasSubapaseUrlError) {
         let errorMessage = errorDescription || error || hashErrorDescription || hashError || 'Authentication error occurred';
         let isInvalidPath = false;
         
@@ -48,7 +53,7 @@ const Auth = () => {
         } else if (
           errorMessage.includes('requested path is invalid') || 
           error === 'invalid_redirect' || 
-          window.location.href.includes('supabase.co/www')
+          hasSubapaseUrlError
         ) {
           errorMessage = 'Authentication redirect URL is not properly configured in Supabase. Please add your domain to the allowed redirect URLs.';
           isInvalidPath = true;

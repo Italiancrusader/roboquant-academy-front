@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,7 +37,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
+    }).catch(error => {
+      console.error("Error checking session:", error);
+      setIsLoading(false);
     });
+
+    // Handle hash fragment errors on page load
+    const checkForHashErrors = () => {
+      if (window.location.hash && window.location.hash.includes('error=')) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const error = hashParams.get('error');
+        const errorDescription = hashParams.get('error_description');
+        
+        if (error || errorDescription) {
+          console.error("Auth error from hash:", error, errorDescription);
+          const errorMessage = errorDescription || error || "Authentication error occurred";
+          
+          toast({
+            title: "Authentication Error",
+            description: errorMessage,
+            variant: "destructive",
+          });
+          
+          // Clean up URL hash to prevent error showing on refresh
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, document.title, window.location.pathname);
+          }
+        }
+      }
+    };
+    
+    checkForHashErrors();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -71,7 +102,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Explicitly construct the redirect URL with the /auth path
       const redirectTo = `${origin}/auth`;
       
-      console.log("Initiating Google sign-in with redirect to:", redirectTo);
+      // Debug information for URL construction
+      console.log("Initiating Google sign-in");
+      console.log("Current URL:", window.location.href);
+      console.log("Using redirect URL:", redirectTo);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
