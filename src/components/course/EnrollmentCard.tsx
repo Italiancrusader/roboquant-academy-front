@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Award, Clock } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { handleStripeCheckout } from '@/services/stripe';
+import { Input } from '@/components/ui/input';
 
 interface EnrollmentCardProps {
   courseId: string;
@@ -33,6 +34,7 @@ const EnrollmentCard = ({
   const [isEnrolling, setIsEnrolling] = React.useState(false);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [couponCode, setCouponCode] = useState('');
 
   // Check if the user is an admin
   React.useEffect(() => {
@@ -77,6 +79,7 @@ const EnrollmentCard = ({
         courseTitle,
         price,
         userId,
+        couponCode: couponCode.trim() || undefined
       });
 
       if (!success) {
@@ -197,13 +200,23 @@ const EnrollmentCard = ({
             {lastAccessedLesson ? "Continue Learning" : "Start Course"}
           </Button>
         ) : (
-          <Button 
-            className="w-full cta-button" 
-            onClick={handleEnroll} 
-            disabled={isEnrolling}
-          >
-            {isEnrolling ? "Processing..." : "Enroll Now"}
-          </Button>
+          <div className="space-y-4">
+            <Input
+              type="text"
+              placeholder="Enter coupon code (optional)"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+              className="w-full"
+            />
+            
+            <Button 
+              className="w-full cta-button" 
+              onClick={handleEnroll} 
+              disabled={isEnrolling}
+            >
+              {isEnrolling ? "Processing..." : "Enroll Now"}
+            </Button>
+          </div>
         )}
         
         <div className="space-y-3">

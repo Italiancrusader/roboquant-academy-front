@@ -10,6 +10,7 @@ export interface CheckoutOptions {
   userId?: string;
   successUrl?: string;
   cancelUrl?: string;
+  couponCode?: string; // Added coupon code parameter
 }
 
 export const createCheckoutSession = async (options: CheckoutOptions) => {
