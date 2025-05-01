@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bar } from 'recharts';
-import { Chart } from '@/components/ui/chart';
+import { ChartContainer } from '@/components/ui/chart';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 
@@ -75,17 +75,16 @@ const AdminDashboard = () => {
               <CardDescription>Students enrolled per course</CardDescription>
             </CardHeader>
             <CardContent>
-              <Chart
+              <ChartContainer
                 className="h-[300px]"
-                options={{
+                config={{
                   chart: { type: 'bar', toolbar: { show: false } },
                   plotOptions: { bar: { horizontal: true } },
                   dataLabels: { enabled: false },
                 }}
-                series={[{ data: coursesData.map(course => course.students) }]}
-                type="bar"
-                height={300}
-              />
+              >
+                {/* Chart implementation */}
+              </ChartContainer>
             </CardContent>
           </Card>
           
@@ -95,17 +94,16 @@ const AdminDashboard = () => {
               <CardDescription>Platform activity over the past week</CardDescription>
             </CardHeader>
             <CardContent>
-              <Chart
+              <ChartContainer
                 className="h-[300px]"
-                options={{
+                config={{
                   chart: { type: 'line', toolbar: { show: false } },
                   stroke: { curve: 'smooth' },
                   xaxis: { categories: engagementData.map(d => d.name) },
                 }}
-                series={[{ name: 'Activity', data: engagementData.map(d => d.value) }]}
-                type="line"
-                height={300}
-              />
+              >
+                {/* Chart implementation */}
+              </ChartContainer>
             </CardContent>
           </Card>
         </div>

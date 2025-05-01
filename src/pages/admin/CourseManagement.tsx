@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Edit, Trash } from 'lucide-react';
+import { Plus, Edit, Trash, Video } from 'lucide-react';
 
 interface Course {
   id: string;

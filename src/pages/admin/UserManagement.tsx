@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -34,12 +33,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { User } from '@supabase/supabase-js';
 import { Settings } from 'lucide-react';
 
+// Define the valid role types
+type UserRole = 'admin' | 'instructor' | 'student';
+
 interface UserWithRole {
   id: string;
   email: string;
   first_name: string | null;
   last_name: string | null;
-  role: string;
+  role: UserRole;
   created_at: string;
 }
 
@@ -48,7 +50,7 @@ const UserManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("student");
 
   useEffect(() => {
     fetchUsers();
@@ -92,7 +94,7 @@ const UserManagement = () => {
           email: user.email || '',
           first_name: profile.first_name,
           last_name: profile.last_name,
-          role: userRole?.role || 'student',
+          role: (userRole?.role as UserRole) || 'student',
           created_at: user.created_at || '',
         };
       });
@@ -149,7 +151,7 @@ const UserManagement = () => {
         .from('user_roles')
         .insert({
           user_id: selectedUser.id,
-          role: selectedRole,
+          role: selectedRole
         });
         
       if (insertError) throw insertError;
@@ -244,7 +246,7 @@ const UserManagement = () => {
             </DialogHeader>
             
             <div className="py-4">
-              <Select value={selectedRole} onValueChange={setSelectedRole}>
+              <Select value={selectedRole} onValueChange={(value: UserRole) => setSelectedRole(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
