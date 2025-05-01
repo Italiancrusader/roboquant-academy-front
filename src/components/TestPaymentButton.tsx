@@ -21,8 +21,8 @@ const TestPaymentButton: React.FC = () => {
     
     try {
       await handleStripeCheckout({
-        courseId: 'premium-test',
-        courseTitle: 'RoboQuant Academy',
+        courseId: 'test-payment', // Changed from 'premium-test' to 'test-payment'
+        courseTitle: 'RoboQuant Test Payment',
         price: 1, // $1.00 test payment
         userId: user.id,
         isTestMode: true

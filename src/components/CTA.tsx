@@ -19,7 +19,7 @@ const CTA: React.FC = () => {
     }
     
     await handleStripeCheckout({
-      courseId: 'premium', // Replace with your actual premium course ID
+      courseId: 'premium-course', // Changed from 'premium' to 'premium-course'
       courseTitle: 'RoboQuant Academy',
       price: 1500, // $1,500 (updated from $2,000)
       userId: user.id,
