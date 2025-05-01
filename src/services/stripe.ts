@@ -10,6 +10,8 @@ export interface CheckoutOptions {
   userId?: string;
   successUrl?: string;
   cancelUrl?: string;
+  couponCode?: string;
+  isTestMode?: boolean;
 }
 
 export const createCheckoutSession = async (options: CheckoutOptions) => {

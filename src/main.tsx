@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { lazy, Suspense } from 'react';
+import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
 
@@ -27,20 +27,14 @@ const preloadAssets = async () => {
   await Promise.all([imagePromise, videoPromise]);
 };
 
-// Use lazy loading for the main App component - fix to handle default export correctly
-const App = lazy(() => 
-  // Wait for assets to load before showing the app
-  Promise.all([
-    import('./App'),
-    preloadAssets()
-  ]).then(([moduleExports]) => moduleExports)
-);
-
 // Mount app with Suspense boundary
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Suspense fallback={<LoadingAnimation />}>
+    <React.Suspense fallback={<LoadingAnimation />}>
       <App />
-    </Suspense>
+    </React.Suspense>
   </React.StrictMode>
 );
+
+// Preload assets in the background
+preloadAssets();

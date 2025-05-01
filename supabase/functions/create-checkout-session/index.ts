@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { courseId, courseTitle, price, userId, successUrl, cancelUrl } = await req.json();
+    const { courseId, courseTitle, price, userId, successUrl, cancelUrl, couponCode, isTestMode } = await req.json();
     
     if (!courseId || !courseTitle || !price) {
       throw new Error("Required parameters missing: courseId, courseTitle, and price are required");
@@ -40,8 +40,8 @@ serve(async (req) => {
       }
     }
 
-    // Create the checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Create checkout session options
+    const sessionOptions: any = {
       customer: customerId,
       payment_method_types: ["card"],
       line_items: [
@@ -49,13 +49,14 @@ serve(async (req) => {
           price_data: {
             currency: "usd",
             product_data: {
-              name: courseTitle,
-              description: `Enrollment for ${courseTitle}`,
+              name: isTestMode ? `[TEST] ${courseTitle}` : courseTitle,
+              description: `Enrollment for ${isTestMode ? '[TEST] ' : ''}${courseTitle}`,
               metadata: {
                 courseId,
+                isTest: isTestMode ? 'true' : 'false',
               },
             },
-            unit_amount: Math.round(price * 100), // Convert to cents
+            unit_amount: isTestMode ? 100 : Math.round(price * 100), // $1.00 for test payments
           },
           quantity: 1,
         },
@@ -66,8 +67,29 @@ serve(async (req) => {
       metadata: {
         courseId,
         userId,
+        isTest: isTestMode ? 'true' : 'false',
       },
-    });
+    };
+
+    // Apply coupon if provided
+    if (couponCode) {
+      try {
+        console.log(`Applying coupon: ${couponCode}`);
+        // Verify that the coupon exists before applying it
+        const coupon = await stripe.coupons.retrieve(couponCode);
+        sessionOptions.discounts = [
+          {
+            coupon: couponCode,
+          },
+        ];
+      } catch (couponError) {
+        console.error("Error retrieving coupon:", couponError);
+        // If the coupon doesn't exist, we'll create the session without it
+      }
+    }
+
+    // Create the checkout session with the options
+    const session = await stripe.checkout.sessions.create(sessionOptions);
 
     console.log(`✅ Checkout session created: ${session.id}`);
 
