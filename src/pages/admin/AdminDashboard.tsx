@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bar } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { ChartContainer } from '@/components/ui/chart';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
@@ -75,15 +75,20 @@ const AdminDashboard = () => {
               <CardDescription>Students enrolled per course</CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer
-                className="h-[300px]"
-                config={{
-                  chart: { type: 'bar', toolbar: { show: false } },
-                  plotOptions: { bar: { horizontal: true } },
-                  dataLabels: { enabled: false },
-                }}
-              >
-                {/* Chart implementation */}
+              <ChartContainer className="h-[300px]" config={{}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    layout="vertical"
+                    data={coursesData}
+                    margin={{ top: 20, right: 30, left: 40, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={100} />
+                    <Tooltip />
+                    <Bar dataKey="students" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
           </Card>
@@ -94,15 +99,19 @@ const AdminDashboard = () => {
               <CardDescription>Platform activity over the past week</CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer
-                className="h-[300px]"
-                config={{
-                  chart: { type: 'line', toolbar: { show: false } },
-                  stroke: { curve: 'smooth' },
-                  xaxis: { categories: engagementData.map(d => d.name) },
-                }}
-              >
-                {/* Chart implementation */}
+              <ChartContainer className="h-[300px]" config={{}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={engagementData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="value" stroke="#8884d8" activeDot={{ r: 8 }} />
+                  </LineChart>
+                </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
           </Card>
