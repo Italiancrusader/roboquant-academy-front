@@ -13,10 +13,9 @@ export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
   return (
     <Button 
       asChild
-      variant={isScrolled ? "default" : "outline"} 
       className={cn(
-        "hidden sm:flex",
-        !isScrolled ? "text-white border-white hover:text-white hover:bg-white/20" : ""
+        "hidden sm:flex cta-button text-white",
+        isScrolled ? "py-2 px-4" : "py-2 px-4 hover:scale-105"
       )}
       onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
     >
