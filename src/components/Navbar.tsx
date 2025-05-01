@@ -10,6 +10,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import {
   Sheet,
@@ -106,7 +107,7 @@ const Navbar = () => {
     <header className={cn(isScrolled ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm" : "bg-transparent text-white", "fixed top-0 w-full z-40 transition-all")}>
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex">
+          <div className="flex items-center">
             <Link to="/" className="flex items-center">
               <span className={cn("text-lg font-bold", isScrolled ? "text-primary" : "text-white")}>
                 RoboQuant Academy
@@ -117,14 +118,11 @@ const Navbar = () => {
                 <NavigationMenuList>
                   {navItems.map((item) => (
                     <NavigationMenuItem key={item.href}>
-                      <NavigationMenuTrigger>
-                        {item.title}
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <NavigationMenuLink>
-                          {item.description}
+                      <Link to={item.href}>
+                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                          {item.title}
                         </NavigationMenuLink>
-                      </NavigationMenuContent>
+                      </Link>
                     </NavigationMenuItem>
                   ))}
                 </NavigationMenuList>
