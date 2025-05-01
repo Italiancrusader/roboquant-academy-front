@@ -1,17 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
 import {
   Sheet,
   SheetContent,
@@ -30,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, LogOut, User, Settings, LayoutDashboard } from "lucide-react";
+import { Menu, LogOut, User, Settings, LayoutDashboard, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NavItem {
@@ -113,24 +105,26 @@ const Navbar = () => {
                 RoboQuant Academy
               </span>
             </Link>
-            <nav className="ml-8 hidden md:flex space-x-4 items-center">
-              <NavigationMenu>
-                <NavigationMenuList>
-                  {navItems.map((item) => (
-                    <NavigationMenuItem key={item.href}>
-                      <Link to={item.href}>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                          {item.title}
-                        </NavigationMenuLink>
-                      </Link>
-                    </NavigationMenuItem>
-                  ))}
-                </NavigationMenuList>
-              </NavigationMenu>
-            </nav>
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* Enroll Now button - only show when not signed in */}
+            {!user && (
+              <Button 
+                asChild
+                variant={isScrolled ? "default" : "outline"} 
+                className={cn(
+                  "hidden sm:flex",
+                  !isScrolled ? "text-white border-white hover:text-white hover:bg-white/20" : ""
+                )}
+                onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
+              >
+                <Link to="/courses">
+                  Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+            
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -209,6 +203,15 @@ const Navbar = () => {
                       <Link to={item.href}>{item.title}</Link>
                     </Button>
                   ))}
+                  {!user && (
+                    <Button 
+                      variant="default" 
+                      className="justify-start cta-button"
+                      onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
+                    >
+                      Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  )}
                   {user ? (
                     <>
                       <Button asChild variant="ghost" className="justify-start">
@@ -273,3 +276,4 @@ const AdminLink = () => {
 }
 
 export default Navbar;
+
