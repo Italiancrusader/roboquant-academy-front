@@ -35,16 +35,28 @@ const Auth = () => {
       const hashError = hashParams.get('error');
       const hashErrorDescription = hashParams.get('error_description');
       
+      // Check for OAuth tokens in hash (indicates partial OAuth success but redirect issues)
+      const accessToken = hashParams.get('access_token');
+      const providerToken = hashParams.get('provider_token');
+      const providerRefreshToken = hashParams.get('provider_refresh_token');
+      
       // Check if the current URL contains supabase.co/www which indicates a common misconfiguration
       const currentUrl = window.location.href;
       const hasSubapaseUrlError = currentUrl.includes('supabase.co/www');
       
-      if (errorDescription || error || errorCode || hashError || hashErrorDescription || hasSubapaseUrlError) {
+      // Special check for Google OAuth redirect issues
+      const hasGoogleOAuthData = accessToken && (providerToken || providerRefreshToken);
+      const hasGoogleOAuthError = hasGoogleOAuthData && (hasSubapaseUrlError || window.location.pathname !== '/auth');
+      
+      if (errorDescription || error || errorCode || hashError || hashErrorDescription || hasSubapaseUrlError || hasGoogleOAuthError) {
         let errorMessage = errorDescription || error || hashErrorDescription || hashError || 'Authentication error occurred';
         let isInvalidPath = false;
         
-        // Add more specific messages for common errors
-        if (errorCode === '401') {
+        if (hasGoogleOAuthError) {
+          console.error("Google OAuth redirect error detected. URL:", currentUrl);
+          errorMessage = 'Google authentication redirect failed. Your Supabase URL Configuration needs to be updated.';
+          isInvalidPath = true;
+        } else if (errorCode === '401') {
           errorMessage = 'Authentication failed. Please check your credentials and try again.';
         } else if (errorCode === '400' && errorDescription?.includes('validation_failed')) {
           errorMessage = 'Google authentication is not properly configured. Please contact support.';
@@ -68,8 +80,11 @@ const Auth = () => {
           variant: "destructive",
         });
         
-        // Clean up the URL
-        window.history.replaceState({}, document.title, window.location.pathname);
+        // Clean up the URL only if we're not dealing with OAuth tokens
+        // This preserves tokens for potential manual handling if needed
+        if (!hasGoogleOAuthData) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
       }
     };
     

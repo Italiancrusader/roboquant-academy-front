@@ -28,6 +28,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Auth state changed:", event);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // If this is a new sign-in event, show a welcome toast
+        if (event === 'SIGNED_IN' && session?.user) {
+          toast({
+            title: "Successfully signed in",
+            description: `Welcome${session.user.user_metadata?.name ? `, ${session.user.user_metadata.name}` : ''}!`,
+          });
+        }
       }
     );
 
@@ -42,32 +50,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     });
 
-    // Handle hash fragment errors on page load
-    const checkForHashErrors = () => {
-      if (window.location.hash && window.location.hash.includes('error=')) {
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const error = hashParams.get('error');
-        const errorDescription = hashParams.get('error_description');
+    // Process auth errors in URL hash or search params
+    const processUrlErrors = () => {
+      // Process hash fragment (common with OAuth redirects)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const error = hashParams.get('error');
+      const errorDescription = hashParams.get('error_description');
+      
+      // Process search params
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlError = urlParams.get('error');
+      const urlErrorDescription = urlParams.get('error_description');
+      
+      // Current full URL for debugging
+      console.log("Current URL during auth check:", window.location.href);
+      
+      // Check for hash fragment or URL errors
+      if (error || errorDescription || urlError || urlErrorDescription) {
+        const errorMsg = errorDescription || error || urlErrorDescription || urlError || "Authentication error";
+        console.error("Auth error detected in URL:", errorMsg);
         
-        if (error || errorDescription) {
-          console.error("Auth error from hash:", error, errorDescription);
-          const errorMessage = errorDescription || error || "Authentication error occurred";
-          
-          toast({
-            title: "Authentication Error",
-            description: errorMessage,
-            variant: "destructive",
-          });
-          
-          // Clean up URL hash to prevent error showing on refresh
-          if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, document.title, window.location.pathname);
-          }
+        toast({
+          title: "Authentication Error",
+          description: errorMsg,
+          variant: "destructive",
+        });
+        
+        // Clean up URL
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, document.title, window.location.pathname);
         }
       }
     };
     
-    checkForHashErrors();
+    processUrlErrors();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -79,11 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         throw error;
       }
-      
-      toast({
-        title: "Successfully signed in",
-        description: "Welcome back!",
-      });
     } catch (error: any) {
       toast({
         title: "Sign in failed",
@@ -96,22 +107,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      // Get the current origin (protocol + hostname + port)
-      const origin = window.location.origin;
+      // Get the absolute current URL without hash or search params
+      const baseUrl = window.location.origin;
       
-      // Explicitly construct the redirect URL with the /auth path
-      const redirectTo = `${origin}/auth`;
+      // Always use /auth as the redirect path - this ensures users land on the auth page after OAuth
+      const redirectTo = `${baseUrl}/auth`;
       
-      // Debug information for URL construction
-      console.log("Initiating Google sign-in");
-      console.log("Current URL:", window.location.href);
-      console.log("Using redirect URL:", redirectTo);
+      // Log the redirect URL for debugging
+      console.log("Google sign-in with redirect to:", redirectTo);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectTo,
           queryParams: {
+            // These help with token refreshing and provide an improved user experience
             access_type: 'offline',
             prompt: 'consent',
           }
@@ -119,13 +129,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
-        console.error("Google sign-in error:", error);
+        console.error("Google OAuth initialization error:", error);
         throw error;
       }
       
-      // Log the URL we're being redirected to
       if (data?.url) {
-        console.log("Redirect URL generated:", data.url);
+        console.log("OAuth redirect URL:", data.url);
       }
     } catch (error: any) {
       console.error("Google sign-in exception:", error);
