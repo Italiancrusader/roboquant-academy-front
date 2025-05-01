@@ -30,34 +30,45 @@ const AdminPayments = () => {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const { data, error } = await supabase
+        // First, get all enrollments
+        const { data: enrollmentsData, error: enrollmentsError } = await supabase
           .from('enrollments')
-          .select(`
-            id, 
-            created_at, 
-            user_id, 
-            course_id, 
-            stripe_session_id, 
-            payment_status, 
-            profiles:user_id (email),
-            courses:course_id (title, price)
-          `)
+          .select('*')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (enrollmentsError) throw enrollmentsError;
 
-        // Transform data to include user_email and course_title
-        const transformedData: EnrollmentWithDetails[] = data.map(item => ({
-          id: item.id,
-          created_at: item.created_at,
-          user_id: item.user_id,
-          course_id: item.course_id,
-          stripe_session_id: item.stripe_session_id || '',
-          payment_status: item.payment_status || 'completed',
-          user_email: item.profiles?.email || 'unknown',
-          course_title: item.courses?.title || 'unknown',
-          price: item.courses?.price || 0
-        }));
+        // Then get user profiles and courses in separate queries
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, email:id');  // Using the user's ID as email for now since we don't have an email field in profiles
+
+        if (profilesError) throw profilesError;
+
+        const { data: coursesData, error: coursesError } = await supabase
+          .from('courses')
+          .select('id, title, price');
+
+        if (coursesError) throw coursesError;
+
+        // Map the data to include profiles and courses information
+        const transformedData: EnrollmentWithDetails[] = enrollmentsData.map(enrollment => {
+          // Find the matching profile and course
+          const profile = profilesData?.find(p => p.id === enrollment.user_id);
+          const course = coursesData?.find(c => c.id === enrollment.course_id);
+          
+          return {
+            id: enrollment.id,
+            created_at: enrollment.created_at || enrollment.enrolled_at,
+            user_id: enrollment.user_id,
+            course_id: enrollment.course_id,
+            stripe_session_id: enrollment.stripe_session_id || '',
+            payment_status: enrollment.payment_status || 'completed',
+            user_email: profile?.id || 'unknown', // Using ID as email for now
+            course_title: course?.title || 'unknown',
+            price: course?.price || 0
+          };
+        });
 
         setEnrollments(transformedData);
         
