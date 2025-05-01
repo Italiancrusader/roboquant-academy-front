@@ -3,9 +3,28 @@ import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { handleStripeCheckout } from '@/services/stripe';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const CTA: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleEnroll = async () => {
+    if (!user) {
+      navigate('/auth', { state: { from: '/' } });
+      return;
+    }
+    
+    await handleStripeCheckout({
+      courseId: 'premium', // Replace with your actual premium course ID
+      courseTitle: 'RoboQuant Academy',
+      price: 2000, // $2,000
+      userId: user.id,
+    });
+  };
   
   return (
     <section 
@@ -31,7 +50,7 @@ const CTA: React.FC = () => {
           
           <Button 
             className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold"
-            onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
+            onClick={handleEnroll}
           >
             Enroll Now – $2,000 <ArrowRight className="ml-2 h-5 w-5" />
           </Button>

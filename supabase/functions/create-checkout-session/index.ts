@@ -1,0 +1,80 @@
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import Stripe from "https://esm.sh/stripe@12.18.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { courseId, courseTitle, price, userId, successUrl, cancelUrl } = await req.json();
+    
+    // Initialize Stripe with the secret key
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2023-10-16",
+    });
+
+    // Customer management - find or create
+    let customerId;
+    if (userId) {
+      const { data: searchResult } = await stripe.customers.search({
+        query: `metadata['supabase_id']:'${userId}'`,
+      });
+
+      if (searchResult && searchResult.length > 0) {
+        customerId = searchResult[0].id;
+      }
+    }
+
+    // Create the checkout session
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: courseTitle,
+              description: `Enrollment for ${courseTitle}`,
+              metadata: {
+                courseId,
+              },
+            },
+            unit_amount: Math.round(price * 100), // Convert to cents
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: successUrl || `${req.headers.get("origin")}/courses/${courseId}?payment=success`,
+      cancel_url: cancelUrl || `${req.headers.get("origin")}/courses/${courseId}?payment=canceled`,
+      metadata: {
+        courseId,
+        userId,
+      },
+    });
+
+    // Return the session ID and URL
+    return new Response(JSON.stringify({ 
+      id: session.id, 
+      url: session.url 
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
+  }
+});

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Award, Clock } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { handleStripeCheckout } from '@/services/stripe';
 
 interface EnrollmentCardProps {
   courseId: string;
@@ -69,26 +70,22 @@ const EnrollmentCard = ({
 
     setIsEnrolling(true);
     try {
-      const { data, error } = await supabase
-        .from('enrollments')
-        .insert({
-          user_id: userId,
-          course_id: courseId,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Successfully enrolled",
-        description: `You are now enrolled in ${courseTitle}`,
+      // Initiate Stripe checkout
+      const success = await handleStripeCheckout({
+        courseId,
+        courseTitle,
+        price,
+        userId,
       });
 
-      // After successful enrollment, redirect to the first lesson if available
-      if (firstLesson) {
-        navigate(`/courses/${courseId}/lessons/${firstLesson}`);
+      if (!success) {
+        toast({
+          title: "Checkout failed",
+          description: "Unable to initialize payment process. Please try again.",
+          variant: "destructive",
+        });
       }
+      // Note: We don't need to handle successful payments here as Stripe will redirect to the success URL
     } catch (error: any) {
       toast({
         title: "Enrollment failed",

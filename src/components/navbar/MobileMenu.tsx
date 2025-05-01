@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { handleStripeCheckout } from "@/services/stripe";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface NavItem {
   title: string;
@@ -35,6 +38,22 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   onSignOut,
   showAuthButtons = true
 }) => {
+  const navigate = useNavigate();
+  
+  const handleEnroll = async () => {
+    if (!user) {
+      navigate('/auth', { state: { from: '/' } });
+      return;
+    }
+    
+    await handleStripeCheckout({
+      courseId: 'premium', // Replace with your actual premium course ID
+      courseTitle: 'RoboQuant Academy',
+      price: 2000, // $2,000
+      userId: user.id,
+    });
+  };
+  
   return (
     <Sheet>
       <SheetTrigger className="md:hidden" asChild>
@@ -64,7 +83,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           <Button 
             variant="default" 
             className="justify-start cta-button"
-            onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
+            onClick={handleEnroll}
           >
             Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
