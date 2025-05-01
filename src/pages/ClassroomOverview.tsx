@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import ClassroomHeader from '@/components/classroom/ClassroomHeader';
 import ClassroomNavigation from '@/components/classroom/ClassroomNavigation';
 import CourseGrid from '@/components/course/CourseGrid';
+import Footer from '@/components/Footer';
 
 interface Course {
   id: string;
@@ -217,9 +218,9 @@ const ClassroomOverview = () => {
   };
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <div className="container mx-auto px-4 pt-16">
+      <div className="container mx-auto px-4 pt-16 flex-grow">
         <ClassroomNavigation courseName="My Courses" />
         <ClassroomHeader 
           title="My Courses" 
@@ -229,6 +230,7 @@ const ClassroomOverview = () => {
         
         {renderTabContent()}
       </div>
+      <Footer />
     </div>
   );
 };

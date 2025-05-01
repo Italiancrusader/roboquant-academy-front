@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface ClassroomHeaderProps {
@@ -15,8 +14,8 @@ const ClassroomHeader: React.FC<ClassroomHeaderProps> = ({
   onTabChange 
 }) => {
   const tabs = [
-    { id: 'community', label: 'Community' },
     { id: 'classroom', label: 'Classroom' },
+    { id: 'community', label: 'Community' },
     { id: 'calendar', label: 'Calendar' },
     { id: 'members', label: 'Members' },
     { id: 'leaderboards', label: 'Leaderboards' },

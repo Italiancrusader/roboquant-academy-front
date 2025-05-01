@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import CourseModule from '@/components/course/CourseModule';
 import ClassroomHeader from '@/components/classroom/ClassroomHeader';
 import ClassroomNavigation from '@/components/classroom/ClassroomNavigation';
+import Footer from '@/components/Footer';
 
 interface Module {
   id: string;
@@ -64,7 +65,9 @@ const CourseLesson = () => {
           .single();
           
         if (courseError) throw courseError;
-        setCourse(courseData as Course);
+        if (courseData) {
+          setCourse(courseData);
+        }
         
         // Fetch all modules and lessons for the course
         const { data: modulesData, error: modulesError } = await supabase
@@ -214,15 +217,19 @@ const CourseLesson = () => {
     }
   }, [courseId, lessonId, user]);
   
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+  };
+  
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <div className="container mx-auto px-4 pt-16">
+      <div className="container mx-auto px-4 pt-16 flex-grow">
         {course && (
           <ClassroomHeader 
             title={course.title} 
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
           />
         )}
         
@@ -263,9 +270,11 @@ const CourseLesson = () => {
           {/* Main content */}
           <div className="md:col-span-2 lg:col-span-3">
             <LessonView currentLesson={currentLesson} />
+            <div className="pb-16"></div> {/* Add padding at the bottom */}
           </div>
         </div>
       </div>
+      <Footer /> {/* Add the footer component */}
     </div>
   );
 };

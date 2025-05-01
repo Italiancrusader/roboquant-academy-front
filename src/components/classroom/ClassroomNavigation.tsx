@@ -49,7 +49,7 @@ const ClassroomNavigation: React.FC<ClassroomNavigationProps> = ({ courseName })
         </Button>
         
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user?.user_metadata?.avatar_url || ''} alt={user?.user_metadata?.name || 'User'} />
+          <AvatarImage src={user?.user_metadata?.avatar_url || ''} alt={user?.email || 'User'} />
           <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
         </Avatar>
       </div>
