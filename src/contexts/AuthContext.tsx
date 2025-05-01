@@ -135,6 +135,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (data?.url) {
         console.log("OAuth redirect URL:", data.url);
+        // Force the browser to use this URL instead of relying on automatic redirect
+        window.location.href = data.url;
       }
     } catch (error: any) {
       console.error("Google sign-in exception:", error);

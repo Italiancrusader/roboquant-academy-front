@@ -24,6 +24,9 @@ const Auth = () => {
   // Parse and handle URL parameters for auth errors
   useEffect(() => {
     const handleUrlErrors = () => {
+      console.log("Checking URL for auth errors. Current URL:", window.location.href);
+      console.log("Hash fragment:", window.location.hash);
+      
       // Check URL query parameters for errors
       const url = new URL(window.location.href);
       const errorDescription = url.searchParams.get('error_description');
@@ -42,20 +45,26 @@ const Auth = () => {
       
       // Check if the current URL contains supabase.co/www which indicates a common misconfiguration
       const currentUrl = window.location.href;
-      const hasSubapaseUrlError = currentUrl.includes('supabase.co/www');
+      const hasSupabaseUrlError = currentUrl.includes('supabase.co/www');
       
       // Special check for Google OAuth redirect issues
       const hasGoogleOAuthData = accessToken && (providerToken || providerRefreshToken);
-      const hasGoogleOAuthError = hasGoogleOAuthData && (hasSubapaseUrlError || window.location.pathname !== '/auth');
+      const isRootPath = window.location.pathname === '/';
+      const hasGoogleOAuthError = hasGoogleOAuthData && (hasSupabaseUrlError || isRootPath);
       
-      if (errorDescription || error || errorCode || hashError || hashErrorDescription || hasSubapaseUrlError || hasGoogleOAuthError) {
+      if (errorDescription || error || errorCode || hashError || hashErrorDescription || hasSupabaseUrlError || hasGoogleOAuthError) {
         let errorMessage = errorDescription || error || hashErrorDescription || hashError || 'Authentication error occurred';
         let isInvalidPath = false;
         
         if (hasGoogleOAuthError) {
           console.error("Google OAuth redirect error detected. URL:", currentUrl);
-          errorMessage = 'Google authentication redirect failed. Your Supabase URL Configuration needs to be updated.';
+          errorMessage = 'Google authentication redirect failed. OAuth redirect URLs are not properly configured.';
           isInvalidPath = true;
+          
+          // If we have tokens but landed on the root path instead of /auth
+          if (isRootPath && hasGoogleOAuthData) {
+            errorMessage = 'Google login detected tokens in the URL but redirected to the root path instead of /auth. Check your redirect URLs in both Supabase and Google Cloud Console.';
+          }
         } else if (errorCode === '401') {
           errorMessage = 'Authentication failed. Please check your credentials and try again.';
         } else if (errorCode === '400' && errorDescription?.includes('validation_failed')) {
@@ -65,7 +74,7 @@ const Auth = () => {
         } else if (
           errorMessage.includes('requested path is invalid') || 
           error === 'invalid_redirect' || 
-          hasSubapaseUrlError
+          hasSupabaseUrlError
         ) {
           errorMessage = 'Authentication redirect URL is not properly configured in Supabase. Please add your domain to the allowed redirect URLs.';
           isInvalidPath = true;

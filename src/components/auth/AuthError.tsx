@@ -22,14 +22,15 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
   const isGoogleAuthError = 
     error.includes('google') || 
     error.includes('provider_token') ||
-    error.includes('provider_refresh_token');
+    error.includes('provider_refresh_token') ||
+    window.location.hash.includes('provider_token');
   
   return (
     <Alert variant="destructive" className="mb-4">
       <AlertCircle className="h-4 w-4 mr-2" />
       <div>
         <AlertDescription>{error}</AlertDescription>
-        {(isRedirectError || isInvalidPathError) && (
+        {(isRedirectError || isInvalidPathError || isGoogleAuthError) && (
           <div className="mt-2 text-sm flex flex-col space-y-1">
             <p><strong>To fix this issue:</strong></p>
             <ol className="list-decimal pl-5 space-y-1">
@@ -51,10 +52,17 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
                 <p><strong>For Google OAuth specifically:</strong></p>
                 <ol className="list-decimal pl-5 space-y-1">
                   <li>Go to your Google Cloud Console</li>
-                  <li>Ensure the OAuth consent screen has the correct domain</li>
-                  <li>Check your OAuth credentials have these authorized redirect URIs:</li>
+                  <li>Add these JavaScript Origins:</li>
+                  <ul className="list-disc pl-8 space-y-1">
+                    <li><code className="bg-muted px-1 rounded text-xs">{window.location.origin}</code></li>
+                    <li><code className="bg-muted px-1 rounded text-xs">https://www.roboquant.ai</code></li>
+                    <li><code className="bg-muted px-1 rounded text-xs">https://roboquant.ai</code> (without www)</li>
+                  </ul>
+                  <li>Add these Authorized Redirect URIs:</li>
                   <ul className="list-disc pl-8 space-y-1">
                     <li><code className="bg-muted px-1 rounded text-xs">{window.location.origin}/auth</code></li>
+                    <li><code className="bg-muted px-1 rounded text-xs">https://www.roboquant.ai</code></li>
+                    <li><code className="bg-muted px-1 rounded text-xs">https://www.roboquant.ai/auth</code></li>
                     <li><code className="bg-muted px-1 rounded text-xs">https://gqnzsnzolqvsalyzbhmq.supabase.co/auth/v1/callback</code></li>
                   </ul>
                 </ol>
