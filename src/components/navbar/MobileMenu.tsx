@@ -25,13 +25,15 @@ interface MobileMenuProps {
   user: any | null;
   isScrolled: boolean;
   onSignOut: () => Promise<void>;
+  showAuthButtons?: boolean;
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ 
   navItems, 
   user, 
   isScrolled,
-  onSignOut
+  onSignOut,
+  showAuthButtons = true
 }) => {
   return (
     <Sheet>
@@ -57,16 +59,18 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               <Link to={item.href}>{item.title}</Link>
             </Button>
           ))}
-          {!user && (
-            <Button 
-              variant="default" 
-              className="justify-start cta-button"
-              onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
-            >
-              Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          )}
-          {user ? (
+          
+          {/* Always show EnrollButton */}
+          <Button 
+            variant="default" 
+            className="justify-start cta-button"
+            onClick={() => window.open('https://whop.com/checkout/plan_h6SjTvT4JxgxA/', '_blank')}
+          >
+            Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+          
+          {/* Only show auth buttons if showAuthButtons is true */}
+          {showAuthButtons && user ? (
             <>
               <Button asChild variant="ghost" className="justify-start">
                 <Link to="/dashboard">Dashboard</Link>
@@ -78,7 +82,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 Sign Out
               </Button>
             </>
-          ) : (
+          ) : showAuthButtons && (
             <Button asChild variant="ghost" className="justify-start">
               <Link to="/auth">Sign In</Link>
             </Button>

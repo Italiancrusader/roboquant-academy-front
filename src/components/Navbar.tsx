@@ -36,6 +36,9 @@ const Navbar = () => {
     }
   };
 
+  // Hide auth buttons for now, only show the enroll button
+  const showAuthButtons = false;
+
   return (
     <header className={cn(isScrolled ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm" : "bg-transparent text-white", "fixed top-0 w-full z-40 transition-all")}>
       <div className="container mx-auto px-4">
@@ -45,16 +48,17 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* Enroll Now button - only show when not signed in */}
-            {!user && <EnrollButton isScrolled={isScrolled} />}
+            {/* Enroll Now button - always show */}
+            <EnrollButton isScrolled={isScrolled} />
             
-            {user ? (
+            {/* Only render auth buttons if showAuthButtons is true */}
+            {showAuthButtons && user ? (
               <UserMenu 
                 user={user} 
                 isScrolled={isScrolled} 
                 onSignOut={handleSignOut} 
               />
-            ) : (
+            ) : showAuthButtons && (
               <Button 
                 asChild
                 variant={isScrolled ? "default" : "outline"} 
@@ -64,11 +68,13 @@ const Navbar = () => {
               </Button>
             )}
 
+            {/* Update MobileMenu to pass the showAuthButtons flag */}
             <MobileMenu 
               navItems={navItems} 
               user={user} 
               isScrolled={isScrolled}
               onSignOut={handleSignOut}
+              showAuthButtons={showAuthButtons}
             />
           </div>
         </div>
