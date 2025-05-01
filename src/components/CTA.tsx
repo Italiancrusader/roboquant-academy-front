@@ -1,19 +1,16 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { handleStripeCheckout } from '@/services/stripe';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { toast } from '@/components/ui/use-toast';
 
 const CTA: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [couponCode, setCouponCode] = useState('');
   
   const handleEnroll = async () => {
     if (!user) {
@@ -26,7 +23,6 @@ const CTA: React.FC = () => {
       courseTitle: 'RoboQuant Academy',
       price: 1500, // $1,500 (updated from $2,000)
       userId: user.id,
-      couponCode: couponCode.trim() || undefined
     });
   };
   
@@ -52,24 +48,12 @@ const CTA: React.FC = () => {
             Join thousands of traders who have transformed their trading with RoboQuant Academy.
           </p>
           
-          <div className="flex flex-col items-center gap-4 mb-6">
-            <div className="max-w-xs w-full">
-              <Input
-                type="text"
-                placeholder="Enter coupon code (optional)"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                className="bg-white/90 border-none text-blue-primary placeholder:text-gray-400"
-              />
-            </div>
-            
-            <Button 
-              className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold"
-              onClick={handleEnroll}
-            >
-              Enroll Now – $1,500 <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
+          <Button 
+            className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold"
+            onClick={handleEnroll}
+          >
+            Enroll Now – $1,500 <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
           
           <p className="mt-6 text-white/80 text-sm">
             One-time payment • Lifetime access • 30-day money-back guarantee

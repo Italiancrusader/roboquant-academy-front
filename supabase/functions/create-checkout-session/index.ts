@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { courseId, courseTitle, price, userId, successUrl, cancelUrl, couponCode } = await req.json();
+    const { courseId, courseTitle, price, userId, successUrl, cancelUrl } = await req.json();
     
     if (!courseId || !courseTitle || !price) {
       throw new Error("Required parameters missing: courseId, courseTitle, and price are required");
@@ -40,8 +40,8 @@ serve(async (req) => {
       }
     }
 
-    // Prepare checkout session parameters
-    const checkoutParams: any = {
+    // Create the checkout session
+    const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ["card"],
       line_items: [
@@ -66,34 +66,8 @@ serve(async (req) => {
       metadata: {
         courseId,
         userId,
-      }
-    };
-
-    // Add coupon to checkout if provided
-    if (couponCode) {
-      console.log(`Applying coupon: ${couponCode}`);
-      
-      // Verify the coupon exists and is valid
-      try {
-        const coupon = await stripe.coupons.retrieve(couponCode);
-        if (coupon.valid) {
-          checkoutParams.discounts = [
-            {
-              coupon: couponCode,
-            },
-          ];
-          console.log(`Coupon ${couponCode} applied successfully`);
-        } else {
-          console.log(`Coupon ${couponCode} is invalid`);
-        }
-      } catch (error) {
-        console.error(`Error retrieving coupon ${couponCode}:`, error);
-        // Continue checkout without the coupon if it doesn't exist
-      }
-    }
-
-    // Create the checkout session
-    const session = await stripe.checkout.sessions.create(checkoutParams);
+      },
+    });
 
     console.log(`✅ Checkout session created: ${session.id}`);
 

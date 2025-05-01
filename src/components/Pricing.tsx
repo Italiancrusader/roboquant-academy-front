@@ -1,12 +1,11 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight } from 'lucide-react';
 import { handleStripeCheckout } from "@/services/stripe";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Input } from '@/components/ui/input';
 
 const features = [
   'Lifetime access to all course materials and future updates',
@@ -23,7 +22,6 @@ const Pricing: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [couponCode, setCouponCode] = useState('');
   
   const handleEnroll = async () => {
     if (!user) {
@@ -36,7 +34,6 @@ const Pricing: React.FC = () => {
       courseTitle: 'RoboQuant Academy',
       price: 1500, // $1,500 (updated from $2,000)
       userId: user.id,
-      couponCode: couponCode.trim() || undefined
     });
   };
   
@@ -85,22 +82,12 @@ const Pricing: React.FC = () => {
               ))}
             </ul>
             
-            <div className="space-y-4 mb-6">
-              <Input
-                type="text"
-                placeholder="Coupon code (optional)"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                className="bg-background border-border/30"
-              />
-              
-              <Button 
-                className="w-full cta-button text-white py-6 text-lg font-medium"
-                onClick={handleEnroll}
-              >
-                Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
+            <Button 
+              className="w-full cta-button text-white py-6 text-lg font-medium"
+              onClick={handleEnroll}
+            >
+              Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
             
             <div className="text-center mt-4 text-gray-400 text-sm flex items-center justify-center">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
