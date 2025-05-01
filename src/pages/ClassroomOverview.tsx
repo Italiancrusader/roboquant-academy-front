@@ -17,7 +17,7 @@ interface Course {
   id: string;
   title: string;
   description: string | null;
-  cover_image: string | null; // Updated to match database column name
+  cover_image: string | null;
   modules_count: number;
   lessons_count: number;
   progress: number;
