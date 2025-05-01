@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminCheck from "@/components/admin/AdminCheck";
 
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -19,6 +20,12 @@ import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import MT5ReportGenie from "./pages/MT5ReportGenie";
+
+// Admin Routes
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import CourseManagement from "./pages/admin/CourseManagement";
+import LessonManagement from "./pages/admin/LessonManagement";
+import UserManagement from "./pages/admin/UserManagement";
 
 const App = () => {
   // Create a client inside the component to ensure React hooks work properly
@@ -64,6 +71,40 @@ const App = () => {
                     <Profile />
                   </ProtectedRoute>
                 } 
+              />
+              
+              {/* Admin Routes */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminCheck>
+                    <AdminDashboard />
+                  </AdminCheck>
+                }
+              />
+              <Route
+                path="/admin/courses"
+                element={
+                  <AdminCheck>
+                    <CourseManagement />
+                  </AdminCheck>
+                }
+              />
+              <Route
+                path="/admin/courses/:courseId/lessons"
+                element={
+                  <AdminCheck>
+                    <LessonManagement />
+                  </AdminCheck>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <AdminCheck>
+                    <UserManagement />
+                  </AdminCheck>
+                }
               />
               
               {/* Catch-all route */}
