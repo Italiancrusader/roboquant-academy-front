@@ -12,17 +12,19 @@ interface Module {
   id: string;
   title: string;
   sort_order: number;
+  course_id: string;
 }
 
 interface Lesson {
-  id: string;
+  id?: string;
   title: string;
-  description: string | null;
-  video_url: string | null;
-  duration_minutes: number | null;
-  is_published: boolean | null;
-  module_id: string | null;
-  sort_order: number;
+  description?: string | null;
+  video_url?: string | null;
+  duration_minutes?: number | null;
+  is_published?: boolean | null;
+  module_id?: string | null;
+  sort_order?: number;
+  course_id: string;
 }
 
 interface ModuleListProps {
@@ -51,8 +53,12 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
   const handleAddLessonToModule = (moduleId: string) => {
     setSelectedLesson(undefined);
     setIsLessonDialogOpen(true);
-    // Pre-select the module in the form
-    setSelectedLesson({ course_id: courseId, module_id: moduleId } as Lesson);
+    // Pre-select the module in the form - added necessary fields for Lesson type
+    setSelectedLesson({ 
+      course_id: courseId, 
+      module_id: moduleId,
+      title: ''  // Adding required title field
+    } as Lesson);
   };
   
   const handleEditLesson = (lesson: Lesson) => {
@@ -163,7 +169,7 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
   
   const moveLesson = async (lessonId: string, direction: 'up' | 'down', moduleId: string | null) => {
     const moduleLessons = lessons.filter(l => l.module_id === moduleId)
-      .sort((a, b) => a.sort_order - b.sort_order);
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
     
     const lessonIndex = moduleLessons.findIndex(l => l.id === lessonId);
     if (lessonIndex === -1) return;
@@ -179,14 +185,14 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
       const { error: error1 } = await supabase
         .from('lessons')
         .update({ sort_order: targetLesson.sort_order })
-        .eq('id', currentLesson.id);
+        .eq('id', currentLesson.id || '');
       
       if (error1) throw error1;
       
       const { error: error2 } = await supabase
         .from('lessons')
         .update({ sort_order: currentLesson.sort_order })
-        .eq('id', targetLesson.id);
+        .eq('id', targetLesson.id || '');
       
       if (error2) throw error2;
       
@@ -204,13 +210,13 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
   const getModuleLessons = (moduleId: string) => {
     return lessons
       .filter(lesson => lesson.module_id === moduleId)
-      .sort((a, b) => a.sort_order - b.sort_order);
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   };
   
   // Get standalone lessons (no module)
   const standaloneLessons = lessons
     .filter(lesson => lesson.module_id === null)
-    .sort((a, b) => a.sort_order - b.sort_order);
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   
   return (
     <div className="space-y-4">
@@ -278,7 +284,7 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => moveLesson(lesson.id, 'up', module.id)}
+                          onClick={() => moveLesson(lesson.id || '', 'up', module.id)}
                           disabled={lesson === getModuleLessons(module.id)[0]}
                         >
                           <ArrowUp className="h-4 w-4" />
@@ -286,7 +292,7 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => moveLesson(lesson.id, 'down', module.id)}
+                          onClick={() => moveLesson(lesson.id || '', 'down', module.id)}
                           disabled={lesson === getModuleLessons(module.id)[getModuleLessons(module.id).length - 1]}
                         >
                           <ArrowDown className="h-4 w-4" />
@@ -301,7 +307,7 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => handleDeleteLesson(lesson.id)}
+                          onClick={() => handleDeleteLesson(lesson.id || '')}
                         >
                           <Trash className="h-4 w-4" />
                         </Button>
@@ -346,7 +352,7 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => moveLesson(lesson.id, 'up', null)}
+                        onClick={() => moveLesson(lesson.id || '', 'up', null)}
                         disabled={lesson === standaloneLessons[0]}
                       >
                         <ArrowUp className="h-4 w-4" />
@@ -354,7 +360,7 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => moveLesson(lesson.id, 'down', null)}
+                        onClick={() => moveLesson(lesson.id || '', 'down', null)}
                         disabled={lesson === standaloneLessons[standaloneLessons.length - 1]}
                       >
                         <ArrowDown className="h-4 w-4" />
@@ -369,7 +375,7 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => handleDeleteLesson(lesson.id)}
+                        onClick={() => handleDeleteLesson(lesson.id || '')}
                       >
                         <Trash className="h-4 w-4" />
                       </Button>
@@ -381,7 +387,14 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
                   variant="outline" 
                   size="sm" 
                   className="w-full" 
-                  onClick={() => { setSelectedLesson({ course_id: courseId, module_id: null } as Lesson); setIsLessonDialogOpen(true); }}
+                  onClick={() => { 
+                    setSelectedLesson({ 
+                      course_id: courseId, 
+                      module_id: null,
+                      title: '' // Adding required title field
+                    } as Lesson); 
+                    setIsLessonDialogOpen(true); 
+                  }}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Standalone Lesson
