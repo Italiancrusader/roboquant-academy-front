@@ -13,7 +13,6 @@ import AboutInstructor from '../components/AboutInstructor';
 import CTA from '../components/CTA';
 import { Link } from "react-router-dom";
 import { Instagram, Send } from 'lucide-react';
-import TestPaymentButton from '@/components/TestPaymentButton';
 
 const Index = () => {
   useEffect(() => {
@@ -39,14 +38,6 @@ const Index = () => {
       <FAQ />
       <AboutInstructor />
       <CTA />
-      
-      {/* Test Payment Button */}
-      <div className="container mx-auto my-8 text-center">
-        <div className="p-4 border border-blue-primary/20 rounded-lg inline-block">
-          <h3 className="text-sm font-medium mb-2 text-blue-primary">Developer Testing</h3>
-          <TestPaymentButton />
-        </div>
-      </div>
       
       <footer className="py-8 px-4 border-t border-gray-800 bg-secondary">
         <div className="container mx-auto">
