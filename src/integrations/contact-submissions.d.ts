@@ -1,20 +1,23 @@
 
 // Type definitions for contact submissions
 
-// Extend the Database types with our contact_submissions table
+// Define the contact submission interface independently
+export interface ContactSubmission {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  created_at: string;
+}
+
+// Extend the existing Database type in a way that won't cause conflicts
 declare module '@/integrations/supabase/types' {
   export interface Database {
     public: {
       Tables: {
         contact_submissions: {
-          Row: {
-            id: string;
-            name: string;
-            email: string;
-            subject: string;
-            message: string;
-            created_at: string;
-          };
+          Row: ContactSubmission;
           Insert: {
             id?: string;
             name: string;
@@ -32,17 +35,8 @@ declare module '@/integrations/supabase/types' {
             created_at?: string;
           };
           Relationships: [];
-        };
-      }
-    }
+        } & Record<string, never>;
+      };
+    };
   }
-}
-
-export interface ContactSubmission {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  created_at: string;
 }
