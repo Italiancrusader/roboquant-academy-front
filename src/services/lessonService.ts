@@ -5,6 +5,16 @@ import { Lesson } from '@/types/courses';
 
 export const createLesson = async (lessonData: Partial<Lesson>, courseId: string): Promise<boolean> => {
   try {
+    // Check if title is provided since it's required by the database
+    if (!lessonData.title) {
+      toast({
+        title: "Error",
+        description: "Lesson title is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     // Get max sort order for the module
     let maxSortOrder = 0;
     
@@ -31,14 +41,22 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
       maxSortOrder = lessonsData && lessonsData.length > 0 ? lessonsData[0].sort_order : 0;
     }
     
+    // Create new lesson with all required fields
+    const newLesson = {
+      title: lessonData.title,
+      description: lessonData.description || null,
+      video_url: lessonData.video_url || null,
+      duration_minutes: lessonData.duration_minutes || null,
+      is_published: lessonData.is_published || false,
+      module_id: lessonData.module_id || null,
+      course_id: courseId,
+      sort_order: maxSortOrder + 1
+    };
+    
     // Create new lesson
     const { error } = await supabase
       .from('lessons')
-      .insert({
-        ...lessonData,
-        course_id: courseId,
-        sort_order: maxSortOrder + 1
-      });
+      .insert(newLesson);
     
     if (error) throw error;
     
@@ -60,6 +78,16 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
 
 export const updateLesson = async (lessonId: string, lessonData: Partial<Lesson>): Promise<boolean> => {
   try {
+    // We must ensure that title is present for update operations if it's being modified
+    if (lessonData.hasOwnProperty('title') && !lessonData.title) {
+      toast({
+        title: "Error",
+        description: "Lesson title cannot be empty",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     const { error } = await supabase
       .from('lessons')
       .update(lessonData)
