@@ -150,8 +150,8 @@ export const getOAuthRedirectUrl = () => {
   const currentUrl = window.location.href;
   const isLocalDev = currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com');
   
-  // If in local dev, use the current origin, otherwise use the production URL
-  const baseUrl = isLocalDev ? window.location.origin : 'https://www.roboquant.ai';
+  // If in local dev, use the current origin, otherwise use the non-www production URL
+  const baseUrl = isLocalDev ? window.location.origin : 'https://roboquant.ai'; // Changed from www.roboquant.ai
   
   // Always use /auth as the redirect path
   return `${baseUrl}/auth`;

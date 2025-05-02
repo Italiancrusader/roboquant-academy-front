@@ -26,7 +26,7 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "https://www.roboquant.ai"
+site_url = "https://roboquant.ai"
 additional_redirect_urls = [
   "https://localhost:3000",
   "http://localhost:3000",
