@@ -1,7 +1,5 @@
 
 // Type definitions for contact submissions
-// Note: We're not importing Database to avoid duplicate identifier error
-// Instead we'll use the module augmentation directly
 
 // Extend the Database types with our contact_submissions table
 declare module '@/integrations/supabase/types' {
