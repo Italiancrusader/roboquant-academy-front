@@ -60,7 +60,7 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({
               lessonId="preview" 
               courseId="preview"
               onComplete={() => {}}
-              isPreview={true}
+              // Remove the isPreview prop as it's not supported
             />
           )}
         </div>

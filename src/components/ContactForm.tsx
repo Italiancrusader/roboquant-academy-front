@@ -18,7 +18,7 @@ const ContactForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Store the contact form submission in the database
+      // Store the contact form submission in the database using the new table
       const { error } = await supabase
         .from('contact_submissions')
         .insert([

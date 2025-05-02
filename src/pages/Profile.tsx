@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,14 +56,28 @@ const Profile = () => {
         if (error) throw error;
 
         if (data) {
-          setProfile(data);
-          setFirstName(data.first_name || '');
-          setLastName(data.last_name || '');
-          setBio(data.bio || '');
-          setPhone(data.phone || '');
-          setWebsite(data.website || '');
-          setCompany(data.company || '');
-          setLocation(data.location || '');
+          // Check if the profile has all the required fields
+          const completeProfile: Profile = {
+            id: data.id,
+            first_name: data.first_name || '',
+            last_name: data.last_name || '',
+            avatar_url: data.avatar_url,
+            bio: data.bio || '',
+            phone: data.phone || '',
+            website: data.website || '',
+            company: data.company || '',
+            location: data.location || '',
+            updated_at: data.updated_at
+          };
+          
+          setProfile(completeProfile);
+          setFirstName(completeProfile.first_name || '');
+          setLastName(completeProfile.last_name || '');
+          setBio(completeProfile.bio || '');
+          setPhone(completeProfile.phone || '');
+          setWebsite(completeProfile.website || '');
+          setCompany(completeProfile.company || '');
+          setLocation(completeProfile.location || '');
         }
       } catch (error: any) {
         toast({
@@ -108,18 +121,19 @@ const Profile = () => {
       });
 
       // Update local profile state
-      setProfile((prev) => 
-        prev ? { 
-          ...prev, 
-          first_name: firstName, 
+      if (profile) {
+        setProfile({
+          ...profile,
+          first_name: firstName,
           last_name: lastName,
           bio,
           phone,
           website,
           company,
-          location
-        } : null
-      );
+          location,
+          updated_at: new Date().toISOString()
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error updating profile",
