@@ -52,7 +52,9 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
       const redirectTo = `${baseUrl}/auth`;
       
       // Log the redirect URL for debugging
-      console.log("Google sign-in with redirect to:", redirectTo);
+      console.log("[Google Auth] Initiating sign-in with redirect to:", redirectTo);
+      console.log("[Google Auth] Current environment:", isLocalDev ? "Development" : "Production");
+      console.log("[Google Auth] Current URL:", window.location.href);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -67,17 +69,17 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
       });
       
       if (error) {
-        console.error("Google OAuth initialization error:", error);
+        console.error("[Google Auth] OAuth initialization error:", error);
         throw error;
       }
       
       if (data?.url) {
-        console.log("OAuth redirect URL generated:", data.url);
+        console.log("[Google Auth] OAuth redirect URL generated:", data.url);
         // Force the browser to use this URL instead of relying on automatic redirect
         window.location.href = data.url;
       }
     } catch (error: any) {
-      console.error("Google sign-in exception:", error);
+      console.error("[Google Auth] Sign-in exception:", error);
       if (setError) {
         setError(error.message || "Failed to connect to Google authentication service");
       }

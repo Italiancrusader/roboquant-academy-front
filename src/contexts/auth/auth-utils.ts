@@ -17,12 +17,12 @@ export const processUrlErrors = () => {
   const urlErrorDescription = urlParams.get('error_description');
   
   // Current full URL for debugging
-  console.log("Current URL during auth check:", window.location.href);
+  console.log("[Auth Utils] Current URL during auth check:", window.location.href);
   
   // Check for hash fragment or URL errors
   if (error || errorDescription || urlError || urlErrorDescription) {
     const errorMsg = errorDescription || error || urlErrorDescription || urlError || "Authentication error";
-    console.error("Auth error detected in URL:", errorMsg);
+    console.error("[Auth Utils] Auth error detected in URL:", errorMsg);
     
     toast({
       title: "Authentication Error",
@@ -42,18 +42,45 @@ export const processUrlErrors = () => {
  * @returns Promise that resolves to a session if recovered, null otherwise
  */
 export const handleHashTokens = async () => {
-  if (window.location.hash && window.location.hash.includes('access_token')) {
-    console.log("Detected OAuth tokens in URL hash on initial page load");
+  // Check if URL has hash with tokens - this also works for OAuth response hash fragments
+  if (window.location.hash && (
+    window.location.hash.includes('access_token') || 
+    window.location.hash.includes('error'))) {
+    
+    console.log("[Auth Utils] Detected hash in URL, checking for OAuth data:", window.location.hash.substring(0, 20) + "...");
     
     // Extract the hash without the leading #
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    
+    // Check for errors first
+    const error = hashParams.get('error');
+    const errorDescription = hashParams.get('error_description');
+    
+    if (error || errorDescription) {
+      console.error("[Auth Utils] Error in OAuth callback:", errorDescription || error);
+      toast({
+        title: "Authentication Error",
+        description: errorDescription || error || "Failed to authenticate",
+        variant: "destructive",
+      });
+      
+      // Clean up URL but preserve the error for debugging
+      setTimeout(() => {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, document.title, 
+            window.location.pathname + '?error=' + encodeURIComponent(errorDescription || error || ''));
+        }
+      }, 100);
+      
+      return null;
+    }
     
     // Check if we have the necessary tokens for session recovery
     const accessToken = hashParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token');
     
     if (accessToken) {
-      console.log("Found access token in hash, attempting to recover session");
+      console.log("[Auth Utils] Found access token in hash, attempting to recover session");
       
       try {
         // Try to set session with the tokens from the URL
@@ -63,7 +90,7 @@ export const handleHashTokens = async () => {
         });
         
         if (error) {
-          console.error("Failed to recover session from URL tokens:", error);
+          console.error("[Auth Utils] Failed to recover session from URL tokens:", error);
           toast({
             title: "Authentication Error",
             description: "Failed to complete Google sign-in. Please try again.",
@@ -73,7 +100,7 @@ export const handleHashTokens = async () => {
         }
         
         if (data.session) {
-          console.log("Successfully recovered session from URL tokens");
+          console.log("[Auth Utils] Successfully recovered session from URL tokens");
           
           // Clear the hash to remove tokens from URL
           window.history.replaceState(null, document.title, window.location.pathname);
@@ -81,7 +108,7 @@ export const handleHashTokens = async () => {
           return data.session;
         }
       } catch (err) {
-        console.error("Error recovering session:", err);
+        console.error("[Auth Utils] Error recovering session:", err);
       }
     }
   }

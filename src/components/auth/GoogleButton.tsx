@@ -10,11 +10,25 @@ interface GoogleButtonProps {
 }
 
 const GoogleButton: React.FC<GoogleButtonProps> = ({ onClick, isLoading, buttonText }) => {
+  const handleClick = () => {
+    // Log the current environment for debugging
+    const currentUrl = window.location.href;
+    const isLocalDev = currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com');
+    const baseUrl = isLocalDev ? window.location.origin : 'https://www.roboquant.ai';
+    console.log("Google sign-in button clicked");
+    console.log("Current URL:", window.location.href);
+    console.log("Base URL to be used:", baseUrl);
+    console.log("Environment:", isLocalDev ? "Development" : "Production");
+    
+    // Call the provided onClick handler
+    onClick();
+  };
+
   return (
     <Button 
       type="button"
       variant="outline"
-      onClick={onClick}
+      onClick={handleClick}
       disabled={isLoading}
       className="w-full relative"
     >

@@ -33,7 +33,9 @@ additional_redirect_urls = [
   "https://localhost:5173",
   "https://gqnzsnzolqvsalyzbhmq.supabase.co/auth/v1/callback",
   "https://www.roboquant.ai",
-  "https://www.roboquant.ai/auth"
+  "https://www.roboquant.ai/auth",
+  "https://roboquant.ai",
+  "https://roboquant.ai/auth"
 ]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true

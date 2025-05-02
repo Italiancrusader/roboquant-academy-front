@@ -43,14 +43,12 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
               <li>Go to your Supabase dashboard</li>
               <li>Navigate to Authentication &gt; URL Configuration</li>
               <li>Set your Site URL to: <code className="bg-muted px-1 rounded text-xs">{isDevelopment ? window.location.origin : 'https://www.roboquant.ai'}</code></li>
-              <li>Add to Redirect URLs: <code className="bg-muted px-1 rounded text-xs">{siteUrl}/auth</code></li>
-              
-              {!isDevelopment && (
-                <>
-                  <li>Also add to Redirect URLs without trailing slashes: <code className="bg-muted px-1 rounded text-xs">https://www.roboquant.ai</code></li>
-                  <li>And with /auth path: <code className="bg-muted px-1 rounded text-xs">https://www.roboquant.ai/auth</code></li>
-                </>
-              )}
+              <li>Add these to Additional Redirect URLs:</li>
+              <ul className="list-disc pl-8 space-y-1">
+                <li><code className="bg-muted px-1 rounded text-xs">{siteUrl}/auth</code></li>
+                <li><code className="bg-muted px-1 rounded text-xs">{siteUrl}</code> (without trailing slashes)</li>
+                <li><code className="bg-muted px-1 rounded text-xs">https://gqnzsnzolqvsalyzbhmq.supabase.co/auth/v1/callback</code></li>
+              </ul>
             </ol>
             
             {(isGoogleAuthError || error.includes('redirect_uri_mismatch')) && (
