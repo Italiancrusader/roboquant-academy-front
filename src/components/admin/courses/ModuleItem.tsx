@@ -44,6 +44,7 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
       <div className="flex justify-between items-center p-3 bg-muted/30">
         <div className="flex items-center gap-2 cursor-pointer" onClick={onToggle}>
           <span className="font-medium">{module.title}</span>
+          <span className="text-xs text-muted-foreground">({moduleLessons.length} lessons)</span>
         </div>
         <div className="flex items-center gap-1">
           <Button 
@@ -82,18 +83,24 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
       {isActive && (
         <div className="p-3 border-t">
           <div className="space-y-2">
-            {moduleLessons.map((lesson, index) => (
-              <LessonItem 
-                key={lesson.id}
-                lesson={lesson} 
-                isFirst={index === 0}
-                isLast={index === moduleLessons.length - 1}
-                onEdit={onEditLesson}
-                onDelete={onDeleteLesson}
-                onMove={onMoveLesson}
-                moduleId={module.id}
-              />
-            ))}
+            {moduleLessons.length === 0 ? (
+              <div className="text-center p-4">
+                <p className="text-sm text-muted-foreground mb-2">No lessons in this module yet</p>
+              </div>
+            ) : (
+              moduleLessons.map((lesson, index) => (
+                <LessonItem 
+                  key={lesson.id}
+                  lesson={lesson} 
+                  isFirst={index === 0}
+                  isLast={index === moduleLessons.length - 1}
+                  onEdit={onEditLesson}
+                  onDelete={onDeleteLesson}
+                  onMove={onMoveLesson}
+                  moduleId={module.id}
+                />
+              ))
+            )}
             
             <Button 
               variant="outline" 
@@ -102,7 +109,7 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
               onClick={() => onAddLesson(module.id)}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Lesson
+              Add Lesson to {module.title}
             </Button>
           </div>
         </div>

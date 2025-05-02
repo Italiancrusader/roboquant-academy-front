@@ -106,25 +106,42 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
         </Button>
       </div>
       
-      <div className="space-y-2">
-        {modules.map((module, index) => (
-          <ModuleItem
-            key={module.id}
-            module={module}
-            isActive={activeModuleId === module.id}
-            isFirst={index === 0}
-            isLast={index === modules.length - 1}
-            lessons={lessons}
-            onToggle={() => toggleModule(module.id)}
-            onEdit={handleEditModule}
-            onDelete={handleDeleteModule}
-            onMove={handleMoveModule}
-            onAddLesson={handleAddLessonToModule}
-            onEditLesson={handleEditLesson}
-            onDeleteLesson={handleDeleteLesson}
-            onMoveLesson={handleMoveLesson}
-          />
-        ))}
+      <div className="space-y-2 mt-4">
+        {modules.length === 0 ? (
+          <div className="text-center p-6 border rounded-md bg-muted/10">
+            <p className="text-muted-foreground mb-4">
+              No modules yet. Add your first module to organize your course content.
+            </p>
+            <Button 
+              onClick={() => { 
+                setSelectedModule(undefined); 
+                setIsModuleDialogOpen(true); 
+              }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add First Module
+            </Button>
+          </div>
+        ) : (
+          modules.map((module, index) => (
+            <ModuleItem
+              key={module.id}
+              module={module}
+              isActive={activeModuleId === module.id}
+              isFirst={index === 0}
+              isLast={index === modules.length - 1}
+              lessons={lessons}
+              onToggle={() => toggleModule(module.id)}
+              onEdit={handleEditModule}
+              onDelete={handleDeleteModule}
+              onMove={handleMoveModule}
+              onAddLesson={handleAddLessonToModule}
+              onEditLesson={handleEditLesson}
+              onDeleteLesson={handleDeleteLesson}
+              onMoveLesson={handleMoveLesson}
+            />
+          ))
+        )}
         
         <StandaloneLessons
           isActive={activeModuleId === 'standalone'}

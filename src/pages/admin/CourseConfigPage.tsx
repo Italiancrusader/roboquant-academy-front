@@ -5,8 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { ChevronLeft } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChevronLeft, Plus } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import ModuleList from '@/components/admin/courses/ModuleList';
 import { Course, Module, Lesson } from '@/types/courses';
 
@@ -25,10 +25,10 @@ const CourseConfigPage = () => {
     setIsLoading(true);
     
     try {
-      // Fetch course details - now selecting all required Course fields
+      // Fetch course details
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
-        .select('*') // Select all fields to match the Course interface
+        .select('*')
         .eq('id', courseId)
         .single();
       
@@ -112,7 +112,7 @@ const CourseConfigPage = () => {
                   <div className="md:col-span-2">
                     <Button 
                       variant="outline" 
-                      onClick={() => navigate(`/admin/courses`)}
+                      onClick={() => navigate(`/admin/courses/${courseId}`)}
                     >
                       Edit Course Details
                     </Button>
@@ -122,8 +122,11 @@ const CourseConfigPage = () => {
             </Card>
             
             <Card>
-              <CardHeader>
-                <CardTitle>Content Structure</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Content Structure</CardTitle>
+                  <CardDescription>Manage modules and lessons for this course</CardDescription>
+                </div>
               </CardHeader>
               <CardContent>
                 <ModuleList 
