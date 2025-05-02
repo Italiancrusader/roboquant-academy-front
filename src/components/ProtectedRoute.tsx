@@ -1,64 +1,42 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import { toast } from '@/components/ui/use-toast';
+import { useAdminStatus } from '@/hooks/useAdminStatus';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const location = useLocation();
   const { courseId } = useParams<{ courseId: string }>();
-  const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [isChecking, setIsChecking] = useState<boolean>(true);
+  const { isAdmin, isLoading: adminCheckLoading } = useAdminStatus(user?.id);
+  const [isEnrolled, setIsEnrolled] = React.useState<boolean | null>(null);
+  const [isCheckingEnrollment, setIsCheckingEnrollment] = React.useState<boolean>(!!courseId);
 
-  useEffect(() => {
-    const checkAccess = async () => {
-      console.log("ProtectedRoute: Checking access...");
-      console.log("ProtectedRoute: Course ID:", courseId);
-      console.log("ProtectedRoute: User:", user?.id);
-      
-      if (!user) {
-        console.log("ProtectedRoute: No user, denying access");
-        setIsAdmin(false);
-        setIsEnrolled(false);
-        setIsChecking(false);
+  React.useEffect(() => {
+    const checkEnrollment = async () => {
+      // Skip enrollment check if no user or no courseId
+      if (!user || !courseId) {
+        setIsEnrolled(!courseId); // If no courseId, consider as enrolled
+        setIsCheckingEnrollment(false);
+        return;
+      }
+
+      // Skip enrollment check if user is admin
+      if (isAdmin) {
+        setIsEnrolled(true);
+        setIsCheckingEnrollment(false);
         return;
       }
 
       try {
-        // Check if user is admin
-        console.log("ProtectedRoute: Checking if user is admin...");
-        const { data: adminData, error: adminError } = await supabase.rpc('has_role', {
-          _user_id: user.id,
-          _role: 'admin',
-        });
-        
-        if (adminError) {
-          console.error('ProtectedRoute: Error checking admin status:', adminError);
-          throw adminError;
-        }
-        
-        const userIsAdmin = !!adminData;
-        console.log("ProtectedRoute: Is user admin?", userIsAdmin);
-        setIsAdmin(userIsAdmin);
-        
-        // If admin or no courseId provided, they have access
-        if (userIsAdmin || !courseId) {
-          console.log("ProtectedRoute: Access granted - user is admin or no course ID specified");
-          setIsEnrolled(true);
-          setIsChecking(false);
-          return;
-        }
-
-        // If not admin, check enrollment
-        console.log("ProtectedRoute: Checking enrollment for course:", courseId);
+        // Check enrollment status
         const { data: enrollmentData, error: enrollmentError } = await supabase
           .from('enrollments')
           .select('id')
@@ -68,42 +46,49 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
         if (enrollmentError && enrollmentError.code !== 'PGRST116') {
           // PGRST116 is "no rows returned" error, which is expected if not enrolled
-          console.error('ProtectedRoute: Error checking enrollment:', enrollmentError);
+          console.error('Error checking enrollment:', enrollmentError);
           throw enrollmentError;
         }
 
-        console.log("ProtectedRoute: Enrollment check result:", enrollmentData ? "Enrolled" : "Not enrolled");
         setIsEnrolled(!!enrollmentData);
       } catch (error) {
-        console.error('ProtectedRoute: Error checking access:', error);
-        // Default to no access on error
-        setIsAdmin(false);
+        console.error('Error checking access:', error);
         setIsEnrolled(false);
       } finally {
-        setIsChecking(false);
+        setIsCheckingEnrollment(false);
       }
     };
 
-    checkAccess();
-  }, [user, courseId]);
+    // Only check enrollment if we have the necessary data and admin status is resolved
+    if (!adminCheckLoading && user && courseId) {
+      checkEnrollment();
+    } else if (!courseId || !user) {
+      // No need to check enrollment
+      setIsCheckingEnrollment(false);
+    }
+  }, [user, courseId, isAdmin, adminCheckLoading]);
 
-  if (isLoading || isChecking) {
+  const isLoading = authLoading || adminCheckLoading || isCheckingEnrollment;
+
+  if (isLoading) {
     return <LoadingAnimation />;
   }
 
   if (!user) {
     // Redirect to login page while preserving the intended destination
-    console.log("ProtectedRoute: Redirecting to auth - no user");
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // If this is a course page and the user is not enrolled or admin, redirect to the course page
   if (courseId && !isEnrolled && !isAdmin) {
-    console.log("ProtectedRoute: Redirecting to course page - not enrolled or admin");
+    toast({
+      title: "Access denied",
+      description: "You need to enroll in this course to access its content",
+      variant: "destructive",
+    });
     return <Navigate to={`/courses/${courseId}`} replace />;
   }
 
-  console.log("ProtectedRoute: Access granted");
   return <>{children}</>;
 };
 
