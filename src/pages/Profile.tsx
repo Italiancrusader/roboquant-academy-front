@@ -15,6 +15,7 @@ import { Loader2, Mail, Phone, Globe, Briefcase, MapPin, AlertCircle } from 'luc
 import Footer from '@/components/Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Update interface to include all fields used in the component
 interface Profile {
   id: string;
   first_name: string | null;
