@@ -56,7 +56,7 @@ const Profile = () => {
         if (error) throw error;
 
         if (data) {
-          // Check if the profile has all the required fields
+          // Construct a complete profile object with all required fields
           const completeProfile: Profile = {
             id: data.id,
             first_name: data.first_name || '',

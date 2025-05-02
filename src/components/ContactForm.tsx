@@ -19,8 +19,9 @@ const ContactForm = () => {
 
     try {
       // Store the contact form submission in the database using the new table
-      const { error } = await supabase
-        .from('contact_submissions')
+      // Use type assertion to work around TypeScript limitations until types are regenerated
+      const { error } = await (supabase
+        .from('contact_submissions') as any)
         .insert([
           { name, email, subject, message }
         ]);
