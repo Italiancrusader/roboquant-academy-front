@@ -19,7 +19,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   useEffect(() => {
     const checkAccess = async () => {
-      if (!user || !courseId) {
+      if (!user) {
         setIsAdmin(false);
         setIsEnrolled(false);
         setIsChecking(false);
@@ -33,11 +33,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           _role: 'admin',
         });
         
-        if (adminError) throw adminError;
+        if (adminError) {
+          console.error('Error checking admin status:', adminError);
+          throw adminError;
+        }
         
-        if (adminData) {
-          // If admin, they have access to everything
-          setIsAdmin(true);
+        const userIsAdmin = !!adminData;
+        setIsAdmin(userIsAdmin);
+        
+        // If admin or no courseId provided, they have access
+        if (userIsAdmin || !courseId) {
           setIsEnrolled(true);
           setIsChecking(false);
           return;
@@ -53,22 +58,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
         if (enrollmentError && enrollmentError.code !== 'PGRST116') {
           // PGRST116 is "no rows returned" error, which is expected if not enrolled
+          console.error('Error checking enrollment:', enrollmentError);
           throw enrollmentError;
         }
 
         setIsEnrolled(!!enrollmentData);
       } catch (error) {
         console.error('Error checking access:', error);
+        // Default to no access on error
+        setIsAdmin(false);
+        setIsEnrolled(false);
       } finally {
         setIsChecking(false);
       }
     };
 
-    if (user && courseId) {
-      checkAccess();
-    } else {
-      setIsChecking(false);
-    }
+    checkAccess();
   }, [user, courseId]);
 
   if (isLoading || isChecking) {

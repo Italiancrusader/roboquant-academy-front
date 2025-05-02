@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -47,6 +48,39 @@ const EnrollmentCard = ({
 
     setIsLoading(true);
     try {
+      // Check if user is admin and allow direct access if they are
+      const { data: isAdmin, error: adminCheckError } = await supabase.rpc('has_role', {
+        _user_id: userId,
+        _role: 'admin',
+      });
+      
+      if (adminCheckError) {
+        console.error("Error checking admin status:", adminCheckError);
+      }
+      
+      if (isAdmin) {
+        // If user is admin, create enrollment directly
+        const { error: enrollError } = await supabase
+          .from('enrollments')
+          .insert({
+            user_id: userId,
+            course_id: courseId,
+            payment_status: 'completed'
+          });
+          
+        if (enrollError) throw enrollError;
+        
+        toast({
+          title: "Access granted",
+          description: "As an admin, you've been given direct access to this course.",
+        });
+        
+        // Reload the page to show enrollment status
+        window.location.reload();
+        return;
+      }
+      
+      // Regular checkout flow for non-admin users
       const { data, error: sessionError } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           courseId,
@@ -68,7 +102,7 @@ const EnrollmentCard = ({
     } catch (error: any) {
       toast({
         title: "Enrollment error",
-        description: error.message,
+        description: error.message || "An error occurred during enrollment",
         variant: "destructive",
       });
     } finally {
