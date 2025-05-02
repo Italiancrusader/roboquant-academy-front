@@ -1,12 +1,14 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Clock } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { handleStripeCheckout } from '@/services/stripe';
+
+import CoursePreview from './CoursePreview';
 
 interface EnrollmentCardProps {
   courseId: string;
@@ -14,7 +16,7 @@ interface EnrollmentCardProps {
   courseTitle: string;
   price: number;
   coverImage: string | null;
-  enrollment: { id: string } | null;
+  enrollment: { id: string; enrolled_at: string } | null;
   firstLesson: string | null;
   lastAccessedLesson: string | null;
 }
@@ -29,195 +31,139 @@ const EnrollmentCard = ({
   firstLesson,
   lastAccessedLesson,
 }: EnrollmentCardProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const [isEnrolling, setIsEnrolling] = React.useState(false);
-  const [isAdmin, setIsAdmin] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const { user } = useAuth();
 
-  // Check if the user is an admin
-  React.useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!userId) {
-        setIsAdmin(false);
-        setIsLoading(false);
-        return;
-      }
-      
-      try {
-        const { data, error } = await supabase.rpc('has_role', {
-          _user_id: userId,
-          _role: 'admin',
-        });
-        
-        if (error) throw error;
-        setIsAdmin(!!data);
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        setIsAdmin(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    checkAdminStatus();
-  }, [userId]);
-
-  const handleEnroll = async () => {
+  const handleEnrollment = async () => {
     if (!userId) {
-      // With RLS, auth is now required
-      navigate('/auth', { state: { from: `/courses/${courseId}` } });
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to enroll in this course.",
+      });
+      navigate('/auth', { state: { redirect: `/courses/${courseId}` } });
       return;
     }
 
-    setIsEnrolling(true);
+    setIsLoading(true);
     try {
-      // Initiate Stripe checkout
-      const success = await handleStripeCheckout({
-        courseId,
-        courseTitle,
-        price,
-        userId,
+      const { data, error: sessionError } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          courseId,
+          courseTitle,
+          userId,
+          priceInCents: price * 100,
+          successUrl: window.location.origin + `/courses/${courseId}/success`,
+          cancelUrl: window.location.origin + `/courses/${courseId}`,
+        },
       });
 
-      if (!success) {
-        toast({
-          title: "Checkout failed",
-          description: "Unable to initialize payment process. Please try again.",
-          variant: "destructive",
-        });
+      if (sessionError) throw sessionError;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
       }
-      // Note: We don't need to handle successful payments here as Stripe will redirect to the success URL
     } catch (error: any) {
       toast({
-        title: "Enrollment failed",
+        title: "Enrollment error",
         description: error.message,
         variant: "destructive",
       });
     } finally {
-      setIsEnrolling(false);
+      setIsLoading(false);
     }
   };
 
-  // Show loading state while checking admin status
-  if (isLoading) {
-    return (
-      <Card className="sticky top-24">
-        {coverImage && (
-          <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-            <img 
-              src={coverImage} 
-              alt={courseTitle} 
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-        <CardContent className="pt-6 space-y-6">
-          <div className="flex justify-center items-center h-24">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // For admin users, show they have automatic access
-  if (isAdmin) {
-    return (
-      <Card className="sticky top-24">
-        {coverImage && (
-          <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-            <img 
-              src={coverImage} 
-              alt={courseTitle} 
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-        <CardContent className="pt-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <span className="text-2xl font-bold">Admin Access</span>
-          </div>
-          
-          <Button 
-            className="w-full bg-green-600 hover:bg-green-700" 
-            onClick={() => {
-              if (lastAccessedLesson) {
-                navigate(`/courses/${courseId}/lessons/${lastAccessedLesson}`);
-              } else if (firstLesson) {
-                navigate(`/courses/${courseId}/lessons/${firstLesson}`);
-              }
-            }}
-          >
-            Access Course
-          </Button>
-          
-          <div className="space-y-3">
-            <div className="flex items-center">
-              <Award className="h-4 w-4 mr-2 text-primary" />
-              <span className="text-sm">Admin access to all courses</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleContinue = () => {
+    if (lastAccessedLesson) {
+      navigate(`/courses/${courseId}/lessons/${lastAccessedLesson}`);
+    } else if (firstLesson) {
+      navigate(`/courses/${courseId}/lessons/${firstLesson}`);
+    } else {
+      toast({
+        title: "No lessons available",
+        description: "This course does not have any lessons yet.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <Card className="sticky top-24">
-      {coverImage && (
-        <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-          <img 
-            src={coverImage} 
-            alt={courseTitle} 
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-      <CardContent className="pt-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <span className="text-2xl font-bold">${price.toFixed(2)}</span>
-            {price === 1500 && (
-              <span className="text-sm text-gray-400 ml-2 line-through">$2,000</span>
+    <div className="space-y-4">
+      <Card className="sticky top-24 overflow-hidden">
+        {coverImage && (
+          <div className="aspect-video w-full overflow-hidden">
+            <img 
+              src={coverImage} 
+              alt={courseTitle} 
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        <CardContent className="p-6">
+          <div className="mb-6">
+            {enrollment ? (
+              <div className="mb-4">
+                <Badge className="bg-green-500 text-white">Enrolled</Badge>
+                <p className="text-sm mt-2">
+                  Enrolled on {new Date(enrollment.enrolled_at).toLocaleDateString()}
+                </p>
+              </div>
+            ) : (
+              <div className="mb-6">
+                <div className="flex items-baseline mb-2">
+                  <span className="text-3xl font-bold">${price}</span>
+                  <span className="text-sm ml-2 text-muted-foreground line-through">${(price * 1.25).toFixed(2)}</span>
+                  <span className="ml-2 text-sm bg-green-500/20 text-green-500 py-0.5 px-2 rounded-full">20% off</span>
+                </div>
+                <ul className="text-sm space-y-2 mb-4">
+                  <li className="flex gap-2">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Full lifetime access</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Access on mobile and desktop</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Community support</span>
+                  </li>
+                </ul>
+                <Button 
+                  className="w-full cta-button"
+                  onClick={handleEnrollment}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : "Enroll Now"}
+                </Button>
+              </div>
+            )}
+            
+            {enrollment && (
+              <Button className="w-full cta-button" onClick={handleContinue}>
+                {lastAccessedLesson ? "Continue Learning" : "Start Learning"}
+              </Button>
             )}
           </div>
-        </div>
-        
-        {enrollment ? (
-          <Button 
-            className="w-full bg-green-600 hover:bg-green-700" 
-            onClick={() => {
-              if (lastAccessedLesson) {
-                navigate(`/courses/${courseId}/lessons/${lastAccessedLesson}`);
-              } else if (firstLesson) {
-                navigate(`/courses/${courseId}/lessons/${firstLesson}`);
-              }
-            }}
-          >
-            {lastAccessedLesson ? "Continue Learning" : "Start Course"}
-          </Button>
-        ) : (
-          <Button 
-            className="w-full cta-button" 
-            onClick={handleEnroll} 
-            disabled={isEnrolling}
-          >
-            {isEnrolling ? "Processing..." : "Enroll Now"}
-          </Button>
-        )}
-        
-        <div className="space-y-3">
-          <div className="flex items-center">
-            <Award className="h-4 w-4 mr-2 text-primary" />
-            <span className="text-sm">Full lifetime access</span>
-          </div>
-          <div className="flex items-center">
-            <Clock className="h-4 w-4 mr-2 text-primary" />
-            <span className="text-sm">Learn at your own pace</span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          
+          {!enrollment && (
+            <CoursePreview 
+              courseTitle={courseTitle}
+              previewVideoUrl="https://player.vimeo.com/video/917495861" 
+              previewImage="/lovable-uploads/56e1912c-6199-4933-a4e9-409fbe7e9311.png" 
+            />
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

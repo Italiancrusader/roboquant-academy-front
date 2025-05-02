@@ -1,78 +1,78 @@
-
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import { AuthProvider } from './contexts/auth/AuthProvider';
-import { Toaster } from '@/components/ui/toaster';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Index from './pages/Index';
-import Auth from './pages/Auth';
-import Dashboard from './pages/Dashboard';
+import PricingPage from './pages/PricingPage';
+import Contact from './pages/Contact';
 import Courses from './pages/Courses';
 import CourseDetail from './pages/CourseDetail';
 import CourseLesson from './pages/CourseLesson';
 import Profile from './pages/Profile';
-import NotFound from './pages/NotFound';
-import ClassroomOverview from './pages/ClassroomOverview';
-import ProtectedRoute from './components/ProtectedRoute';
+import Dashboard from './pages/Dashboard';
+import Auth from './pages/Auth';
+import MT5ReportGenie from './pages/MT5ReportGenie';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
-import MT5ReportGenie from './pages/MT5ReportGenie';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import UserManagement from './pages/admin/UserManagement';
-import CourseManagement from './pages/admin/CourseManagement';
-import LessonManagement from './pages/admin/LessonManagement';
-import AllLessonsManagement from './pages/admin/AllLessonsManagement';
-import AdminCheck from './components/admin/AdminCheck';
-import AdminAnalytics from './pages/admin/AdminAnalytics';
-import AdminPayments from './pages/admin/AdminPayments';
-import AdminSettings from './pages/admin/AdminSettings';
-import AdminNotifications from './pages/admin/AdminNotifications';
-import AdminCommunity from './pages/admin/AdminCommunity';
-import AdminCertificates from './pages/admin/AdminCertificates';
-import CourseConfigPage from './pages/admin/CourseConfigPage';
+import Community from './pages/Community';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
-function App() {
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminCourses from './pages/admin/AdminCourses';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminCommunity from './pages/admin/AdminCommunity';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import CourseAnalytics from './pages/admin/CourseAnalytics';
+import CourseManagement from './pages/admin/CourseManagement';
+
+const App = () => {
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', 'dark')
+  }, []);
+
+  const AdminCheck = ({ children }: { children: React.ReactNode }) => {
+    const { user } = useAuth();
+
+    // Check if user is an admin (you'll need to implement a proper admin check)
+    const isAdmin = user?.email === 'timothyhutter@gmail.com';
+
+    if (!user) {
+      return <Navigate to="/auth" />;
+    }
+
+    return isAdmin ? <>{children}</> : <Navigate to="/dashboard" />;
+  };
+
   return (
-    <BrowserRouter>
-      <AuthProvider>
+    <AuthProvider>
+      <Router>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:courseId" element={<CourseDetail />} />
           <Route path="/courses/:courseId/lessons/:lessonId" element={<CourseLesson />} />
-          
-          {/* Protected Routes */}
-          <Route path="/" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/classroom" element={<ClassroomOverview />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/mt5-report-genie" element={<MT5ReportGenie />} />
-          </Route>
-          
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/mt5-report-genie" element={<MT5ReportGenie />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/community" element={<Community />} />
+
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminCheck><Outlet /></AdminCheck>}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="courses" element={<CourseManagement />} />
-            <Route path="courses/:courseId/lessons" element={<LessonManagement />} />
-            <Route path="courses/:courseId/configure" element={<CourseConfigPage />} />
-            <Route path="lessons" element={<AllLessonsManagement />} />
-            <Route path="analytics" element={<AdminAnalytics />} />
-            <Route path="payments" element={<AdminPayments />} />
-            <Route path="settings" element={<AdminSettings />} />
-            <Route path="notifications" element={<AdminNotifications />} />
-            <Route path="community" element={<AdminCommunity />} />
-            <Route path="certificates" element={<AdminCertificates />} />
-          </Route>
-          
-          <Route path="*" element={<NotFound />} />
+          <Route path="/admin" element={<AdminCheck><AdminDashboard /></AdminCheck>} />
+          <Route path="/admin/dashboard" element={<AdminCheck><AdminDashboard /></AdminCheck>} />
+          <Route path="/admin/courses" element={<AdminCheck><AdminCourses /></AdminCheck>} />
+          <Route path="/admin/courses/:courseId/analytics" element={<AdminCheck><CourseAnalytics /></AdminCheck>} />
+          <Route path="/admin/users" element={<AdminCheck><AdminUsers /></AdminCheck>} />
+          <Route path="/admin/community" element={<AdminCheck><AdminCommunity /></AdminCheck>} />
+          <Route path="/admin/analytics" element={<AdminCheck><AdminAnalytics /></AdminCheck>} />
+          <Route path="/admin/course-management" element={<AdminCheck><CourseManagement /></AdminCheck>} />
         </Routes>
-        
-        <Toaster />
-      </AuthProvider>
-    </BrowserRouter>
+      </Router>
+    </AuthProvider>
   );
-}
+};
 
 export default App;

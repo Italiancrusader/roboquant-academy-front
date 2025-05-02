@@ -34,7 +34,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Edit, Trash, Settings, Copy } from 'lucide-react';
+import { Plus, Edit, Trash, Settings, Copy, BarChart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Course {
   id: string;
@@ -423,6 +424,12 @@ const CourseManagement = () => {
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDeleteCourse(course.id)}>
                           <Trash className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/admin/courses/${course.id}/analytics`}>
+                            <BarChart className="h-4 w-4 mr-2" />
+                            Analytics
+                          </Link>
                         </Button>
                       </div>
                     </TableCell>

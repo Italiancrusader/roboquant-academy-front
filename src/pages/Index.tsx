@@ -50,7 +50,7 @@ const Index = () => {
               <Link to="/mt5-report-genie" className="text-sm text-gray-400 hover:text-blue-primary">MT5 Report Genie</Link>
               <Link to="/privacy-policy" className="text-sm text-gray-400 hover:text-blue-primary">Privacy Policy</Link>
               <Link to="/terms-of-service" className="text-sm text-gray-400 hover:text-blue-primary">Terms of Service</Link>
-              <a href="#" className="text-sm text-gray-400 hover:text-blue-primary">Contact Us</a>
+              <Link to="/contact" className="text-sm text-gray-400 hover:text-blue-primary">Contact Us</Link>
             </div>
           </div>
           <div className="mt-6 pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">

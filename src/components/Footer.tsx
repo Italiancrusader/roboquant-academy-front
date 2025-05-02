@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Send, ExternalLink } from 'lucide-react';
+import { Instagram, Send } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="py-8 px-4 border-t mt-auto bg-secondary">
+    <footer className="py-8 px-4 border-t border-gray-800 bg-secondary">
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
@@ -13,10 +13,11 @@ const Footer = () => {
             <p className="text-sm text-gray-400">Build Trading Bots Without Code</p>
           </div>
           <div className="flex flex-wrap gap-4 justify-center md:justify-end">
-            <Link to="/mt5-report-genie" className="text-sm text-gray-400 hover:text-primary">MT5 Report Genie</Link>
-            <Link to="/privacy-policy" className="text-sm text-gray-400 hover:text-primary">Privacy Policy</Link>
-            <Link to="/terms-of-service" className="text-sm text-gray-400 hover:text-primary">Terms of Service</Link>
-            <a href="#" className="text-sm text-gray-400 hover:text-primary">Contact Us</a>
+            <Link to="/mt5-report-genie" className="text-sm text-gray-400 hover:text-blue-primary">MT5 Report Genie</Link>
+            <Link to="/community" className="text-sm text-gray-400 hover:text-blue-primary">Community</Link>
+            <Link to="/privacy-policy" className="text-sm text-gray-400 hover:text-blue-primary">Privacy Policy</Link>
+            <Link to="/terms-of-service" className="text-sm text-gray-400 hover:text-blue-primary">Terms of Service</Link>
+            <Link to="/contact" className="text-sm text-gray-400 hover:text-blue-primary">Contact Us</Link>
           </div>
         </div>
         <div className="mt-6 pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
@@ -28,7 +29,7 @@ const Footer = () => {
               href="https://discord.gg/7sU4DmvmpW" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="text-gray-400 hover:text-primary" 
+              className="text-gray-400 hover:text-blue-primary" 
               aria-label="Discord"
             >
               <img 
@@ -41,7 +42,7 @@ const Footer = () => {
               href="https://www.instagram.com/timhutter.official/" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="text-gray-400 hover:text-primary" 
+              className="text-gray-400 hover:text-blue-primary" 
               aria-label="Instagram"
             >
               <Instagram className="w-5 h-5" />
@@ -50,7 +51,7 @@ const Footer = () => {
               href="https://t.me/tradepiloteabot" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="text-gray-400 hover:text-primary" 
+              className="text-gray-400 hover:text-blue-primary" 
               aria-label="Telegram"
             >
               <Send className="w-5 h-5" />
