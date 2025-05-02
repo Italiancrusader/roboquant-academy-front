@@ -1,120 +1,139 @@
-
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
-import { toast } from './ui/use-toast';
+import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
 
-const ContactForm = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [subject, setSubject] = useState('');
+const formSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  subject: z.string().min(5, { message: 'Subject must be at least 5 characters.' }),
+  message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+const ContactForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const { toast } = useToast();
+  
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      subject: '',
+      message: '',
+    },
+  });
+  
+  const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
-
+    
     try {
-      // Store the contact form submission in the database using the new table
-      // Use type assertion to work around TypeScript limitations until types are regenerated
-      const { error } = await (supabase
-        .from('contact_submissions') as any)
-        .insert([
-          { name, email, subject, message }
-        ]);
-
+      // Save to Supabase
+      const { error } = await supabase
+        .from('contact_submissions')
+        .insert({
+          name: data.name,
+          email: data.email,
+          subject: data.subject,
+          message: data.message,
+        });
+      
       if (error) throw error;
-
-      // Call edge function to send notification email
-      const { error: emailError } = await supabase.functions.invoke('send-contact-notification', {
-        body: { name, email, subject, message }
+      
+      // Call edge function to send email notification
+      const response = await fetch('/api/send-contact-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
-
-      if (emailError) throw emailError;
-
+      
+      if (!response.ok) {
+        throw new Error('Failed to send notification');
+      }
+      
       toast({
         title: "Message sent!",
-        description: "Thank you for contacting us. We'll respond shortly.",
+        description: "Thank you for contacting us. We'll get back to you soon.",
       });
-
-      // Reset form
-      setName('');
-      setEmail('');
-      setSubject('');
-      setMessage('');
+      
+      // Clear the form
+      reset();
+      
     } catch (error: any) {
       console.error('Error submitting contact form:', error);
       toast({
-        title: "Error",
-        description: "There was a problem sending your message. Please try again.",
+        title: "Something went wrong",
+        description: error.message || "Failed to send your message. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label htmlFor="name" className="block text-sm font-medium">
-            Name
-          </label>
-          <Input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            placeholder="Your name"
-          />
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm font-medium">
-            Email
-          </label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="Your email address"
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <label htmlFor="subject" className="block text-sm font-medium">
-          Subject
-        </label>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div>
         <Input
-          id="subject"
           type="text"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          required
-          placeholder="Subject of your message"
+          id="name"
+          placeholder="Your Name"
+          {...register('name')}
         />
+        {errors.name && (
+          <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+        )}
       </div>
-      <div className="space-y-2">
-        <label htmlFor="message" className="block text-sm font-medium">
-          Message
-        </label>
+      <div>
+        <Input
+          type="email"
+          id="email"
+          placeholder="Your Email"
+          {...register('email')}
+        />
+        {errors.email && (
+          <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+        )}
+      </div>
+      <div>
+        <Input
+          type="text"
+          id="subject"
+          placeholder="Subject"
+          {...register('subject')}
+        />
+        {errors.subject && (
+          <p className="text-sm text-red-500 mt-1">{errors.subject.message}</p>
+        )}
+      </div>
+      <div>
         <Textarea
           id="message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          required
-          placeholder="How can we help you?"
-          rows={6}
+          placeholder="Your Message"
+          rows={4}
+          {...register('message')}
         />
+        {errors.message && (
+          <p className="text-sm text-red-500 mt-1">{errors.message.message}</p>
+        )}
       </div>
-      <Button type="submit" className="w-full md:w-auto cta-button" disabled={isSubmitting}>
-        {isSubmitting ? "Sending..." : "Send Message"}
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Sending...
+          </>
+        ) : (
+          "Send Message"
+        )}
       </Button>
     </form>
   );
