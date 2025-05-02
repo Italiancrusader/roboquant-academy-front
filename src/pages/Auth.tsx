@@ -84,9 +84,11 @@ const Auth = () => {
         } else if (
           errorMessage.includes('requested path is invalid') || 
           error === 'invalid_redirect' || 
+          error === 'redirect_uri_mismatch' || 
+          errorMessage.includes('redirect_uri_mismatch') ||
           hasSupabaseUrlError
         ) {
-          errorMessage = 'Authentication redirect URL is not properly configured in Supabase. Please add your domain to the allowed redirect URLs.';
+          errorMessage = 'Authentication redirect URL is not properly configured. Please verify your redirect URLs in both Google Cloud Console and Supabase.';
           isInvalidPath = true;
         }
         

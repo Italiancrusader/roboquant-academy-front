@@ -16,6 +16,7 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
   const isInvalidPathError = 
     error.includes('requested path is invalid') || 
     error.includes('invalid_redirect') ||
+    error.includes('redirect_uri_mismatch') ||
     error.includes('supabase.co/www');
   
   // Check if it's specifically a Google OAuth issue
@@ -52,7 +53,7 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
               )}
             </ol>
             
-            {isGoogleAuthError && (
+            {(isGoogleAuthError || error.includes('redirect_uri_mismatch')) && (
               <div className="mt-2">
                 <p><strong>For Google OAuth specifically:</strong></p>
                 <ol className="list-decimal pl-5 space-y-1">
