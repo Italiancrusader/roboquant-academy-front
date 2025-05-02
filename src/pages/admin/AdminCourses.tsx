@@ -1,16 +1,10 @@
 
-import React from 'react';
-import AdminLayout from '@/components/admin/AdminLayout';
+import React, { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 
 const AdminCourses = () => {
-  return (
-    <AdminLayout>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Course Management</h1>
-        <p className="text-muted-foreground">This page is under development.</p>
-      </div>
-    </AdminLayout>
-  );
+  // This component now just redirects to the CourseManagement page
+  return <Navigate to="/admin/courses" replace />;
 };
 
 export default AdminCourses;

@@ -20,13 +20,15 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminCourses from './pages/admin/AdminCourses';
 import UserManagement from './pages/admin/UserManagement';
 import AdminCommunity from './pages/admin/AdminCommunity';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import CourseAnalytics from './pages/admin/CourseAnalytics';
 import CourseManagement from './pages/admin/CourseManagement';
 import AdminPayments from './pages/admin/AdminPayments';
+import AllLessonsManagement from './pages/admin/AllLessonsManagement';
+import LessonManagement from './pages/admin/LessonManagement';
+import CourseConfigPage from './pages/admin/CourseConfigPage';
 
 const App = () => {
   useEffect(() => {
@@ -54,12 +56,14 @@ const App = () => {
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminCheck><AdminDashboard /></AdminCheck>} />
           <Route path="/admin/dashboard" element={<AdminCheck><AdminDashboard /></AdminCheck>} />
-          <Route path="/admin/courses" element={<AdminCheck><AdminCourses /></AdminCheck>} />
+          <Route path="/admin/courses" element={<AdminCheck><CourseManagement /></AdminCheck>} />
           <Route path="/admin/courses/:courseId/analytics" element={<AdminCheck><CourseAnalytics /></AdminCheck>} />
+          <Route path="/admin/courses/:courseId/lessons" element={<AdminCheck><LessonManagement /></AdminCheck>} />
+          <Route path="/admin/courses/:courseId/configure" element={<AdminCheck><CourseConfigPage /></AdminCheck>} />
           <Route path="/admin/users" element={<AdminCheck><UserManagement /></AdminCheck>} />
           <Route path="/admin/community" element={<AdminCheck><AdminCommunity /></AdminCheck>} />
           <Route path="/admin/analytics" element={<AdminCheck><AdminAnalytics /></AdminCheck>} />
-          <Route path="/admin/course-management" element={<AdminCheck><CourseManagement /></AdminCheck>} />
+          <Route path="/admin/lessons" element={<AdminCheck><AllLessonsManagement /></AdminCheck>} />
           <Route path="/admin/payments" element={<AdminCheck><AdminPayments /></AdminCheck>} />
         </Routes>
       </Router>

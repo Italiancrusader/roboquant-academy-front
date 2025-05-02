@@ -63,7 +63,11 @@ const AdminCheck: React.FC<AdminCheckProps> = ({ children }) => {
       }
     };
 
-    checkAdminStatus();
+    if (user) {
+      checkAdminStatus();
+    } else {
+      setIsCheckingRole(false);
+    }
   }, [user]);
 
   if (isLoading || isCheckingRole) {

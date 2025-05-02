@@ -4,6 +4,7 @@ import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import LoadingAnimation from '@/components/LoadingAnimation';
+import { toast } from '@/components/ui/use-toast';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
