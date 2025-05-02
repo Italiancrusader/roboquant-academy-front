@@ -1,8 +1,7 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import { toast } from '@/components/ui/use-toast';
 import { useAdminStatus } from '@/hooks/useAdminStatus';
