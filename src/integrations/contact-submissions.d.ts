@@ -3,7 +3,7 @@
 
 // Extend the Database types with our contact_submissions table
 declare module '@/integrations/supabase/types' {
-  interface Database {
+  export interface Database {
     public: {
       Tables: {
         contact_submissions: {
