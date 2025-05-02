@@ -5,86 +5,40 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import { toast } from '@/components/ui/use-toast';
+import { useAdminStatus } from '@/hooks/useAdminStatus';
 
 interface AdminCheckProps {
   children: React.ReactNode;
 }
 
 const AdminCheck: React.FC<AdminCheckProps> = ({ children }) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const location = useLocation();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [isCheckingRole, setIsCheckingRole] = useState(true);
+  const { isAdmin, isLoading: adminCheckLoading } = useAdminStatus(user?.id);
+  
+  const isLoading = authLoading || adminCheckLoading;
 
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      console.log("AdminCheck: Checking admin status...");
-      
-      if (!user) {
-        console.log("AdminCheck: No user found, denying access");
-        setIsAdmin(false);
-        setIsCheckingRole(false);
-        return;
-      }
-
-      try {
-        console.log(`AdminCheck: Checking if user ${user.id} is an admin...`);
-        
-        const { data, error } = await supabase.rpc('has_role', {
-          _user_id: user.id,
-          _role: 'admin',
-        });
-
-        if (error) {
-          console.error("AdminCheck: Error checking admin status:", error);
-          toast({
-            title: "Error checking admin status",
-            description: error.message,
-            variant: "destructive",
-          });
-          throw error;
-        }
-        
-        console.log("AdminCheck: Admin check result:", data);
-        setIsAdmin(!!data);
-        
-        if (!data) {
-          toast({
-            title: "Access denied",
-            description: "You don't have admin privileges",
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error("AdminCheck: Error checking admin status:", error);
-        setIsAdmin(false);
-      } finally {
-        setIsCheckingRole(false);
-      }
-    };
-
-    if (user) {
-      checkAdminStatus();
-    } else {
-      setIsCheckingRole(false);
-    }
-  }, [user]);
-
-  if (isLoading || isCheckingRole) {
+  // If still loading, show loading animation
+  if (isLoading) {
     return <LoadingAnimation />;
   }
 
+  // If no user, redirect to auth
   if (!user) {
-    console.log("AdminCheck: Redirecting to auth - no user");
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  // If user is not admin, show toast and redirect to dashboard
   if (!isAdmin) {
-    console.log("AdminCheck: Redirecting to dashboard - not admin");
+    toast({
+      title: "Access denied",
+      description: "You don't have admin privileges",
+      variant: "destructive",
+    });
     return <Navigate to="/dashboard" replace />;
   }
 
-  console.log("AdminCheck: Access granted to admin area");
+  // User is admin, render children
   return <>{children}</>;
 };
 
