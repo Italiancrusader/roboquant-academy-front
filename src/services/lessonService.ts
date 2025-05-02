@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Lesson } from '@/types/courses';
@@ -42,6 +41,8 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
       maxSortOrder = lessonsData && lessonsData.length > 0 ? (lessonsData[0].sort_order || 0) : 0;
     }
     
+    console.log('Maximum sort order retrieved:', maxSortOrder);
+    
     // Create new lesson with all required fields
     const newLesson = {
       title: lessonData.title,
@@ -52,18 +53,23 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
       module_id: lessonData.module_id || null,
       course_id: courseId,
       sort_order: maxSortOrder + 1,
-      has_attachments: false // Adding this to ensure the required field is provided
+      has_attachments: false // Required field
     };
     
+    console.log('Sending lesson data to Supabase:', newLesson);
+    
     // Create new lesson
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('lessons')
-      .insert(newLesson);
+      .insert(newLesson)
+      .select('id');
     
     if (error) {
       console.error("Error creating lesson:", error);
       throw error;
     }
+    
+    console.log("Lesson created successfully:", data);
     
     toast({
       title: "Success",
@@ -75,7 +81,7 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
     console.error("Error in createLesson:", error);
     toast({
       title: "Error",
-      description: error.message,
+      description: error.message || "Failed to create lesson",
       variant: "destructive",
     });
     return false;

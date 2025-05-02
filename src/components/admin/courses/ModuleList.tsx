@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -122,16 +121,24 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
     if (moduleId) {
       // Adding a lesson to a module
       setSelectedLesson({
-        title: '', // Add required title property
+        title: '', // Add required title property 
+        description: '',
+        is_published: false,
         course_id: courseId,
-        module_id: moduleId
+        module_id: moduleId,
+        sort_order: 0, // This will be calculated during save
+        has_attachments: false // Ensure this required field is set
       });
     } else {
       // Adding a standalone lesson
       setSelectedLesson({
         title: '', // Add required title property
+        description: '',
+        is_published: false,
         course_id: courseId,
-        module_id: null
+        module_id: null,
+        sort_order: 0, // This will be calculated during save
+        has_attachments: false // Ensure this required field is set
       });
     }
     setIsLessonDialogOpen(true);
