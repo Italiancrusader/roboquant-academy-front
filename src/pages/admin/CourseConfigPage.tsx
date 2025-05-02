@@ -25,10 +25,10 @@ const CourseConfigPage = () => {
     setIsLoading(true);
     
     try {
-      // Fetch course details
+      // Fetch course details - now selecting all required Course fields
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
-        .select('id, title, description, level')
+        .select('*') // Select all fields to match the Course interface
         .eq('id', courseId)
         .single();
       

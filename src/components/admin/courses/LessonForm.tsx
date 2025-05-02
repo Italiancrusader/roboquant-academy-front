@@ -31,7 +31,7 @@ const LessonForm = ({ courseId, lesson, onSuccess, onCancel }: LessonFormProps) 
       try {
         const { data, error } = await supabase
           .from('modules')
-          .select('id, title')
+          .select('id, title, sort_order, course_id')
           .eq('course_id', courseId)
           .order('sort_order', { ascending: true });
         
