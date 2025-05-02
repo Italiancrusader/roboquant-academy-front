@@ -26,16 +26,23 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
+site_url = "https://www.roboquant.ai"
 additional_redirect_urls = [
   "https://localhost:3000",
+  "http://localhost:3000",
+  "https://localhost:3000/auth",
+  "http://localhost:3000/auth",
   "http://localhost:5173",
   "https://localhost:5173",
+  "https://localhost:5173/auth",
+  "http://localhost:5173/auth",
   "https://gqnzsnzolqvsalyzbhmq.supabase.co/auth/v1/callback",
   "https://www.roboquant.ai",
   "https://www.roboquant.ai/auth",
   "https://roboquant.ai",
-  "https://roboquant.ai/auth"
+  "https://roboquant.ai/auth",
+  "https://preview-roboquant-academy-front.lovable.app",
+  "https://preview-roboquant-academy-front.lovable.app/auth"
 ]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
