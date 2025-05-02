@@ -43,10 +43,19 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
     try {
       // Get the current URL to determine environment
       const currentUrl = window.location.href;
-      const isLocalDev = currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com');
       
-      // If in local dev, use the current origin, otherwise use the non-www production URL
-      const baseUrl = isLocalDev ? window.location.origin : 'https://roboquant.ai'; // Changed from www.roboquant.ai
+      // Domain detection logic
+      let baseUrl = '';
+      if (currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com')) {
+        // Local/preview environment
+        baseUrl = window.location.origin;
+      } else {
+        // Production environment - important: don't include www prefix
+        baseUrl = 'https://roboquant.ai';
+        
+        // Log the domain we're redirecting to
+        console.log("Using production domain for redirect:", baseUrl);
+      }
       
       // Always use /auth as the redirect path
       const redirectTo = `${baseUrl}/auth`;
@@ -54,7 +63,7 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
       // Log extensive debugging information
       console.log("=== GOOGLE AUTH INITIALIZATION ===");
       console.log("Initiating sign-in with redirect to:", redirectTo);
-      console.log("Current environment:", isLocalDev ? "Development" : "Production");
+      console.log("Current environment:", baseUrl === window.location.origin ? "Development/Preview" : "Production");
       console.log("Current URL:", window.location.href);
       console.log("Current origin:", window.location.origin);
       console.log("Application base URL:", baseUrl);
@@ -65,7 +74,6 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
         options: {
           redirectTo: redirectTo,
           queryParams: {
-            // These help with token refreshing and provide an improved user experience
             access_type: 'offline',
             prompt: 'consent',
           }
@@ -81,7 +89,7 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
       if (data?.url) {
         console.log("=== GOOGLE AUTH REDIRECT ===");
         console.log("OAuth redirect URL generated:", data.url);
-        // Force the browser to use this URL instead of relying on automatic redirect
+        // Force the browser to use this URL
         window.location.href = data.url;
       } else {
         console.error("=== GOOGLE AUTH ERROR ===");

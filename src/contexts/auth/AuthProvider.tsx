@@ -15,6 +15,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("Initializing AuthProvider...");
+    const domain = window.location.hostname;
+    console.log("Current domain:", domain);
+    
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -22,20 +26,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         
-        // If this is a new sign-in event, show a welcome toast
-        if (event === 'SIGNED_IN' && session?.user) {
-          toast({
-            title: "Successfully signed in",
-            description: `Welcome${session.user.user_metadata?.name ? `, ${session.user.user_metadata.name}` : ''}!`,
-          });
+        if (session?.user) {
+          console.log("User authenticated:", session.user.email);
+          
+          // Check user roles after authentication
+          const checkUserRoles = async () => {
+            try {
+              console.log("Checking user roles for:", session.user.id);
+              const { data: isAdmin, error } = await supabase.rpc('has_role', {
+                _user_id: session.user.id,
+                _role: 'admin',
+              });
+              
+              if (error) {
+                console.error("Error checking admin status:", error);
+              } else {
+                console.log("User admin status:", isAdmin ? "Is Admin" : "Not Admin");
+              }
+            } catch (error) {
+              console.error("Failed to check user roles:", error);
+            }
+          };
+          
+          // Use setTimeout to avoid Supabase deadlock
+          setTimeout(checkUserRoles, 0);
+          
+          // If this is a new sign-in event, show a welcome toast
+          if (event === 'SIGNED_IN') {
+            toast({
+              title: "Successfully signed in",
+              description: `Welcome${session.user.user_metadata?.name ? `, ${session.user.user_metadata.name}` : ''}!`,
+            });
+          }
+        } else if (event === 'SIGNED_OUT') {
+          console.log("User signed out");
         }
       }
     );
 
     // Handle hash fragment tokens if present (for OAuth callbacks landing on root)
     const recoverSession = async () => {
+      console.log("Attempting to recover session from URL tokens...");
       const recoveredSession = await handleHashTokens();
       if (recoveredSession) {
+        console.log("Session recovered from URL tokens");
         setSession(recoveredSession);
         setUser(recoveredSession.user);
       }
@@ -81,17 +115,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Get the current URL to determine environment
       const currentUrl = window.location.href;
-      const isLocalDev = currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com');
       
-      // If in local dev, use the current origin, otherwise use the production URL
-      const baseUrl = isLocalDev ? window.location.origin : 'https://www.roboquant.ai';
+      // Domain detection logic
+      let baseUrl = '';
+      if (currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com')) {
+        // Local/preview environment
+        baseUrl = window.location.origin;
+      } else {
+        // Production environment - do NOT use www prefix
+        baseUrl = 'https://roboquant.ai';
+      }
       
       // Always use /auth as the redirect path
       const redirectTo = `${baseUrl}/auth`;
       
       // Log the redirect URL for debugging
       console.log("Google sign-in with redirect to:", redirectTo);
-      console.log("Current environment:", isLocalDev ? "Development" : "Production");
+      console.log("Current environment:", baseUrl === window.location.origin ? "Development/Preview" : "Production");
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
