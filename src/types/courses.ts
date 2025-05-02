@@ -27,4 +27,5 @@ export interface Lesson {
   module_id?: string | null;
   sort_order?: number;
   course_id: string;
+  has_attachments?: boolean;
 }
