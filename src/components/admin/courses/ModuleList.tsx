@@ -122,12 +122,14 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
     if (moduleId) {
       // Adding a lesson to a module
       setSelectedLesson({
+        title: '', // Add required title property
         course_id: courseId,
         module_id: moduleId
       });
     } else {
       // Adding a standalone lesson
       setSelectedLesson({
+        title: '', // Add required title property
         course_id: courseId,
         module_id: null
       });
