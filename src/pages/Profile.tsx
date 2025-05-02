@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,12 +57,13 @@ const Profile = () => {
         if (error) throw error;
 
         if (data) {
-          // Construct a complete profile object with all required fields
-          const completeProfile: Profile = {
+          // Create a complete profile object with all required fields
+          const fetchedProfile: Profile = {
             id: data.id,
             first_name: data.first_name || '',
             last_name: data.last_name || '',
             avatar_url: data.avatar_url,
+            // Handle potentially missing fields that were added with schema updates
             bio: data.bio || '',
             phone: data.phone || '',
             website: data.website || '',
@@ -70,14 +72,14 @@ const Profile = () => {
             updated_at: data.updated_at
           };
           
-          setProfile(completeProfile);
-          setFirstName(completeProfile.first_name || '');
-          setLastName(completeProfile.last_name || '');
-          setBio(completeProfile.bio || '');
-          setPhone(completeProfile.phone || '');
-          setWebsite(completeProfile.website || '');
-          setCompany(completeProfile.company || '');
-          setLocation(completeProfile.location || '');
+          setProfile(fetchedProfile);
+          setFirstName(fetchedProfile.first_name || '');
+          setLastName(fetchedProfile.last_name || '');
+          setBio(fetchedProfile.bio || '');
+          setPhone(fetchedProfile.phone || '');
+          setWebsite(fetchedProfile.website || '');
+          setCompany(fetchedProfile.company || '');
+          setLocation(fetchedProfile.location || '');
         }
       } catch (error: any) {
         toast({

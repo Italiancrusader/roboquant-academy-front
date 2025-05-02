@@ -1,6 +1,6 @@
 
 // Type definitions for contact submissions
-import { Database as SupabaseDatabase } from '@/integrations/supabase/types';
+import type { Database as SupabaseDatabase } from '@/integrations/supabase/types';
 
 // Extend the Database types with our contact_submissions table
 declare module '@/integrations/supabase/types' {
