@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,23 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Module {
-  id: string;
-  title: string;
-}
-
-interface Lesson {
-  id?: string;
-  title: string;
-  description?: string;
-  video_url?: string;
-  duration_minutes?: number;
-  is_published?: boolean;
-  module_id?: string;
-  course_id: string;
-  sort_order?: number;
-}
+import { Module, Lesson } from '@/types/courses';
 
 interface LessonFormProps {
   courseId: string;

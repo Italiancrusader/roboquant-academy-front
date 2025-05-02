@@ -5,13 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Module {
-  id?: string;
-  title: string;
-  course_id: string;
-  sort_order?: number;
-}
+import { Module } from '@/types/courses';
 
 interface CourseModuleFormProps {
   courseId: string;

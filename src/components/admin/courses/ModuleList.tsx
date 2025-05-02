@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -7,25 +6,7 @@ import { ArrowUp, ArrowDown, Edit, Trash, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import CourseModuleForm from './CourseModuleForm';
 import LessonForm from './LessonForm';
-
-interface Module {
-  id: string;
-  title: string;
-  sort_order: number;
-  course_id: string;
-}
-
-interface Lesson {
-  id?: string;
-  title: string;
-  description?: string | null;
-  video_url?: string | null;
-  duration_minutes?: number | null;
-  is_published?: boolean | null;
-  module_id?: string | null;
-  sort_order?: number;
-  course_id: string;
-}
+import { Module, Lesson } from '@/types/courses';
 
 interface ModuleListProps {
   courseId: string;
@@ -53,12 +34,12 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
   const handleAddLessonToModule = (moduleId: string) => {
     setSelectedLesson(undefined);
     setIsLessonDialogOpen(true);
-    // Pre-select the module in the form - added necessary fields for Lesson type
+    // Pre-select the module in the form
     setSelectedLesson({ 
       course_id: courseId, 
       module_id: moduleId,
       title: ''  // Adding required title field
-    } as Lesson);
+    });
   };
   
   const handleEditLesson = (lesson: Lesson) => {
@@ -392,7 +373,7 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
                       course_id: courseId, 
                       module_id: null,
                       title: '' // Adding required title field
-                    } as Lesson); 
+                    }); 
                     setIsLessonDialogOpen(true); 
                   }}
                 >

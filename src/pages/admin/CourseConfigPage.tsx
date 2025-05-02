@@ -8,30 +8,7 @@ import { toast } from '@/components/ui/use-toast';
 import { ChevronLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ModuleList from '@/components/admin/courses/ModuleList';
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  level: string | null;
-}
-
-interface Module {
-  id: string;
-  title: string;
-  sort_order: number;
-}
-
-interface Lesson {
-  id: string;
-  title: string;
-  description: string | null;
-  video_url: string | null;
-  duration_minutes: number | null;
-  is_published: boolean | null;
-  module_id: string | null;
-  sort_order: number;
-}
+import { Course, Module, Lesson } from '@/types/courses';
 
 const CourseConfigPage = () => {
   const { courseId } = useParams<{ courseId: string }>();
