@@ -13,6 +13,7 @@ import {
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "./navbar/UserMenu";
+import { NavLogo } from "./navbar/NavLogo";
 import { cn } from "@/lib/utils";
 
 const NavItems = [
@@ -22,12 +23,6 @@ const NavItems = [
   { label: "FAQ", href: "/faq" },
   { label: "Community", href: "/community" }
 ];
-
-const Logo = () => (
-  <Link to="/" className="flex items-center font-bold text-xl md:text-2xl gradient-text">
-    RoboQuant Academy
-  </Link>
-);
 
 const DesktopNav = () => (
   <div className="hidden md:flex items-center space-x-6">
@@ -154,7 +149,7 @@ const Navbar = () => {
     )}>
       <div className="container max-w-screen-xl mx-auto py-3 px-4">
         <div className="flex items-center justify-between">
-          <Logo />
+          <NavLogo isScrolled={isScrolled} />
           <DesktopNav />
           <AuthButtons />
           <MobileNav />
