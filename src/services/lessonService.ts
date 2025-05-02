@@ -15,7 +15,7 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
       return false;
     }
     
-    // Get max sort order for the module
+    // Get max sort order for the module or standalone lessons
     let maxSortOrder = 0;
     
     if (lessonData.module_id) {
@@ -23,11 +23,12 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
         .from('lessons')
         .select('sort_order')
         .eq('module_id', lessonData.module_id)
+        .eq('course_id', courseId)
         .order('sort_order', { ascending: false })
         .limit(1);
       
       if (fetchError) throw fetchError;
-      maxSortOrder = lessonsData && lessonsData.length > 0 ? lessonsData[0].sort_order : 0;
+      maxSortOrder = lessonsData && lessonsData.length > 0 ? (lessonsData[0].sort_order || 0) : 0;
     } else {
       const { data: lessonsData, error: fetchError } = await supabase
         .from('lessons')
@@ -38,7 +39,7 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
         .limit(1);
       
       if (fetchError) throw fetchError;
-      maxSortOrder = lessonsData && lessonsData.length > 0 ? lessonsData[0].sort_order : 0;
+      maxSortOrder = lessonsData && lessonsData.length > 0 ? (lessonsData[0].sort_order || 0) : 0;
     }
     
     // Create new lesson with all required fields
@@ -50,7 +51,8 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
       is_published: lessonData.is_published || false,
       module_id: lessonData.module_id || null,
       course_id: courseId,
-      sort_order: maxSortOrder + 1
+      sort_order: maxSortOrder + 1,
+      has_attachments: false // Adding this to ensure the required field is provided
     };
     
     // Create new lesson
@@ -58,7 +60,10 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
       .from('lessons')
       .insert(newLesson);
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error creating lesson:", error);
+      throw error;
+    }
     
     toast({
       title: "Success",
@@ -67,6 +72,7 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
     
     return true;
   } catch (error: any) {
+    console.error("Error in createLesson:", error);
     toast({
       title: "Error",
       description: error.message,
@@ -93,7 +99,10 @@ export const updateLesson = async (lessonId: string, lessonData: Partial<Lesson>
       .update(lessonData)
       .eq('id', lessonId);
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error updating lesson:", error);
+      throw error;
+    }
     
     toast({
       title: "Success",
@@ -102,6 +111,7 @@ export const updateLesson = async (lessonId: string, lessonData: Partial<Lesson>
     
     return true;
   } catch (error: any) {
+    console.error("Error in updateLesson:", error);
     toast({
       title: "Error",
       description: error.message,
