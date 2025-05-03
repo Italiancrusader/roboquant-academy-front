@@ -1,10 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
-import { AuthError } from '@/components/auth/AuthError';
+import AuthError from '@/components/auth/AuthError';  // Changed from named to default import
 import { useAuth } from '@/contexts/AuthContext';
 
 const Auth = () => {
@@ -12,6 +12,8 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
   
   const from = location.state?.from?.pathname || '/dashboard';
   const redirectPath = searchParams.get('redirect') || from;
@@ -21,6 +23,13 @@ const Auth = () => {
   
   // Handle error message from URL parameters (e.g., after OAuth redirect)
   const errorMessage = searchParams.get('error_description') || searchParams.get('error');
+  
+  useEffect(() => {
+    // Set URL error if present
+    if (errorMessage) {
+      setAuthError(errorMessage);
+    }
+  }, [errorMessage]);
   
   useEffect(() => {
     // If user is already logged in, redirect to the intended destination
@@ -45,7 +54,7 @@ const Auth = () => {
           <p className="mt-2 text-muted-foreground">Sign in to your account or create a new one</p>
         </div>
         
-        {errorMessage && <AuthError message={errorMessage} />}
+        {authError && <AuthError error={authError} isRedirectError={!!errorMessage} />}
         
         <div className="rounded-lg border bg-card p-6 shadow-sm">
           <Tabs defaultValue={defaultTab} className="w-full">
@@ -54,10 +63,18 @@ const Auth = () => {
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
             <TabsContent value="signin">
-              <SignInForm redirectPath={redirectPath} />
+              <SignInForm 
+                isLoading={isAuthLoading} 
+                setAuthError={setAuthError} 
+                setIsLoading={setIsAuthLoading} 
+              />
             </TabsContent>
             <TabsContent value="signup">
-              <SignUpForm redirectPath={redirectPath} />
+              <SignUpForm 
+                isLoading={isAuthLoading} 
+                setAuthError={setAuthError} 
+                setIsLoading={setIsAuthLoading} 
+              />
             </TabsContent>
           </Tabs>
         </div>

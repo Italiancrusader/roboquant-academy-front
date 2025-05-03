@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import GoogleButton from './GoogleButton';
 
-interface SignUpFormProps {
+export interface SignUpFormProps {
   isLoading: boolean;
   setAuthError: (error: string | null) => void;
   setIsLoading: (isLoading: boolean) => void;
