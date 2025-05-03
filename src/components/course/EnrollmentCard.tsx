@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminStatus } from '@/hooks/useAdminStatus';
 
 import CoursePreview from './CoursePreview';
 
@@ -33,8 +34,17 @@ const EnrollmentCard = ({
   lastAccessedLesson,
 }: EnrollmentCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdminAccess, setIsAdminAccess] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin, isLoading: isAdminLoading } = useAdminStatus(user?.id);
+
+  // Check if the user is an admin and grant access automatically
+  useEffect(() => {
+    if (isAdmin && userId && !enrollment) {
+      setIsAdminAccess(true);
+    }
+  }, [isAdmin, userId, enrollment]);
 
   const handleEnrollment = async () => {
     // For non-authenticated users, redirect to pricing page
@@ -45,18 +55,8 @@ const EnrollmentCard = ({
 
     setIsLoading(true);
     try {
-      // Check if user is admin and allow direct access if they are
-      const { data: isAdmin, error: adminCheckError } = await supabase.rpc('has_role', {
-        _user_id: userId,
-        _role: 'admin',
-      });
-      
-      if (adminCheckError) {
-        console.error("Error checking admin status:", adminCheckError);
-      }
-      
+      // If user is admin, create enrollment directly
       if (isAdmin) {
-        // If user is admin, create enrollment directly
         const { error: enrollError } = await supabase
           .from('enrollments')
           .insert({
@@ -104,6 +104,55 @@ const EnrollmentCard = ({
     }
   };
 
+  // If user is admin but not enrolled, show auto-enrollment button
+  if (isAdmin && !enrollment && !isAdminLoading) {
+    return (
+      <div className="space-y-4">
+        <Card className="sticky top-24 overflow-hidden">
+          {coverImage && (
+            <div className="aspect-video w-full overflow-hidden">
+              <img 
+                src={coverImage} 
+                alt={courseTitle} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <CardContent className="p-6">
+            <div className="mb-6">
+              <div className="mb-4">
+                <Badge className="bg-blue-500 text-white">Admin Access</Badge>
+                <p className="text-sm mt-2">
+                  As an admin, you can access this course directly
+                </p>
+              </div>
+              
+              <Button 
+                className="w-full cta-button"
+                onClick={handleEnrollment}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Granting access...
+                  </>
+                ) : "Access Course"}
+              </Button>
+            </div>
+            
+            <CoursePreview 
+              courseTitle={courseTitle}
+              previewVideoUrl="https://player.vimeo.com/video/917495861" 
+              previewImage="/lovable-uploads/56e1912c-6199-4933-a4e9-409fbe7e9311.png" 
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Regular enrollment card for non-admin users or already enrolled admins
   return (
     <div className="space-y-4">
       <Card className="sticky top-24 overflow-hidden">

@@ -32,6 +32,29 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       if (isAdmin) {
         setIsEnrolled(true);
         setIsCheckingEnrollment(false);
+        
+        // Create enrollment record for admin if it doesn't exist
+        // This ensures the course shows up in the admin's dashboard
+        const { data: existingEnrollment } = await supabase
+          .from('enrollments')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('course_id', courseId)
+          .maybeSingle();
+          
+        if (!existingEnrollment) {
+          try {
+            await supabase.from('enrollments').insert({
+              user_id: user.id,
+              course_id: courseId,
+              payment_status: 'completed'
+            });
+            console.log('Admin enrollment created automatically');
+          } catch (error) {
+            console.error('Error creating admin enrollment:', error);
+          }
+        }
+        
         return;
       }
 

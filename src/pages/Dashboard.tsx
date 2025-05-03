@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
 import { Clock, Book } from 'lucide-react';
+import { useAdminStatus } from '@/hooks/useAdminStatus';
 
 interface EnrolledCourse {
   id: string;
@@ -24,6 +25,7 @@ interface EnrolledCourse {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { isAdmin } = useAdminStatus(user?.id);
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,6 +34,57 @@ const Dashboard = () => {
       if (!user) return;
 
       try {
+        // If user is admin, fetch all courses
+        if (isAdmin) {
+          const { data: allCourses, error: coursesError } = await supabase
+            .from('courses')
+            .select('id, title, description, cover_image, duration_minutes');
+
+          if (coursesError) throw coursesError;
+
+          // Process courses for admin view
+          const processedCourses = await Promise.all((allCourses || []).map(async (course) => {
+            // Get lesson count
+            const { count: lessonCount, error: lessonCountError } = await supabase
+              .from('lessons')
+              .select('id', { count: 'exact' })
+              .eq('course_id', course.id)
+              .eq('is_published', true);
+              
+            if (lessonCountError) throw lessonCountError;
+            
+            // Get progress data (admins may have progress records even without enrollment)
+            const { data: progressData, error: progressError } = await supabase
+              .from('progress')
+              .select('id, completed')
+              .eq('course_id', course.id)
+              .eq('user_id', user.id);
+              
+            if (progressError) throw progressError;
+            
+            // Calculate completed lessons
+            const completedLessons = progressData?.filter(p => p.completed).length || 0;
+            
+            // Calculate progress percentage
+            const progressPercentage = (lessonCount || 0) > 0 
+              ? Math.round((completedLessons / lessonCount) * 100)
+              : 0;
+              
+            return {
+              ...course,
+              enrolled_at: new Date().toISOString(), // Admin is considered always enrolled
+              progress: progressPercentage,
+              lesson_count: lessonCount || 0,
+              completed_lessons: completedLessons
+            };
+          }));
+          
+          setEnrolledCourses(processedCourses);
+          setIsLoading(false);
+          return;
+        }
+        
+        // For regular users, continue with existing enrollment-based logic
         // Get all enrollments for the current user
         const { data: enrollments, error: enrollmentsError } = await supabase
           .from('enrollments')
@@ -110,7 +163,7 @@ const Dashboard = () => {
     };
 
     fetchEnrolledCourses();
-  }, [user]);
+  }, [user, isAdmin]);
 
   return (
     <div className="min-h-screen bg-background">
