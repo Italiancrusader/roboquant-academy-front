@@ -1,3 +1,4 @@
+
 import { toast } from '@/components/ui/use-toast';
 import { Lesson } from '@/types/courses';
 
@@ -25,11 +26,11 @@ export const extractVimeoDuration = async (videoUrl: string): Promise<number | u
     const data = await response.json();
     
     if (data.duration) {
-      // Convert seconds to minutes (but keep as a number)
-      const durationMinutes = parseFloat((data.duration / 60).toFixed(2));
+      // Convert seconds to minutes and round to whole number
+      const durationMinutes = Math.round(data.duration / 60);
       toast({
         title: "Video duration fetched",
-        description: `Duration set to ${Math.floor(data.duration / 60)}m ${data.duration % 60}s`,
+        description: `Duration set to ${durationMinutes} minutes`,
       });
       return durationMinutes;
     }

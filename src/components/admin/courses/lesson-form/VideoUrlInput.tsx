@@ -49,7 +49,7 @@ const VideoUrlInput = ({ videoUrl, onVideoUrlChange, onDurationExtracted }: Vide
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
-        Enter a Vimeo URL and click "Get Duration" to automatically fetch the video duration. If it fails, you can enter the duration manually.
+        Enter a Vimeo URL and click "Get Duration" to automatically fetch the video duration in minutes. If it fails, you can enter the duration manually.
       </p>
     </div>
   );

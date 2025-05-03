@@ -22,7 +22,9 @@ const LessonForm = ({ courseId, lesson, onSuccess, onCancel }: LessonFormProps) 
   const [title, setTitle] = useState(lesson?.title || '');
   const [description, setDescription] = useState(lesson?.description || '');
   const [videoUrl, setVideoUrl] = useState(lesson?.video_url || '');
-  const [durationMinutes, setDurationMinutes] = useState<number | undefined>(lesson?.duration_minutes);
+  const [durationMinutes, setDurationMinutes] = useState<number | undefined>(
+    lesson?.duration_minutes ? Math.round(lesson.duration_minutes) : undefined
+  );
   const [isPublished, setIsPublished] = useState(lesson?.is_published || false);
   const [moduleId, setModuleId] = useState<string | undefined>(lesson?.module_id);
   const [hasAttachments, setHasAttachments] = useState(lesson?.has_attachments || false);
@@ -78,7 +80,7 @@ const LessonForm = ({ courseId, lesson, onSuccess, onCancel }: LessonFormProps) 
   };
 
   const handleDurationExtracted = (duration: number) => {
-    console.log("Duration extracted:", duration);
+    // We don't need to round here as it's already rounded in the extractVimeoDuration function
     setDurationMinutes(duration);
   };
 
@@ -124,9 +126,12 @@ const LessonForm = ({ courseId, lesson, onSuccess, onCancel }: LessonFormProps) 
           id="duration"
           type="number"
           min="0"
-          step="0.1"
+          step="1" 
           value={durationMinutes === undefined ? '' : durationMinutes}
-          onChange={(e) => setDurationMinutes(e.target.value ? parseFloat(e.target.value) : undefined)}
+          onChange={(e) => {
+            const value = e.target.value ? parseInt(e.target.value, 10) : undefined;
+            setDurationMinutes(value);
+          }}
           placeholder="Enter duration in minutes"
         />
       </div>
