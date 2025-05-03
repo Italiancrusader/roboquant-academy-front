@@ -20,7 +20,6 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
-import UserManagement from './pages/admin/UserManagement';
 import AdminCommunity from './pages/admin/AdminCommunity';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import CourseAnalytics from './pages/admin/CourseAnalytics';
@@ -32,7 +31,6 @@ import CourseConfigPage from './pages/admin/CourseConfigPage';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminCertificates from './pages/admin/AdminCertificates';
 import AdminNotifications from './pages/admin/AdminNotifications';
-import AdminUsers from './pages/admin/AdminUsers';
 
 const App = () => {
   useEffect(() => {
@@ -64,7 +62,6 @@ const App = () => {
           <Route path="/admin/courses/:courseId/analytics" element={<AdminCheck><CourseAnalytics /></AdminCheck>} />
           <Route path="/admin/courses/:courseId/lessons" element={<AdminCheck><LessonManagement /></AdminCheck>} />
           <Route path="/admin/courses/:courseId/configure" element={<AdminCheck><CourseConfigPage /></AdminCheck>} />
-          <Route path="/admin/users" element={<AdminCheck><AdminUsers /></AdminCheck>} />
           <Route path="/admin/community" element={<AdminCheck><AdminCommunity /></AdminCheck>} />
           <Route path="/admin/analytics" element={<AdminCheck><AdminAnalytics /></AdminCheck>} />
           <Route path="/admin/lessons" element={<AdminCheck><AllLessonsManagement /></AdminCheck>} />

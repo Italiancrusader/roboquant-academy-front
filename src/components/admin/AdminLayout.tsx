@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +6,6 @@ import {
   LayoutDashboard,
   Book,
   FileText,
-  Users,
   Settings,
   LogOut,
   BarChart,
@@ -56,7 +54,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { to: '/admin/analytics', icon: <BarChart className="mr-2 h-4 w-4" />, label: 'Analytics' },
     { to: '/admin/courses', icon: <Book className="mr-2 h-4 w-4" />, label: 'Courses' },
     { to: '/admin/lessons', icon: <FileText className="mr-2 h-4 w-4" />, label: 'Lessons' },
-    { to: '/admin/users', icon: <Users className="mr-2 h-4 w-4" />, label: 'Users' },
     { to: '/admin/payments', icon: <DollarSign className="mr-2 h-4 w-4" />, label: 'Payments' },
     { to: '/admin/certificates', icon: <Award className="mr-2 h-4 w-4" />, label: 'Certificates' },
     { to: '/admin/community', icon: <MessageSquare className="mr-2 h-4 w-4" />, label: 'Community' },
@@ -78,7 +75,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div className="flex-1 py-6 space-y-1 overflow-y-auto">
           {navItems.map((item, index) => {
             // Add separators between groups
-            const showSeparator = index === 1 || index === 6 || index === 8;
+            const showSeparator = index === 1 || index === 5 || index === 7;
             return (
               <React.Fragment key={item.to}>
                 {showSeparator && <Separator className="my-2" />}
@@ -156,7 +153,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <div className="space-y-1 p-4">
             {navItems.map((item, index) => {
               // Add separators between groups
-              const showSeparator = index === 1 || index === 6 || index === 8;
+              const showSeparator = index === 1 || index === 5 || index === 7;
               return (
                 <React.Fragment key={item.to}>
                   {showSeparator && <Separator className="my-2" />}
