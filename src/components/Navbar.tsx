@@ -67,6 +67,12 @@ const EnrollButton = () => {
 
 const MobileAuthButton = () => {
   const location = useLocation();
+  const { user } = useAuth();
+
+  // Don't render the sign-up button if user is logged in
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="md:hidden flex">
@@ -105,7 +111,7 @@ const Navbar = () => {
             {/* Desktop: Auth buttons or user menu */}
             <AuthButtons />
             
-            {/* Mobile: Sign Up button */}
+            {/* Mobile: Sign Up button (only shown when not logged in) */}
             <MobileAuthButton />
           </div>
         </div>

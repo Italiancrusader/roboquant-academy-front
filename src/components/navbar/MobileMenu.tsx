@@ -101,7 +101,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 Sign Out
               </Button>
             </>
-          ) : showAuthButtons && (
+          ) : showAuthButtons && !user && (
             <Button asChild variant="ghost" className="justify-start">
               <Link to="/auth">Sign In</Link>
             </Button>
