@@ -63,7 +63,8 @@ const UserManagement = () => {
         const profile = profilesWithRoles?.find(p => p.id === authUser.id) || {
           first_name: null,
           last_name: null,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          user_roles: [] // Add empty user_roles to avoid TypeScript errors
         };
         
         // Determine the role
