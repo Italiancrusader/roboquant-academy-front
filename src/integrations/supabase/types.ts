@@ -361,6 +361,14 @@ export type Database = {
         }
         Relationships: []
       }
+      new_auth_users_view: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          instance_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_auth_users: {

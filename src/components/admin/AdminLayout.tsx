@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +13,8 @@ import {
   DollarSign,
   MessageSquare,
   Bell,
-  Award
+  Award,
+  Users
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -54,6 +56,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { to: '/admin/analytics', icon: <BarChart className="mr-2 h-4 w-4" />, label: 'Analytics' },
     { to: '/admin/courses', icon: <Book className="mr-2 h-4 w-4" />, label: 'Courses' },
     { to: '/admin/lessons', icon: <FileText className="mr-2 h-4 w-4" />, label: 'Lessons' },
+    { to: '/admin/users', icon: <Users className="mr-2 h-4 w-4" />, label: 'Users' },
     { to: '/admin/payments', icon: <DollarSign className="mr-2 h-4 w-4" />, label: 'Payments' },
     { to: '/admin/certificates', icon: <Award className="mr-2 h-4 w-4" />, label: 'Certificates' },
     { to: '/admin/community', icon: <MessageSquare className="mr-2 h-4 w-4" />, label: 'Community' },
