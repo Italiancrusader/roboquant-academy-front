@@ -13,17 +13,21 @@ import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, Search, X } from 'lucide-react';
+import { ArrowUpDown, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const UsersTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<'created_at' | 'email'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   
-  const { data: users, isLoading, error } = useAuthUsers({ 
+  const { data: users, isLoading, error, totalCount, pageCount } = useAuthUsers({ 
     sortField, 
     sortOrder,
-    searchTerm 
+    searchTerm,
+    page: currentPage,
+    pageSize 
   });
   
   const toggleSort = (field: 'created_at' | 'email') => {
@@ -33,14 +37,29 @@ export const UsersTable = () => {
       setSortField(field);
       setSortOrder('asc');
     }
+    setCurrentPage(1); // Reset to first page when sorting changes
   };
   
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when search term changes
   };
   
   const clearSearch = () => {
     setSearchTerm('');
+    setCurrentPage(1); // Reset to first page when clearing search
+  };
+  
+  const goToNextPage = () => {
+    if (currentPage < pageCount) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
   
   if (isLoading) {
@@ -127,6 +146,36 @@ export const UsersTable = () => {
           ))}
         </TableBody>
       </Table>
+      
+      {/* Pagination controls */}
+      <div className="flex items-center justify-between border-t pt-4">
+        <div className="text-sm text-muted-foreground">
+          Showing {users.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} users
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToPreviousPage}
+            disabled={currentPage <= 1}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+          <div className="flex items-center justify-center px-2 h-9 text-sm">
+            Page {currentPage} of {pageCount || 1}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToNextPage}
+            disabled={currentPage >= pageCount}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
