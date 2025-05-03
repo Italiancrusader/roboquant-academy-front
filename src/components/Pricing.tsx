@@ -50,7 +50,7 @@ const Pricing = () => {
   };
   
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center px-4 sm:px-6">
       <Card className="w-full max-w-md border-primary">
         <CardHeader>
           <div className="bg-primary text-primary-foreground px-3 py-1 text-xs rounded-full w-fit">Premium</div>
