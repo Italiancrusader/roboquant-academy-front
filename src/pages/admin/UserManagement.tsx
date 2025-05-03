@@ -30,6 +30,18 @@ const UserManagement = () => {
     try {
       setIsLoading(true);
       
+      // Use RPC to call the get_auth_users function instead of querying the view
+      const { data: authUsers, error: authError } = await supabase
+        .rpc('get_auth_users');
+      
+      if (authError) throw authError;
+      
+      if (!authUsers || authUsers.length === 0) {
+        setUsers([]);
+        setIsLoading(false);
+        return;
+      }
+      
       // Get profiles with user_role data using a join
       const { data: profilesWithRoles, error } = await supabase
         .from('profiles')
@@ -45,31 +57,14 @@ const UserManagement = () => {
       
       if (error) throw error;
       
-      if (!profilesWithRoles || profilesWithRoles.length === 0) {
-        setUsers([]);
-        setIsLoading(false);
-        return;
-      }
-      
-      // We also need to get email addresses from our new auth_users_view
       // Format the user data with roles
-      const formattedUsers = await Promise.all(profilesWithRoles.map(async (profile) => {
-        // Get user's email from auth_users_view
-        let email = null;
-        try {
-          // Try to get the email from our view
-          const { data: userData, error: userError } = await supabase
-            .from('auth_users_view')
-            .select('email')
-            .eq('id', profile.id)
-            .single();
-          
-          if (!userError && userData) {
-            email = userData.email;
-          }
-        } catch (emailError) {
-          console.error("Unable to fetch email:", emailError);
-        }
+      const formattedUsers = authUsers.map(authUser => {
+        // Find matching profile
+        const profile = profilesWithRoles?.find(p => p.id === authUser.id) || {
+          first_name: null,
+          last_name: null,
+          created_at: new Date().toISOString()
+        };
         
         // Determine the role
         let role: 'admin' | 'instructor' | 'student' = 'student';
@@ -79,14 +74,14 @@ const UserManagement = () => {
         }
         
         return {
-          id: profile.id,
-          email: email || 'No email available',
+          id: authUser.id,
+          email: authUser.email || 'No email available',
           first_name: profile.first_name,
           last_name: profile.last_name,
           role: role,
-          created_at: profile.created_at || new Date().toISOString()
+          created_at: authUser.created_at || new Date().toISOString()
         };
-      }));
+      });
       
       setUsers(formattedUsers);
       
