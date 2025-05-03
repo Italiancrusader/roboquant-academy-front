@@ -8,6 +8,7 @@ import { NavLogo } from "./navbar/NavLogo";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { EnrollButton } from "./navbar/EnrollButton";
+import { MobileMenu } from "./navbar/MobileMenu";
 
 const AuthButtons = () => {
   const { user, signOut } = useAuth();
@@ -28,11 +29,7 @@ const AuthButtons = () => {
           Sign In
         </Button>
       </Link>
-      <Link to="/auth" state={{ redirect: location.pathname }}>
-        <Button size="sm" className="cta-button">
-          Get Started
-        </Button>
-      </Link>
+      {/* Removed the duplicate "Get Started" button here */}
     </div>
   );
 };
@@ -60,6 +57,7 @@ const MobileAuthButton = () => {
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { user } = useAuth();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,6 +67,30 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // NavItems for mobile menu
+  const navItems = [
+    {
+      title: "Home",
+      href: "/",
+      description: "Return to the homepage"
+    },
+    {
+      title: "Courses",
+      href: "/courses",
+      description: "Browse our courses"
+    },
+    {
+      title: "Community",
+      href: "/community",
+      description: "Join our community"
+    },
+    {
+      title: "Contact",
+      href: "/contact",
+      description: "Get in touch with us"
+    }
+  ];
 
   return (
     <nav className={cn(
@@ -88,6 +110,15 @@ const Navbar = () => {
             
             {/* Mobile: Sign Up button (only shown when not logged in) */}
             <MobileAuthButton />
+
+            {/* Mobile menu */}
+            <MobileMenu 
+              navItems={navItems}
+              user={user}
+              isScrolled={isScrolled}
+              onSignOut={async () => await signOut()}
+              showAuthButtons={true}
+            />
           </div>
         </div>
       </div>
