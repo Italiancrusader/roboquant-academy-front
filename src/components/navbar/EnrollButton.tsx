@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,11 +12,20 @@ interface EnrollButtonProps {
 export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   
   const handleEnroll = async () => {
-    // If user is logged in, redirect to pricing page
-    // If not logged in, also redirect to pricing page
+    // If on home page, scroll to pricing section
+    if (location.pathname === '/') {
+      const pricingSection = document.getElementById('pricing');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+    }
+    
+    // Otherwise, redirect to pricing page
     navigate('/pricing');
   };
   

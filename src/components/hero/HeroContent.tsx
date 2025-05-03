@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from 'lucide-react';
@@ -7,6 +8,14 @@ import OptimizedImage from '@/components/OptimizedImage';
 
 const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
   const isMobile = useIsMobile();
+
+  const scrollToPricing = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const pricingSection = document.getElementById('pricing');
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 relative z-20 mt-16">
@@ -19,11 +28,12 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
             Create, test and deploy algorithmic trading strategies that run 24/7 — even if you've never coded before.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <a href="#pricing">
-              <Button className="cta-button text-white text-base sm:text-lg py-6 px-8 w-full sm:w-auto">
-                Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </a>
+            <Button 
+              className="cta-button text-white text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
+              onClick={scrollToPricing}
+            >
+              Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
             <DialogTrigger asChild>
               <Button 
                 variant="outline" 

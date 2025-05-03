@@ -18,10 +18,10 @@ const VideoDialog: React.FC = () => {
           </div>
         )}
         <iframe
-          src="https://player.vimeo.com/video/1080278046?h=3cfe782ae5&title=0&byline=0&portrait=0"
+          src="https://www.youtube.com/embed/5QWLpAUv6r8?autoplay=0"
           className="absolute top-0 left-0 w-full h-full"
           frameBorder="0"
-          allow="autoplay; fullscreen; picture-in-picture"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           title="Demo Video"
           loading="lazy"
           style={{
@@ -30,6 +30,7 @@ const VideoDialog: React.FC = () => {
             transition: 'opacity 0.3s ease-in-out'
           }}
           onLoad={() => setIsLoading(false)}
+          allowFullScreen
         />
       </div>
     </DialogContent>
