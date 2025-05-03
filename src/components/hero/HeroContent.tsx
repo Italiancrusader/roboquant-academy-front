@@ -14,6 +14,9 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
     const pricingSection = document.getElementById('pricing');
     if (pricingSection) {
       pricingSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // If pricing section doesn't exist on this page, navigate to pricing page
+      window.location.href = '/pricing';
     }
   };
 

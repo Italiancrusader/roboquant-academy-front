@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +7,7 @@ import { NavLogo } from "./navbar/NavLogo";
 import { cn } from "@/lib/utils";
 import { handleStripeCheckout } from "@/services/stripe";
 import { useNavigate } from "react-router-dom";
+import { EnrollButton } from "./navbar/EnrollButton";
 
 const AuthButtons = () => {
   const { user, signOut } = useAuth();
@@ -108,6 +108,9 @@ const Navbar = () => {
           <NavLogo isScrolled={isScrolled} />
           
           <div className="flex items-center space-x-4">
+            {/* Desktop: Enroll Button */}
+            <EnrollButton isScrolled={isScrolled} />
+            
             {/* Desktop: Auth buttons or user menu */}
             <AuthButtons />
             

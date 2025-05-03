@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,19 +39,28 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   showAuthButtons = true
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   
   const handleEnroll = async () => {
-    if (!user) {
-      navigate('/auth', { state: { from: '/' } });
-      return;
+    // Close sheet
+    const sheetClose = document.querySelector('[data-radix-sheet-close]');
+    if (sheetClose instanceof HTMLElement) {
+      sheetClose.click();
     }
     
-    await handleStripeCheckout({
-      courseId: 'premium',
-      courseTitle: 'RoboQuant Academy',
-      price: 1500,
-      userId: user.id,
-    });
+    // If on home page, scroll to pricing section after a short delay to allow sheet to close
+    setTimeout(() => {
+      if (location.pathname === '/') {
+        const pricingSection = document.getElementById('pricing');
+        if (pricingSection) {
+          pricingSection.scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+      }
+      
+      // If not on home page or pricing section not found, navigate to pricing page
+      navigate('/pricing');
+    }, 300);
   };
   
   return (

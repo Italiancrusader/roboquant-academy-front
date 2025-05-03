@@ -34,7 +34,9 @@ const Index = () => {
       <Curriculum />
       <CostCalculator />
       <Testimonials />
-      <Pricing />
+      <section id="pricing">
+        <Pricing />
+      </section>
       <FAQ />
       <AboutInstructor />
       <CTA />
