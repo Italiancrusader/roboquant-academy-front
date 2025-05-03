@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -79,9 +80,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   
   // Update progress in Supabase
   const saveProgress = async (position: number, completed: boolean = false) => {
-    if (!user || !lessonId) return;
+    if (!user || !lessonId || !courseId) return;
     
     try {
+      // Check if we have missing required fields
+      if (!user.id || !lessonId || !courseId) {
+        console.error("Missing required fields for progress tracking", {
+          userId: user.id,
+          lessonId,
+          courseId
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('progress')
         .upsert({
@@ -95,7 +106,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onConflict: 'user_id,lesson_id,course_id'
         });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error saving progress:", error);
+        return;
+      }
       
       if (completed && !progressSaved) {
         setProgressSaved(true);
@@ -195,14 +209,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
+  // For preview lessons, don't try to save progress
+  const isPreviewLesson = lessonId === 'preview' || courseId === 'preview';
+
   return (
     <div className="w-full bg-background rounded-lg overflow-hidden border">
       {isVimeo ? (
         <VimeoPlayer 
           videoUrl={videoUrl} 
-          onComplete={handleVimeoComplete}
-          onTimeUpdate={handleVimeoTimeUpdate}
-          onDurationChange={handleVimeoDurationChange}
+          onComplete={isPreviewLesson ? undefined : handleVimeoComplete}
+          onTimeUpdate={isPreviewLesson ? undefined : handleVimeoTimeUpdate}
+          onDurationChange={isPreviewLesson ? undefined : handleVimeoDurationChange}
         />
       ) : (
         <div className="relative aspect-video bg-black">
@@ -221,7 +238,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             onPause={() => setIsPlaying(false)}
             onEnded={() => {
               setIsPlaying(false);
-              saveProgress(duration, true);
+              if (!isPreviewLesson) {
+                saveProgress(duration, true);
+              }
             }}
           />
         </div>
