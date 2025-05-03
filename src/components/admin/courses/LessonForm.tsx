@@ -25,6 +25,7 @@ const LessonForm = ({ courseId, lesson, onSuccess, onCancel }: LessonFormProps) 
   const [durationMinutes, setDurationMinutes] = useState<number | undefined>(lesson?.duration_minutes);
   const [isPublished, setIsPublished] = useState(lesson?.is_published || false);
   const [moduleId, setModuleId] = useState<string | undefined>(lesson?.module_id);
+  const [hasAttachments, setHasAttachments] = useState(lesson?.has_attachments || false);
   const [modules, setModules] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -54,7 +55,8 @@ const LessonForm = ({ courseId, lesson, onSuccess, onCancel }: LessonFormProps) 
         duration_minutes: durationMinutes || null,
         is_published: isPublished,
         module_id: moduleId || null,
-        course_id: courseId
+        course_id: courseId,
+        has_attachments: hasAttachments
       };
       
       let success;
@@ -122,6 +124,15 @@ const LessonForm = ({ courseId, lesson, onSuccess, onCancel }: LessonFormProps) 
           onChange={(e) => setDurationMinutes(e.target.value ? parseFloat(e.target.value) : undefined)}
           placeholder="Enter duration in minutes"
         />
+      </div>
+      
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="has-attachments"
+          checked={hasAttachments}
+          onCheckedChange={setHasAttachments}
+        />
+        <Label htmlFor="has-attachments">Has attachments</Label>
       </div>
       
       <div className="flex items-center space-x-2">

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Lesson } from '@/types/courses';
@@ -53,16 +54,16 @@ export const createLesson = async (lessonData: Partial<Lesson>, courseId: string
       module_id: lessonData.module_id || null,
       course_id: courseId,
       sort_order: maxSortOrder + 1,
-      has_attachments: false // Required field
+      has_attachments: lessonData.has_attachments !== undefined ? lessonData.has_attachments : false
     };
     
     console.log('Sending lesson data to Supabase:', newLesson);
     
-    // Create new lesson
+    // Create new lesson - Fix: don't use select=id:1 format
     const { data, error } = await supabase
       .from('lessons')
       .insert(newLesson)
-      .select('id');
+      .select();
     
     if (error) {
       console.error("Error creating lesson:", error);
@@ -142,6 +143,28 @@ export const fetchModulesForCourse = async (courseId: string) => {
     toast({
       title: "Error",
       description: "Failed to fetch modules",
+      variant: "destructive",
+    });
+    return [];
+  }
+};
+
+// New function to get detailed error information
+export const fetchLessonsForCourse = async (courseId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .order('sort_order', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  } catch (error: any) {
+    console.error('Error fetching lessons:', error.message);
+    toast({
+      title: "Error",
+      description: "Failed to fetch lessons",
       variant: "destructive",
     });
     return [];
