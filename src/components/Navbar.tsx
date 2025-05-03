@@ -56,7 +56,7 @@ const MobileAuthButton = () => {
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -92,6 +92,11 @@ const Navbar = () => {
     }
   ];
 
+  // Create a signOut handler function
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <nav className={cn(
       "fixed top-0 left-0 w-full z-50 transition-colors duration-300",
@@ -116,7 +121,7 @@ const Navbar = () => {
               navItems={navItems}
               user={user}
               isScrolled={isScrolled}
-              onSignOut={async () => await signOut()}
+              onSignOut={handleSignOut}
               showAuthButtons={true}
             />
           </div>
