@@ -50,41 +50,12 @@ const Pricing = () => {
   };
   
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      {/* Basic Plan */}
-      <Card>
+    <div className="flex justify-center">
+      <Card className="w-full max-w-md border-primary">
         <CardHeader>
-          <CardTitle>Basic</CardTitle>
-          <CardDescription>Access to basic trading tutorials</CardDescription>
-          <div className="mt-4 text-4xl font-bold">Free</div>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
-            <li className="flex items-center">
-              <Check className="mr-2 h-4 w-4 text-primary" />
-              <span>Basic trading strategies</span>
-            </li>
-            <li className="flex items-center">
-              <Check className="mr-2 h-4 w-4 text-primary" />
-              <span>Community forum access</span>
-            </li>
-            <li className="flex items-center">
-              <Check className="mr-2 h-4 w-4 text-primary" />
-              <span>Email support</span>
-            </li>
-          </ul>
-        </CardContent>
-        <CardFooter>
-          <Button variant="outline" className="w-full">Get Started</Button>
-        </CardFooter>
-      </Card>
-
-      {/* Premium Plan */}
-      <Card className="border-primary">
-        <CardHeader>
-          <div className="bg-primary text-primary-foreground px-3 py-1 text-xs rounded-full w-fit">Popular</div>
-          <CardTitle className="mt-2">Premium</CardTitle>
-          <CardDescription>Full access to RoboQuant Academy</CardDescription>
+          <div className="bg-primary text-primary-foreground px-3 py-1 text-xs rounded-full w-fit">Premium</div>
+          <CardTitle className="mt-2">RoboQuant Academy</CardTitle>
+          <CardDescription>Full access to all trading strategies and bots</CardDescription>
           <div className="mt-4 flex items-baseline">
             <span className="text-4xl font-bold">$1,500</span>
             <span className="ml-2 text-sm text-muted-foreground line-through">$1,875</span>
@@ -128,38 +99,6 @@ const Pricing = () => {
               </>
             ) : "Enroll Now"}
           </Button>
-        </CardFooter>
-      </Card>
-
-      {/* Enterprise Plan */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Enterprise</CardTitle>
-          <CardDescription>Custom solutions for businesses</CardDescription>
-          <div className="mt-4 text-4xl font-bold">Contact us</div>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
-            <li className="flex items-center">
-              <Check className="mr-2 h-4 w-4 text-primary" />
-              <span>Custom trading solutions</span>
-            </li>
-            <li className="flex items-center">
-              <Check className="mr-2 h-4 w-4 text-primary" />
-              <span>Dedicated account manager</span>
-            </li>
-            <li className="flex items-center">
-              <Check className="mr-2 h-4 w-4 text-primary" />
-              <span>24/7 priority support</span>
-            </li>
-            <li className="flex items-center">
-              <Check className="mr-2 h-4 w-4 text-primary" />
-              <span>On-site training available</span>
-            </li>
-          </ul>
-        </CardContent>
-        <CardFooter>
-          <Button variant="outline" className="w-full" onClick={() => navigate('/contact')}>Contact Sales</Button>
         </CardFooter>
       </Card>
     </div>

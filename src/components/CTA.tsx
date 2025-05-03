@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
@@ -19,9 +18,9 @@ const CTA: React.FC = () => {
     }
     
     await handleStripeCheckout({
-      courseId: 'premium-course', // Changed from 'premium' to 'premium-course'
+      courseId: 'premium-course',
       courseTitle: 'RoboQuant Academy',
-      price: 1500, // $1,500 (updated from $2,000)
+      price: 1500, // $1,500
       userId: user.id,
     });
   };
