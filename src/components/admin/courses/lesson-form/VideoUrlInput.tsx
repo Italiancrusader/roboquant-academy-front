@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { extractVimeoDuration } from '../utils/lessonFormUtils';
+import { Loader } from 'lucide-react';
 
 interface VideoUrlInputProps {
   videoUrl: string;
@@ -12,10 +13,17 @@ interface VideoUrlInputProps {
 }
 
 const VideoUrlInput = ({ videoUrl, onVideoUrlChange, onDurationExtracted }: VideoUrlInputProps) => {
+  const [loading, setLoading] = useState(false);
+
   const handleExtractDuration = async () => {
-    const duration = await extractVimeoDuration(videoUrl);
-    if (duration !== undefined) {
-      onDurationExtracted(duration);
+    setLoading(true);
+    try {
+      const duration = await extractVimeoDuration(videoUrl);
+      if (duration !== undefined) {
+        onDurationExtracted(duration);
+      }
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -34,13 +42,14 @@ const VideoUrlInput = ({ videoUrl, onVideoUrlChange, onDurationExtracted }: Vide
           type="button" 
           variant="outline" 
           onClick={handleExtractDuration}
-          disabled={!videoUrl || !videoUrl.includes('vimeo.com')}
+          disabled={!videoUrl || !videoUrl.includes('vimeo.com') || loading}
         >
+          {loading ? <Loader className="h-4 w-4 animate-spin mr-2" /> : null}
           Get Duration
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
-        Enter a Vimeo URL and click "Get Duration" to automatically fetch the video duration
+        Enter a Vimeo URL and click "Get Duration" to automatically fetch the video duration. If it fails, you can enter the duration manually.
       </p>
     </div>
   );

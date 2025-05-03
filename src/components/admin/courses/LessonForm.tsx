@@ -77,6 +77,11 @@ const LessonForm = ({ courseId, lesson, onSuccess, onCancel }: LessonFormProps) 
     }
   };
 
+  const handleDurationExtracted = (duration: number) => {
+    console.log("Duration extracted:", duration);
+    setDurationMinutes(duration);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-2">
@@ -110,7 +115,7 @@ const LessonForm = ({ courseId, lesson, onSuccess, onCancel }: LessonFormProps) 
       <VideoUrlInput
         videoUrl={videoUrl}
         onVideoUrlChange={setVideoUrl}
-        onDurationExtracted={setDurationMinutes}
+        onDurationExtracted={handleDurationExtracted}
       />
       
       <div className="grid gap-2">
