@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -5,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { UserMenu } from "./navbar/UserMenu";
 import { NavLogo } from "./navbar/NavLogo";
 import { cn } from "@/lib/utils";
-import { handleStripeCheckout } from "@/services/stripe";
 import { useNavigate } from "react-router-dom";
 import { EnrollButton } from "./navbar/EnrollButton";
 
@@ -34,34 +34,6 @@ const AuthButtons = () => {
         </Button>
       </Link>
     </div>
-  );
-};
-
-const EnrollButton = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  
-  const handleEnroll = async () => {
-    if (!user) {
-      navigate('/auth', { state: { from: '/' } });
-      return;
-    }
-    
-    await handleStripeCheckout({
-      courseId: 'premium',
-      courseTitle: 'RoboQuant Academy',
-      price: 1500,
-      userId: user.id,
-    });
-  };
-  
-  return (
-    <Button 
-      className={cn("cta-button text-white py-2 px-4")}
-      onClick={handleEnroll}
-    >
-      Enroll Now
-    </Button>
   );
 };
 
