@@ -29,6 +29,10 @@ import AdminPayments from './pages/admin/AdminPayments';
 import AllLessonsManagement from './pages/admin/AllLessonsManagement';
 import LessonManagement from './pages/admin/LessonManagement';
 import CourseConfigPage from './pages/admin/CourseConfigPage';
+import AdminSettings from './pages/admin/AdminSettings';
+import AdminCertificates from './pages/admin/AdminCertificates';
+import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminUsers from './pages/admin/AdminUsers';
 
 const App = () => {
   useEffect(() => {
@@ -60,11 +64,14 @@ const App = () => {
           <Route path="/admin/courses/:courseId/analytics" element={<AdminCheck><CourseAnalytics /></AdminCheck>} />
           <Route path="/admin/courses/:courseId/lessons" element={<AdminCheck><LessonManagement /></AdminCheck>} />
           <Route path="/admin/courses/:courseId/configure" element={<AdminCheck><CourseConfigPage /></AdminCheck>} />
-          <Route path="/admin/users" element={<AdminCheck><UserManagement /></AdminCheck>} />
+          <Route path="/admin/users" element={<AdminCheck><AdminUsers /></AdminCheck>} />
           <Route path="/admin/community" element={<AdminCheck><AdminCommunity /></AdminCheck>} />
           <Route path="/admin/analytics" element={<AdminCheck><AdminAnalytics /></AdminCheck>} />
           <Route path="/admin/lessons" element={<AdminCheck><AllLessonsManagement /></AdminCheck>} />
           <Route path="/admin/payments" element={<AdminCheck><AdminPayments /></AdminCheck>} />
+          <Route path="/admin/certificates" element={<AdminCheck><AdminCertificates /></AdminCheck>} />
+          <Route path="/admin/notifications" element={<AdminCheck><AdminNotifications /></AdminCheck>} />
+          <Route path="/admin/settings" element={<AdminCheck><AdminSettings /></AdminCheck>} />
         </Routes>
       </Router>
     </AuthProvider>
