@@ -11,50 +11,16 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Settings } from 'lucide-react';
-
-// Define the valid role types
-type UserRole = 'admin' | 'instructor' | 'student';
-
-// Define the shape of user_roles data from Supabase
-interface UserRoleData {
-  role: UserRole;
-}
-
-interface UserWithRole {
-  id: string;
-  email: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  role: UserRole;
-  created_at: string;
-}
+import UserDetailsDialog, { UserWithRole } from '@/components/admin/users/UserDetailsDialog';
 
 const UserManagement = () => {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole>("student");
 
   useEffect(() => {
     fetchUsers();
@@ -106,10 +72,9 @@ const UserManagement = () => {
         }
         
         // Determine the role
-        let role: UserRole = 'student';
+        let role: 'admin' | 'instructor' | 'student' = 'student';
         if (profile.user_roles && profile.user_roles.length > 0) {
-          // Fix: Properly type and access the role property
-          const userRole = profile.user_roles[0] as unknown as UserRoleData;
+          const userRole = profile.user_roles[0] as unknown as { role: typeof role };
           role = userRole.role;
         }
         
@@ -137,68 +102,16 @@ const UserManagement = () => {
     }
   };
 
-  const openRoleDialog = (user: UserWithRole) => {
+  const openUserDialog = (user: UserWithRole) => {
     setSelectedUser(user);
-    setSelectedRole(user.role);
     setIsDialogOpen(true);
   };
 
-  const updateUserRole = async () => {
-    if (!selectedUser || !selectedRole) return;
-    
-    try {
-      // Check if user already has this role
-      const { data: existingRole, error: checkError } = await supabase
-        .from('user_roles')
-        .select('id')
-        .eq('user_id', selectedUser.id)
-        .eq('role', selectedRole);
-        
-      if (checkError) throw checkError;
-      
-      if (existingRole && existingRole.length > 0) {
-        // User already has this role, no need to update
-        setIsDialogOpen(false);
-        return;
-      }
-      
-      // Delete any existing roles for this user
-      const { error: deleteError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', selectedUser.id);
-        
-      if (deleteError) throw deleteError;
-      
-      // Insert the new role
-      const { error: insertError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: selectedUser.id,
-          role: selectedRole
-        });
-        
-      if (insertError) throw insertError;
-      
-      toast({
-        title: "Role updated",
-        description: `User role has been updated to ${selectedRole}.`,
-      });
-      
-      // Update local state
-      setUsers(users.map(user => 
-        user.id === selectedUser.id ? { ...user, role: selectedRole } : user
-      ));
-      
-      setIsDialogOpen(false);
-      
-    } catch (error: any) {
-      toast({
-        title: "Error updating role",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+  const handleUserUpdated = (updatedUser: UserWithRole) => {
+    // Update the local state with the modified user
+    setUsers(users.map(user => 
+      user.id === updatedUser.id ? updatedUser : user
+    ));
   };
 
   return (
@@ -248,7 +161,7 @@ const UserManagement = () => {
                     {new Date(user.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openRoleDialog(user)}>
+                    <Button variant="ghost" size="icon" onClick={() => openUserDialog(user)}>
                       <Settings className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -259,37 +172,12 @@ const UserManagement = () => {
         </div>
       )}
       
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Update User Role</DialogTitle>
-            <DialogDescription>
-              Change the role for user: {selectedUser?.email}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <Select value={selectedRole} onValueChange={(value: UserRole) => setSelectedRole(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Roles</SelectLabel>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="instructor">Instructor</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={updateUserRole}>Update Role</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UserDetailsDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        user={selectedUser}
+        onUserUpdated={handleUserUpdated}
+      />
     </div>
   );
 };
