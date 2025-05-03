@@ -21,6 +21,13 @@ const isVimeoUrl = (url: string): boolean => {
   return url.includes('vimeo.com');
 };
 
+// Helper function to validate IDs
+const isValidUUID = (id: string): boolean => {
+  // Basic UUID validation - checks if it's not a "preview" string and has proper UUID format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
   lessonId, 
   courseId, 
@@ -38,12 +45,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Determine if this is a Vimeo video
   const isVimeo = isVimeoUrl(videoUrl);
   
+  // Check if this is a preview lesson (don't save progress for previews)
+  const isPreviewLesson = !isValidUUID(lessonId) || !isValidUUID(courseId);
+  
   // Calculate progress percentage
   const progressPercentage = duration > 0 ? Math.round((currentTime / duration) * 100) : 0;
   
   // Load saved progress on component mount
   useEffect(() => {
-    if (!user || !lessonId) return;
+    if (!user || !lessonId || isPreviewLesson) return;
     
     const fetchProgress = async () => {
       try {
@@ -67,25 +77,29 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           setProgressSaved(data.completed || false);
         }
       } catch (error: any) {
-        toast({
-          title: "Error loading progress",
-          description: error.message,
-          variant: "destructive",
-        });
+        console.error("Error loading progress:", error.message);
+        // Don't show toast for preview lessons or common errors
+        if (!isPreviewLesson) {
+          toast({
+            title: "Error loading progress",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
       }
     };
     
     fetchProgress();
-  }, [user, lessonId, courseId, isVimeo]);
+  }, [user, lessonId, courseId, isVimeo, isPreviewLesson]);
   
   // Update progress in Supabase
   const saveProgress = async (position: number, completed: boolean = false) => {
-    if (!user || !lessonId || !courseId) return;
+    if (!user || !lessonId || !courseId || isPreviewLesson) return;
     
     try {
-      // Check if we have missing required fields
-      if (!user.id || !lessonId || !courseId) {
-        console.error("Missing required fields for progress tracking", {
+      // Validate all fields to prevent 400 errors
+      if (!isValidUUID(user.id) || !isValidUUID(lessonId) || !isValidUUID(courseId)) {
+        console.error("Invalid IDs detected, skipping progress save", {
           userId: user.id,
           lessonId,
           courseId
@@ -130,6 +144,28 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const currentVideoTime = videoRef.current.currentTime;
       setCurrentTime(currentVideoTime);
       
+      // Only save progress for non-preview lessons
+      if (!isPreviewLesson) {
+        // Save progress every 10 seconds
+        if (Math.round(currentVideoTime) % 10 === 0) {
+          saveProgress(currentVideoTime);
+        }
+        
+        // Mark as completed when reaching 90% of the video
+        const completionThreshold = duration * 0.9;
+        if (currentVideoTime >= completionThreshold && !progressSaved) {
+          saveProgress(currentVideoTime, true);
+        }
+      }
+    }
+  };
+  
+  // Handle time updates from Vimeo player
+  const handleVimeoTimeUpdate = (currentVideoTime: number) => {
+    setCurrentTime(currentVideoTime);
+    
+    // Only save progress for non-preview lessons
+    if (!isPreviewLesson) {
       // Save progress every 10 seconds
       if (Math.round(currentVideoTime) % 10 === 0) {
         saveProgress(currentVideoTime);
@@ -143,25 +179,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
   
-  // Handle time updates from Vimeo player
-  const handleVimeoTimeUpdate = (currentVideoTime: number) => {
-    setCurrentTime(currentVideoTime);
-    
-    // Save progress every 10 seconds
-    if (Math.round(currentVideoTime) % 10 === 0) {
-      saveProgress(currentVideoTime);
-    }
-    
-    // Mark as completed when reaching 90% of the video
-    const completionThreshold = duration * 0.9;
-    if (currentVideoTime >= completionThreshold && !progressSaved) {
-      saveProgress(currentVideoTime, true);
-    }
-  };
-  
   // Handle video complete for Vimeo
   const handleVimeoComplete = () => {
-    saveProgress(duration, true);
+    if (!isPreviewLesson) {
+      saveProgress(duration, true);
+    }
   };
   
   // Handle duration change for Vimeo
@@ -208,9 +230,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
-
-  // For preview lessons, don't try to save progress
-  const isPreviewLesson = lessonId === 'preview' || courseId === 'preview';
 
   return (
     <div className="w-full bg-background rounded-lg overflow-hidden border">

@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Loader } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -22,7 +22,7 @@ const VideoDialog: React.FC = () => {
           className="absolute top-0 left-0 w-full h-full"
           frameBorder="0"
           allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
+          title="Demo Video"
           loading="lazy"
           style={{
             border: 'none',
@@ -30,7 +30,7 @@ const VideoDialog: React.FC = () => {
             transition: 'opacity 0.3s ease-in-out'
           }}
           onLoad={() => setIsLoading(false)}
-        ></iframe>
+        />
       </div>
     </DialogContent>
   );

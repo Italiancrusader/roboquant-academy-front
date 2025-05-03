@@ -46,12 +46,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           // Only create enrollment if it doesn't exist
           if (!existingEnrollment && !error) {
             try {
-              await supabase.from('enrollments').insert({
-                user_id: user.id,
-                course_id: courseId,
-                payment_status: 'completed'
-              });
-              console.log('Admin enrollment created automatically');
+              const { error: insertError } = await supabase
+                .from('enrollments')
+                .insert({
+                  user_id: user.id,
+                  course_id: courseId,
+                  payment_status: 'completed'
+                });
+                
+              if (insertError) {
+                console.error('Error creating admin enrollment:', insertError);
+              } else {
+                console.log('Admin enrollment created automatically');
+              }
             } catch (insertError: any) {
               console.error('Error creating admin enrollment:', insertError);
               // We still continue as the admin has access regardless
@@ -106,8 +113,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!user) {
-    // Redirect to login page while preserving the intended destination
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    // Store the current URL for redirect after login
+    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
   // If this is a course page and the user is not enrolled and not admin, redirect to the course page
