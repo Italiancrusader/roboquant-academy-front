@@ -111,7 +111,8 @@ async function handleCheckoutSessionCompleted(supabase: any, session: any) {
           .eq('course_id', courseId)
           .single();
         
-        if (queryError) {
+        if (queryError && queryError.code !== 'PGRST116') {
+          // PGRST116 is "no rows returned" error, which is expected if not enrolled
           console.log(`⚠️ Query error: ${queryError.message}`);
         }
         

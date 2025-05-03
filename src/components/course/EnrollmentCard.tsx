@@ -57,23 +57,37 @@ const EnrollmentCard = ({
     try {
       // If user is admin, create enrollment directly
       if (isAdmin) {
-        const { error: enrollError } = await supabase
-          .from('enrollments')
-          .insert({
-            user_id: userId,
-            course_id: courseId,
-            payment_status: 'completed'
+        try {
+          // Using the service role in an edge function would be more secure,
+          // but for admin users, this client-side approach should work with proper RLS
+          const { error: enrollError } = await supabase
+            .from('enrollments')
+            .insert({
+              user_id: userId,
+              course_id: courseId,
+              payment_status: 'completed'
+            });
+            
+          if (enrollError) {
+            console.error("Enrollment error:", enrollError);
+            throw new Error(enrollError.message || "Failed to enroll");
+          }
+          
+          toast({
+            title: "Access granted",
+            description: "As an admin, you've been given direct access to this course.",
           });
           
-        if (enrollError) throw enrollError;
-        
-        toast({
-          title: "Access granted",
-          description: "As an admin, you've been given direct access to this course.",
-        });
-        
-        // Reload the page to show enrollment status
-        window.location.reload();
+          // Reload the page to show enrollment status
+          window.location.reload();
+        } catch (error: any) {
+          console.error("Admin enrollment error:", error);
+          toast({
+            title: "Enrollment error",
+            description: "There was an error granting access. Please try again.",
+            variant: "destructive",
+          });
+        }
         return;
       }
       
