@@ -31,7 +31,6 @@ import CourseConfigPage from './pages/admin/CourseConfigPage';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminCertificates from './pages/admin/AdminCertificates';
 import AdminNotifications from './pages/admin/AdminNotifications';
-import AdminUsers from './pages/admin/AdminUsers';
 
 const App = () => {
   useEffect(() => {
@@ -60,7 +59,6 @@ const App = () => {
           <Route path="/admin" element={<AdminCheck><AdminDashboard /></AdminCheck>} />
           <Route path="/admin/dashboard" element={<AdminCheck><AdminDashboard /></AdminCheck>} />
           <Route path="/admin/courses" element={<AdminCheck><CourseManagement /></AdminCheck>} />
-          <Route path="/admin/users" element={<AdminCheck><AdminUsers /></AdminCheck>} />
           <Route path="/admin/courses/:courseId/analytics" element={<AdminCheck><CourseAnalytics /></AdminCheck>} />
           <Route path="/admin/courses/:courseId/lessons" element={<AdminCheck><LessonManagement /></AdminCheck>} />
           <Route path="/admin/courses/:courseId/configure" element={<AdminCheck><CourseConfigPage /></AdminCheck>} />

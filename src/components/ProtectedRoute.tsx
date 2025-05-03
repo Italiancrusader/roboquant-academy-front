@@ -28,7 +28,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         return;
       }
 
-      // Skip enrollment check if user is admin
+      // Always grant access if user is admin
       if (isAdmin) {
         setIsEnrolled(true);
         setIsCheckingEnrollment(false);
@@ -79,7 +79,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // If this is a course page and the user is not enrolled or admin, redirect to the course page
+  // If this is a course page and the user is not enrolled and not admin, redirect to the course page
   if (courseId && !isEnrolled && !isAdmin) {
     toast({
       title: "Access denied",

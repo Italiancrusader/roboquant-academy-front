@@ -1,114 +1,168 @@
 
-import React from 'react';
-import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { Button } from "@/components/ui/button";
-import { Check, ArrowRight } from 'lucide-react';
-import { handleStripeCheckout } from "@/services/stripe";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { Check, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
-const features = [
-  'Lifetime access to all course materials and future updates',
-  'No-code trading bot development',
-  'MT4, MT5, TradingView, cTrader, NinjaTrader compatibility',
-  'Learn professional quant trading strategies and techniques',
-  'Access to private Discord community',
-  'Unlimited 1:1 support',
-  '30-day money-back guarantee',
-  'Ready-to-use source codes and templates',
-];
-
-const Pricing: React.FC = () => {
-  const { ref, isVisible } = useIntersectionObserver();
+const Pricing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   
-  const handleEnroll = async () => {
-    if (!user) {
-      navigate('/auth', { state: { from: '/' } });
-      return;
-    }
+  const handlePurchase = async () => {
+    setIsLoading(true);
     
-    await handleStripeCheckout({
-      courseId: 'premium', // Replace with your actual premium course ID
-      courseTitle: 'RoboQuant Academy',
-      price: 1500, // $1,500 (updated from $2,000)
-      userId: user.id,
-    });
+    try {
+      // Create checkout session
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          courseId: 'premium', // Use a default courseId for the main course
+          courseTitle: 'RoboQuant Academy',
+          userId: user?.id || 'guest', // Allow guest checkout
+          priceInCents: 150000, // $1500.00
+          successUrl: window.location.origin + '/auth?redirect=/dashboard', // Redirect to auth after successful payment
+          cancelUrl: window.location.origin + '/pricing',
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error: any) {
+      console.error('Error creating checkout session:', error);
+      toast({
+        title: "Checkout error",
+        description: error.message || "Failed to start checkout process",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
-    <section 
-      id="pricing" 
-      className="section-padding bg-background"
-      ref={ref as React.RefObject<HTMLElement>}
-    >
-      <div className="container mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-            <span className="gradient-text">Pricing & Guarantee</span>
-          </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            One-time payment for lifetime access to all course materials.
-          </p>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto mt-4">
-            You can have your first working robot within 30 days, or get a full refund — no questions asked.
-          </p>
-        </div>
-        
-        <div className={`max-w-xl mx-auto ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
-          <div className="glass-card p-8 md:p-10 rounded-2xl shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-gradient-to-r from-blue-primary to-teal-primary text-white py-1 px-6 transform translate-x-8 translate-y-4 rotate-45">
-              <span className="text-sm font-bold">Save $500</span>
-            </div>
-            
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-foreground">RoboQuant Academy</h3>
-              <div className="text-right">
-                <span className="text-gray-400 text-sm line-through">$2,000</span>
-                <div className="text-3xl font-bold gradient-text">$1,500</div>
-                <div className="text-sm text-gray-400">one-time payment</div>
-              </div>
-            </div>
-            
-            <div className="h-px w-full bg-border/20 my-6"></div>
-            
-            <ul className="space-y-4 mb-8">
-              {features.map((feature, index) => (
-                <li key={index} className="flex items-start">
-                  <Check className="w-5 h-5 text-teal-primary mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-300">{feature}</span>
-                </li>
-              ))}
-            </ul>
-            
-            <Button 
-              className="w-full cta-button text-white py-6 text-lg font-medium"
-              onClick={handleEnroll}
-            >
-              Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            
-            <div className="text-center mt-4 text-gray-400 text-sm flex items-center justify-center">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-              </svg>
-              Secure payment • 30-day money-back guarantee
-            </div>
+    <div className="grid gap-6 lg:grid-cols-3">
+      {/* Basic Plan */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Basic</CardTitle>
+          <CardDescription>Access to basic trading tutorials</CardDescription>
+          <div className="mt-4 text-4xl font-bold">Free</div>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>Basic trading strategies</span>
+            </li>
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>Community forum access</span>
+            </li>
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>Email support</span>
+            </li>
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button variant="outline" className="w-full">Get Started</Button>
+        </CardFooter>
+      </Card>
+
+      {/* Premium Plan */}
+      <Card className="border-primary">
+        <CardHeader>
+          <div className="bg-primary text-primary-foreground px-3 py-1 text-xs rounded-full w-fit">Popular</div>
+          <CardTitle className="mt-2">Premium</CardTitle>
+          <CardDescription>Full access to RoboQuant Academy</CardDescription>
+          <div className="mt-4 flex items-baseline">
+            <span className="text-4xl font-bold">$1,500</span>
+            <span className="ml-2 text-sm text-muted-foreground line-through">$1,875</span>
+            <span className="ml-2 text-xs bg-primary/20 text-primary py-0.5 px-2 rounded-full">20% off</span>
           </div>
-          
-          <div className="mt-8 p-6 bg-card rounded-xl border border-border/20">
-            <h4 className="font-bold text-lg mb-2 text-foreground">Our Risk-Free Guarantee</h4>
-            <p className="text-gray-300">
-              If you're not completely satisfied with the course within 30 days of purchase, simply email us for a full refund, no questions asked.
-            </p>
-            <p className="text-gray-300 mt-2">
-              Most users have their first working trading robot within the first 30 days.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>Full access to all trading algorithms</span>
+            </li>
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>Step-by-step bot creation tutorials</span>
+            </li>
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>Priority support</span>
+            </li>
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>All future updates included</span>
+            </li>
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>Lifetime access</span>
+            </li>
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button 
+            className="w-full cta-button"
+            onClick={handlePurchase}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : "Enroll Now"}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Enterprise Plan */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Enterprise</CardTitle>
+          <CardDescription>Custom solutions for businesses</CardDescription>
+          <div className="mt-4 text-4xl font-bold">Contact us</div>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>Custom trading solutions</span>
+            </li>
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>Dedicated account manager</span>
+            </li>
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>24/7 priority support</span>
+            </li>
+            <li className="flex items-center">
+              <Check className="mr-2 h-4 w-4 text-primary" />
+              <span>On-site training available</span>
+            </li>
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button variant="outline" className="w-full" onClick={() => navigate('/contact')}>Contact Sales</Button>
+        </CardFooter>
+      </Card>
+    </div>
   );
 };
 

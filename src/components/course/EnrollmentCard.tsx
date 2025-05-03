@@ -37,12 +37,9 @@ const EnrollmentCard = ({
   const { user } = useAuth();
 
   const handleEnrollment = async () => {
+    // For non-authenticated users, redirect to pricing page
     if (!userId) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to enroll in this course.",
-      });
-      navigate('/auth', { state: { redirect: `/courses/${courseId}` } });
+      navigate('/pricing');
       return;
     }
 
@@ -80,25 +77,8 @@ const EnrollmentCard = ({
         return;
       }
       
-      // Regular checkout flow for non-admin users
-      const { data, error: sessionError } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          courseId,
-          courseTitle,
-          userId,
-          priceInCents: price * 100,
-          successUrl: window.location.origin + `/courses/${courseId}/success`,
-          cancelUrl: window.location.origin + `/courses/${courseId}`,
-        },
-      });
-
-      if (sessionError) throw sessionError;
-
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
+      // Direct to pricing page for non-admin users
+      navigate('/pricing');
     } catch (error: any) {
       toast({
         title: "Enrollment error",
