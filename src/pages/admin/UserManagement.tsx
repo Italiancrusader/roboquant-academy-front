@@ -80,13 +80,13 @@ const UserManagement = () => {
         return;
       }
       
-      // We also need to get email addresses
+      // We also need to get email addresses from our new auth_users_view
       // Format the user data with roles
       const formattedUsers = await Promise.all(profilesWithRoles.map(async (profile) => {
-        // Get user's email from auth.users if possible
+        // Get user's email from auth_users_view
         let email = null;
         try {
-          // Try to get the email from the user's metadata
+          // Try to get the email from our view
           const { data: userData, error: userError } = await supabase
             .from('auth_users_view')
             .select('email')
