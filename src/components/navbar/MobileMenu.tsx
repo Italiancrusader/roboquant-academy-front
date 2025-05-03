@@ -47,9 +47,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     }
     
     await handleStripeCheckout({
-      courseId: 'premium', // Replace with your actual premium course ID
+      courseId: 'premium',
       courseTitle: 'RoboQuant Academy',
-      price: 2000, // $2,000
+      price: 1500,
       userId: user.id,
     });
   };
