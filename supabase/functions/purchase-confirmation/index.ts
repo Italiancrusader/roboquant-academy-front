@@ -88,7 +88,7 @@ serve(async (req) => {
     
     // Send email using Resend with your verified domain
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: "RoboQuant Academy <no-reply@updates.roboquant.ai>",
+      from: "Roboquant <team@updates.roboquant.ai>",
       to: [toEmail],
       subject: `Your RoboQuant Academy Purchase Confirmation - ${orderNumber}`,
       html: purchaseConfirmationTemplate({

@@ -19,7 +19,7 @@ serve(async (req) => {
     
     // Send a test email using your verified domain
     const data = await resend.emails.send({
-      from: "RoboQuant Academy <no-reply@updates.roboquant.ai>",
+      from: "Roboquant <team@updates.roboquant.ai>",
       to: ["ventos99@gmail.com"],
       subject: "Hello from Your Verified Domain",
       html: "<p>Congrats on sending your <strong>first email</strong> from your verified domain!</p>"

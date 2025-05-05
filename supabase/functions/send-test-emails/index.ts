@@ -49,8 +49,8 @@ serve(async (req) => {
     
     console.log(`Sending ${type} email(s) to ${email}`);
     
-    // Use your new verified custom domain
-    const fromEmail = "RoboQuant Academy <no-reply@updates.roboquant.ai>";
+    // Use your verified custom domain
+    const fromEmail = "Roboquant <team@updates.roboquant.ai>";
     
     // Purchase Confirmation Test
     if (type === "purchase" || type === "all") {
