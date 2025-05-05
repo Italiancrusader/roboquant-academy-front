@@ -5,12 +5,27 @@ import { ArrowRight, Play } from 'lucide-react';
 import { DialogTrigger } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
 import OptimizedImage from '@/components/OptimizedImage';
+import { useState } from 'react';
+import LeadDialog from '@/components/LeadDialog';
 
-const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
+interface HeroContentProps {
+  imageLoaded: boolean;
+  onOpenVideoDialog?: () => void;
+}
+
+const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialog }) => {
   const isMobile = useIsMobile();
+  const [showLeadDialog, setShowLeadDialog] = useState(false);
 
   const scrollToPricing = (e: React.MouseEvent) => {
     e.preventDefault();
+    
+    // Show lead collection form
+    setShowLeadDialog(true);
+  };
+
+  const handleLeadSuccess = () => {
+    // After collecting lead details, scroll to pricing
     const pricingSection = document.getElementById('pricing');
     if (pricingSection) {
       pricingSection.scrollIntoView({ behavior: 'smooth' });
@@ -41,6 +56,7 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
               <Button 
                 variant="outline" 
                 className="border-gray-300 text-white hover:text-white hover:bg-gray-700 text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
+                onClick={onOpenVideoDialog}
               >
                 <Play className="mr-2 h-5 w-5" /> Watch Demo
               </Button>
@@ -70,6 +86,17 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
           </div>
         </div>
       </div>
+
+      {/* Hero lead dialog */}
+      <LeadDialog
+        isOpen={showLeadDialog}
+        onOpenChange={setShowLeadDialog}
+        title="Start Your Trading Journey"
+        description="Enter your details below to get started with RoboQuant Academy."
+        source="hero_cta"
+        buttonText="Continue to Pricing"
+        onSubmitSuccess={handleLeadSuccess}
+      />
     </div>
   );
 };

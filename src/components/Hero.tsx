@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -9,6 +10,7 @@ import VideoDialog from './hero/VideoDialog';
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     // Preload the dashboard image
@@ -38,8 +40,8 @@ const Hero: React.FC = () => {
   return (
     <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       <VideoBackground />
-      <Dialog>
-        <HeroContent imageLoaded={imageLoaded} />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <HeroContent imageLoaded={imageLoaded} onOpenVideoDialog={() => setDialogOpen(true)} />
         <VideoDialog />
       </Dialog>
       
