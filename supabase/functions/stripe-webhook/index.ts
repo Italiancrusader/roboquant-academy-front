@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@12.18.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.40.0";
@@ -65,9 +66,6 @@ serve(async (req) => {
       case 'checkout.session.completed':
         console.log(`🔄 Processing checkout session completed: ${event.data.object.id}`);
         await handleCheckoutSessionCompleted(supabase, event.data.object);
-        
-        // Track purchase event with Meta Conversion API
-        await trackMetaConversionPurchase(event.data.object);
         break;
       case 'payment_intent.succeeded':
         console.log('💰 Payment succeeded:', event.data.object.id);
@@ -149,76 +147,4 @@ async function handleCheckoutSessionCompleted(supabase: any, session: any) {
   } else {
     console.log(`⚠️ Session ${session.id} is not paid or missing metadata`);
   }
-}
-
-async function trackMetaConversionPurchase(session: any) {
-  try {
-    const META_PIXEL_ID = Deno.env.get("META_PIXEL_ID");
-    const META_CONVERSION_API_TOKEN = Deno.env.get("META_CONVERSION_API_TOKEN");
-    
-    if (!META_PIXEL_ID || !META_CONVERSION_API_TOKEN) {
-      console.log("⚠️ Meta Pixel ID or Conversion API Token not configured, skipping purchase tracking");
-      return;
-    }
-    
-    const { customer_details, amount_total, currency } = session;
-    
-    // Prepare user data hash for Meta API
-    const userData = {
-      em: customer_details?.email ? hashValue(customer_details.email.toLowerCase()) : undefined,
-      ph: customer_details?.phone ? hashValue(customer_details.phone) : undefined,
-      fn: customer_details?.name ? hashValue(customer_details.name.split(' ')[0]) : undefined,
-      ln: customer_details?.name ? hashValue(customer_details.name.split(' ').slice(1).join(' ')) : undefined,
-      ct: customer_details?.address?.city ? hashValue(customer_details.address.city) : undefined,
-      st: customer_details?.address?.state ? hashValue(customer_details.address.state) : undefined,
-      zp: customer_details?.address?.postal_code ? hashValue(customer_details.address.postal_code) : undefined,
-      country: customer_details?.address?.country ? hashValue(customer_details.address.country) : undefined,
-      client_user_agent: session.client_reference_id || "Stripe Checkout"
-    };
-    
-    // Prepare custom data for the purchase event
-    const customData = {
-      value: amount_total ? amount_total / 100 : 0, // Convert cents to dollars
-      currency: currency || "USD",
-      content_type: "product",
-      content_ids: [session.metadata?.courseId || "premium-course"],
-      content_name: session.metadata?.courseTitle || "RoboQuant Academy",
-      num_items: 1,
-    };
-    
-    console.log("🔄 Sending purchase event to Meta Conversion API");
-    
-    // Send the purchase event to Meta Conversion API
-    const response = await fetch(
-      `https://graph.facebook.com/v17.0/${META_PIXEL_ID}/events?access_token=${META_CONVERSION_API_TOKEN}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          data: [{
-            event_name: "Purchase",
-            event_time: Math.floor(Date.now() / 1000),
-            event_source_url: session.success_url || session.cancel_url,
-            action_source: "website",
-            user_data: userData,
-            custom_data: customData,
-          }],
-        }),
-      }
-    );
-    
-    const result = await response.json();
-    console.log("✅ Meta Conversion API response:", result);
-  } catch (error) {
-    console.error("❌ Error tracking purchase with Meta Conversion API:", error);
-  }
-}
-
-// Simple hash function for privacy (Meta requires hashed user data)
-function hashValue(value: string): string {
-  if (!value) return "";
-  // Note: In production, use a proper SHA-256 hashing
-  return btoa(value).replace(/=/g, '');
 }
