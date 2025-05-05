@@ -16,925 +16,603 @@ interface PurchaseDetails {
   currency?: string;
 }
 
-export const purchaseConfirmationTemplate = (details: PurchaseDetails) => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Purchase Confirmation - RoboQuant Academy</title>
-  <style>
-    /* Base Styles */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-    .header {
-      padding: 30px;
-      background: linear-gradient(135deg, #0080FF 0%, #00B4FF 100%);
-      text-align: center;
-    }
-    .logo {
-      max-width: 180px;
-      margin-bottom: 20px;
-    }
-    .header-text {
-      color: white;
-      margin: 0;
-      font-weight: 600;
-      font-size: 24px;
-    }
-    .body {
-      padding: 30px;
-      color: #333;
-    }
-    .order-info {
-      background: #f6f9fc;
-      padding: 20px;
-      border-radius: 6px;
-      margin-bottom: 25px;
-    }
-    .order-number {
-      font-weight: bold;
-      color: #0080FF;
-      margin-top: 0;
-    }
-    .order-date {
-      margin-bottom: 0;
-      color: #666;
-      font-size: 14px;
-    }
-    .divider {
-      border-top: 1px solid #e6e6e6;
-      margin: 25px 0;
-    }
-    .item {
-      display: flex;
-      margin-bottom: 15px;
-      gap: 15px;
-    }
-    .item-image {
-      width: 80px;
-      height: 80px;
-      background-color: #f0f0f0;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .item-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .item-details {
-      flex: 1;
-    }
-    .item-title {
-      margin-top: 0;
-      margin-bottom: 5px;
-      font-weight: 600;
-    }
-    .item-description {
-      margin: 0;
-      color: #666;
-      font-size: 14px;
-    }
-    .price {
-      display: block;
-      font-weight: 600;
-      margin-top: 8px;
-      font-size: 16px;
-    }
-    .total {
-      text-align: right;
-      font-weight: bold;
-      font-size: 18px;
-      margin-top: 25px;
-      margin-bottom: 0;
-    }
-    .cta {
-      text-align: center;
-      margin-top: 30px;
-    }
-    .button {
-      display: inline-block;
-      background: #0080FF;
-      color: white;
-      text-decoration: none;
-      padding: 12px 25px;
-      border-radius: 4px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      font-size: 14px;
-    }
-    .info-box {
-      background: #edf7ff;
-      border-left: 4px solid #0080FF;
-      padding: 15px 20px;
-      margin: 30px 0;
-      border-radius: 4px;
-    }
-    .info-box h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      color: #0080FF;
-    }
-    .info-box p {
-      margin: 0;
-      font-size: 14px;
-    }
-    .footer {
-      background: #f9f9f9;
-      padding: 25px 30px;
-      font-size: 12px;
-      color: #666;
-      text-align: center;
-    }
-    .social {
-      margin-bottom: 15px;
-    }
-    .social a {
-      display: inline-block;
-      margin: 0 8px;
-      text-decoration: none;
-    }
-    .social img {
-      width: 24px;
-      height: 24px;
-      opacity: 0.7;
-    }
-    .links {
-      margin-bottom: 15px;
-    }
-    .links a {
-      color: #0080FF;
-      text-decoration: none;
-      margin: 0 8px;
-    }
-    .copyright {
-      margin-top: 15px;
-      margin-bottom: 0;
-    }
-    
-    /* Responsive styling */
-    @media screen and (max-width: 550px) {
-      .header, .body, .footer {
+interface RecommendedCourse {
+  title: string;
+  url: string;
+}
+
+/**
+ * Purchase confirmation email template
+ */
+export const purchaseConfirmationTemplate = (details: PurchaseDetails): string => {
+  const { 
+    orderNumber, 
+    customerName, 
+    customerEmail, 
+    courseTitle, 
+    courseCoverImage, 
+    purchaseDate, 
+    purchaseAmount,
+    currency = 'USD'
+  } = details;
+  
+  const formattedPrice = formatPrice(purchaseAmount, currency);
+  const coverImage = courseCoverImage || 'https://roboquant.academy/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png';
+
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Confirmation</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
         padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
-      .item {
-        flex-direction: column;
-        gap: 10px;
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eaeaea;
       }
-      .item-image {
-        width: 100%;
-        max-width: 120px;
+      .header img {
+        width: 160px;
+        height: auto;
       }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="https://roboquant.academy/lovable-uploads/c963f161-8e34-4c56-be8a-40e2625c6be0.png" alt="RoboQuant Academy Logo" class="logo">
-      <h1 class="header-text">Purchase Confirmation</h1>
-    </div>
-    <div class="body">
-      <p>Dear ${details.customerName},</p>
-      <p>Thank you for your purchase! We're excited to welcome you to RoboQuant Academy.</p>
-      
-      <div class="order-info">
-        <h2 class="order-number">Order #${details.orderNumber}</h2>
-        <p class="order-date">Date: ${details.purchaseDate}</p>
+      .content {
+        padding: 30px 0;
+      }
+      .course-card {
+        display: flex;
+        margin-bottom: 20px;
+        border: 1px solid #eaeaea;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .course-image {
+        width: 120px;
+        height: 80px;
+        object-fit: cover;
+      }
+      .course-details {
+        padding: 10px 15px;
+        flex: 1;
+      }
+      .course-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #1a1a1a;
+      }
+      .order-details {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .detail-label {
+        font-weight: 600;
+        color: #666;
+      }
+      .total-row {
+        border-top: 2px solid #eaeaea;
+        margin-top: 10px;
+        padding-top: 10px;
+        font-weight: 700;
+      }
+      .button {
+        display: block;
+        width: 200px;
+        margin: 30px auto 0;
+        padding: 12px 20px;
+        background-color: #4f46e5;
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+      .footer {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #eaeaea;
+        color: #666;
+        font-size: 12px;
+      }
+      @media (max-width: 480px) {
+        .course-card {
+          flex-direction: column;
+        }
+        .course-image {
+          width: 100%;
+          height: 160px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Payment Successful</h1>
       </div>
-      
-      <h3>Order Summary</h3>
-      <div class="item">
-        <div class="item-image">
-          ${details.courseCoverImage ? 
-            `<img src="${details.courseCoverImage}" alt="${details.courseTitle}" />` : 
-            `<div style="height:100%;display:flex;align-items:center;justify-content:center;background:#0080FF;color:white;font-weight:bold;">RQ</div>`
-          }
-        </div>
-        <div class="item-details">
-          <h4 class="item-title">${details.courseTitle}</h4>
-          <p class="item-description">Lifetime access</p>
-          <span class="price">${formatPrice(details.purchaseAmount, details.currency)}</span>
-        </div>
-      </div>
-      
-      <div class="divider"></div>
-      <p class="total">Total: ${formatPrice(details.purchaseAmount, details.currency)}</p>
-      
-      <div class="cta">
-        <a href="https://roboquant.academy/dashboard" class="button">Start Learning Now</a>
-      </div>
-      
-      <div class="info-box">
-        <h3>Getting Started</h3>
-        <p>You can access your course anytime by logging into your account. If you have any questions about your purchase or need assistance, please contact our support team at <a href="mailto:info@roboquant.ai">info@roboquant.ai</a>.</p>
-      </div>
-      
-    </div>
-    <div class="footer">
-      <div class="social">
-        <a href="https://discord.gg/7sU4DmvmpW" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Discord">
-        </a>
-        <a href="https://www.instagram.com/timhutter.official/" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
-        </a>
-        <a href="https://t.me/tradepiloteabot" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111644.png" alt="Telegram">
-        </a>
-      </div>
-      <div class="links">
-        <a href="https://roboquant.academy/privacy-policy">Privacy Policy</a>
-        <a href="https://roboquant.academy/terms-of-service">Terms of Service</a>
-        <a href="https://roboquant.academy/contact">Contact Us</a>
-      </div>
-      <p class="copyright">&copy; ${new Date().getFullYear()} RoboQuant Academy. All rights reserved.</p>
-    </div>
-  </div>
-</body>
-</html>
-`;
-
-export const courseCompletionEnhancedTemplate = (firstName: string, courseName: string, completionDate: string) => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Completion - RoboQuant Academy</title>
-  <style>
-    /* Base Styles */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-    .header {
-      padding: 30px;
-      background: linear-gradient(135deg, #0080FF 0%, #00B4FF 100%);
-      text-align: center;
-    }
-    .logo {
-      max-width: 180px;
-      margin-bottom: 20px;
-    }
-    .header-text {
-      color: white;
-      margin: 0;
-      font-weight: 600;
-      font-size: 24px;
-    }
-    .body {
-      padding: 30px;
-      color: #333;
-      text-align: center;
-    }
-    .achievement {
-      margin: 30px 0;
-    }
-    .certificate {
-      width: 100%;
-      max-width: 500px;
-      margin: 0 auto;
-      padding: 30px;
-      border: 3px solid #0080FF;
-      border-radius: 10px;
-      position: relative;
-      background-color: #fff;
-    }
-    .certificate-heading {
-      font-size: 24px;
-      color: #0080FF;
-      margin-top: 0;
-      margin-bottom: 10px;
-    }
-    .certificate-subheading {
-      font-size: 16px;
-      color: #333;
-      margin-top: 0;
-      margin-bottom: 30px;
-    }
-    .certificate-name {
-      font-size: 28px;
-      font-weight: bold;
-      color: #333;
-      margin: 20px 0;
-    }
-    .certificate-course {
-      font-size: 18px;
-      margin: 10px 0 30px;
-    }
-    .certificate-date {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 15px;
-    }
-    .certificate-signature {
-      width: 150px;
-      margin: 0 auto;
-      border-top: 1px solid #333;
-      padding-top: 10px;
-      font-size: 12px;
-      color: #666;
-    }
-    .certificate-seal {
-      position: absolute;
-      bottom: 30px;
-      right: 30px;
-      width: 70px;
-      height: 70px;
-      background: #0080FF;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-    }
-    .cta {
-      text-align: center;
-      margin-top: 30px;
-    }
-    .button {
-      display: inline-block;
-      background: #0080FF;
-      color: white;
-      text-decoration: none;
-      padding: 12px 25px;
-      border-radius: 4px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      font-size: 14px;
-    }
-    .next-steps {
-      margin-top: 30px;
-      padding: 20px;
-      background: #f6f9fc;
-      border-radius: 6px;
-      text-align: left;
-    }
-    .next-steps h3 {
-      margin-top: 0;
-      color: #0080FF;
-    }
-    .next-steps ul {
-      padding-left: 20px;
-      margin-bottom: 0;
-    }
-    .next-steps li {
-      margin-bottom: 10px;
-    }
-    .footer {
-      background: #f9f9f9;
-      padding: 25px 30px;
-      font-size: 12px;
-      color: #666;
-      text-align: center;
-    }
-    .social {
-      margin-bottom: 15px;
-    }
-    .social a {
-      display: inline-block;
-      margin: 0 8px;
-      text-decoration: none;
-    }
-    .social img {
-      width: 24px;
-      height: 24px;
-      opacity: 0.7;
-    }
-    .links {
-      margin-bottom: 15px;
-    }
-    .links a {
-      color: #0080FF;
-      text-decoration: none;
-      margin: 0 8px;
-    }
-    .copyright {
-      margin-top: 15px;
-      margin-bottom: 0;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="https://roboquant.academy/lovable-uploads/c963f161-8e34-4c56-be8a-40e2625c6be0.png" alt="RoboQuant Academy Logo" class="logo">
-      <h1 class="header-text">Congratulations!</h1>
-    </div>
-    <div class="body">
-      <p>Hello ${firstName || 'there'},</p>
-      <p>We're thrilled to inform you that you've successfully completed <strong>${courseName}</strong>!</p>
-      
-      <div class="achievement">
-        <div class="certificate">
-          <h2 class="certificate-heading">Certificate of Completion</h2>
-          <p class="certificate-subheading">This certificate is awarded to</p>
-          <p class="certificate-name">${firstName || 'Student'}</p>
-          <p class="certificate-course">for successfully completing<br><strong>${courseName}</strong></p>
-          <p class="certificate-date">Completed on ${completionDate}</p>
-          <div class="certificate-signature">Tim Hutter<br>Lead Instructor</div>
-          <div class="certificate-seal">RQA</div>
-        </div>
-      </div>
-      
-      <div class="cta">
-        <a href="https://roboquant.academy/dashboard/certificates" class="button">Download Your Certificate</a>
-      </div>
-      
-      <div class="next-steps">
-        <h3>What's Next?</h3>
-        <ul>
-          <li>Apply your new skills by creating your first fully automated trading bot</li>
-          <li>Join our Discord community to connect with fellow traders</li>
-          <li>Explore our other courses to expand your knowledge</li>
-          <li>Share your achievement on social media</li>
-        </ul>
-      </div>
-      
-    </div>
-    <div class="footer">
-      <div class="social">
-        <a href="https://discord.gg/7sU4DmvmpW" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Discord">
-        </a>
-        <a href="https://www.instagram.com/timhutter.official/" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
-        </a>
-        <a href="https://t.me/tradepiloteabot" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111644.png" alt="Telegram">
-        </a>
-      </div>
-      <div class="links">
-        <a href="https://roboquant.academy/privacy-policy">Privacy Policy</a>
-        <a href="https://roboquant.academy/terms-of-service">Terms of Service</a>
-        <a href="https://roboquant.academy/contact">Contact Us</a>
-      </div>
-      <p class="copyright">&copy; ${new Date().getFullYear()} RoboQuant Academy. All rights reserved.</p>
-    </div>
-  </div>
-</body>
-</html>
-`;
-
-export const abandonedCartTemplate = (firstName: string, courseTitle: string, checkoutUrl: string) => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Complete Your RoboQuant Academy Enrollment</title>
-  <style>
-    /* Base Styles */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-    .header {
-      padding: 30px;
-      background: linear-gradient(135deg, #0080FF 0%, #00B4FF 100%);
-      text-align: center;
-    }
-    .logo {
-      max-width: 180px;
-      margin-bottom: 20px;
-    }
-    .header-text {
-      color: white;
-      margin: 0;
-      font-weight: 600;
-      font-size: 24px;
-    }
-    .body {
-      padding: 30px;
-      color: #333;
-    }
-    .countdown {
-      background: #edf7ff;
-      padding: 15px;
-      border-radius: 6px;
-      text-align: center;
-      margin-bottom: 25px;
-    }
-    .countdown h3 {
-      margin-top: 0;
-      color: #0080FF;
-    }
-    .countdown p {
-      margin-bottom: 0;
-      font-size: 14px;
-      color: #333;
-    }
-    .cta {
-      text-align: center;
-      margin: 30px 0;
-    }
-    .button {
-      display: inline-block;
-      background: #0080FF;
-      color: white;
-      text-decoration: none;
-      padding: 12px 25px;
-      border-radius: 4px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      font-size: 14px;
-    }
-    .reasons {
-      margin-top: 25px;
-    }
-    .reason {
-      margin-bottom: 20px;
-      padding-left: 25px;
-      position: relative;
-    }
-    .reason:before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      color: #0080FF;
-      font-weight: bold;
-    }
-    .reason h4 {
-      margin: 0 0 5px 0;
-    }
-    .reason p {
-      margin: 0;
-      font-size: 14px;
-      color: #666;
-    }
-    .testimonial {
-      background: #f6f9fc;
-      padding: 20px;
-      border-radius: 6px;
-      margin-top: 25px;
-    }
-    .testimonial-text {
-      font-style: italic;
-      margin-top: 0;
-      margin-bottom: 10px;
-    }
-    .testimonial-author {
-      text-align: right;
-      margin-bottom: 0;
-      font-weight: 500;
-      color: #0080FF;
-    }
-    .help {
-      margin-top: 25px;
-      font-size: 14px;
-      color: #666;
-    }
-    .footer {
-      background: #f9f9f9;
-      padding: 25px 30px;
-      font-size: 12px;
-      color: #666;
-      text-align: center;
-    }
-    .social {
-      margin-bottom: 15px;
-    }
-    .social a {
-      display: inline-block;
-      margin: 0 8px;
-      text-decoration: none;
-    }
-    .social img {
-      width: 24px;
-      height: 24px;
-      opacity: 0.7;
-    }
-    .links {
-      margin-bottom: 15px;
-    }
-    .links a {
-      color: #0080FF;
-      text-decoration: none;
-      margin: 0 8px;
-    }
-    .copyright {
-      margin-top: 15px;
-      margin-bottom: 0;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="https://roboquant.academy/lovable-uploads/c963f161-8e34-4c56-be8a-40e2625c6be0.png" alt="RoboQuant Academy Logo" class="logo">
-      <h1 class="header-text">Course Reserved</h1>
-    </div>
-    <div class="body">
-      <p>Hello ${firstName || 'there'},</p>
-      <p>We noticed that you started enrolling in <strong>${courseTitle}</strong> but didn't complete your purchase.</p>
-      
-      <div class="countdown">
-        <h3>Your spot is reserved for the next 48 hours</h3>
-        <p>After that, we can't guarantee availability at this special rate.</p>
-      </div>
-      
-      <p>We've saved your enrollment information so you can quickly complete your purchase with just one click:</p>
-      
-      <div class="cta">
-        <a href="${checkoutUrl}" class="button">Complete Enrollment Now</a>
-      </div>
-      
-      <div class="reasons">
-        <h3>Why students love this course:</h3>
+      <div class="content">
+        <p>Hello ${customerName},</p>
+        <p>Thank you for your purchase! Your enrollment in <strong>RoboQuant Academy</strong> has been confirmed.</p>
         
-        <div class="reason">
-          <h4>Save time and money</h4>
-          <p>Build fully-automated trading bots without coding, saving thousands in development costs.</p>
-        </div>
-        
-        <div class="reason">
-          <h4>Learn practical skills</h4>
-          <p>Step-by-step guidance from industry experts with proven strategies.</p>
-        </div>
-        
-        <div class="reason">
-          <h4>Lifetime access</h4>
-          <p>Access course content forever, including all future updates and improvements.</p>
-        </div>
-      </div>
-      
-      <div class="testimonial">
-        <p class="testimonial-text">"RoboQuant Academy completely transformed my trading. I deployed my first bot within a week and have been seeing consistent profits since. The no-code approach made it accessible for me."</p>
-        <p class="testimonial-author">— Michael T., RoboQuant Student</p>
-      </div>
-      
-      <div class="help">
-        <p>Having trouble completing your purchase? Reply to this email or contact us at <a href="mailto:info@roboquant.ai">info@roboquant.ai</a> and we'll help you get enrolled.</p>
-      </div>
-      
-    </div>
-    <div class="footer">
-      <div class="social">
-        <a href="https://discord.gg/7sU4DmvmpW" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Discord">
-        </a>
-        <a href="https://www.instagram.com/timhutter.official/" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
-        </a>
-        <a href="https://t.me/tradepiloteabot" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111644.png" alt="Telegram">
-        </a>
-      </div>
-      <div class="links">
-        <a href="https://roboquant.academy/privacy-policy">Privacy Policy</a>
-        <a href="https://roboquant.academy/terms-of-service">Terms of Service</a>
-        <a href="https://roboquant.academy/contact">Contact Us</a>
-      </div>
-      <p class="copyright">&copy; ${new Date().getFullYear()} RoboQuant Academy. All rights reserved.</p>
-    </div>
-  </div>
-</body>
-</html>
-`;
-
-export const reEngagementTemplate = (firstName: string, lastActive: string, recommendedCourses: { title: string, url: string }[] = []) => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>We Miss You at RoboQuant Academy</title>
-  <style>
-    /* Base Styles */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-    .header {
-      padding: 30px;
-      background: linear-gradient(135deg, #0080FF 0%, #00B4FF 100%);
-      text-align: center;
-    }
-    .logo {
-      max-width: 180px;
-      margin-bottom: 20px;
-    }
-    .header-text {
-      color: white;
-      margin: 0;
-      font-weight: 600;
-      font-size: 24px;
-    }
-    .body {
-      padding: 30px;
-      color: #333;
-    }
-    .cta {
-      text-align: center;
-      margin: 30px 0;
-    }
-    .button {
-      display: inline-block;
-      background: #0080FF;
-      color: white;
-      text-decoration: none;
-      padding: 12px 25px;
-      border-radius: 4px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      font-size: 14px;
-    }
-    .recommendations {
-      margin-top: 30px;
-    }
-    .course-card {
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      padding: 15px;
-      margin-bottom: 15px;
-      transition: transform 0.2s;
-    }
-    .course-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-    .course-title {
-      color: #0080FF;
-      margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 18px;
-    }
-    .course-button {
-      display: inline-block;
-      background: transparent;
-      color: #0080FF;
-      border: 1px solid #0080FF;
-      text-decoration: none;
-      padding: 8px 15px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .update {
-      background: #f6f9fc;
-      padding: 20px;
-      border-radius: 6px;
-      margin-top: 30px;
-    }
-    .update h3 {
-      margin-top: 0;
-      color: #0080FF;
-    }
-    .update p {
-      margin-bottom: 0;
-    }
-    .footer {
-      background: #f9f9f9;
-      padding: 25px 30px;
-      font-size: 12px;
-      color: #666;
-      text-align: center;
-    }
-    .social {
-      margin-bottom: 15px;
-    }
-    .social a {
-      display: inline-block;
-      margin: 0 8px;
-      text-decoration: none;
-    }
-    .social img {
-      width: 24px;
-      height: 24px;
-      opacity: 0.7;
-    }
-    .links {
-      margin-bottom: 15px;
-    }
-    .links a {
-      color: #0080FF;
-      text-decoration: none;
-      margin: 0 8px;
-    }
-    .copyright {
-      margin-top: 15px;
-      margin-bottom: 0;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="https://roboquant.academy/lovable-uploads/c963f161-8e34-4c56-be8a-40e2625c6be0.png" alt="RoboQuant Academy Logo" class="logo">
-      <h1 class="header-text">We Miss You!</h1>
-    </div>
-    <div class="body">
-      <p>Hello ${firstName || 'there'},</p>
-      <p>We noticed it's been a while since you last visited RoboQuant Academy. Your last login was on <strong>${lastActive}</strong>, and we wanted to check in to see how you're doing with your algorithmic trading journey.</p>
-      
-      <p>The trading world moves quickly, and staying up-to-date with the latest strategies and tools is essential for success. We've been busy adding new content and improving our platform.</p>
-      
-      <div class="cta">
-        <a href="https://roboquant.academy/dashboard" class="button">Return to Your Dashboard</a>
-      </div>
-      
-      <div class="recommendations">
-        <h3>Recommended for You:</h3>
-        
-        ${recommendedCourses.map(course => `
-          <div class="course-card">
-            <h4 class="course-title">${course.title}</h4>
-            <a href="${course.url}" class="course-button">Explore Course</a>
+        <div class="course-card">
+          <img class="course-image" src="${coverImage}" alt="${courseTitle}">
+          <div class="course-details">
+            <div class="course-title">${courseTitle}</div>
+            <div>Lifetime Access</div>
           </div>
-        `).join('')}
+        </div>
         
-        ${recommendedCourses.length === 0 ? `
-          <div class="course-card">
-            <h4 class="course-title">Advanced Bot Strategies</h4>
-            <a href="https://roboquant.academy/courses/advanced-bot-strategies" class="course-button">Explore Course</a>
+        <div class="order-details">
+          <h3>Order Summary</h3>
+          <div class="detail-row">
+            <span class="detail-label">Order Number:</span>
+            <span>${orderNumber}</span>
           </div>
-          <div class="course-card">
-            <h4 class="course-title">Risk Management Masterclass</h4>
-            <a href="https://roboquant.academy/courses/risk-management" class="course-button">Explore Course</a>
+          <div class="detail-row">
+            <span class="detail-label">Date:</span>
+            <span>${purchaseDate}</span>
           </div>
-        ` : ''}
+          <div class="detail-row">
+            <span class="detail-label">Email:</span>
+            <span>${customerEmail}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Payment Method:</span>
+            <span>Credit Card</span>
+          </div>
+          <div class="detail-row total-row">
+            <span class="detail-label">Total:</span>
+            <span>${formattedPrice}</span>
+          </div>
+        </div>
+        
+        <a href="https://roboquant.academy/dashboard" class="button">Go to Dashboard</a>
+        
+        <p>If you have any questions, please contact our support team at <a href="mailto:support@roboquant.ai">support@roboquant.ai</a>.</p>
+      </div>
+      <div class="footer">
+        <p>&copy; ${new Date().getFullYear()} RoboQuant Academy. All rights reserved.</p>
+        <p>123 Trading St, Algo City, AC 12345</p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+};
+
+/**
+ * Course completion email template
+ */
+export const courseCompletionEnhancedTemplate = (
+  studentName: string,
+  courseTitle: string,
+  completionDate: string,
+): string => {
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Completion Certificate</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eaeaea;
+      }
+      .certificate {
+        margin: 30px auto;
+        padding: 30px;
+        border: 2px solid #4f46e5;
+        border-radius: 8px;
+        text-align: center;
+        background-color: #f9f9f9;
+        position: relative;
+        overflow: hidden;
+      }
+      .certificate::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l99 99M1 51l49 49M51 1l49 49" stroke="%234f46e5" stroke-width="0.5" fill="none" stroke-opacity="0.1"/></svg>');
+        opacity: 0.1;
+        z-index: 0;
+      }
+      .certificate-content {
+        position: relative;
+        z-index: 1;
+      }
+      .certificate h2 {
+        margin-bottom: 20px;
+        font-size: 24px;
+        color: #4f46e5;
+      }
+      .certificate p {
+        margin: 10px 0;
+      }
+      .student-name {
+        font-size: 28px;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      .course-title {
+        font-size: 18px;
+        margin: 10px 0;
+      }
+      .completion-date {
+        font-style: italic;
+        margin: 20px 0;
+      }
+      .signature {
+        margin-top: 30px;
+        font-family: 'Brush Script MT', cursive;
+        font-size: 24px;
+      }
+      .button {
+        display: block;
+        width: 200px;
+        margin: 30px auto;
+        padding: 12px 20px;
+        background-color: #4f46e5;
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+      .footer {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #eaeaea;
+        color: #666;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Congratulations!</h1>
+        <p>You've successfully completed your course</p>
       </div>
       
-      <div class="update">
-        <h3>Platform Updates</h3>
-        <p>We've made significant improvements to our platform including enhanced backtesting capabilities, new trading strategies, and additional community features. Log in to check out all the exciting changes!</p>
+      <div class="certificate">
+        <div class="certificate-content">
+          <h2>Certificate of Completion</h2>
+          <p>This certifies that</p>
+          <div class="student-name">${studentName}</div>
+          <p>has successfully completed</p>
+          <div class="course-title">${courseTitle}</div>
+          <div class="completion-date">on ${completionDate}</div>
+          
+          <div class="signature">
+            Robert Smith
+            <div style="font-family: sans-serif; font-size: 14px;">Robert Smith, Founder</div>
+            <div style="font-family: sans-serif; font-size: 14px;">RoboQuant Academy</div>
+          </div>
+        </div>
       </div>
       
-    </div>
-    <div class="footer">
-      <div class="social">
-        <a href="https://discord.gg/7sU4DmvmpW" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Discord">
-        </a>
-        <a href="https://www.instagram.com/timhutter.official/" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
-        </a>
-        <a href="https://t.me/tradepiloteabot" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111644.png" alt="Telegram">
-        </a>
+      <p>Dear ${studentName},</p>
+      <p>We're thrilled to announce that you have successfully completed the "${courseTitle}" course. This is a significant achievement, and we're proud of your dedication and hard work.</p>
+      <p>Your certificate has been issued and is available on your dashboard. You can also download a PDF version for your records.</p>
+      
+      <a href="https://roboquant.academy/dashboard/certificates" class="button">View Certificate</a>
+      
+      <p>What's next? Continue your journey with our other advanced trading courses to further enhance your skills.</p>
+      
+      <div class="footer">
+        <p>&copy; ${new Date().getFullYear()} RoboQuant Academy. All rights reserved.</p>
+        <p>123 Trading St, Algo City, AC 12345</p>
       </div>
-      <div class="links">
-        <a href="https://roboquant.academy/privacy-policy">Privacy Policy</a>
-        <a href="https://roboquant.academy/terms-of-service">Terms of Service</a>
-        <a href="https://roboquant.academy/contact">Contact Us</a>
-      </div>
-      <p class="copyright">&copy; ${new Date().getFullYear()} RoboQuant Academy. All rights reserved.</p>
     </div>
-  </div>
-</body>
-</html>
-`;
+  </body>
+  </html>
+  `;
+};
+
+/**
+ * Abandoned cart email template
+ */
+export const abandonedCartTemplate = (
+  customerName: string,
+  courseTitle: string,
+  checkoutUrl: string,
+): string => {
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Enrollment</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eaeaea;
+      }
+      .content {
+        padding: 30px 0;
+      }
+      .course-card {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #eaeaea;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+      }
+      .reasons {
+        margin: 30px 0;
+      }
+      .reason-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+      }
+      .reason-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+        color: #4f46e5;
+      }
+      .button {
+        display: block;
+        width: 200px;
+        margin: 30px auto;
+        padding: 12px 20px;
+        background-color: #4f46e5;
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+      .footer {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #eaeaea;
+        color: #666;
+        font-size: 12px;
+      }
+      .countdown {
+        text-align: center;
+        margin: 20px 0;
+      }
+      .timer {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4f46e5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Your Course is Waiting!</h1>
+      </div>
+      <div class="content">
+        <p>Hello ${customerName},</p>
+        <p>We noticed that you started enrolling in <strong>${courseTitle}</strong> but didn't complete your purchase. Your spot is still reserved, but not for long!</p>
+        
+        <div class="course-card">
+          <h3>${courseTitle}</h3>
+          <p>Transform your trading with our comprehensive algorithmic trading curriculum. Lifetime access to all course materials, updates, and our supportive community.</p>
+        </div>
+        
+        <div class="countdown">
+          <p>Special offer ending soon:</p>
+          <div class="timer">20% OFF</div>
+          <p>Limited time only</p>
+        </div>
+        
+        <div class="reasons">
+          <h3>Why Complete Your Enrollment Now?</h3>
+          
+          <div class="reason-item">
+            <div class="reason-icon">✓</div>
+            <div>
+              <strong>Lifetime Access</strong>
+              <p>One payment for unlimited access to all course materials and future updates.</p>
+            </div>
+          </div>
+          
+          <div class="reason-item">
+            <div class="reason-icon">✓</div>
+            <div>
+              <strong>Trading Bots Included</strong>
+              <p>Get access to proven algorithmic trading strategies you can implement immediately.</p>
+            </div>
+          </div>
+          
+          <div class="reason-item">
+            <div class="reason-icon">✓</div>
+            <div>
+              <strong>30-Day Guarantee</strong>
+              <p>If you're not satisfied, we offer a no-questions-asked refund policy.</p>
+            </div>
+          </div>
+        </div>
+        
+        <a href="${checkoutUrl}" class="button">Complete Enrollment</a>
+        
+        <p>If you have any questions or need assistance, please reply to this email or contact our support team at <a href="mailto:support@roboquant.ai">support@roboquant.ai</a>.</p>
+      </div>
+      <div class="footer">
+        <p>&copy; ${new Date().getFullYear()} RoboQuant Academy. All rights reserved.</p>
+        <p>If you no longer wish to receive these emails, <a href="#">unsubscribe here</a>.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+};
+
+/**
+ * Re-engagement email template
+ */
+export const reEngagementTemplate = (
+  customerName: string,
+  lastActiveDate: string,
+  recommendedCourses: RecommendedCourse[],
+): string => {
+  const coursesList = recommendedCourses.map(course => `
+    <li style="margin-bottom: 15px;">
+      <a href="${course.url}" style="color: #4f46e5; font-weight: 600; text-decoration: none;">${course.title}</a>
+    </li>
+  `).join('');
+
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>We Miss You at RoboQuant Academy</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eaeaea;
+      }
+      .content {
+        padding: 30px 0;
+      }
+      .recommended {
+        margin: 30px 0;
+        padding: 20px;
+        border: 1px solid #eaeaea;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      .button {
+        display: block;
+        width: 200px;
+        margin: 30px auto;
+        padding: 12px 20px;
+        background-color: #4f46e5;
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+      .footer {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #eaeaea;
+        color: #666;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>We Miss You!</h1>
+      </div>
+      <div class="content">
+        <p>Hello ${customerName},</p>
+        <p>We noticed it's been a while since you last visited RoboQuant Academy. Your last login was on <strong>${lastActiveDate}</strong>.</p>
+        <p>We've been busy adding new content and improving our platform. Have you been busy making profitable trades with the strategies you learned?</p>
+        
+        <div class="recommended">
+          <h3>Recommended Next Steps</h3>
+          <p>Based on your interests, we think you might enjoy these resources:</p>
+          <ul>
+            ${coursesList}
+          </ul>
+        </div>
+        
+        <p>The markets don't stand still, and neither does our curriculum. Stay ahead of the curve by continuing your trading education.</p>
+        
+        <a href="https://roboquant.academy/dashboard" class="button">Return to Dashboard</a>
+        
+        <p>Need help getting back on track? Our support team is always available at <a href="mailto:support@roboquant.ai">support@roboquant.ai</a>.</p>
+      </div>
+      <div class="footer">
+        <p>&copy; ${new Date().getFullYear()} RoboQuant Academy. All rights reserved.</p>
+        <p>If you no longer wish to receive these emails, <a href="#">unsubscribe here</a>.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+};
