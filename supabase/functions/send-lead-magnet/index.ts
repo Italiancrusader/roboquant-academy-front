@@ -56,6 +56,7 @@ serve(async (req) => {
     console.log("Sending email to:", email, "with attachment:", attachmentUrl);
 
     // Send email with attachment via Resend
+    // Use onboarding@resend.dev as the from address since it's automatically verified by Resend
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -63,7 +64,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'RoboQuant <noreply@roboquantacademy.com>',
+        from: 'RoboQuant <onboarding@resend.dev>',
         to: email,
         subject: emailSubject,
         text: `Hello ${name},\n\nThank you for your interest in RoboQuant Academy! As promised, I've attached your free bot source code.\n\nIf you have any questions or need assistance implementing this bot, feel free to reply to this email or join our community.\n\nHappy Trading,\nTim from RoboQuant Academy`,

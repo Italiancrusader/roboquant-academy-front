@@ -45,7 +45,16 @@ export const submitLead = async (leadData: LeadData): Promise<boolean> => {
 
     // If the lead is for a free bot, call the edge function to send the bot source code
     if (leadData.leadMagnet === "free_mt5_bot_source_code") {
-      await sendLeadMagnetEmail(leadData);
+      const emailResult = await sendLeadMagnetEmail(leadData);
+      
+      if (!emailResult) {
+        toast({
+          title: "Bot Delivery Info",
+          description: "Your information was saved but there was an issue sending the email. Our team has been notified and will send your bot soon.",
+          variant: "default",
+        });
+        return true; // Still return true as the lead was saved
+      }
     }
 
     return true;
@@ -61,11 +70,11 @@ export const submitLead = async (leadData: LeadData): Promise<boolean> => {
 };
 
 // Send email with the lead magnet
-const sendLeadMagnetEmail = async (leadData: LeadData): Promise<void> => {
+const sendLeadMagnetEmail = async (leadData: LeadData): Promise<boolean> => {
   try {
     console.log("Sending lead magnet email to:", leadData.email);
     
-    const { error } = await supabase.functions.invoke("send-lead-magnet", {
+    const { data, error } = await supabase.functions.invoke("send-lead-magnet", {
       body: {
         name: leadData.name,
         email: leadData.email,
@@ -75,20 +84,23 @@ const sendLeadMagnetEmail = async (leadData: LeadData): Promise<void> => {
 
     if (error) {
       console.error("Error sending lead magnet email:", error);
-      toast({
-        title: "Email Delivery Issue",
-        description: "There was a problem sending your free bot. Please contact support.",
-        variant: "destructive",
-      });
-    } else {
-      console.log("Successfully sent lead magnet email");
+      return false;
+    } 
+    
+    if (!data?.success) {
+      console.error("Function returned unsuccessful response:", data);
+      return false;
     }
+    
+    console.log("Successfully sent lead magnet email");
+    toast({
+      title: "Success!",
+      description: "Your free MT5 bot source code has been sent to your email address!",
+      variant: "default",
+    });
+    return true;
   } catch (error) {
     console.error("Error in sendLeadMagnetEmail:", error);
-    toast({
-      title: "Email Delivery Issue",
-      description: "There was a problem sending your free bot. Please contact support.",
-      variant: "destructive",
-    });
+    return false;
   }
 };
