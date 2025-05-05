@@ -44,11 +44,13 @@ serve(async (req) => {
     // Configure attachment based on leadMagnet type
     let attachmentUrl = '';
     let attachmentName = '';
+    let emailSubject = '';
     
     if (leadMagnet === 'free_mt5_bot_source_code') {
-      // Using a public URL that will be accessible to Resend
-      attachmentUrl = 'https://roboquant.ai/resources/RoboQuant_Free_Bot.mq5'; // Replace with actual hosted file URL
-      attachmentName = 'RoboQuant_Free_Bot.mq5';
+      // Using the Supabase storage URL provided by the user
+      attachmentUrl = 'https://www.roboquant.ai/storage/v1/object/public/leadmagnet//No%20Wick%20PineScript%20Source%20Code.rtf';
+      attachmentName = 'RoboQuant_Free_Bot.rtf';
+      emailSubject = 'Your Free MT5 Bot Source Code from RoboQuant';
     }
 
     console.log("Sending email to:", email, "with attachment:", attachmentUrl);
@@ -63,8 +65,8 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'RoboQuant <noreply@roboquantacademy.com>',
         to: email,
-        subject: `Your Free MT5 Bot Source Code from RoboQuant`,
-        text: `Hello ${name},\n\nThank you for your interest in RoboQuant Academy! As promised, I've attached your free MT5 bot source code.\n\nIf you have any questions or need assistance implementing this bot, feel free to reply to this email or join our community.\n\nHappy Trading,\nTim from RoboQuant Academy`,
+        subject: emailSubject,
+        text: `Hello ${name},\n\nThank you for your interest in RoboQuant Academy! As promised, I've attached your free bot source code.\n\nIf you have any questions or need assistance implementing this bot, feel free to reply to this email or join our community.\n\nHappy Trading,\nTim from RoboQuant Academy`,
         attachments: [
           {
             filename: attachmentName,
