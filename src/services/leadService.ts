@@ -91,24 +91,31 @@ const sendLeadMagnetEmail = async (leadData: LeadData): Promise<boolean> => {
   try {
     console.log("Sending lead magnet email to:", leadData.email);
     
-    // Set a reasonable timeout for the function call
-    const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
+    // Set a reasonable timeout for the function call using Promise.race instead of AbortController
+    const timeoutPromise = new Promise<{data: null, error: {message: string}}>((resolve) => {
+      setTimeout(() => {
+        resolve({
+          data: null,
+          error: { message: 'Function call timed out after 10 seconds' }
+        });
+      }, 10000); // 10 second timeout
+    });
     
-    const { data, error } = await supabase.functions.invoke("send-lead-magnet", {
+    // Call the edge function
+    const functionPromise = supabase.functions.invoke("send-lead-magnet", {
       body: {
         name: leadData.name,
         email: leadData.email,
         leadMagnet: leadData.leadMagnet
-      },
-      signal: abortController.signal
+      }
     }).catch(err => {
       console.error("Error invoking send-lead-magnet function:", err);
       // Return a structured error object similar to supabase error format
       return { data: null, error: { message: err.message } };
     });
     
-    clearTimeout(timeoutId);
+    // Race between the actual call and the timeout
+    const { data, error } = await Promise.race([functionPromise, timeoutPromise]);
 
     if (error) {
       console.error("Error sending lead magnet email:", error);
