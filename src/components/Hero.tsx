@@ -40,7 +40,10 @@ const Hero: React.FC = () => {
   return (
     <section className="relative min-h-[100vh] flex items-center pb-16 overflow-hidden">
       <VideoBackground />
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen}
+      >
         <HeroContent imageLoaded={imageLoaded} onOpenVideoDialog={() => setDialogOpen(true)} />
         {dialogOpen && <VideoDialog />}
       </Dialog>

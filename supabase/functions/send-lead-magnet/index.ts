@@ -19,10 +19,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Processing lead magnet request");
     const { name, email, leadMagnet } = await req.json() as LeadMagnetRequest;
     
     // Validate inputs
     if (!name || !email || !leadMagnet) {
+      console.error("Missing required fields:", { name, email, leadMagnet });
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
@@ -32,6 +34,7 @@ serve(async (req) => {
     // Initialize Resend client
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_API_KEY) {
+      console.error("Resend API key not found");
       return new Response(
         JSON.stringify({ error: 'Resend API key not found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -72,9 +75,9 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error("Resend API error:", error);
-      throw new Error(`Failed to send email: ${error}`);
+      const errorText = await response.text();
+      console.error("Resend API error:", errorText);
+      throw new Error(`Failed to send email: ${errorText}`);
     }
 
     console.log("Email sent successfully to:", email);

@@ -27,20 +27,12 @@ export const submitLead = async (leadData: LeadData): Promise<boolean> => {
 
     if (error) {
       console.error("Error saving lead:", error);
-      // Handle the 403 error gracefully
-      if (error.code === "PGRST116") {
-        toast({
-          title: "Submission Error",
-          description: "There was a permission issue submitting your information. Please try again later.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Submission Error",
-          description: "There was an error submitting your information. Please try again.",
-          variant: "destructive",
-        });
-      }
+      
+      toast({
+        title: "Submission Error",
+        description: "There was an error submitting your information. Please try again.",
+        variant: "destructive",
+      });
       return false;
     }
 
@@ -59,6 +51,11 @@ export const submitLead = async (leadData: LeadData): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error("Error in submitLead:", error);
+    toast({
+      title: "Submission Error",
+      description: "There was an error submitting your information. Please try again.",
+      variant: "destructive",
+    });
     return false;
   }
 };
@@ -66,6 +63,8 @@ export const submitLead = async (leadData: LeadData): Promise<boolean> => {
 // Send email with the lead magnet
 const sendLeadMagnetEmail = async (leadData: LeadData): Promise<void> => {
   try {
+    console.log("Sending lead magnet email to:", leadData.email);
+    
     const { error } = await supabase.functions.invoke("send-lead-magnet", {
       body: {
         name: leadData.name,
@@ -81,8 +80,15 @@ const sendLeadMagnetEmail = async (leadData: LeadData): Promise<void> => {
         description: "There was a problem sending your free bot. Please contact support.",
         variant: "destructive",
       });
+    } else {
+      console.log("Successfully sent lead magnet email");
     }
   } catch (error) {
     console.error("Error in sendLeadMagnetEmail:", error);
+    toast({
+      title: "Email Delivery Issue",
+      description: "There was a problem sending your free bot. Please contact support.",
+      variant: "destructive",
+    });
   }
 };

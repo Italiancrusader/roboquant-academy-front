@@ -44,7 +44,11 @@ const VideoDialog: React.FC = () => {
       <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent 
           className={`${isMobile ? 'w-[95vw] max-w-[95vw]' : 'sm:max-w-[900px]'} p-0 bg-transparent border-0`}
-          onInteractOutside={() => handleDialogOpenChange(false)}
+          onInteractOutside={(e) => {
+            e.preventDefault();
+            handleDialogOpenChange(false);
+          }}
+          onEscapeKeyDown={() => handleDialogOpenChange(false)}
           onOpenAutoFocus={(e) => {
             e.preventDefault(); // Prevent auto focusing elements inside the dialog
           }}
@@ -78,15 +82,17 @@ const VideoDialog: React.FC = () => {
       </Dialog>
 
       {/* Lead form dialog shown when exiting video */}
-      <LeadDialog
-        isOpen={showLeadForm}
-        onOpenChange={setShowLeadForm}
-        title="Get Your Free MT5 Bot Source Code"
-        description="Enter your details below to receive our free MT5 bot source code immediately to your inbox."
-        source="video_exit"
-        leadMagnet="free_mt5_bot_source_code"
-        buttonText="Send Me The Bot Code"
-      />
+      {showLeadForm && (
+        <LeadDialog
+          isOpen={showLeadForm}
+          onOpenChange={setShowLeadForm}
+          title="Get Your Free MT5 Bot Source Code"
+          description="Enter your details below to receive our free MT5 bot source code immediately to your inbox."
+          source="video_exit"
+          leadMagnet="free_mt5_bot_source_code"
+          buttonText="Send Me The Bot Code"
+        />
+      )}
     </>
   );
 };

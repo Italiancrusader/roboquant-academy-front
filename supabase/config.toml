@@ -1,5 +1,7 @@
 
 project_id = "gqnzsnzolqvsalyzbhmq"
+[functions.send-lead-magnet]
+verify_jwt = false
 [functions.test-resend]
 verify_jwt = false
 [functions.send-test-emails]
