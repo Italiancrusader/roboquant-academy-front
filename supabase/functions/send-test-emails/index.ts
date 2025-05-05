@@ -15,8 +15,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
 };
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY") || "");
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -27,12 +25,31 @@ serve(async (req) => {
   }
 
   try {
+    // Initialize Resend with API key
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error("RESEND_API_KEY not found in environment variables");
+      return new Response(JSON.stringify({
+        success: false,
+        error: "API key not configured"
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    
+    const resend = new Resend(resendApiKey);
+    
+    // Parse request body
     const { type = "all", email = "ventos99@gmail.com" } = await req.json();
     const results = [];
+    
+    console.log(`Sending ${type} email(s) to ${email}`);
     
     // Purchase Confirmation Test
     if (type === "purchase" || type === "all") {
       try {
+        console.log("Sending purchase confirmation email...");
         const data = await resend.emails.send({
           from: "RoboQuant Academy <info@roboquant.ai>",
           to: [email],
@@ -49,6 +66,8 @@ serve(async (req) => {
           })
         });
         
+        console.log("Purchase email sent, response:", data);
+        
         results.push({
           type: "purchase",
           success: true,
@@ -59,7 +78,7 @@ serve(async (req) => {
         results.push({
           type: "purchase",
           success: false,
-          error: error.message
+          error: error.message || String(error)
         });
       }
     }
@@ -67,6 +86,7 @@ serve(async (req) => {
     // Course Completion Test
     if (type === "completion" || type === "all") {
       try {
+        console.log("Sending course completion email...");
         const data = await resend.emails.send({
           from: "RoboQuant Academy <info@roboquant.ai>",
           to: [email],
@@ -78,6 +98,8 @@ serve(async (req) => {
           )
         });
         
+        console.log("Completion email sent, response:", data);
+        
         results.push({
           type: "completion",
           success: true,
@@ -88,7 +110,7 @@ serve(async (req) => {
         results.push({
           type: "completion",
           success: false,
-          error: error.message
+          error: error.message || String(error)
         });
       }
     }
@@ -96,6 +118,7 @@ serve(async (req) => {
     // Abandoned Cart Test
     if (type === "cart" || type === "all") {
       try {
+        console.log("Sending abandoned cart email...");
         const data = await resend.emails.send({
           from: "RoboQuant Academy <info@roboquant.ai>",
           to: [email],
@@ -107,6 +130,8 @@ serve(async (req) => {
           )
         });
         
+        console.log("Cart email sent, response:", data);
+        
         results.push({
           type: "cart",
           success: true,
@@ -117,7 +142,7 @@ serve(async (req) => {
         results.push({
           type: "cart",
           success: false,
-          error: error.message
+          error: error.message || String(error)
         });
       }
     }
@@ -125,6 +150,7 @@ serve(async (req) => {
     // Re-engagement Test
     if (type === "reengagement" || type === "all") {
       try {
+        console.log("Sending re-engagement email...");
         const data = await resend.emails.send({
           from: "RoboQuant Academy <info@roboquant.ai>",
           to: [email],
@@ -145,6 +171,8 @@ serve(async (req) => {
           )
         });
         
+        console.log("Re-engagement email sent, response:", data);
+        
         results.push({
           type: "reengagement",
           success: true,
@@ -155,10 +183,12 @@ serve(async (req) => {
         results.push({
           type: "reengagement",
           success: false,
-          error: error.message
+          error: error.message || String(error)
         });
       }
     }
+    
+    console.log("Email sending complete. Results:", results);
     
     return new Response(JSON.stringify({ 
       success: true,
@@ -171,7 +201,7 @@ serve(async (req) => {
     console.error("❌ Error sending test emails:", error);
     return new Response(JSON.stringify({ 
       success: false,
-      error: error.message 
+      error: error.message || String(error)
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
