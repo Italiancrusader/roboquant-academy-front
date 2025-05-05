@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
@@ -13,8 +14,12 @@ const CTA: React.FC = () => {
   const navigate = useNavigate();
   
   const handleEnroll = async () => {
-    // Track InitiateCheckout event
-    trackInitiateCheckout(1500);
+    // Track InitiateCheckout event with proper params object
+    trackInitiateCheckout({
+      value: 1500,
+      currency: 'USD',
+      content_name: 'RoboQuant Academy'
+    });
     
     if (!user) {
       navigate('/auth', { state: { from: '/' } });
