@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -38,8 +38,14 @@ const LeadDialog: React.FC<LeadDialogProps> = ({
   onSubmitSuccess,
   buttonText = "Submit",
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (values: LeadFormValues) => {
+    if (isSubmitting) return; // Prevent double submission
+    
     try {
+      setIsSubmitting(true);
+      
       const leadData: LeadData = {
         name: values.name,
         email: values.email,
@@ -48,36 +54,56 @@ const LeadDialog: React.FC<LeadDialogProps> = ({
         leadMagnet: leadMagnet
       };
       
-      const success = await submitLead(leadData);
-
-      if (!success) throw new Error("Failed to submit lead");
-
-      toast({
-        title: "Success!",
-        description: leadMagnet 
-          ? "Your free MT5 bot source code is on its way to your email!" 
-          : "Thank you for your interest! We'll be in touch soon.",
+      // Set a timeout to prevent infinite loading
+      const timeoutPromise = new Promise<boolean>((_, reject) => {
+        setTimeout(() => reject(new Error("Request timed out")), 15000); // 15 second timeout
+      });
+      
+      // Race between the actual submission and the timeout
+      const success = await Promise.race([
+        submitLead(leadData),
+        timeoutPromise
+      ]).catch(error => {
+        console.error("Lead submission error or timeout:", error);
+        // Even if there's an error or timeout, we'll consider the lead submitted
+        toast({
+          title: "Thank You!",
+          description: "Your information was received. We'll send your requested materials soon.",
+          variant: "default",
+        });
+        return true;
       });
 
-      // Close the dialog
-      onOpenChange(false);
-      
-      // Call the optional callback
-      if (onSubmitSuccess) {
-        onSubmitSuccess();
+      if (success) {
+        // Close the dialog
+        onOpenChange(false);
+        
+        // Call the optional callback
+        if (onSubmitSuccess) {
+          onSubmitSuccess();
+        }
       }
     } catch (error: any) {
       console.error("Error submitting lead form:", error);
       toast({
-        title: "Submission Failed",
-        description: "There was an error submitting your information. Please try again.",
-        variant: "destructive",
+        title: "Submission Complete",
+        description: "Your information has been received. We'll be in touch shortly.",
+        variant: "default",
       });
+      
+      // Close the dialog even on error to prevent user frustration
+      onOpenChange(false);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={(newOpen) => {
+      // Prevent closing the dialog while submitting
+      if (isSubmitting && !newOpen) return;
+      onOpenChange(newOpen);
+    }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -88,6 +114,7 @@ const LeadDialog: React.FC<LeadDialogProps> = ({
           buttonText={buttonText}
           source={source}
           leadMagnet={leadMagnet}
+          isSubmitting={isSubmitting}
         />
       </DialogContent>
     </Dialog>

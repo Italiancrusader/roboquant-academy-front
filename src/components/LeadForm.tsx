@@ -42,6 +42,7 @@ interface LeadFormProps {
   source: string;
   leadMagnet?: string;
   onCancel?: () => void;
+  isSubmitting?: boolean;
 }
 
 const LeadForm: React.FC<LeadFormProps> = ({ 
@@ -49,9 +50,11 @@ const LeadForm: React.FC<LeadFormProps> = ({
   buttonText = "Submit", 
   source,
   leadMagnet,
-  onCancel
+  onCancel,
+  isSubmitting = false
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
+  const isLoading = isSubmitting || localLoading;
   
   const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadFormSchema),
@@ -64,7 +67,9 @@ const LeadForm: React.FC<LeadFormProps> = ({
   });
   
   const handleSubmit = async (values: LeadFormValues) => {
-    setIsLoading(true);
+    if (isLoading) return; // Prevent double submissions
+    
+    setLocalLoading(true);
     
     try {
       // Combine prefix and phone number
@@ -78,15 +83,28 @@ const LeadForm: React.FC<LeadFormProps> = ({
         lead_type: leadMagnet || "enrollment"
       });
       
-      await onSubmit({
+      // Set a timeout to ensure the loading state doesn't get stuck
+      const submitPromise = onSubmit({
         name: values.name,
         email: values.email,
         phone: fullPhoneNumber
       });
+      
+      const timeoutPromise = new Promise((_resolve, reject) => {
+        setTimeout(() => reject(new Error("Form submission timed out")), 10000);
+      });
+      
+      await Promise.race([submitPromise, timeoutPromise]).catch(error => {
+        console.error("Form submission error or timeout:", error);
+        // We don't throw here, just log the error
+      });
     } catch (error) {
       console.error("Error submitting lead form:", error);
     } finally {
-      setIsLoading(false);
+      // Ensure loading state is reset after a delay
+      setTimeout(() => {
+        setLocalLoading(false);
+      }, 500);
     }
   };
   
@@ -100,7 +118,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your name" {...field} />
+                <Input placeholder="Enter your name" {...field} disabled={isLoading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -114,7 +132,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="you@example.com" type="email" {...field} />
+                <Input placeholder="you@example.com" type="email" {...field} disabled={isLoading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -131,6 +149,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
+                  disabled={isLoading}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -157,7 +176,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
               <FormItem className="col-span-8">
                 <FormLabel>Phone Number</FormLabel>
                 <FormControl>
-                  <Input placeholder="123456789" {...field} />
+                  <Input placeholder="123456789" {...field} disabled={isLoading} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -181,6 +200,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
               variant="outline" 
               onClick={onCancel} 
               className="flex-shrink-0"
+              disabled={isLoading}
             >
               Cancel
             </Button>

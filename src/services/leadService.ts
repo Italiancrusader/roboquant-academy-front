@@ -45,16 +45,33 @@ export const submitLead = async (leadData: LeadData): Promise<boolean> => {
 
     // If the lead is for a free bot, call the edge function to send the bot source code
     if (leadData.leadMagnet === "free_mt5_bot_source_code") {
-      const emailResult = await sendLeadMagnetEmail(leadData);
-      
-      if (!emailResult) {
+      try {
+        const emailResult = await sendLeadMagnetEmail(leadData);
+        
+        if (!emailResult) {
+          toast({
+            title: "Thank You!",
+            description: "Your information was saved, but there was an issue sending the email. We'll send your bot shortly.",
+            variant: "default",
+          });
+          return true; // Still return true as the lead was saved
+        }
+      } catch (error) {
+        console.error("Error sending lead magnet email, but lead was saved:", error);
         toast({
           title: "Thank You!",
-          description: "Your information was saved, but there was an issue sending the email. We'll send your bot shortly.",
+          description: "Your information was saved. We'll send your bot to your email address shortly!",
           variant: "default",
         });
         return true; // Still return true as the lead was saved
       }
+    } else {
+      // For regular leads without lead magnets
+      toast({
+        title: "Thank You!",
+        description: "Your information was submitted successfully. We'll be in touch soon!",
+        variant: "default",
+      });
     }
 
     return true;
@@ -74,13 +91,24 @@ const sendLeadMagnetEmail = async (leadData: LeadData): Promise<boolean> => {
   try {
     console.log("Sending lead magnet email to:", leadData.email);
     
+    // Set a reasonable timeout for the function call
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
+    
     const { data, error } = await supabase.functions.invoke("send-lead-magnet", {
       body: {
         name: leadData.name,
         email: leadData.email,
         leadMagnet: leadData.leadMagnet
-      }
+      },
+      signal: abortController.signal
+    }).catch(err => {
+      console.error("Error invoking send-lead-magnet function:", err);
+      // Return a structured error object similar to supabase error format
+      return { data: null, error: { message: err.message } };
     });
+    
+    clearTimeout(timeoutId);
 
     if (error) {
       console.error("Error sending lead magnet email:", error);
