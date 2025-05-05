@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification to admin
     const adminEmailResponse = await resend.emails.send({
-      from: "RoboQuant Academy <no-reply@roboquantacademy.com>",
+      from: "RoboQuant <team@updates.roboquant.ai>",
       to: ["admin@roboquantacademy.com"],
       subject: `New Contact Form Submission: ${subject}`,
       html: `
@@ -42,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation to user
     const userEmailResponse = await resend.emails.send({
-      from: "RoboQuant Academy <no-reply@roboquantacademy.com>",
+      from: "RoboQuant <team@updates.roboquant.ai>",
       to: [email],
       subject: "We received your message - RoboQuant Academy",
       html: `

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@1.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.40.0";

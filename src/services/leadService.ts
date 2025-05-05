@@ -49,8 +49,8 @@ export const submitLead = async (leadData: LeadData): Promise<boolean> => {
       
       if (!emailResult) {
         toast({
-          title: "Bot Delivery Info",
-          description: "Your information was saved but there was an issue sending the email. Our team has been notified and will send your bot soon.",
+          title: "Thank You!",
+          description: "Your information was saved, but there was an issue sending the email. We'll send your bot shortly.",
           variant: "default",
         });
         return true; // Still return true as the lead was saved
@@ -94,7 +94,7 @@ const sendLeadMagnetEmail = async (leadData: LeadData): Promise<boolean> => {
     
     console.log("Successfully sent lead magnet email");
     toast({
-      title: "Success!",
+      title: "Thank You!",
       description: "Your free MT5 bot source code has been sent to your email address!",
       variant: "default",
     });
