@@ -46,6 +46,7 @@ const EmailTester: React.FC = () => {
     setResults(null);
     
     try {
+      // Call the edge function using supabase.functions.invoke
       const { data, error } = await supabase.functions.invoke('send-test-emails', {
         body: {
           email: values.email,
