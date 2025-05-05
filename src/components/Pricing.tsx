@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackInitiateCheckout } from '@/utils/metaPixel';
+import { saveCartData, clearCartData } from '@/utils/cartTracking';
 
 const Pricing = () => {
   const { user } = useAuth();
@@ -26,10 +27,15 @@ const Pricing = () => {
     });
     
     try {
+      const courseId = 'premium'; // Default courseId for the main course
+      
+      // Save cart data for abandoned cart tracking
+      saveCartData(user?.id, courseId);
+      
       // Create checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
-          courseId: 'premium', // Use a default courseId for the main course
+          courseId,
           courseTitle: 'RoboQuant Academy',
           userId: user?.id || 'guest', // Allow guest checkout
           priceInCents: 150000, // $1500.00
@@ -41,6 +47,9 @@ const Pricing = () => {
       if (error) throw error;
 
       if (data?.url) {
+        // Clear cart data on successful redirect
+        await clearCartData(user?.id);
+        
         // Redirect to Stripe checkout
         window.location.href = data.url;
       } else {

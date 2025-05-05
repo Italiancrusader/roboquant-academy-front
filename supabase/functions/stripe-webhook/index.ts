@@ -134,6 +134,41 @@ async function handleCheckoutSessionCompleted(supabase: any, session: any) {
           }
           
           console.log(`✅ Enrollment created for user ${userId} and course ${courseId}`);
+          
+          // Send purchase confirmation email
+          try {
+            console.log(`📧 Sending purchase confirmation email`);
+            
+            // Get the amount from the session
+            const amountTotal = session.amount_total;
+            
+            // Make a request to our purchase confirmation endpoint
+            const response = await fetch(`${supabaseUrl}/functions/v1/purchase-confirmation`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseServiceKey}`
+              },
+              body: JSON.stringify({
+                userId,
+                courseId,
+                sessionId: session.id,
+                priceInCents: amountTotal
+              })
+            });
+            
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(`Failed to send purchase confirmation: ${errorData.error || response.statusText}`);
+            }
+            
+            const result = await response.json();
+            console.log(`📧 Purchase confirmation email sent: ${result.email_id || 'unknown'}`);
+          } catch (emailError) {
+            console.error(`❌ Error sending purchase confirmation email: ${emailError.message}`);
+            // Continue with the process even if email sending fails
+          }
+          
         } else {
           console.log(`⚠️ Enrollment already exists for user ${userId} and course ${courseId}`);
         }
