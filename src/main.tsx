@@ -7,6 +7,9 @@ import LoadingAnimation from './components/LoadingAnimation';
 import { trackPageView as trackMetaPixelPageView } from './utils/metaPixel';
 import { trackPageView as trackGAPageView } from './utils/googleAnalytics';
 
+// Define dataLayer for Google Tag Manager if it doesn't exist
+window.dataLayer = window.dataLayer || [];
+
 // Preload critical assets
 const preloadAssets = async () => {
   // Preload hero image
