@@ -14,7 +14,8 @@ import {
   MessageSquare,
   Bell,
   Award,
-  Users
+  Users,
+  Mail
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -61,6 +62,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { to: '/admin/certificates', icon: <Award className="mr-2 h-4 w-4" />, label: 'Certificates' },
     { to: '/admin/community', icon: <MessageSquare className="mr-2 h-4 w-4" />, label: 'Community' },
     { to: '/admin/notifications', icon: <Bell className="mr-2 h-4 w-4" />, label: 'Notifications' },
+    { to: '/admin/email-testing', icon: <Mail className="mr-2 h-4 w-4" />, label: 'Email Testing' },
     { to: '/admin/settings', icon: <Settings className="mr-2 h-4 w-4" />, label: 'Settings' },
   ];
 

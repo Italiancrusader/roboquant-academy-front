@@ -31,6 +31,7 @@ import CourseConfigPage from './pages/admin/CourseConfigPage';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminCertificates from './pages/admin/AdminCertificates';
 import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminEmailTesting from './pages/admin/AdminEmailTesting';
 
 const App = () => {
   useEffect(() => {
@@ -69,6 +70,7 @@ const App = () => {
           <Route path="/admin/certificates" element={<AdminCheck><AdminCertificates /></AdminCheck>} />
           <Route path="/admin/notifications" element={<AdminCheck><AdminNotifications /></AdminCheck>} />
           <Route path="/admin/settings" element={<AdminCheck><AdminSettings /></AdminCheck>} />
+          <Route path="/admin/email-testing" element={<AdminCheck><AdminEmailTesting /></AdminCheck>} />
         </Routes>
       </Router>
     </AuthProvider>
