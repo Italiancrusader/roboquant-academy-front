@@ -4,17 +4,6 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
-import { trackPageView } from './utils/metaPixel';
-
-// Track page view on initial load
-trackPageView();
-
-// Ensure the pixel is ready by explicitly checking if fbq exists
-if (typeof window !== 'undefined' && !window.fbq) {
-  console.error('Meta Pixel fbq object not found - this may indicate the pixel is not loading correctly');
-} else {
-  console.log('Meta Pixel initialized successfully');
-}
 
 // Preload critical assets
 const preloadAssets = async () => {

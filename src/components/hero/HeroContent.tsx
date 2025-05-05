@@ -5,32 +5,12 @@ import { ArrowRight, Play } from 'lucide-react';
 import { DialogTrigger } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
 import OptimizedImage from '@/components/OptimizedImage';
-import { trackViewContent, trackInitiateCheckout } from '@/utils/metaPixel';
-import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 
 const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
   const isMobile = useIsMobile();
-  const { user } = useAuth();
-
-  useEffect(() => {
-    // Track ViewContent when hero section is loaded
-    trackViewContent({
-      content_name: 'RoboQuant Academy Homepage',
-      content_category: 'Landing Page'
-    });
-  }, [user]);
 
   const scrollToPricing = (e: React.MouseEvent) => {
     e.preventDefault();
-    
-    // Track InitiateCheckout event when clicking on Enroll Now
-    trackInitiateCheckout({
-      value: 1500,
-      currency: 'USD',
-      content_name: 'RoboQuant Academy'
-    });
-    
     const pricingSection = document.getElementById('pricing');
     if (pricingSection) {
       pricingSection.scrollIntoView({ behavior: 'smooth' });

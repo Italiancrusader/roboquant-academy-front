@@ -5,10 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
-import { trackContact } from '@/utils/metaPixel';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -37,12 +36,6 @@ const ContactForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Track Contact event with Meta Pixel
-      trackContact({
-        content_name: 'Contact Form Submission',
-        content_category: data.subject
-      });
-      
       // Save to Supabase
       const { error } = await supabase
         .from('contact_submissions')

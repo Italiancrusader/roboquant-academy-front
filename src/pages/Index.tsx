@@ -13,22 +13,9 @@ import AboutInstructor from '../components/AboutInstructor';
 import CTA from '../components/CTA';
 import { Link } from "react-router-dom";
 import { Instagram, Send } from 'lucide-react';
-import { trackPageView, trackViewContent } from '../utils/metaPixel';
-import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
-  const { user } = useAuth();
-
   useEffect(() => {
-    // Track page view again when component mounts (SPA navigation)
-    trackPageView();
-    
-    // Track ViewContent event for homepage
-    trackViewContent({
-      content_name: 'RoboQuant Academy Homepage',
-      content_category: 'Landing Page'
-    });
-    
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'page_view', {
         page_title: 'RoboQuant Academy Home',
@@ -36,7 +23,7 @@ const Index = () => {
         page_path: window.location.pathname,
       });
     }
-  }, [user]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-neulis overflow-x-hidden">

@@ -1,12 +1,12 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Check, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { trackInitiateCheckout } from '@/utils/metaPixel';
 
 const Pricing = () => {
   const { user } = useAuth();
@@ -17,13 +17,6 @@ const Pricing = () => {
     setIsLoading(true);
     
     try {
-      // Track InitiateCheckout event
-      trackInitiateCheckout({
-        value: 1500,
-        currency: 'USD',
-        content_name: 'RoboQuant Academy'
-      });
-      
       // Create checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
