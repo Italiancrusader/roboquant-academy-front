@@ -9,41 +9,33 @@ import { supabase } from '@/integrations/supabase/client';
 export const initFacebookPixel = (pixelId: string): void => {
   if (typeof window === 'undefined') return;
   
-  // Add Facebook Pixel base code
-  // This follows the official Meta Pixel implementation guide
-  !function(f: any, b: any, e: any, v: any, n: any, t: any, s: any) {
-    if (f.fbq) return;
-    n = f.fbq = function() {
-      n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+  // Check if script already exists
+  if (!window.fbq) {
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = "https://connect.facebook.net/en_US/fbevents.js";
+    document.head.appendChild(script);
+
+    window.fbq = function() {
+      // @ts-ignore
+      window._fbq.push(arguments);
     };
-    if (!f._fbq) f._fbq = n;
-    n.push = n;
-    n.loaded = !0;
-    n.version = '2.0';
-    n.queue = [];
-    t = b.createElement(e);
-    t.async = !0;
-    t.src = v;
-    s = b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t, s);
-  }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-  
-  // Initialize with pixel ID
-  fbq('init', pixelId);
-  console.log(`Meta Pixel initialized with ID: ${pixelId}`);
+    // @ts-ignore
+    window._fbq = window._fbq || [];
+
+    window.fbq('init', pixelId);
+  }
 };
 
 // Track a page view event
 export const trackPageView = (): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
-  console.log('Tracking PageView event');
   window.fbq('track', 'PageView');
 };
 
 // Track a custom event
 export const trackEvent = (eventName: string, params?: Record<string, any>): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
-  console.log(`Tracking custom event: ${eventName}`, params);
   window.fbq('track', eventName, params);
 };
 
@@ -51,11 +43,8 @@ export const trackEvent = (eventName: string, params?: Record<string, any>): voi
 export const trackPurchase = (value: number, currency: string = 'USD', userData?: Record<string, any>): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  const eventParams = { value, currency };
-  console.log('Tracking Purchase event', eventParams);
-  
   // Track on client side
-  window.fbq('track', 'Purchase', eventParams);
+  window.fbq('track', 'Purchase', { value, currency });
   
   // Also track via server-side API for redundancy if we have userData
   trackServerEvent('Purchase', userData, { 
@@ -68,11 +57,8 @@ export const trackPurchase = (value: number, currency: string = 'USD', userData?
 export const trackInitiateCheckout = (value: number, currency: string = 'USD', userData?: Record<string, any>): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  const eventParams = { value, currency };
-  console.log('Tracking InitiateCheckout event', eventParams);
-  
   // Track on client side
-  window.fbq('track', 'InitiateCheckout', eventParams);
+  window.fbq('track', 'InitiateCheckout', { value, currency });
   
   // Also track via server-side API for redundancy if we have userData
   trackServerEvent('InitiateCheckout', userData, { 
@@ -85,11 +71,8 @@ export const trackInitiateCheckout = (value: number, currency: string = 'USD', u
 export const trackLead = (value?: number, currency: string = 'USD', userData?: Record<string, any>): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  const eventParams = value ? { value, currency } : undefined;
-  console.log('Tracking Lead event', eventParams);
-  
   // Track on client side
-  window.fbq('track', 'Lead', eventParams);
+  window.fbq('track', 'Lead', value ? { value, currency } : undefined);
   
   // Also track via server-side API for redundancy if we have userData
   trackServerEvent('Lead', userData, value ? { 
@@ -113,8 +96,6 @@ export const trackViewContent = (
     value: value
   };
   
-  console.log('Tracking ViewContent event', customData);
-  
   // Track on client side
   window.fbq('track', 'ViewContent', customData);
   
@@ -128,8 +109,6 @@ export const trackCompleteRegistration = (
   customData?: Record<string, any>
 ): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
-  
-  console.log('Tracking CompleteRegistration event', customData);
   
   // Track on client side
   window.fbq('track', 'CompleteRegistration', customData);
@@ -145,8 +124,6 @@ export const trackContact = (
 ): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  console.log('Tracking Contact event', customData);
-  
   // Track on client side
   window.fbq('track', 'Contact', customData);
   
@@ -161,8 +138,6 @@ export const trackAddPaymentInfo = (
 ): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  console.log('Tracking AddPaymentInfo event', customData);
-  
   // Track on client side
   window.fbq('track', 'AddPaymentInfo', customData);
   
@@ -176,8 +151,6 @@ export const trackSubmitApplication = (
   customData?: Record<string, any>
 ): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
-  
-  console.log('Tracking SubmitApplication event', customData);
   
   // Track on client side
   window.fbq('track', 'SubmitApplication', customData);
@@ -196,14 +169,11 @@ export const trackServerEvent = async (
     // Collect basic browser information
     const baseUserData = {
       clientUserAgent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
-      clientIpAddress: null, // We'll get this server-side
       ...userData
     };
     
     // Only proceed if we have any user data to send
     if (Object.keys(baseUserData).length > 0) {
-      console.log(`Sending ${eventName} event to server-side API`, { userData: baseUserData, customData });
-      
       const { error } = await supabase.functions.invoke('meta-conversion-track', {
         body: {
           eventName,
@@ -222,11 +192,3 @@ export const trackServerEvent = async (
     console.error('Failed to track server event:', error);
   }
 };
-
-// TypeScript declaration for fbq
-declare global {
-  interface Window {
-    fbq: any;
-    _fbq: any;
-  }
-}

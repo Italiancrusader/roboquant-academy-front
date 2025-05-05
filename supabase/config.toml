@@ -1,47 +1,49 @@
 
-project_id = "gqnzsnzolqvsalyzbhmq"
+project_id = "roboquant-academy"
 
 [api]
-enabled = true
 port = 54321
 schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
 
 [db]
 port = 54322
+shadow_port = 54320
+major_version = 15
 
 [studio]
-enabled = true
 port = 54323
-api_url = "http://localhost:54321"
+
+[storage]
+file_size_limit = "50MiB"
+
+[auth]
+site_url = "https://example.com"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[analytics]
+disabled = false
+port = 54324
+vector_port = 54325
+backend = "postgres"
 
 [inbucket]
 enabled = true
-port = 54324
+port = 54326
+smtp_port = 54327
+pop3_port = 54328
 
-[storage]
-enabled = true
-
-[auth]
-enabled = true
-site_url = "http://localhost:3000"
-
-[realtime]
-enabled = true
-
-[functions.meta-conversion-track]
-verify_jwt = false
-
-[functions.create-checkout-session]
-verify_jwt = false
-
+[functions]
 [functions.stripe-webhook]
 verify_jwt = false
 
-[functions.enrollment-notification]
-verify_jwt = false
-
-[functions.send-contact-notification]
-verify_jwt = false
-
-[functions.generate-narrative]
+[functions.meta-conversion-track]
 verify_jwt = false

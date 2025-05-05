@@ -13,24 +13,9 @@ import AboutInstructor from '../components/AboutInstructor';
 import CTA from '../components/CTA';
 import { Link } from "react-router-dom";
 import { Instagram, Send } from 'lucide-react';
-import { trackPageView, trackViewContent } from '@/utils/metaPixel';
 
 const Index = () => {
   useEffect(() => {
-    // Track page view for Meta Pixel
-    trackPageView();
-    
-    // Track ViewContent for Meta Pixel
-    trackViewContent(
-      'Home Page',
-      'Landing Page',
-      undefined,
-      {
-        clientUserAgent: navigator.userAgent
-      }
-    );
-    
-    // Also track for Google Analytics if available
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'page_view', {
         page_title: 'RoboQuant Academy Home',
