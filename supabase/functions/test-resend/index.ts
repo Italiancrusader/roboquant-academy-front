@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@1.0.0";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,16 +18,12 @@ serve(async (req) => {
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
     
     // Send a test email
-    const { data, error } = await resend.emails.send({
+    const data = await resend.emails.send({
       from: "onboarding@resend.dev",
       to: ["ventos99@gmail.com"],
       subject: "Hello World",
       html: "<p>Congrats on sending your <strong>first email</strong>!</p>"
     });
-    
-    if (error) {
-      throw new Error(`Failed to send email: ${error.message}`);
-    }
     
     return new Response(
       JSON.stringify({ 
@@ -48,7 +44,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message || "An unknown error occurred" 
       }),
       { 
         status: 500, 
