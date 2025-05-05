@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
@@ -13,16 +12,12 @@ import AboutInstructor from '../components/AboutInstructor';
 import CTA from '../components/CTA';
 import { Link } from "react-router-dom";
 import { Instagram, Send } from 'lucide-react';
+import { trackPageView } from '../utils/googleAnalytics';
 
 const Index = () => {
   useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'page_view', {
-        page_title: 'RoboQuant Academy Home',
-        page_location: window.location.href,
-        page_path: window.location.pathname,
-      });
-    }
+    // Track page view with both Google Analytics and gtag
+    trackPageView(window.location.pathname, 'RoboQuant Academy Home');
   }, []);
 
   return (

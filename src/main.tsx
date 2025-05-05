@@ -4,7 +4,8 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
-import { trackPageView } from './utils/metaPixel';
+import { trackPageView as trackMetaPixelPageView } from './utils/metaPixel';
+import { trackPageView as trackGAPageView } from './utils/googleAnalytics';
 
 // Preload critical assets
 const preloadAssets = async () => {
@@ -29,7 +30,8 @@ const preloadAssets = async () => {
 };
 
 // Track page view
-trackPageView();
+trackMetaPixelPageView();
+trackGAPageView(window.location.pathname);
 
 // Mount app with Suspense boundary
 createRoot(document.getElementById("root")!).render(
