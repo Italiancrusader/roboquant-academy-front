@@ -3,7 +3,7 @@
  * Enhanced email templates with modern design and responsive layouts
  */
 
-import { formatPrice, formatDate, formatTime } from './emailUtils';
+import { formatPrice, formatDate, formatTime } from './emailUtils.ts';
 
 interface PurchaseDetails {
   orderNumber: string;
