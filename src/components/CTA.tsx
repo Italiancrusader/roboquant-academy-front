@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { ArrowRight } from 'lucide-react';
 import { handleStripeCheckout } from '@/services/stripe';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { trackInitiateCheckout } from '@/utils/metaPixel';
 
 const CTA: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
@@ -12,6 +14,14 @@ const CTA: React.FC = () => {
   const navigate = useNavigate();
   
   const handleEnroll = async () => {
+    // Track InitiateCheckout event
+    trackInitiateCheckout({
+      value: 1500,
+      currency: 'USD',
+      content_name: 'RoboQuant Academy',
+      content_type: 'product'
+    });
+    
     if (!user) {
       navigate('/auth', { state: { from: '/' } });
       return;

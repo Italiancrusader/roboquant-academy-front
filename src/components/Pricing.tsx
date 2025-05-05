@@ -7,6 +7,7 @@ import { Check, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { trackInitiateCheckout } from '@/utils/metaPixel';
 
 const Pricing = () => {
   const { user } = useAuth();
@@ -15,6 +16,14 @@ const Pricing = () => {
   
   const handlePurchase = async () => {
     setIsLoading(true);
+    
+    // Track InitiateCheckout event
+    trackInitiateCheckout({
+      value: 1500,
+      currency: 'USD',
+      content_name: 'RoboQuant Academy',
+      content_type: 'product'
+    });
     
     try {
       // Create checkout session

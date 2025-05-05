@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
+import { trackPageView } from './utils/metaPixel';
 
 // Preload critical assets
 const preloadAssets = async () => {
@@ -26,6 +27,9 @@ const preloadAssets = async () => {
 
   await Promise.all([imagePromise, videoPromise]);
 };
+
+// Track page view
+trackPageView();
 
 // Mount app with Suspense boundary
 createRoot(document.getElementById("root")!).render(
