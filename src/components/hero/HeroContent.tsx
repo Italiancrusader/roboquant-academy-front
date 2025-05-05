@@ -14,32 +14,22 @@ const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Collect user data for enhanced tracking if available
-    const userData = user ? {
-      email: user.email,
-      externalId: user.id,
-    } : undefined;
-    
     // Track ViewContent when hero section is loaded
-    trackViewContent(
-      'RoboQuant Academy Homepage', 
-      'Landing Page', 
-      undefined,
-      userData
-    );
+    trackViewContent({
+      content_name: 'RoboQuant Academy Homepage',
+      content_category: 'Landing Page'
+    });
   }, [user]);
 
   const scrollToPricing = (e: React.MouseEvent) => {
     e.preventDefault();
     
-    // Collect user data for enhanced tracking if available
-    const userData = user ? {
-      email: user.email,
-      externalId: user.id,
-    } : undefined;
-    
-    // Track InitiateCheckout event with user data when clicking on Enroll Now
-    trackInitiateCheckout(1500, 'USD', userData);
+    // Track InitiateCheckout event when clicking on Enroll Now
+    trackInitiateCheckout({
+      value: 1500,
+      currency: 'USD',
+      content_name: 'RoboQuant Academy'
+    });
     
     const pricingSection = document.getElementById('pricing');
     if (pricingSection) {

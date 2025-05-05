@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -6,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
-import { useToast } from './ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { trackContact } from '@/utils/metaPixel';
@@ -39,17 +38,10 @@ const ContactForm: React.FC = () => {
     
     try {
       // Track Contact event with Meta Pixel
-      trackContact(
-        { 
-          email: data.email,
-          firstName: data.name.split(' ')[0],
-          lastName: data.name.split(' ').slice(1).join(' ')
-        }, 
-        { 
-          contact_type: 'form_submission',
-          subject: data.subject
-        }
-      );
+      trackContact({
+        content_name: 'Contact Form Submission',
+        content_category: data.subject
+      });
       
       // Save to Supabase
       const { error } = await supabase

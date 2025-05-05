@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
@@ -23,10 +24,10 @@ const Index = () => {
     trackPageView();
     
     // Track ViewContent event for homepage
-    trackViewContent(
-      'RoboQuant Academy Homepage',
-      'Landing Page'
-    );
+    trackViewContent({
+      content_name: 'RoboQuant Academy Homepage',
+      content_category: 'Landing Page'
+    });
     
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'page_view', {

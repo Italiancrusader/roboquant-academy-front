@@ -11,6 +11,8 @@ declare global {
   }
 }
 
+type PixelEventParams = Record<string, any>;
+
 // Track a page view event
 export const trackPageView = (): void => {
   if (typeof window === 'undefined') return;
@@ -25,7 +27,7 @@ export const trackPageView = (): void => {
 };
 
 // Track a custom event
-export const trackEvent = (eventName: string, params?: Record<string, any>): void => {
+export const trackEvent = (eventName: string, params?: PixelEventParams): void => {
   if (typeof window === 'undefined' || !window.fbq) {
     console.error('Meta Pixel fbq function not found');
     return;
@@ -36,66 +38,49 @@ export const trackEvent = (eventName: string, params?: Record<string, any>): voi
 };
 
 // Track purchase event
-export const trackPurchase = (value: number, currency: string = 'USD'): void => {
+export const trackPurchase = (params: PixelEventParams): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  const eventParams = { value, currency };
-  console.log('Tracking Purchase event', eventParams);
-  window.fbq('track', 'Purchase', eventParams);
+  console.log('Tracking Purchase event', params);
+  window.fbq('track', 'Purchase', params);
 };
 
 // Track initiate checkout
-export const trackInitiateCheckout = (value: number, currency: string = 'USD'): void => {
+export const trackInitiateCheckout = (params: PixelEventParams): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  const eventParams = { value, currency };
-  console.log('Tracking InitiateCheckout event', eventParams);
-  window.fbq('track', 'InitiateCheckout', eventParams);
+  console.log('Tracking InitiateCheckout event', params);
+  window.fbq('track', 'InitiateCheckout', params);
 };
 
 // Track Lead event 
-export const trackLead = (value?: number, currency: string = 'USD'): void => {
+export const trackLead = (params?: PixelEventParams): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  const eventParams = value ? { value, currency } : undefined;
-  console.log('Tracking Lead event', eventParams || {});
-  window.fbq('track', 'Lead', eventParams);
+  console.log('Tracking Lead event', params || {});
+  window.fbq('track', 'Lead', params);
 };
 
 // Track ViewContent event
-export const trackViewContent = (
-  contentName: string, 
-  contentCategory?: string, 
-  value?: number
-): void => {
+export const trackViewContent = (params: PixelEventParams): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  const customData = {
-    content_name: contentName,
-    content_category: contentCategory,
-    value: value
-  };
-  
-  console.log('Tracking ViewContent event', customData);
-  window.fbq('track', 'ViewContent', customData);
+  console.log('Tracking ViewContent event', params);
+  window.fbq('track', 'ViewContent', params);
 };
 
 // Track Complete Registration event
-export const trackCompleteRegistration = (
-  customData?: Record<string, any>
-): void => {
+export const trackCompleteRegistration = (params?: PixelEventParams): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  console.log('Tracking CompleteRegistration event', customData || {});
-  window.fbq('track', 'CompleteRegistration', customData);
+  console.log('Tracking CompleteRegistration event', params || {});
+  window.fbq('track', 'CompleteRegistration', params);
 };
 
 // Track Contact event
-export const trackContact = (
-  customData?: Record<string, any>
-): void => {
+export const trackContact = (params?: PixelEventParams): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
-  console.log('Tracking Contact event', customData || {});
-  window.fbq('track', 'Contact', customData);
+  console.log('Tracking Contact event', params || {});
+  window.fbq('track', 'Contact', params);
 };
