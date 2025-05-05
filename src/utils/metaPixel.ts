@@ -13,28 +13,48 @@ declare global {
   }
 }
 
-// Initialize Facebook Pixel
-export const initFacebookPixel = (pixelId: string): void => {
-  if (typeof window === 'undefined') return;
-  
-  // No need to add script as it's already in index.html
-  console.log(`Meta Pixel initialized with ID: ${pixelId}`);
-};
-
 // Track a page view event
 export const trackPageView = (): void => {
-  if (typeof window === 'undefined' || !window.fbq) return;
+  if (typeof window === 'undefined') return;
+  
+  if (!window.fbq) {
+    console.error('Meta Pixel fbq function not found');
+    return;
+  }
   
   console.log('Tracking PageView event');
   window.fbq('track', 'PageView');
+  
+  // Also manually make a direct Facebook request as a fallback
+  const pixelId = '1570199587006306';
+  const img = new Image(1, 1);
+  img.src = `https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`;
+  img.style.display = 'none';
+  document.body.appendChild(img);
+  
+  // Send browser details to server for debugging
+  if (navigator && navigator.userAgent) {
+    console.log(`Browser: ${navigator.userAgent}`);
+  }
 };
 
 // Track a custom event
 export const trackEvent = (eventName: string, params?: Record<string, any>): void => {
-  if (typeof window === 'undefined' || !window.fbq) return;
+  if (typeof window === 'undefined' || !window.fbq) {
+    console.error('Meta Pixel fbq function not found');
+    return;
+  }
   
   console.log(`Tracking custom event: ${eventName}`, params);
   window.fbq('track', eventName, params);
+  
+  // Create a direct pixel hit for important events
+  const pixelId = '1570199587006306';
+  const eventParams = params ? `&cd[content_name]=${encodeURIComponent(JSON.stringify(params))}` : '';
+  const img = new Image(1, 1);
+  img.src = `https://www.facebook.com/tr?id=${pixelId}&ev=${eventName}${eventParams}&noscript=1`;
+  img.style.display = 'none';
+  document.body.appendChild(img);
 };
 
 // Track purchase event
