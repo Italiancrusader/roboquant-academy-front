@@ -23,7 +23,14 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Meta Conversion API Function triggered");
+    
     if (!META_CONVERSION_API_TOKEN || !META_PIXEL_ID) {
+      console.error("Missing Meta API credentials:", { 
+        hasToken: !!META_CONVERSION_API_TOKEN, 
+        hasPixelId: !!META_PIXEL_ID 
+      });
+      
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -46,6 +53,12 @@ serve(async (req) => {
       actionSource = "website" 
     } = await req.json();
 
+    console.log(`Processing ${eventName} event`, { 
+      hasUserData: !!userData,
+      hasCustomData: !!customData,
+      eventSourceUrl
+    });
+
     if (!eventName) {
       return new Response(
         JSON.stringify({ success: false, message: "Missing eventName parameter" }),
@@ -57,25 +70,27 @@ serve(async (req) => {
     }
 
     // Process user data to match Meta's requirements
-    const processedUserData = {
-      // Hash PII fields if they exist in userData
-      em: userData?.email ? hashValue(userData.email.toLowerCase()) : undefined,
-      ph: userData?.phone ? hashValue(userData.phone) : undefined,
-      fn: userData?.firstName ? hashValue(userData.firstName) : undefined,
-      ln: userData?.lastName ? hashValue(userData.lastName) : undefined,
-      ct: userData?.city ? hashValue(userData.city) : undefined,
-      st: userData?.state ? hashValue(userData.state) : undefined,
-      zp: userData?.zip ? hashValue(userData.zip) : undefined,
-      country: userData?.country ? hashValue(userData.country) : undefined,
-      external_id: userData?.externalId ? hashValue(userData.externalId) : undefined,
+    const processedUserData: Record<string, any> = {};
+    
+    // Hash PII fields if they exist in userData
+    if (userData) {
+      if (userData.email) processedUserData.em = hashValue(userData.email.toLowerCase());
+      if (userData.phone) processedUserData.ph = hashValue(userData.phone);
+      if (userData.firstName) processedUserData.fn = hashValue(userData.firstName);
+      if (userData.lastName) processedUserData.ln = hashValue(userData.lastName);
+      if (userData.city) processedUserData.ct = hashValue(userData.city);
+      if (userData.state) processedUserData.st = hashValue(userData.state);
+      if (userData.zip) processedUserData.zp = hashValue(userData.zip);
+      if (userData.country) processedUserData.country = hashValue(userData.country);
+      if (userData.externalId) processedUserData.external_id = hashValue(userData.externalId);
       
       // Non-hashed fields
-      client_user_agent: userData?.clientUserAgent,
-      client_ip_address: userData?.clientIpAddress,
-      fbc: userData?.fbc,
-      fbp: userData?.fbp,
-      subscription_id: userData?.subscriptionId,
-    };
+      processedUserData.client_user_agent = userData.clientUserAgent;
+      processedUserData.client_ip_address = userData.clientIpAddress;
+      processedUserData.fbc = userData.fbc;
+      processedUserData.fbp = userData.fbp;
+      processedUserData.subscription_id = userData.subscriptionId;
+    }
 
     // Create the event data object for the Meta API
     const eventData = {
@@ -88,6 +103,7 @@ serve(async (req) => {
     };
 
     console.log(`Sending event ${eventName} to Meta Conversion API`);
+    console.log("Event data:", JSON.stringify(eventData));
 
     // Send the event to Meta Conversion API
     const response = await fetch(
@@ -99,6 +115,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           data: [eventData],
+          test_event_code: "TEST12345", // Use this for testing, remove in production
         }),
       }
     );
