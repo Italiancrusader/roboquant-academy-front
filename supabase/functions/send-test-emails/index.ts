@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@1.0.0";
 import { 
@@ -7,7 +6,7 @@ import {
   abandonedCartTemplate,
   reEngagementTemplate
 } from "../utils/email-templates-enhanced.ts";
-import { generateOrderNumber, formatDate } from "../../src/utils/emailUtils.ts";
+import { generateOrderNumber, formatDate } from "../utils/emailUtils.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
