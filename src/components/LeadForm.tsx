@@ -8,17 +8,36 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { trackEvent } from "@/utils/googleAnalytics";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const phonePrefixes = [
+  { value: "+1", label: "US (+1)" },
+  { value: "+44", label: "UK (+44)" },
+  { value: "+61", label: "AU (+61)" },
+  { value: "+64", label: "NZ (+64)" },
+  { value: "+91", label: "IN (+91)" },
+  { value: "+86", label: "CN (+86)" },
+  { value: "+49", label: "DE (+49)" },
+  { value: "+33", label: "FR (+33)" },
+  { value: "+39", label: "IT (+39)" },
+  { value: "+34", label: "ES (+34)" },
+  { value: "+81", label: "JP (+81)" },
+  { value: "+82", label: "KR (+82)" },
+  { value: "+65", label: "SG (+65)" },
+  { value: "+971", label: "AE (+971)" },
+];
 
 const leadFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Please enter a valid email"),
-  phone: z.string().min(1, "Phone number is required")
+  phonePrefix: z.string().min(1, "Country code is required"),
+  phoneNumber: z.string().min(1, "Phone number is required")
 });
 
 type LeadFormValues = z.infer<typeof leadFormSchema>;
 
 interface LeadFormProps {
-  onSubmit: (values: LeadFormValues) => Promise<void>;
+  onSubmit: (values: { name: string, email: string, phone: string }) => Promise<void>;
   buttonText?: string;
   source: string;
   leadMagnet?: string;
@@ -39,7 +58,8 @@ const LeadForm: React.FC<LeadFormProps> = ({
     defaultValues: {
       name: "",
       email: "",
-      phone: ""
+      phonePrefix: "+1",
+      phoneNumber: ""
     }
   });
   
@@ -47,6 +67,9 @@ const LeadForm: React.FC<LeadFormProps> = ({
     setIsLoading(true);
     
     try {
+      // Combine prefix and phone number
+      const fullPhoneNumber = `${values.phonePrefix}${values.phoneNumber}`;
+      
       // Track lead capture event with Google Analytics and GTM
       trackEvent("lead_capture", {
         event_category: "Conversion",
@@ -55,7 +78,11 @@ const LeadForm: React.FC<LeadFormProps> = ({
         lead_type: leadMagnet || "enrollment"
       });
       
-      await onSubmit(values);
+      await onSubmit({
+        name: values.name,
+        email: values.email,
+        phone: fullPhoneNumber
+      });
     } catch (error) {
       console.error("Error submitting lead form:", error);
     } finally {
@@ -94,19 +121,49 @@ const LeadForm: React.FC<LeadFormProps> = ({
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input placeholder="Your phone number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-12 gap-2">
+          <FormField
+            control={form.control}
+            name="phonePrefix"
+            render={({ field }) => (
+              <FormItem className="col-span-4">
+                <FormLabel>Code</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Code" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {phonePrefixes.map((prefix) => (
+                      <SelectItem key={prefix.value} value={prefix.value}>
+                        {prefix.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormItem className="col-span-8">
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="123456789" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         
         <div className="flex gap-2 pt-2">
           <Button type="submit" className="w-full" disabled={isLoading}>

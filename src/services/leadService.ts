@@ -13,6 +13,8 @@ export interface LeadData {
 
 export const submitLead = async (leadData: LeadData): Promise<boolean> => {
   try {
+    console.log("Submitting lead:", leadData);
+    
     // Save lead to Supabase
     const { error } = await supabase.from("leads").insert({
       name: leadData.name,

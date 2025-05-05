@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.23.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,7 +43,8 @@ serve(async (req) => {
     let attachmentName = '';
     
     if (leadMagnet === 'free_mt5_bot_source_code') {
-      attachmentUrl = 'https://example.com/files/free_mt5_bot.mq5'; // Replace with actual URL
+      // Using a public URL that will be accessible to Resend
+      attachmentUrl = 'https://roboquant.ai/resources/RoboQuant_Free_Bot.mq5'; // Replace with actual hosted file URL
       attachmentName = 'RoboQuant_Free_Bot.mq5';
     }
 
