@@ -49,8 +49,8 @@ serve(async (req) => {
     
     console.log(`Sending ${type} email(s) to ${email}`);
     
-    // Use verified "onboarding@resend.dev" domain which is pre-verified in Resend
-    const fromEmail = "RoboQuant Academy <onboarding@resend.dev>";
+    // Use your new verified custom domain
+    const fromEmail = "RoboQuant Academy <no-reply@updates.roboquant.ai>";
     
     // Purchase Confirmation Test
     if (type === "purchase" || type === "all") {

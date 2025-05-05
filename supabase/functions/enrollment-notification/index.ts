@@ -57,9 +57,9 @@ const handler = async (req: Request): Promise<Response> => {
       
       const firstName = user.first_name || 'Student';
       
-      // Send welcome email to enrolled student
+      // Send welcome email to enrolled student with your verified domain
       const emailResponse = await resend.emails.send({
-        from: "RoboQuant Academy <no-reply@roboquantacademy.com>",
+        from: "RoboQuant Academy <no-reply@updates.roboquant.ai>",
         to: [user.email],
         subject: `Welcome to ${course.title} - RoboQuant Academy`,
         html: `

@@ -80,9 +80,9 @@ serve(async (req) => {
     // Determine recipient email based on test mode
     const toEmail = testMode ? "ventos99@gmail.com" : email;
     
-    // Send email using Resend
+    // Send email using Resend with your verified domain
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: "RoboQuant Academy <info@roboquant.ai>",
+      from: "RoboQuant Academy <no-reply@updates.roboquant.ai>",
       to: [toEmail],
       subject: `Complete Your RoboQuant Academy Enrollment`,
       html: abandonedCartTemplate(

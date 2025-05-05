@@ -17,18 +17,18 @@ serve(async (req) => {
     // Initialize Resend with the API key from environment variables
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
     
-    // Send a test email
+    // Send a test email using your verified domain
     const data = await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: "RoboQuant Academy <no-reply@updates.roboquant.ai>",
       to: ["ventos99@gmail.com"],
-      subject: "Hello World",
-      html: "<p>Congrats on sending your <strong>first email</strong>!</p>"
+      subject: "Hello from Your Verified Domain",
+      html: "<p>Congrats on sending your <strong>first email</strong> from your verified domain!</p>"
     });
     
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Test email sent successfully!", 
+        message: "Test email sent successfully from verified domain!", 
         data 
       }),
       { 
