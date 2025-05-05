@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import LeadForm from "./LeadForm";
 import { toast } from "@/components/ui/use-toast";
-import { trackEvent } from "@/utils/googleAnalytics";
-import { supabase } from "@/integrations/supabase/client";
+import { submitLead, LeadData } from "@/services/leadService";
 
 interface LeadDialogProps {
   isOpen: boolean;
@@ -41,24 +40,17 @@ const LeadDialog: React.FC<LeadDialogProps> = ({
 }) => {
   const handleSubmit = async (values: LeadFormValues) => {
     try {
-      // Store lead information in Supabase
-      const { error } = await supabase.from("leads").insert({
+      const leadData: LeadData = {
         name: values.name,
         email: values.email,
         phone: values.phone,
         source: source,
-        lead_magnet: leadMagnet,
-        created_at: new Date().toISOString(),
-      });
+        leadMagnet: leadMagnet
+      };
+      
+      const success = await submitLead(leadData);
 
-      if (error) throw error;
-
-      // Track conversion with both GA and dataLayer
-      trackEvent("generate_lead", {
-        event_category: "Conversion",
-        event_label: source,
-        lead_type: leadMagnet || "enrollment"
-      });
+      if (!success) throw new Error("Failed to submit lead");
 
       toast({
         title: "Success!",

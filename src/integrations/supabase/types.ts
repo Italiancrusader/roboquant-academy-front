@@ -113,6 +113,36 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          lead_magnet: string | null
+          name: string
+          phone: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          lead_magnet?: string | null
+          name: string
+          phone: string
+          source: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          lead_magnet?: string | null
+          name?: string
+          phone?: string
+          source?: string
+        }
+        Relationships: []
+      }
       lesson_attachments: {
         Row: {
           created_at: string
