@@ -7,20 +7,39 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import OptimizedImage from '@/components/OptimizedImage';
 import { trackViewContent, trackInitiateCheckout } from '@/utils/metaPixel';
 import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const HeroContent: React.FC<{ imageLoaded: boolean }> = ({ imageLoaded }) => {
   const isMobile = useIsMobile();
+  const { user } = useAuth();
 
   useEffect(() => {
+    // Collect user data for enhanced tracking if available
+    const userData = user ? {
+      email: user.email,
+      externalId: user.id,
+    } : undefined;
+    
     // Track ViewContent when hero section is loaded
-    trackViewContent('RoboQuant Academy Homepage', 'Landing Page');
-  }, []);
+    trackViewContent(
+      'RoboQuant Academy Homepage', 
+      'Landing Page', 
+      undefined,
+      userData
+    );
+  }, [user]);
 
   const scrollToPricing = (e: React.MouseEvent) => {
     e.preventDefault();
     
-    // Track InitiateCheckout event when clicking on Enroll Now
-    trackInitiateCheckout(1500);
+    // Collect user data for enhanced tracking if available
+    const userData = user ? {
+      email: user.email,
+      externalId: user.id,
+    } : undefined;
+    
+    // Track InitiateCheckout event with user data when clicking on Enroll Now
+    trackInitiateCheckout(1500, 'USD', userData);
     
     const pricingSection = document.getElementById('pricing');
     if (pricingSection) {

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@12.18.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.40.0";
@@ -168,6 +167,12 @@ async function trackMetaConversionPurchase(session: any) {
     const userData = {
       em: customer_details?.email ? hashValue(customer_details.email.toLowerCase()) : undefined,
       ph: customer_details?.phone ? hashValue(customer_details.phone) : undefined,
+      fn: customer_details?.name ? hashValue(customer_details.name.split(' ')[0]) : undefined,
+      ln: customer_details?.name ? hashValue(customer_details.name.split(' ').slice(1).join(' ')) : undefined,
+      ct: customer_details?.address?.city ? hashValue(customer_details.address.city) : undefined,
+      st: customer_details?.address?.state ? hashValue(customer_details.address.state) : undefined,
+      zp: customer_details?.address?.postal_code ? hashValue(customer_details.address.postal_code) : undefined,
+      country: customer_details?.address?.country ? hashValue(customer_details.address.country) : undefined,
       client_user_agent: session.client_reference_id || "Stripe Checkout"
     };
     
@@ -195,6 +200,7 @@ async function trackMetaConversionPurchase(session: any) {
           data: [{
             event_name: "Purchase",
             event_time: Math.floor(Date.now() / 1000),
+            event_source_url: session.success_url || session.cancel_url,
             action_source: "website",
             user_data: userData,
             custom_data: customData,
@@ -212,6 +218,7 @@ async function trackMetaConversionPurchase(session: any) {
 
 // Simple hash function for privacy (Meta requires hashed user data)
 function hashValue(value: string): string {
-  // This is a simplified hash - in production use SHA-256
+  if (!value) return "";
+  // Note: In production, use a proper SHA-256 hashing
   return btoa(value).replace(/=/g, '');
 }

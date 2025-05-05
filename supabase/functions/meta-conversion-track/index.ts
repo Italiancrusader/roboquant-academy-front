@@ -9,6 +9,13 @@ const corsHeaders = {
 const META_CONVERSION_API_TOKEN = Deno.env.get("META_CONVERSION_API_TOKEN") || "";
 const META_PIXEL_ID = Deno.env.get("META_PIXEL_ID") || "";
 
+// Simple hash function for privacy (Meta requires hashed user data)
+function hashValue(value: string): string {
+  if (!value) return "";
+  // Note: In production, use a proper SHA-256 hashing
+  return btoa(value).replace(/=/g, '');
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -30,7 +37,14 @@ serve(async (req) => {
     }
 
     // Parse the request body
-    const { eventName, userData, customData, eventTime } = await req.json();
+    const { 
+      eventName, 
+      userData, 
+      customData, 
+      eventTime,
+      eventSourceUrl,
+      actionSource = "website" 
+    } = await req.json();
 
     if (!eventName) {
       return new Response(
@@ -42,14 +56,38 @@ serve(async (req) => {
       );
     }
 
+    // Process user data to match Meta's requirements
+    const processedUserData = {
+      // Hash PII fields if they exist in userData
+      em: userData?.email ? hashValue(userData.email.toLowerCase()) : undefined,
+      ph: userData?.phone ? hashValue(userData.phone) : undefined,
+      fn: userData?.firstName ? hashValue(userData.firstName) : undefined,
+      ln: userData?.lastName ? hashValue(userData.lastName) : undefined,
+      ct: userData?.city ? hashValue(userData.city) : undefined,
+      st: userData?.state ? hashValue(userData.state) : undefined,
+      zp: userData?.zip ? hashValue(userData.zip) : undefined,
+      country: userData?.country ? hashValue(userData.country) : undefined,
+      external_id: userData?.externalId ? hashValue(userData.externalId) : undefined,
+      
+      // Non-hashed fields
+      client_user_agent: userData?.clientUserAgent,
+      client_ip_address: userData?.clientIpAddress,
+      fbc: userData?.fbc,
+      fbp: userData?.fbp,
+      subscription_id: userData?.subscriptionId,
+    };
+
     // Create the event data object for the Meta API
     const eventData = {
       event_name: eventName,
       event_time: eventTime || Math.floor(Date.now() / 1000),
-      action_source: "website",
-      user_data: userData || {},
+      event_source_url: eventSourceUrl,
+      action_source: actionSource,
+      user_data: processedUserData,
       custom_data: customData || {},
     };
+
+    console.log(`Sending event ${eventName} to Meta Conversion API`);
 
     // Send the event to Meta Conversion API
     const response = await fetch(

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -8,6 +9,7 @@ import { Textarea } from './ui/textarea';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { trackContact } from '@/utils/metaPixel';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -36,6 +38,19 @@ const ContactForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
+      // Track Contact event with Meta Pixel
+      trackContact(
+        { 
+          email: data.email,
+          firstName: data.name.split(' ')[0],
+          lastName: data.name.split(' ').slice(1).join(' ')
+        }, 
+        { 
+          contact_type: 'form_submission',
+          subject: data.subject
+        }
+      );
+      
       // Save to Supabase
       const { error } = await supabase
         .from('contact_submissions')

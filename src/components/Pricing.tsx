@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
@@ -17,8 +18,14 @@ const Pricing = () => {
     setIsLoading(true);
     
     try {
-      // Track InitiateCheckout event
-      trackInitiateCheckout(1500);
+      // Collect user data for enhanced tracking if available
+      const userData = user ? {
+        email: user.email,
+        externalId: user.id,
+      } : undefined;
+      
+      // Track InitiateCheckout event with user data
+      trackInitiateCheckout(1500, 'USD', userData);
       
       // Create checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
