@@ -42,7 +42,7 @@ const Hero: React.FC = () => {
       <VideoBackground />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <HeroContent imageLoaded={imageLoaded} onOpenVideoDialog={() => setDialogOpen(true)} />
-        <VideoDialog />
+        {dialogOpen && <VideoDialog />}
       </Dialog>
       
       <div 

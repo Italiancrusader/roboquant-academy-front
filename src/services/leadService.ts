@@ -27,7 +27,21 @@ export const submitLead = async (leadData: LeadData): Promise<boolean> => {
 
     if (error) {
       console.error("Error saving lead:", error);
-      throw error;
+      // Handle the 403 error gracefully
+      if (error.code === "PGRST116") {
+        toast({
+          title: "Submission Error",
+          description: "There was a permission issue submitting your information. Please try again later.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Submission Error",
+          description: "There was an error submitting your information. Please try again.",
+          variant: "destructive",
+        });
+      }
+      return false;
     }
 
     // Track lead in analytics

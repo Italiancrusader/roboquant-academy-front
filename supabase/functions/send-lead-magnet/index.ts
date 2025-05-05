@@ -48,6 +48,8 @@ serve(async (req) => {
       attachmentName = 'RoboQuant_Free_Bot.mq5';
     }
 
+    console.log("Sending email to:", email, "with attachment:", attachmentUrl);
+
     // Send email with attachment via Resend
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -71,15 +73,18 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.text();
+      console.error("Resend API error:", error);
       throw new Error(`Failed to send email: ${error}`);
     }
 
+    console.log("Email sent successfully to:", email);
     return new Response(
       JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
     
   } catch (error) {
+    console.error("Error in send-lead-magnet function:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
