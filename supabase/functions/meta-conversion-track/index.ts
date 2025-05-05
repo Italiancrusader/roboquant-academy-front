@@ -7,7 +7,10 @@ const corsHeaders = {
 };
 
 const META_CONVERSION_API_TOKEN = Deno.env.get("META_CONVERSION_API_TOKEN") || "";
-const META_PIXEL_ID = Deno.env.get("META_PIXEL_ID") || "";
+const META_PIXEL_ID = Deno.env.get("META_PIXEL_ID") || "1570199587006306"; // Fallback to hardcoded ID if not in env
+
+// Test event code for debugging
+const TEST_EVENT_CODE = "TEST12345";
 
 // Simple hash function for privacy (Meta requires hashed user data)
 function hashValue(value: string): string {
@@ -23,7 +26,8 @@ serve(async (req) => {
   }
 
   try {
-    if (!META_CONVERSION_API_TOKEN || !META_PIXEL_ID) {
+    if (!META_CONVERSION_API_TOKEN) {
+      console.error("Meta API credentials not configured");
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -56,6 +60,10 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Processing ${eventName} event for Meta Conversion API`);
+    console.log("User data:", userData);
+    console.log("Custom data:", customData);
+
     // Process user data to match Meta's requirements
     const processedUserData = {
       // Hash PII fields if they exist in userData
@@ -85,6 +93,8 @@ serve(async (req) => {
       action_source: actionSource,
       user_data: processedUserData,
       custom_data: customData || {},
+      // Add test event code for testing in Events Manager
+      test_event_code: TEST_EVENT_CODE
     };
 
     console.log(`Sending event ${eventName} to Meta Conversion API`);

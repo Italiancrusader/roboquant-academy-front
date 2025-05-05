@@ -5,37 +5,35 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
+// Define the fbq function type for TypeScript
+declare global {
+  interface Window {
+    fbq: (command: string, eventName: string, params?: any) => void;
+    _fbq: any;
+  }
+}
+
 // Initialize Facebook Pixel
 export const initFacebookPixel = (pixelId: string): void => {
   if (typeof window === 'undefined') return;
   
-  // Check if script already exists
-  if (!window.fbq) {
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = "https://connect.facebook.net/en_US/fbevents.js";
-    document.head.appendChild(script);
-
-    window.fbq = function() {
-      // @ts-ignore
-      window._fbq.push(arguments);
-    };
-    // @ts-ignore
-    window._fbq = window._fbq || [];
-
-    window.fbq('init', pixelId);
-  }
+  // No need to add script as it's already in index.html
+  console.log(`Meta Pixel initialized with ID: ${pixelId}`);
 };
 
 // Track a page view event
 export const trackPageView = (): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
+  
+  console.log('Tracking PageView event');
   window.fbq('track', 'PageView');
 };
 
 // Track a custom event
 export const trackEvent = (eventName: string, params?: Record<string, any>): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
+  
+  console.log(`Tracking custom event: ${eventName}`, params);
   window.fbq('track', eventName, params);
 };
 
@@ -43,42 +41,42 @@ export const trackEvent = (eventName: string, params?: Record<string, any>): voi
 export const trackPurchase = (value: number, currency: string = 'USD', userData?: Record<string, any>): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
+  const eventParams = { value, currency };
+  
   // Track on client side
-  window.fbq('track', 'Purchase', { value, currency });
+  console.log('Tracking Purchase event', eventParams);
+  window.fbq('track', 'Purchase', eventParams);
   
   // Also track via server-side API for redundancy if we have userData
-  trackServerEvent('Purchase', userData, { 
-    currency, 
-    value: value.toString() 
-  });
+  trackServerEvent('Purchase', userData, eventParams);
 };
 
 // Track initiate checkout
 export const trackInitiateCheckout = (value: number, currency: string = 'USD', userData?: Record<string, any>): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
+  const eventParams = { value, currency };
+  
   // Track on client side
-  window.fbq('track', 'InitiateCheckout', { value, currency });
+  console.log('Tracking InitiateCheckout event', eventParams);
+  window.fbq('track', 'InitiateCheckout', eventParams);
   
   // Also track via server-side API for redundancy if we have userData
-  trackServerEvent('InitiateCheckout', userData, { 
-    currency, 
-    value: value.toString() 
-  });
+  trackServerEvent('InitiateCheckout', userData, eventParams);
 };
 
 // Track Lead event 
 export const trackLead = (value?: number, currency: string = 'USD', userData?: Record<string, any>): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
   
+  const eventParams = value ? { value, currency } : undefined;
+  
   // Track on client side
-  window.fbq('track', 'Lead', value ? { value, currency } : undefined);
+  console.log('Tracking Lead event', eventParams || {});
+  window.fbq('track', 'Lead', eventParams);
   
   // Also track via server-side API for redundancy if we have userData
-  trackServerEvent('Lead', userData, value ? { 
-    currency, 
-    value: value.toString() 
-  } : undefined);
+  trackServerEvent('Lead', userData, eventParams);
 };
 
 // Track ViewContent event
@@ -97,6 +95,7 @@ export const trackViewContent = (
   };
   
   // Track on client side
+  console.log('Tracking ViewContent event', customData);
   window.fbq('track', 'ViewContent', customData);
   
   // Also track via server-side API for redundancy if we have userData
@@ -111,6 +110,7 @@ export const trackCompleteRegistration = (
   if (typeof window === 'undefined' || !window.fbq) return;
   
   // Track on client side
+  console.log('Tracking CompleteRegistration event', customData || {});
   window.fbq('track', 'CompleteRegistration', customData);
   
   // Also track via server-side API for redundancy if we have userData
@@ -125,6 +125,7 @@ export const trackContact = (
   if (typeof window === 'undefined' || !window.fbq) return;
   
   // Track on client side
+  console.log('Tracking Contact event', customData || {});
   window.fbq('track', 'Contact', customData);
   
   // Also track via server-side API for redundancy if we have userData
@@ -139,6 +140,7 @@ export const trackAddPaymentInfo = (
   if (typeof window === 'undefined' || !window.fbq) return;
   
   // Track on client side
+  console.log('Tracking AddPaymentInfo event', customData || {});
   window.fbq('track', 'AddPaymentInfo', customData);
   
   // Also track via server-side API for redundancy if we have userData
@@ -153,6 +155,7 @@ export const trackSubmitApplication = (
   if (typeof window === 'undefined' || !window.fbq) return;
   
   // Track on client side
+  console.log('Tracking SubmitApplication event', customData || {});
   window.fbq('track', 'SubmitApplication', customData);
   
   // Also track via server-side API for redundancy if we have userData
@@ -174,6 +177,8 @@ export const trackServerEvent = async (
     
     // Only proceed if we have any user data to send
     if (Object.keys(baseUserData).length > 0) {
+      console.log(`Sending ${eventName} event to Meta Conversion API via Edge Function`);
+      
       const { error } = await supabase.functions.invoke('meta-conversion-track', {
         body: {
           eventName,

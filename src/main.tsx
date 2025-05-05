@@ -4,14 +4,10 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
-import { initFacebookPixel, trackPageView } from './utils/metaPixel';
+import { trackPageView } from './utils/metaPixel';
 
-// Initialize Facebook Pixel
-const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID || '';
-if (META_PIXEL_ID) {
-  initFacebookPixel(META_PIXEL_ID);
-  trackPageView();
-}
+// Track page view on initial load
+trackPageView();
 
 // Preload critical assets
 const preloadAssets = async () => {
