@@ -1,16 +1,4 @@
 
 project_id = "gqnzsnzolqvsalyzbhmq"
-[api]
-enabled = true
-[analytics]
-enabled = false
-[realtime]
-enabled = true
-[storage]
-enabled = true
-[db]
-enabled = true
-[edge_functions]
-enabled = true
-[auth]
-enabled = true
+[functions.test-resend]
+verify_jwt = false

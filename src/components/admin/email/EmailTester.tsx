@@ -31,6 +31,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const EmailTester: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isTestingResend, setIsTestingResend] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
 
   const form = useForm<FormValues>({
@@ -74,9 +75,62 @@ const EmailTester: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
+  const handleTestResend = async () => {
+    setIsTestingResend(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('test-resend');
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      toast({
+        title: 'Resend Test Successful',
+        description: 'Simple test email sent successfully via Resend API.',
+      });
+      
+      console.log('Resend test result:', data);
+    } catch (error: any) {
+      console.error('Error testing Resend:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Resend Test Failed',
+        description: `Error: ${error.message}`,
+      });
+    } finally {
+      setIsTestingResend(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col gap-4">
+            <h3 className="text-lg font-medium">Quick Resend API Test</h3>
+            <p className="text-sm text-muted-foreground">
+              Send a simple test email via Resend API to verify your configuration.
+            </p>
+            <Button 
+              onClick={handleTestResend}
+              disabled={isTestingResend}
+              variant="outline"
+              className="w-fit"
+            >
+              {isTestingResend ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                'Run Simple Resend Test'
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent className="pt-6">
           <Form {...form}>
