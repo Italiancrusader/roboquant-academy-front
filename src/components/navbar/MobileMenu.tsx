@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { SurveyDialog } from "@/components/EnrollmentSurvey";
 
 interface NavItem {
   title: string;
@@ -40,7 +39,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
   
   const handleEnroll = async () => {
     // Close sheet
@@ -49,9 +47,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       sheetClose.click();
     }
     
-    // Show survey dialog after a short delay to allow sheet to close
+    // Navigate to survey page after a short delay to allow sheet to close
     setTimeout(() => {
-      setShowSurveyDialog(true);
+      navigate('/survey');
     }, 300);
   };
   
@@ -111,11 +109,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           </div>
         </SheetContent>
       </Sheet>
-      
-      <SurveyDialog
-        isOpen={showSurveyDialog}
-        onOpenChange={setShowSurveyDialog}
-      />
     </>
   );
 };
