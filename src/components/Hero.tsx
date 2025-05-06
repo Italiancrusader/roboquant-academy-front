@@ -7,7 +7,7 @@ import HeroContent from './hero/HeroContent';
 import VideoDialog from './hero/VideoDialog';
 
 // Define the YouTube video ID that will be used for the demo
-const DEMO_VIDEO_ID = "dQw4w9WgXcQ"; // Replace this with your actual YouTube video ID
+const DEMO_VIDEO_ID = "5QWLpAUv6r8"; // Replace this with your actual YouTube video ID
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
