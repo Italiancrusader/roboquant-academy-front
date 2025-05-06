@@ -20,6 +20,8 @@ const VideoDialog: React.FC<VideoDialogProps> = ({ videoId }) => {
           videoId={videoId}
           autoplay={true}
           responsive={true}
+          dnt={false} // Disable "Do Not Track" to prevent login prompts
+          controls={true}
         />
       </div>
     </DialogContent>
