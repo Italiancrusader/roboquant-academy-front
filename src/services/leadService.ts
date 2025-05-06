@@ -3,9 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 export interface LeadData {
-  name?: string;
+  name: string; // Changed from optional to required to match database schema
   email: string;
-  phone?: string;
+  phone: string; // Changed from optional to required to match database schema
   source: string;
   leadMagnet?: string;
   metadata?: Record<string, any>;
@@ -13,9 +13,10 @@ export interface LeadData {
 
 export const submitLead = async (leadData: LeadData) => {
   try {
+    // Insert a single lead object rather than an array
     const { data, error } = await supabase
       .from('leads')
-      .insert([leadData]);
+      .insert(leadData);
     
     if (error) throw new Error(error.message);
     
