@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,7 +8,6 @@ import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminStatus } from '@/hooks/useAdminStatus';
-import { SurveyDialog } from '@/components/EnrollmentSurvey';
 import CoursePreview from './CoursePreview';
 
 interface EnrollmentCardProps {
@@ -35,7 +33,6 @@ const EnrollmentCard = ({
 }: EnrollmentCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAdminAccess, setIsAdminAccess] = useState(false);
-  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, isLoading: isAdminLoading } = useAdminStatus(user?.id);
@@ -48,12 +45,6 @@ const EnrollmentCard = ({
   }, [isAdmin, userId, enrollment]);
 
   const handleEnrollment = async () => {
-    // For non-authenticated users, show survey
-    if (!userId) {
-      setShowSurveyDialog(true);
-      return;
-    }
-
     setIsLoading(true);
     try {
       // If user is admin, create enrollment directly
@@ -92,8 +83,8 @@ const EnrollmentCard = ({
         return;
       }
       
-      // For regular users, show survey dialog
-      setShowSurveyDialog(true);
+      // For non-authenticated users or regular users, redirect to survey
+      navigate('/survey');
     } catch (error: any) {
       toast({
         title: "Enrollment error",
@@ -241,11 +232,6 @@ const EnrollmentCard = ({
           )}
         </CardContent>
       </Card>
-      
-      <SurveyDialog
-        isOpen={showSurveyDialog}
-        onOpenChange={setShowSurveyDialog}
-      />
     </div>
   );
 };

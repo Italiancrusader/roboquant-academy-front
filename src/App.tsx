@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
 import MT5ReportGenie from './pages/MT5ReportGenie';
@@ -16,6 +15,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Courses from './pages/Courses';
 import CourseDetail from './pages/CourseDetail';
 import CourseLesson from './pages/CourseLesson';
+import SurveyFunnel from './pages/SurveyFunnel';
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -74,6 +74,7 @@ function App() {
                 <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
                 <Route path="/courses" element={<Courses />} />
                 <Route path="/courses/:courseId" element={<CourseDetail />} />
+                <Route path="/survey" element={<SurveyFunnel />} />
                 <Route
                   path="/courses/:courseId/lessons/:lessonId"
                   element={<ProtectedRoute><CourseLesson /></ProtectedRoute>}

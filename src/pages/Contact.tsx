@@ -21,7 +21,7 @@ const Contact = () => {
             <CardContent className="flex flex-col items-center justify-center p-6 text-center">
               <Mail className="h-10 w-10 mb-4 text-blue-primary" />
               <h3 className="text-lg font-semibold mb-2">Email Us</h3>
-              <p className="text-muted-foreground">support@roboquantacademy.com</p>
+              <p className="text-muted-foreground">info@roboquant.ai</p>
             </CardContent>
           </Card>
           

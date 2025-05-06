@@ -9,25 +9,36 @@ import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackInitiateCheckout } from '@/utils/metaPixel';
 import { saveCartData, clearCartData } from '@/utils/cartTracking';
-import { SurveyDialog } from '@/components/EnrollmentSurvey';
 
 const Pricing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
   
   const handlePurchase = async () => {
-    // Track InitiateCheckout event
-    trackInitiateCheckout({
-      value: 1500,
-      currency: 'USD',
-      content_name: 'RoboQuant Academy',
-      content_type: 'product'
-    });
+    setIsLoading(true);
     
-    // Show survey dialog
-    setShowSurveyDialog(true);
+    try {
+      // Track InitiateCheckout event
+      trackInitiateCheckout({
+        value: 1500,
+        currency: 'USD',
+        content_name: 'RoboQuant Academy',
+        content_type: 'product'
+      });
+      
+      // Navigate to the survey funnel page
+      navigate('/survey');
+    } catch (error) {
+      console.error("Error during enrollment:", error);
+      toast({
+        title: "Error",
+        description: "There was an error processing your request. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -82,11 +93,6 @@ const Pricing = () => {
           </Button>
         </CardFooter>
       </Card>
-
-      <SurveyDialog
-        isOpen={showSurveyDialog}
-        onOpenChange={setShowSurveyDialog}
-      />
     </div>
   );
 };

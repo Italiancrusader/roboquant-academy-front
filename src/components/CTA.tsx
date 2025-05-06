@@ -1,19 +1,16 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import { handleStripeCheckout } from '@/services/stripe';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { trackInitiateCheckout } from '@/utils/metaPixel';
-import { SurveyDialog } from '@/components/EnrollmentSurvey';
 
 const CTA: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
   
   const handleEnroll = async () => {
     // Track InitiateCheckout event
@@ -24,13 +21,8 @@ const CTA: React.FC = () => {
       content_type: 'product'
     });
     
-    if (user) {
-      // If user is already authenticated, show survey dialog
-      setShowSurveyDialog(true);
-    } else {
-      // Show survey dialog for non-authenticated users too
-      setShowSurveyDialog(true);
-    }
+    // Navigate to survey funnel
+    navigate('/survey');
   };
   
   return (
@@ -67,12 +59,6 @@ const CTA: React.FC = () => {
           </p>
         </div>
       </div>
-
-      {/* Survey dialog */}
-      <SurveyDialog
-        isOpen={showSurveyDialog}
-        onOpenChange={setShowSurveyDialog}
-      />
     </section>
   );
 };

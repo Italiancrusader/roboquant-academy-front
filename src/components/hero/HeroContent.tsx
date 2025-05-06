@@ -5,8 +5,7 @@ import { ArrowRight, Play } from 'lucide-react';
 import { DialogTrigger } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
 import OptimizedImage from '@/components/OptimizedImage';
-import { useState } from 'react';
-import { SurveyDialog } from '@/components/EnrollmentSurvey';
+import { useNavigate } from 'react-router-dom';
 
 interface HeroContentProps {
   imageLoaded: boolean;
@@ -15,13 +14,13 @@ interface HeroContentProps {
 
 const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialog }) => {
   const isMobile = useIsMobile();
-  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
+  const navigate = useNavigate();
 
   const handleEnroll = (e: React.MouseEvent) => {
     e.preventDefault();
     
-    // Show survey dialog
-    setShowSurveyDialog(true);
+    // Navigate to survey funnel
+    navigate('/survey');
   };
 
   return (
@@ -75,12 +74,6 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialo
           </div>
         </div>
       </div>
-
-      {/* Survey dialog */}
-      <SurveyDialog
-        isOpen={showSurveyDialog}
-        onOpenChange={setShowSurveyDialog}
-      />
     </div>
   );
 };
