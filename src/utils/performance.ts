@@ -38,8 +38,13 @@ export const preconnectToDomains = (domains: string[]): (() => void) => {
  * Preload critical resources - only use for resources that will definitely be used immediately
  * @param urls Array of URLs to preload
  * @param type Resource type (image, font, etc.)
+ * @param timeoutMs Time in ms to automatically clean up preload links if unused (default: 10000ms)
  */
-export const preloadResources = (urls: string[], type: 'image' | 'font' | 'style' | 'script'): (() => void) => {
+export const preloadResources = (
+  urls: string[], 
+  type: 'image' | 'font' | 'style' | 'script',
+  timeoutMs: number = 10000
+): (() => void) => {
   // Skip preloading if no URLs are provided to avoid warnings
   if (!urls || urls.length === 0) return () => {};
   
@@ -55,23 +60,38 @@ export const preloadResources = (urls: string[], type: 'image' | 'font' | 'style
     link.href = url;
     
     // Set appropriate 'as' attribute based on type
-    if (type === 'image') {
-      link.as = 'image';
-    } else if (type === 'font') {
-      link.as = 'font';
-      link.crossOrigin = 'anonymous';
-    } else if (type === 'style') {
-      link.as = 'style';
-    } else if (type === 'script') {
-      link.as = 'script';
+    switch(type) {
+      case 'image':
+        link.as = 'image';
+        break;
+      case 'font':
+        link.as = 'font';
+        link.crossOrigin = 'anonymous';
+        break;
+      case 'style':
+        link.as = 'style';
+        break;
+      case 'script':
+        link.as = 'script';
+        break;
     }
     
     document.head.appendChild(link);
     preloadLinks.push(link);
   });
   
+  // Set a timeout to automatically clean up preload links if they haven't been used
+  const timeoutId = setTimeout(() => {
+    preloadLinks.forEach(link => {
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+    });
+  }, timeoutMs);
+  
   // Return cleanup function that removes preload links when they're no longer needed
   return () => {
+    clearTimeout(timeoutId);
     preloadLinks.forEach(link => {
       if (document.head.contains(link)) {
         document.head.removeChild(link);

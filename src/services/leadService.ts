@@ -22,24 +22,31 @@ export const submitLead = async (leadData: LeadData) => {
       throw new Error("Valid email is required");
     }
     
-    if (!leadData.phone) {
+    if (!leadData.phone || leadData.phone.trim() === '') {
       throw new Error("Phone is required");
     }
     
     // Ensure source is provided
-    if (!leadData.source) {
+    if (!leadData.source || leadData.source.trim() === '') {
       throw new Error("Source is required");
     }
     
-    // Create a clean lead object with only the fields we want to insert
+    // Create a clean lead object with only the fields that match the Supabase table schema
     const cleanLead = {
       name: leadData.name.trim(),
-      email: leadData.email.trim(),
+      email: leadData.email.trim().toLowerCase(), // Normalize email
       phone: leadData.phone.trim(),
       source: leadData.source,
-      lead_magnet: leadData.leadMagnet,
-      metadata: leadData.metadata
+      lead_magnet: leadData.leadMagnet || null, // Match column name in database
     };
+    
+    // If metadata exists, add it
+    if (leadData.metadata) {
+      // @ts-ignore - Supabase accepts JSON for metadata
+      cleanLead.metadata = leadData.metadata;
+    }
+    
+    console.log("Submitting lead with data:", cleanLead);
     
     // Insert a single lead object
     const { data, error } = await supabase
@@ -53,6 +60,7 @@ export const submitLead = async (leadData: LeadData) => {
       throw new Error(error.message);
     }
     
+    console.log("Lead submitted successfully:", data);
     return { success: true, data };
   } catch (error: any) {
     console.error('Error submitting lead:', error);

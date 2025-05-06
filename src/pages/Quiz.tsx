@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -39,14 +39,22 @@ const Quiz = () => {
         email: email
       });
       
+      // Generate a name from the email - Use part before @ or fallback
+      const namePart = email.split('@')[0] || "";
+      // Make it look more like a name (capitalize first letter)
+      const generatedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      
       // Save lead in Supabase using our service
       const result = await submitLead({
-        name: email.split('@')[0] || "Quiz Lead", // Use part of email as name or default to "Quiz Lead"
-        email: email,
+        name: generatedName || "Quiz User", // Use generated name or default
+        email: email.toLowerCase().trim(),
         phone: "Not provided via quiz", // Provide a clearer placeholder
         source: "quiz",
-        leadMagnet: "application",
-        metadata: { submission_date: new Date().toISOString() }
+        leadMagnet: "application_quiz", // Specify the lead magnet type more clearly
+        metadata: { 
+          submission_date: new Date().toISOString(),
+          entry_point: "quiz_page"
+        }
       });
       
       if (!result.success) {
@@ -74,6 +82,17 @@ const Quiz = () => {
   
   // Set the correct Typeform URL with your actual form ID - replace this with the correct URL
   const typeformUrl = "https://form.typeform.com/to/YourTypeformID";
+  
+  // Clean up any performance-related preload issues
+  useEffect(() => {
+    // Clear any performance-related preloads when component unmounts
+    return () => {
+      // Find and remove any lingering preload links that might cause warnings
+      document.querySelectorAll('link[rel="preload"]').forEach(link => {
+        link.remove();
+      });
+    };
+  }, []);
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
