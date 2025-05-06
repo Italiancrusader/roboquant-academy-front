@@ -58,10 +58,10 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <div className="App" style={{ backgroundColor, minHeight: '100vh' }}>
-            <GoogleAnalytics />
-            <MetaPixel />
             <CrispChat />
             <Router>
+              <GoogleAnalytics />
+              <MetaPixel />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/mt5-report-genie" element={<MT5ReportGenie />} />
