@@ -1,18 +1,15 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Check, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackInitiateCheckout } from '@/utils/metaPixel';
-import { saveCartData, clearCartData } from '@/utils/cartTracking';
+import { handleStripeCheckout } from '@/services/stripe';
 
 const Pricing = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   
   const handlePurchase = async () => {
@@ -27,16 +24,27 @@ const Pricing = () => {
         content_type: 'product'
       });
       
-      // Navigate to the survey funnel page
-      navigate('/survey');
+      // Process checkout with Stripe
+      const userId = user ? user.id : undefined;
+      const result = await handleStripeCheckout({
+        courseId: 'roboquant-academy',
+        courseTitle: 'RoboQuant Academy',
+        price: 1500,
+        userId: userId,
+        successUrl: window.location.origin + '/dashboard',
+        cancelUrl: window.location.origin + '/pricing',
+      });
+      
+      if (!result) {
+        throw new Error("Failed to initiate checkout");
+      }
     } catch (error) {
-      console.error("Error during enrollment:", error);
+      console.error("Error during checkout:", error);
       toast({
         title: "Error",
         description: "There was an error processing your request. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -89,7 +97,7 @@ const Pricing = () => {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processing...
               </>
-            ) : "Enroll Now"}
+            ) : "Join the Academy Now"}
           </Button>
         </CardFooter>
       </Card>

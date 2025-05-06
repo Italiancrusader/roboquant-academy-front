@@ -4,13 +4,12 @@ import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { trackInitiateCheckout } from '@/utils/metaPixel';
+import { handleStripeCheckout } from '@/services/stripe';
 
 const CTA: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
   const { user } = useAuth();
-  const navigate = useNavigate();
   
   const handleEnroll = async () => {
     // Track InitiateCheckout event
@@ -21,8 +20,16 @@ const CTA: React.FC = () => {
       content_type: 'product'
     });
     
-    // Navigate to survey funnel
-    navigate('/survey');
+    // Process checkout with Stripe
+    const userId = user ? user.id : undefined;
+    await handleStripeCheckout({
+      courseId: 'roboquant-academy',
+      courseTitle: 'RoboQuant Academy',
+      price: 1500,
+      userId: userId,
+      successUrl: window.location.origin + '/dashboard',
+      cancelUrl: window.location.origin + '/',
+    });
   };
   
   return (
@@ -51,7 +58,7 @@ const CTA: React.FC = () => {
             className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold"
             onClick={handleEnroll}
           >
-            Enroll Now – $1,500 <ArrowRight className="ml-2 h-5 w-5" />
+            Join the Academy Now <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           
           <p className="mt-6 text-white/80 text-sm">

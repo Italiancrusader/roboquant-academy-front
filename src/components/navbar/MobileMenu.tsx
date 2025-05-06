@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -14,7 +14,9 @@ import {
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { trackInitiateCheckout } from "@/utils/metaPixel";
+import { handleStripeCheckout } from "@/services/stripe";
 
 interface NavItem {
   title: string;
@@ -37,20 +39,41 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   onSignOut,
   showAuthButtons = true
 }) => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
   
   const handleEnroll = async () => {
+    setIsLoading(true);
+    
     // Close sheet
     const sheetClose = document.querySelector('[data-radix-sheet-close]');
     if (sheetClose instanceof HTMLElement) {
       sheetClose.click();
     }
     
-    // Navigate to survey page after a short delay to allow sheet to close
-    setTimeout(() => {
-      navigate('/survey');
-    }, 300);
+    try {
+      // Track InitiateCheckout event
+      trackInitiateCheckout({
+        value: 1500,
+        currency: 'USD',
+        content_name: 'RoboQuant Academy',
+        content_type: 'product'
+      });
+      
+      // Process checkout with Stripe
+      const userId = user ? user.id : undefined;
+      await handleStripeCheckout({
+        courseId: 'roboquant-academy',
+        courseTitle: 'RoboQuant Academy',
+        price: 1500,
+        userId: userId,
+        successUrl: window.location.origin + '/dashboard',
+        cancelUrl: window.location.origin + location.pathname,
+      });
+    } catch (error) {
+      console.error("Error during checkout:", error);
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -84,8 +107,18 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               variant="default" 
               className="justify-start cta-button"
               onClick={handleEnroll}
+              disabled={isLoading}
             >
-              Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Join the Academy Now <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
             </Button>
             
             {/* Only show auth buttons if showAuthButtons is true */}
