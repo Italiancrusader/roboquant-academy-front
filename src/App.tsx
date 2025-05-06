@@ -43,7 +43,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { GoogleAnalytics } from './components/GoogleAnalytics';
 import { MetaPixel } from './components/MetaPixel';
-import { CrispChat } from './components/CrispChat';
 
 const queryClient = new QueryClient();
 
@@ -58,7 +57,6 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <div className="App" style={{ backgroundColor, minHeight: '100vh' }}>
-            <CrispChat />
             <Router>
               <GoogleAnalytics />
               <MetaPixel />
