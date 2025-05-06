@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -7,8 +6,8 @@ import VideoBackground from './hero/VideoBackground';
 import HeroContent from './hero/HeroContent';
 import VideoDialog from './hero/VideoDialog';
 
-// Define the Vimeo video ID that will be used for the demo
-const DEMO_VIDEO_ID = "783455537"; // Replace with your actual Vimeo video ID
+// Define the YouTube video ID that will be used for the demo
+const DEMO_VIDEO_ID = "dQw4w9WgXcQ"; // Replace this with your actual YouTube video ID
 
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
