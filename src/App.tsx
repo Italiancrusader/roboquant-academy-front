@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import SimpleLanding from './pages/SimpleLanding';
 import Index from './pages/Index';
 import MT5ReportGenie from './pages/MT5ReportGenie';
 import Auth from './pages/Auth';
@@ -53,6 +54,9 @@ const queryClient = new QueryClient();
 function App() {
   const isAdminRoute = window.location.pathname.startsWith('/admin');
 
+  // Use development mode flag
+  const isDevelopmentMode = window.location.search.includes('dev=true');
+
   // Conditionally set the background color based on the route
   const backgroundColor = isAdminRoute ? '#0F1117' : '#0F1117';
 
@@ -65,7 +69,11 @@ function App() {
               <GoogleAnalytics />
               <MetaPixel />
               <Routes>
-                <Route path="/" element={<Index />} />
+                {/* Use SimpleLanding as the main route and keep full Index available in dev mode */}
+                <Route path="/" element={isDevelopmentMode ? <Index /> : <SimpleLanding />} />
+                
+                {/* Keep all other routes for development */}
+                <Route path="/full" element={<Index />} />
                 <Route path="/mt5-report-genie" element={<MT5ReportGenie />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
