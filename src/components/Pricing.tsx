@@ -9,15 +9,15 @@ import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackInitiateCheckout } from '@/utils/metaPixel';
 import { saveCartData, clearCartData } from '@/utils/cartTracking';
+import { SurveyDialog } from '@/components/EnrollmentSurvey';
 
 const Pricing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
   
   const handlePurchase = async () => {
-    setIsLoading(true);
-    
     // Track InitiateCheckout event
     trackInitiateCheckout({
       value: 1500,
@@ -26,45 +26,8 @@ const Pricing = () => {
       content_type: 'product'
     });
     
-    try {
-      const courseId = 'premium'; // Default courseId for the main course
-      
-      // Save cart data for abandoned cart tracking
-      saveCartData(user?.id, courseId);
-      
-      // Create checkout session
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          courseId,
-          courseTitle: 'RoboQuant Academy',
-          userId: user?.id || 'guest', // Allow guest checkout
-          priceInCents: 150000, // $1500.00
-          successUrl: window.location.origin + '/auth?redirect=/dashboard', // Redirect to auth after successful payment
-          cancelUrl: window.location.origin + '/pricing',
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        // Clear cart data on successful redirect
-        await clearCartData(user?.id);
-        
-        // Redirect to Stripe checkout
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
-    } catch (error: any) {
-      console.error('Error creating checkout session:', error);
-      toast({
-        title: "Checkout error",
-        description: error.message || "Failed to start checkout process",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Show survey dialog
+    setShowSurveyDialog(true);
   };
   
   return (
@@ -119,6 +82,11 @@ const Pricing = () => {
           </Button>
         </CardFooter>
       </Card>
+
+      <SurveyDialog
+        isOpen={showSurveyDialog}
+        onOpenChange={setShowSurveyDialog}
+      />
     </div>
   );
 };

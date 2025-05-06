@@ -7,13 +7,13 @@ import { handleStripeCheckout } from '@/services/stripe';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { trackInitiateCheckout } from '@/utils/metaPixel';
-import LeadDialog from '@/components/LeadDialog';
+import { SurveyDialog } from '@/components/EnrollmentSurvey';
 
 const CTA: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [showLeadDialog, setShowLeadDialog] = useState(false);
+  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
   
   const handleEnroll = async () => {
     // Track InitiateCheckout event
@@ -25,22 +25,12 @@ const CTA: React.FC = () => {
     });
     
     if (user) {
-      // If user is already authenticated, go straight to checkout
-      await handleStripeCheckout({
-        courseId: 'premium-course',
-        courseTitle: 'RoboQuant Academy',
-        price: 1500, // $1,500
-        userId: user.id,
-      });
+      // If user is already authenticated, show survey dialog
+      setShowSurveyDialog(true);
     } else {
-      // Show lead form first
-      setShowLeadDialog(true);
+      // Show survey dialog for non-authenticated users too
+      setShowSurveyDialog(true);
     }
-  };
-
-  const handleLeadSuccess = async () => {
-    // If user is not logged in, redirect to auth page
-    navigate('/auth', { state: { from: '/' } });
   };
   
   return (
@@ -78,15 +68,10 @@ const CTA: React.FC = () => {
         </div>
       </div>
 
-      {/* Lead dialog */}
-      <LeadDialog
-        isOpen={showLeadDialog}
-        onOpenChange={setShowLeadDialog}
-        title="Start Your Trading Journey"
-        description="Enter your details below to get started with RoboQuant Academy."
-        source="footer_cta"
-        buttonText="Continue to Enrollment"
-        onSubmitSuccess={handleLeadSuccess}
+      {/* Survey dialog */}
+      <SurveyDialog
+        isOpen={showSurveyDialog}
+        onOpenChange={setShowSurveyDialog}
       />
     </section>
   );

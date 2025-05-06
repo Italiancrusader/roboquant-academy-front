@@ -9,7 +9,7 @@ import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminStatus } from '@/hooks/useAdminStatus';
-
+import { SurveyDialog } from '@/components/EnrollmentSurvey';
 import CoursePreview from './CoursePreview';
 
 interface EnrollmentCardProps {
@@ -35,6 +35,7 @@ const EnrollmentCard = ({
 }: EnrollmentCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAdminAccess, setIsAdminAccess] = useState(false);
+  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, isLoading: isAdminLoading } = useAdminStatus(user?.id);
@@ -47,9 +48,9 @@ const EnrollmentCard = ({
   }, [isAdmin, userId, enrollment]);
 
   const handleEnrollment = async () => {
-    // For non-authenticated users, redirect to pricing page
+    // For non-authenticated users, show survey
     if (!userId) {
-      navigate('/pricing');
+      setShowSurveyDialog(true);
       return;
     }
 
@@ -91,8 +92,8 @@ const EnrollmentCard = ({
         return;
       }
       
-      // Direct to pricing page for non-admin users
-      navigate('/pricing');
+      // For regular users, show survey dialog
+      setShowSurveyDialog(true);
     } catch (error: any) {
       toast({
         title: "Enrollment error",
@@ -240,6 +241,11 @@ const EnrollmentCard = ({
           )}
         </CardContent>
       </Card>
+      
+      <SurveyDialog
+        isOpen={showSurveyDialog}
+        onOpenChange={setShowSurveyDialog}
+      />
     </div>
   );
 };

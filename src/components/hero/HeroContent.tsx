@@ -6,7 +6,7 @@ import { DialogTrigger } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
 import OptimizedImage from '@/components/OptimizedImage';
 import { useState } from 'react';
-import LeadDialog from '@/components/LeadDialog';
+import { SurveyDialog } from '@/components/EnrollmentSurvey';
 
 interface HeroContentProps {
   imageLoaded: boolean;
@@ -15,24 +15,13 @@ interface HeroContentProps {
 
 const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialog }) => {
   const isMobile = useIsMobile();
-  const [showLeadDialog, setShowLeadDialog] = useState(false);
+  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
 
-  const scrollToPricing = (e: React.MouseEvent) => {
+  const handleEnroll = (e: React.MouseEvent) => {
     e.preventDefault();
     
-    // Show lead collection form
-    setShowLeadDialog(true);
-  };
-
-  const handleLeadSuccess = () => {
-    // After collecting lead details, scroll to pricing
-    const pricingSection = document.getElementById('pricing');
-    if (pricingSection) {
-      pricingSection.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      // If pricing section doesn't exist on this page, navigate to pricing page
-      window.location.href = '/pricing';
-    }
+    // Show survey dialog
+    setShowSurveyDialog(true);
   };
 
   return (
@@ -48,7 +37,7 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialo
           <div className="flex flex-col sm:flex-row gap-4">
             <Button 
               className="cta-button text-white text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
-              onClick={scrollToPricing}
+              onClick={handleEnroll}
             >
               Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -87,15 +76,10 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialo
         </div>
       </div>
 
-      {/* Hero lead dialog */}
-      <LeadDialog
-        isOpen={showLeadDialog}
-        onOpenChange={setShowLeadDialog}
-        title="Start Your Trading Journey"
-        description="Enter your details below to get started with RoboQuant Academy."
-        source="hero_cta"
-        buttonText="Continue to Pricing"
-        onSubmitSuccess={handleLeadSuccess}
+      {/* Survey dialog */}
+      <SurveyDialog
+        isOpen={showSurveyDialog}
+        onOpenChange={setShowSurveyDialog}
       />
     </div>
   );

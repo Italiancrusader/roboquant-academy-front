@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { handleStripeCheckout } from "@/services/stripe";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { SurveyDialog } from "@/components/EnrollmentSurvey";
 
 interface NavItem {
   title: string;
@@ -40,6 +40,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
   
   const handleEnroll = async () => {
     // Close sheet
@@ -48,75 +49,73 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       sheetClose.click();
     }
     
-    // If on home page, scroll to pricing section after a short delay to allow sheet to close
+    // Show survey dialog after a short delay to allow sheet to close
     setTimeout(() => {
-      if (location.pathname === '/') {
-        const pricingSection = document.getElementById('pricing');
-        if (pricingSection) {
-          pricingSection.scrollIntoView({ behavior: 'smooth' });
-          return;
-        }
-      }
-      
-      // If not on home page or pricing section not found, navigate to pricing page
-      navigate('/pricing');
+      setShowSurveyDialog(true);
     }, 300);
   };
   
   return (
-    <Sheet>
-      <SheetTrigger className="md:hidden" asChild>
-        <Button 
-          variant="ghost" 
-          className={cn("p-0", isScrolled ? "" : "text-white hover:bg-white/20")}
-        >
-          <Menu className="h-6 w-6" />
-          <span className="sr-only">Toggle menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="bottom">
-        <SheetHeader>
-          <SheetTitle>Menu</SheetTitle>
-          <SheetDescription>
-            Explore the RoboQuant Academy
-          </SheetDescription>
-        </SheetHeader>
-        <div className="grid gap-4">
-          {navItems.map((item) => (
-            <Button asChild variant="ghost" className="justify-start" key={item.href}>
-              <Link to={item.href}>{item.title}</Link>
-            </Button>
-          ))}
-          
-          {/* Always show EnrollButton */}
+    <>
+      <Sheet>
+        <SheetTrigger className="md:hidden" asChild>
           <Button 
-            variant="default" 
-            className="justify-start cta-button"
-            onClick={handleEnroll}
+            variant="ghost" 
+            className={cn("p-0", isScrolled ? "" : "text-white hover:bg-white/20")}
           >
-            Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
+            <Menu className="h-6 w-6" />
+            <span className="sr-only">Toggle menu</span>
           </Button>
-          
-          {/* Only show auth buttons if showAuthButtons is true */}
-          {showAuthButtons && user ? (
-            <>
-              <Button asChild variant="ghost" className="justify-start">
-                <Link to="/dashboard">Dashboard</Link>
+        </SheetTrigger>
+        <SheetContent side="bottom">
+          <SheetHeader>
+            <SheetTitle>Menu</SheetTitle>
+            <SheetDescription>
+              Explore the RoboQuant Academy
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid gap-4">
+            {navItems.map((item) => (
+              <Button asChild variant="ghost" className="justify-start" key={item.href}>
+                <Link to={item.href}>{item.title}</Link>
               </Button>
-              <Button asChild variant="ghost" className="justify-start">
-                <Link to="/profile">Profile</Link>
-              </Button>
-              <Button variant="ghost" className="justify-start" onClick={onSignOut}>
-                Sign Out
-              </Button>
-            </>
-          ) : showAuthButtons && !user && (
-            <Button asChild variant="ghost" className="justify-start">
-              <Link to="/auth">Sign In</Link>
+            ))}
+            
+            {/* Always show EnrollButton */}
+            <Button 
+              variant="default" 
+              className="justify-start cta-button"
+              onClick={handleEnroll}
+            >
+              Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+            
+            {/* Only show auth buttons if showAuthButtons is true */}
+            {showAuthButtons && user ? (
+              <>
+                <Button asChild variant="ghost" className="justify-start">
+                  <Link to="/dashboard">Dashboard</Link>
+                </Button>
+                <Button asChild variant="ghost" className="justify-start">
+                  <Link to="/profile">Profile</Link>
+                </Button>
+                <Button variant="ghost" className="justify-start" onClick={onSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : showAuthButtons && !user && (
+              <Button asChild variant="ghost" className="justify-start">
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+      
+      <SurveyDialog
+        isOpen={showSurveyDialog}
+        onOpenChange={setShowSurveyDialog}
+      />
+    </>
   );
 };

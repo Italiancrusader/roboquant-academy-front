@@ -1,10 +1,11 @@
+
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import LeadDialog from "@/components/LeadDialog";
+import { SurveyDialog } from "@/components/EnrollmentSurvey";
 
 interface EnrollButtonProps {
   isScrolled: boolean;
@@ -15,37 +16,13 @@ export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-  const [showLeadDialog, setShowLeadDialog] = useState(false);
+  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
   
   const handleEnroll = async () => {
-    // If user is already logged in, go directly to pricing
-    if (user) {
-      navigateToPricing();
-      return;
-    }
-    
-    // Otherwise, show the lead dialog
-    setShowLeadDialog(true);
+    // Show the survey dialog
+    setShowSurveyDialog(true);
   };
 
-  const navigateToPricing = () => {
-    setIsLoading(true);
-    
-    // If on home page, scroll to pricing section
-    if (location.pathname === '/') {
-      const pricingSection = document.getElementById('pricing');
-      if (pricingSection) {
-        pricingSection.scrollIntoView({ behavior: 'smooth' });
-        setIsLoading(false);
-        return;
-      }
-    }
-    
-    // Otherwise, redirect to pricing page
-    navigate('/pricing');
-    setIsLoading(false);
-  };
-  
   return (
     <>
       <Button 
@@ -68,14 +45,9 @@ export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
         )}
       </Button>
       
-      <LeadDialog
-        isOpen={showLeadDialog}
-        onOpenChange={setShowLeadDialog}
-        title="Start Your Trading Journey"
-        description="Enter your details below to get started with RoboQuant Academy."
-        source="navbar_enroll_button"
-        buttonText="Continue to Pricing"
-        onSubmitSuccess={navigateToPricing}
+      <SurveyDialog
+        isOpen={showSurveyDialog}
+        onOpenChange={setShowSurveyDialog}
       />
     </>
   );

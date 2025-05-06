@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import WhyRoboQuant from '../components/WhyRoboQuant';
@@ -13,11 +14,20 @@ import CTA from '../components/CTA';
 import { Link } from "react-router-dom";
 import { Instagram, Send } from 'lucide-react';
 import { trackPageView } from '../utils/googleAnalytics';
+import { SurveyDialog } from '@/components/EnrollmentSurvey';
 
 const Index = () => {
+  const [showSurveyDialog, setShowSurveyDialog] = useState(false);
+
   useEffect(() => {
     // Track page view with both Google Analytics and gtag
     trackPageView(window.location.pathname, 'RoboQuant Academy Home');
+
+    // Check for query parameters to show survey
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('showSurvey') === 'true') {
+      setShowSurveyDialog(true);
+    }
   }, []);
 
   return (
@@ -90,6 +100,12 @@ const Index = () => {
           </div>
         </div>
       </footer>
+      
+      {/* Global survey dialog that can be triggered from URL */}
+      <SurveyDialog
+        isOpen={showSurveyDialog}
+        onOpenChange={setShowSurveyDialog}
+      />
     </div>
   );
 };
