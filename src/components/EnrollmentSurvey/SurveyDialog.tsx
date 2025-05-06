@@ -49,8 +49,8 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
       
       // Route based on qualification
       if (qualifiesForCall) {
-        // Redirect to calendar booking page (you can update this URL)
-        window.location.href = "https://calendly.com/yourbookingpage";
+        // Redirect to calendar booking page
+        navigate("/book-call");
       } else {
         // Redirect to pricing/checkout page
         navigate("/pricing");
