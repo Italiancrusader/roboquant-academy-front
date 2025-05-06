@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Bell, MessageSquare } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -42,10 +42,6 @@ const ClassroomNavigation: React.FC<ClassroomNavigationProps> = ({ courseName })
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-        </Button>
-        
-        <Button variant="ghost" size="icon">
-          <MessageSquare className="h-5 w-5" />
         </Button>
         
         <Avatar className="h-8 w-8">
