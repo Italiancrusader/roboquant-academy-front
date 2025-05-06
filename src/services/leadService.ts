@@ -14,7 +14,7 @@ export interface LeadData {
 export const submitLead = async (leadData: LeadData) => {
   try {
     // Validate required fields
-    if (!leadData.name || !leadData.name.trim() === '') {
+    if (!leadData.name || leadData.name.trim() === '') {
       throw new Error("Name is required");
     }
     
