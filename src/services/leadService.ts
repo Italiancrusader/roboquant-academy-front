@@ -14,14 +14,37 @@ export interface LeadData {
 export const submitLead = async (leadData: LeadData) => {
   try {
     // Validate required fields
-    if (!leadData.name || !leadData.email || !leadData.phone) {
-      throw new Error("Missing required fields: name, email, and phone are required");
+    if (!leadData.name || !leadData.name.trim() === '') {
+      throw new Error("Name is required");
     }
+    
+    if (!leadData.email || !leadData.email.includes('@')) {
+      throw new Error("Valid email is required");
+    }
+    
+    if (!leadData.phone) {
+      throw new Error("Phone is required");
+    }
+    
+    // Ensure source is provided
+    if (!leadData.source) {
+      throw new Error("Source is required");
+    }
+    
+    // Create a clean lead object with only the fields we want to insert
+    const cleanLead = {
+      name: leadData.name.trim(),
+      email: leadData.email.trim(),
+      phone: leadData.phone.trim(),
+      source: leadData.source,
+      lead_magnet: leadData.leadMagnet,
+      metadata: leadData.metadata
+    };
     
     // Insert a single lead object
     const { data, error } = await supabase
       .from('leads')
-      .insert(leadData)
+      .insert(cleanLead)
       .select()
       .single();
     
@@ -37,7 +60,7 @@ export const submitLead = async (leadData: LeadData) => {
     // Show a toast notification
     toast({
       title: "Error",
-      description: "Failed to submit your information. Please try again.",
+      description: error.message || "Failed to submit your information. Please try again.",
       variant: "destructive",
     });
     

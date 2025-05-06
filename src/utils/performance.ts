@@ -8,9 +8,14 @@
  * @param domains Array of domains to preconnect to
  */
 export const preconnectToDomains = (domains: string[]): (() => void) => {
+  // Skip if no domains are provided
+  if (!domains || domains.length === 0) return () => {};
+  
   const preconnectLinks: HTMLLinkElement[] = [];
   
   domains.forEach(domain => {
+    if (!domain) return; // Skip empty domains
+    
     const link = document.createElement('link');
     link.rel = 'preconnect';
     link.href = domain;
@@ -38,12 +43,13 @@ export const preloadResources = (urls: string[], type: 'image' | 'font' | 'style
   // Skip preloading if no URLs are provided to avoid warnings
   if (!urls || urls.length === 0) return () => {};
   
+  // Filter out empty URLs
+  const validUrls = urls.filter(url => url && url.trim() !== '');
+  if (validUrls.length === 0) return () => {};
+  
   const preloadLinks: HTMLLinkElement[] = [];
   
-  urls.forEach(url => {
-    // Skip empty URLs
-    if (!url) return;
-    
+  validUrls.forEach(url => {
     const link = document.createElement('link');
     link.rel = 'preload';
     link.href = url;
@@ -64,7 +70,7 @@ export const preloadResources = (urls: string[], type: 'image' | 'font' | 'style
     preloadLinks.push(link);
   });
   
-  // Return cleanup function
+  // Return cleanup function that removes preload links when they're no longer needed
   return () => {
     preloadLinks.forEach(link => {
       if (document.head.contains(link)) {

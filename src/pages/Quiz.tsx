@@ -41,11 +41,12 @@ const Quiz = () => {
       
       // Save lead in Supabase using our service
       const result = await submitLead({
-        name: "Quiz Lead", 
+        name: email.split('@')[0] || "Quiz Lead", // Use part of email as name or default to "Quiz Lead"
         email: email,
-        phone: "Not provided", 
+        phone: "Not provided via quiz", // Provide a clearer placeholder
         source: "quiz",
-        leadMagnet: "application"
+        leadMagnet: "application",
+        metadata: { submission_date: new Date().toISOString() }
       });
       
       if (!result.success) {
@@ -71,7 +72,7 @@ const Quiz = () => {
     }
   };
   
-  // Set the correct Typeform URL with your actual form ID
+  // Set the correct Typeform URL with your actual form ID - replace this with the correct URL
   const typeformUrl = "https://form.typeform.com/to/YourTypeformID";
   
   return (
