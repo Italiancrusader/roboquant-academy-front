@@ -9,6 +9,7 @@ interface VimeoPlayerProps {
   responsive?: boolean;
   dnt?: boolean; // Do Not Track parameter
   controls?: boolean; // Show video controls
+  transparent?: boolean; // Transparent background parameter
   onComplete?: () => void;
   onTimeUpdate?: (currentTime: number) => void;
   onDurationChange?: (duration: number) => void;
@@ -21,6 +22,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
   responsive = false,
   dnt = true, // Default to true for privacy
   controls = true,
+  transparent = true,
   onComplete,
   onTimeUpdate,
   onDurationChange
@@ -124,7 +126,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       )}
       <iframe
         ref={iframeRef}
-        src={`https://player.vimeo.com/video/${vimeoId}?title=0&byline=0&portrait=0&autoplay=${autoplay ? '1' : '0'}&dnt=${dnt ? '1' : '0'}&controls=${controls ? '1' : '0'}&transparent=0&app_id=58479`}
+        src={`https://player.vimeo.com/video/${vimeoId}?title=0&byline=0&portrait=0&autoplay=${autoplay ? '1' : '0'}&dnt=${dnt ? '1' : '0'}&controls=${controls ? '1' : '0'}&transparent=${transparent ? '1' : '0'}&app_id=58479&player_id=player${vimeoId}`}
         className="absolute top-0 left-0 w-full h-full"
         frameBorder="0"
         allow="autoplay; fullscreen; picture-in-picture"
