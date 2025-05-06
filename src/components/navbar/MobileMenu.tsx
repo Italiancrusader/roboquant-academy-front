@@ -62,7 +62,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       
       // Process checkout with Stripe
       const userId = user ? user.id : undefined;
-      await handleStripeCheckout({
+      const result = await handleStripeCheckout({
         courseId: 'roboquant-academy',
         courseTitle: 'RoboQuant Academy',
         price: 1500,
@@ -70,6 +70,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         successUrl: window.location.origin + '/dashboard',
         cancelUrl: window.location.origin + location.pathname,
       });
+      
+      if (!result) {
+        throw new Error("Failed to initiate checkout");
+      }
     } catch (error) {
       console.error("Error during checkout:", error);
       setIsLoading(false);

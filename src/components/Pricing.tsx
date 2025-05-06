@@ -88,7 +88,7 @@ const Pricing = () => {
         </CardContent>
         <CardFooter>
           <Button 
-            className="w-full cta-button"
+            className="w-full cta-button" 
             onClick={handlePurchase}
             disabled={isLoading}
           >

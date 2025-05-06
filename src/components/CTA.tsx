@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackInitiateCheckout } from '@/utils/metaPixel';
 import { handleStripeCheckout } from '@/services/stripe';
@@ -10,26 +10,38 @@ import { handleStripeCheckout } from '@/services/stripe';
 const CTA: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   
   const handleEnroll = async () => {
-    // Track InitiateCheckout event
-    trackInitiateCheckout({
-      value: 1500,
-      currency: 'USD',
-      content_name: 'RoboQuant Academy',
-      content_type: 'product'
-    });
+    setIsLoading(true);
     
-    // Process checkout with Stripe
-    const userId = user ? user.id : undefined;
-    await handleStripeCheckout({
-      courseId: 'roboquant-academy',
-      courseTitle: 'RoboQuant Academy',
-      price: 1500,
-      userId: userId,
-      successUrl: window.location.origin + '/dashboard',
-      cancelUrl: window.location.origin + '/',
-    });
+    try {
+      // Track InitiateCheckout event
+      trackInitiateCheckout({
+        value: 1500,
+        currency: 'USD',
+        content_name: 'RoboQuant Academy',
+        content_type: 'product'
+      });
+      
+      // Process checkout with Stripe
+      const userId = user ? user.id : undefined;
+      const result = await handleStripeCheckout({
+        courseId: 'roboquant-academy',
+        courseTitle: 'RoboQuant Academy',
+        price: 1500,
+        userId: userId,
+        successUrl: window.location.origin + '/dashboard',
+        cancelUrl: window.location.origin + '/',
+      });
+      
+      if (!result) {
+        throw new Error("Failed to initiate checkout");
+      }
+    } catch (error) {
+      console.error('Error during checkout:', error);
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -57,8 +69,18 @@ const CTA: React.FC = () => {
           <Button 
             className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold"
             onClick={handleEnroll}
+            disabled={isLoading}
           >
-            Join the Academy Now <ArrowRight className="ml-2 h-5 w-5" />
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                Join the Academy Now <ArrowRight className="ml-2 h-5 w-5" />
+              </>
+            )}
           </Button>
           
           <p className="mt-6 text-white/80 text-sm">

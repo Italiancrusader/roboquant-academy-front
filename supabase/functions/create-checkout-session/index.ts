@@ -17,12 +17,18 @@ serve(async (req) => {
   try {
     // Get request body
     const body = await req.json();
-    const { courseId, courseTitle, userId, priceInCents, successUrl, cancelUrl } = body;
+    const { courseId, courseTitle, userId, price, successUrl, cancelUrl } = body;
 
-    if (!courseId || !courseTitle || !priceInCents || !successUrl || !cancelUrl) {
+    console.log('Checkout request received:', { courseId, courseTitle, userId, price, successUrl, cancelUrl });
+
+    if (!courseId || !courseTitle || !price || !successUrl || !cancelUrl) {
+      console.error('Missing required fields:', { courseId, courseTitle, price, successUrl, cancelUrl });
       throw new Error("Missing required fields for checkout");
     }
 
+    // Convert price to cents for Stripe
+    const priceInCents = price * 100;
+    
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -59,6 +65,8 @@ serve(async (req) => {
       }
     }
 
+    console.log('Creating checkout session with:', { customerId, customerEmail, priceInCents });
+    
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -76,8 +84,14 @@ serve(async (req) => {
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
+      metadata: {
+        courseId,
+        userId
+      }
     });
 
+    console.log('Checkout session created:', { sessionId: session.id, url: session.url });
+    
     // Return the session URL
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
