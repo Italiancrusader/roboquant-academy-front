@@ -1,77 +1,88 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play } from 'lucide-react';
-import { DialogTrigger } from "@/components/ui/dialog";
-import { useIsMobile } from '@/hooks/use-mobile';
-import OptimizedImage from '@/components/OptimizedImage';
+import { ArrowRight, Play, Loader2 } from 'lucide-react';
+import { trackEvent } from '@/utils/googleAnalytics';
 import { useNavigate } from 'react-router-dom';
 
 interface HeroContentProps {
   imageLoaded: boolean;
-  onOpenVideoDialog?: () => void;
+  onOpenVideoDialog: () => void;
 }
 
 const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialog }) => {
-  const isMobile = useIsMobile();
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-  const handleEnroll = (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    // Navigate to survey funnel
-    navigate('/survey');
+  
+  const handleApplyNow = async () => {
+    setIsLoading(true);
+    try {
+      // Track event
+      trackEvent('hero_apply_clicked', {
+        event_category: 'Hero',
+        event_label: 'Hero Apply Now Button'
+      });
+      
+      // Navigate to quiz
+      navigate('/quiz');
+    } catch (error) {
+      console.error('Error navigating to quiz:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="container mx-auto px-4 relative z-20 mt-16">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center min-h-[700px]">
-        <div className="text-left max-w-[90%] sm:max-w-none py-8 sm:py-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
-            Build & launch profitable trading bots — <span className="gradient-text">without writing code</span>.
+    <div className="container mx-auto relative z-10 px-4 sm:px-6 pt-24 pb-16 sm:pt-40 sm:pb-32">
+      <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div className="text-center lg:text-left">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 gradient-text animate-fade-in-up">
+            Build Profitable Trading Bots Without Writing Code
           </h1>
-          <p className="text-lg sm:text-xl max-w-xl mb-8 text-gray-200">
-            Create, test and deploy algorithmic trading strategies that run 24/7 — even if you've never coded before.
+          <p className="text-lg sm:text-xl mb-8 text-white/90 animate-fade-in-up animation-delay-200">
+            Create, test, and deploy algorithmic trading strategies for forex, 
+            stocks, and crypto — even if you're not a programmer.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in-up animation-delay-300">
             <Button 
-              className="cta-button text-white text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
-              onClick={handleEnroll}
+              size="lg" 
+              className="cta-button py-6 px-8 text-lg font-semibold"
+              onClick={handleApplyNow}
+              disabled={isLoading}
             >
-              Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Apply Now <ArrowRight className="ml-2 h-5 w-5" />
+                </>
+              )}
             </Button>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="border-gray-300 text-white hover:text-white hover:bg-gray-700 text-base sm:text-lg py-6 px-8 w-full sm:w-auto"
-                onClick={onOpenVideoDialog}
-              >
-                <Play className="mr-2 h-5 w-5" /> Watch Demo
-              </Button>
-            </DialogTrigger>
+            
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 hover:text-white py-6 px-8 text-lg font-semibold"
+              onClick={onOpenVideoDialog}
+            >
+              <Play className="mr-2 h-5 w-5" /> Watch Demo
+            </Button>
           </div>
         </div>
-        <div className="flex justify-center items-center lg:h-full py-4 sm:py-8 lg:py-0">
-          <div className="flex items-center justify-center h-full">
-            <OptimizedImage 
-              alt="RoboQuant mobile app interface"
-              className="w-full max-w-[480px] h-auto object-contain"
-              style={{
-                minHeight: isMobile ? '320px' : '500px',
-                maxHeight: '600px',
-                opacity: imageLoaded ? 1 : 0,
-                transition: 'opacity 0.3s ease-in-out',
-                transform: 'translateY(0)',
-              }}
-              src="/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png"
-              priority={true}
-              width={480}
-              height={960}
-              onLoad={() => {
-                console.log('Hero image loaded in component');
-              }}
+        
+        <div className="relative">
+          <div className="relative z-10 animate-fade-in-up animation-delay-400">
+            <img 
+              src="/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png"
+              alt="RoboQuant Dashboard" 
+              className={`w-full rounded-xl shadow-2xl border border-white/10 transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             />
           </div>
+          <div className="absolute -bottom-6 -right-6 w-64 h-64 bg-blue-primary/30 rounded-full filter blur-3xl"></div>
+          <div className="absolute -top-6 -left-6 w-48 h-48 bg-teal-primary/30 rounded-full filter blur-3xl"></div>
         </div>
       </div>
     </div>

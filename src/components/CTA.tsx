@@ -4,42 +4,30 @@ import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { trackInitiateCheckout } from '@/utils/metaPixel';
-import { handleStripeCheckout } from '@/services/stripe';
+import { trackEvent } from '@/utils/googleAnalytics';
+import { useNavigate } from 'react-router-dom';
 
 const CTA: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
-  const handleEnroll = async () => {
+  const handleApplyNow = async () => {
     setIsLoading(true);
     
     try {
-      // Track InitiateCheckout event
-      trackInitiateCheckout({
-        value: 1500,
-        currency: 'USD',
-        content_name: 'RoboQuant Academy',
-        content_type: 'product'
+      // Track event
+      trackEvent('apply_now_clicked', {
+        event_category: 'CTA',
+        event_label: 'Apply Now Button'
       });
       
-      // Process checkout with Stripe
-      const userId = user ? user.id : undefined;
-      const result = await handleStripeCheckout({
-        courseId: 'roboquant-academy',
-        courseTitle: 'RoboQuant Academy',
-        price: 1500,
-        userId: userId,
-        successUrl: window.location.origin + '/dashboard',
-        cancelUrl: window.location.origin + '/',
-      });
-      
-      if (!result) {
-        throw new Error("Failed to initiate checkout");
-      }
+      // Navigate to quiz page
+      navigate('/quiz');
     } catch (error) {
-      console.error('Error during checkout:', error);
+      console.error('Error navigating to quiz:', error);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -63,12 +51,12 @@ const CTA: React.FC = () => {
           </h2>
           
           <p className="text-xl text-white/90 mb-8">
-            Join thousands of traders who have transformed their trading with RoboQuant Academy.
+            Take our quick quiz to see if you qualify for RoboQuant Academy.
           </p>
           
           <Button 
             className="bg-white text-blue-primary hover:bg-gray-100 py-6 px-10 text-lg font-semibold"
-            onClick={handleEnroll}
+            onClick={handleApplyNow}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -78,7 +66,7 @@ const CTA: React.FC = () => {
               </>
             ) : (
               <>
-                Join the Academy Now <ArrowRight className="ml-2 h-5 w-5" />
+                Apply Now <ArrowRight className="ml-2 h-5 w-5" />
               </>
             )}
           </Button>

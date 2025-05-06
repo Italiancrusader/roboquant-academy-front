@@ -22,10 +22,10 @@ const Index = () => {
     // Track page view with both Google Analytics and gtag
     trackPageView(window.location.pathname, 'RoboQuant Academy Home');
 
-    // Check for query parameters to show survey
+    // Check for query parameters to show quiz directly
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('showSurvey') === 'true') {
-      navigate('/survey');
+    if (urlParams.get('apply') === 'true') {
+      navigate('/quiz');
     }
   }, [navigate]);
 

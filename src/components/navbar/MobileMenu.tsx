@@ -1,6 +1,5 @@
-
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,8 +14,7 @@ import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
-import { trackInitiateCheckout } from "@/utils/metaPixel";
-import { handleStripeCheckout } from "@/services/stripe";
+import { trackEvent } from "@/utils/googleAnalytics";
 
 interface NavItem {
   title: string;
@@ -41,8 +39,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
-  const handleEnroll = async () => {
+  const handleApplyNow = async () => {
     setIsLoading(true);
     
     // Close sheet
@@ -52,30 +51,17 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     }
     
     try {
-      // Track InitiateCheckout event
-      trackInitiateCheckout({
-        value: 1500,
-        currency: 'USD',
-        content_name: 'RoboQuant Academy',
-        content_type: 'product'
+      // Track event
+      trackEvent('mobile_apply_clicked', {
+        event_category: 'Navigation',
+        event_label: 'Mobile Apply Now'
       });
       
-      // Process checkout with Stripe
-      const userId = user ? user.id : undefined;
-      const result = await handleStripeCheckout({
-        courseId: 'roboquant-academy',
-        courseTitle: 'RoboQuant Academy',
-        price: 1500,
-        userId: userId,
-        successUrl: window.location.origin + '/dashboard',
-        cancelUrl: window.location.origin + location.pathname,
-      });
-      
-      if (!result) {
-        throw new Error("Failed to initiate checkout");
-      }
+      // Navigate to quiz
+      navigate('/quiz');
     } catch (error) {
-      console.error("Error during checkout:", error);
+      console.error("Error navigating to quiz:", error);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -106,11 +92,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               </Button>
             ))}
             
-            {/* Always show EnrollButton */}
+            {/* Apply Now Button */}
             <Button 
               variant="default" 
               className="justify-start cta-button"
-              onClick={handleEnroll}
+              onClick={handleApplyNow}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -120,7 +106,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 </>
               ) : (
                 <>
-                  Join the Academy Now <ArrowRight className="ml-2 h-4 w-4" />
+                  Apply Now <ArrowRight className="ml-2 h-4 w-4" />
                 </>
               )}
             </Button>

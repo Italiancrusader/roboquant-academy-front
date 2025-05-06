@@ -16,6 +16,7 @@ export interface CheckoutOptions {
 export const createCheckoutSession = async (options: CheckoutOptions) => {
   try {
     console.log(`Creating checkout session for course: ${options.courseId}`);
+    console.log(`Price: $${options.price}`);
     console.log(`Test mode: ${options.isTestMode ? 'YES' : 'NO'}`);
     
     const { data, error } = await supabase.functions.invoke('create-checkout-session', {

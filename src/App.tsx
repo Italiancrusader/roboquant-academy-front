@@ -15,6 +15,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Courses from './pages/Courses';
 import CourseDetail from './pages/CourseDetail';
 import CourseLesson from './pages/CourseLesson';
+import Quiz from './pages/Quiz';
+import VSL from './pages/VSL';
+import Checkout from './pages/Checkout';
+import ThankYou from './pages/ThankYou';
 import SurveyFunnel from './pages/SurveyFunnel';
 
 // Admin pages
@@ -74,11 +78,16 @@ function App() {
                 <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
                 <Route path="/courses" element={<Courses />} />
                 <Route path="/courses/:courseId" element={<CourseDetail />} />
-                <Route path="/survey" element={<SurveyFunnel />} />
                 <Route
                   path="/courses/:courseId/lessons/:lessonId"
                   element={<ProtectedRoute><CourseLesson /></ProtectedRoute>}
                 />
+                
+                {/* New Sales Funnel Routes */}
+                <Route path="/quiz" element={<Quiz />} />
+                <Route path="/vsl" element={<VSL />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/thank-you" element={<ThankYou />} />
                 
                 {/* Admin routes */}
                 <Route path="/admin" element={<AdminCheck><AdminDashboard /></AdminCheck>} />

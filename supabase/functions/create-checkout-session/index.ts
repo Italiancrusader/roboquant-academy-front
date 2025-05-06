@@ -17,9 +17,17 @@ serve(async (req) => {
   try {
     // Get request body
     const body = await req.json();
-    const { courseId, courseTitle, userId, price, successUrl, cancelUrl } = body;
+    const { courseId, courseTitle, userId, price, successUrl, cancelUrl, couponCode } = body;
 
-    console.log('Checkout request received:', { courseId, courseTitle, userId, price, successUrl, cancelUrl });
+    console.log('Checkout request received:', { 
+      courseId, 
+      courseTitle, 
+      userId, 
+      price, 
+      successUrl, 
+      cancelUrl, 
+      couponCode 
+    });
 
     if (!courseId || !courseTitle || !price || !successUrl || !cancelUrl) {
       console.error('Missing required fields:', { courseId, courseTitle, price, successUrl, cancelUrl });
@@ -65,10 +73,19 @@ serve(async (req) => {
       }
     }
 
-    console.log('Creating checkout session with:', { customerId, customerEmail, priceInCents });
+    console.log('Creating checkout session with:', { 
+      customerId, 
+      customerEmail, 
+      priceInCents,
+      courseId 
+    });
     
+    // Determine checkout mode based on courseId
+    const isCallDeposit = courseId === 'call-deposit';
+    const checkoutMode = isCallDeposit ? 'payment' : 'payment';
+
     // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    const sessionOptions: any = {
       customer: customerId,
       customer_email: !customerId ? customerEmail : undefined, // Only set if we don't have customerId
       line_items: [
@@ -81,14 +98,26 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      mode: "payment",
+      mode: checkoutMode,
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
         courseId,
-        userId
+        userId,
+        isCallDeposit: isCallDeposit ? 'true' : 'false'
       }
-    });
+    };
+
+    // Add discount coupon if provided
+    if (couponCode) {
+      sessionOptions.discounts = [
+        {
+          coupon: couponCode
+        }
+      ];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions);
 
     console.log('Checkout session created:', { sessionId: session.id, url: session.url });
     

@@ -2,49 +2,36 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Check, Loader2 } from 'lucide-react';
+import { Check, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { trackInitiateCheckout } from '@/utils/metaPixel';
-import { handleStripeCheckout } from '@/services/stripe';
+import { trackEvent } from '@/utils/googleAnalytics';
+import { useNavigate } from 'react-router-dom';
 
 const Pricing = () => {
-  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
-  const handlePurchase = async () => {
+  const handleApply = async () => {
     setIsLoading(true);
     
     try {
-      // Track InitiateCheckout event
-      trackInitiateCheckout({
-        value: 1500,
-        currency: 'USD',
-        content_name: 'RoboQuant Academy',
-        content_type: 'product'
+      // Track event
+      trackEvent('pricing_apply_clicked', {
+        event_category: 'Pricing',
+        event_label: 'Apply Button'
       });
       
-      // Process checkout with Stripe
-      const userId = user ? user.id : undefined;
-      const result = await handleStripeCheckout({
-        courseId: 'roboquant-academy',
-        courseTitle: 'RoboQuant Academy',
-        price: 1500,
-        userId: userId,
-        successUrl: window.location.origin + '/dashboard',
-        cancelUrl: window.location.origin + '/pricing',
-      });
-      
-      if (!result) {
-        throw new Error("Failed to initiate checkout");
-      }
+      // Navigate to quiz
+      navigate('/quiz');
     } catch (error) {
-      console.error("Error during checkout:", error);
+      console.error("Error navigating to quiz:", error);
       toast({
         title: "Error",
-        description: "There was an error processing your request. Please try again.",
+        description: "There was an error. Please try again.",
         variant: "destructive"
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -88,8 +75,8 @@ const Pricing = () => {
         </CardContent>
         <CardFooter>
           <Button 
-            className="w-full cta-button" 
-            onClick={handlePurchase}
+            className="w-full cta-button py-6" 
+            onClick={handleApply}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -97,7 +84,11 @@ const Pricing = () => {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processing...
               </>
-            ) : "Join the Academy Now"}
+            ) : (
+              <>
+                Apply Now <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
           </Button>
         </CardFooter>
       </Card>

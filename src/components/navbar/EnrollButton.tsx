@@ -4,44 +4,31 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { trackInitiateCheckout } from "@/utils/metaPixel";
-import { handleStripeCheckout } from "@/services/stripe";
+import { trackEvent } from "@/utils/googleAnalytics";
+import { useNavigate } from "react-router-dom";
 
 interface EnrollButtonProps {
   isScrolled: boolean;
 }
 
 export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
-  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
-  const handleEnroll = async () => {
+  const handleApplyNow = async () => {
     setIsLoading(true);
     try {
-      // Track InitiateCheckout event
-      trackInitiateCheckout({
-        value: 1500,
-        currency: 'USD',
-        content_name: 'RoboQuant Academy',
-        content_type: 'product'
+      // Track the event
+      trackEvent('nav_apply_clicked', {
+        event_category: 'Navigation',
+        event_label: 'Apply Now Button'
       });
       
-      // Process checkout with Stripe
-      const userId = user ? user.id : undefined;
-      const result = await handleStripeCheckout({
-        courseId: 'roboquant-academy',
-        courseTitle: 'RoboQuant Academy',
-        price: 1500,
-        userId: userId,
-        successUrl: window.location.origin + '/dashboard',
-        cancelUrl: window.location.origin + window.location.pathname,
-      });
-      
-      if (!result) {
-        throw new Error("Failed to initiate checkout");
-      }
+      // Navigate to quiz page
+      navigate('/quiz');
     } catch (error) {
-      console.error('Error during checkout:', error);
+      console.error('Error navigating to quiz:', error);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -52,7 +39,7 @@ export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
         "hidden sm:flex cta-button text-white",
         isScrolled ? "py-2 px-4" : "py-2 px-4 hover:scale-105"
       )}
-      onClick={handleEnroll}
+      onClick={handleApplyNow}
       disabled={isLoading}
     >
       {isLoading ? (
@@ -62,7 +49,7 @@ export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
         </>
       ) : (
         <>
-          Join the Academy Now <ArrowRight className="ml-2 h-4 w-4" />
+          Apply Now <ArrowRight className="ml-2 h-4 w-4" />
         </>
       )}
     </Button>
