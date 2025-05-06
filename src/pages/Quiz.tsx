@@ -41,9 +41,9 @@ const Quiz = () => {
       
       // Save lead in Supabase using our service
       const result = await submitLead({
-        name: "Quiz Lead", // Providing a default name since it's required
+        name: "Quiz Lead", 
         email: email,
-        phone: "Not provided", // Providing a default phone since it's required
+        phone: "Not provided", 
         source: "quiz",
         leadMagnet: "application"
       });
@@ -70,6 +70,9 @@ const Quiz = () => {
       setIsSubmitting(false);
     }
   };
+  
+  // Set the correct Typeform URL with your actual form ID
+  const typeformUrl = "https://form.typeform.com/to/YourTypeformID";
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -130,7 +133,7 @@ const Quiz = () => {
               
               <iframe
                 id="typeformEmbed"
-                src={`https://form.typeform.com/to/XXXX?email=${encodeURIComponent(email)}`}
+                src={`${typeformUrl}?email=${encodeURIComponent(email)}`}
                 frameBorder="0"
                 className="w-full h-[650px] rounded-md"
                 title="RoboQuant Qualification Survey"
