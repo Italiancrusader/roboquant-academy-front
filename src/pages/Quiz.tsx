@@ -7,6 +7,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { trackLead } from '@/utils/metaPixel';
+import { submitLead } from '@/services/leadService';
 
 const Quiz = () => {
   const [step, setStep] = useState<'email' | 'questions'>('email');
@@ -38,14 +39,18 @@ const Quiz = () => {
         email: email
       });
       
-      // Save lead in Supabase
-      const { error } = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      }).then(res => res.json());
+      // Save lead in Supabase using our service
+      const result = await submitLead({
+        name: "Quiz Lead", // Providing a default name since it's now required
+        email: email,
+        phone: "Not provided", // Providing a default phone since it's now required
+        source: "quiz",
+        leadMagnet: "application"
+      });
       
-      if (error) throw new Error(error);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
       
       // Proceed to questions
       setStep('questions');
