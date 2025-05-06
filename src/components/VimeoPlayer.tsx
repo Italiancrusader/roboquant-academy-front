@@ -1,16 +1,21 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader } from 'lucide-react';
 
 interface VimeoPlayerProps {
-  videoUrl: string;
+  videoUrl?: string;
+  videoId?: string;
+  autoplay?: boolean;
+  responsive?: boolean;
   onComplete?: () => void;
   onTimeUpdate?: (currentTime: number) => void;
   onDurationChange?: (duration: number) => void;
 }
 
 const VimeoPlayer: React.FC<VimeoPlayerProps> = ({ 
-  videoUrl, 
+  videoUrl,
+  videoId,
+  autoplay = false,
+  responsive = false,
   onComplete,
   onTimeUpdate,
   onDurationChange
@@ -19,14 +24,22 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerInstanceRef = useRef<any>(null);
   
-  // Extract Vimeo ID from URL
-  const getVimeoId = (url: string): string | null => {
-    const regex = /vimeo\.com\/(\d+)/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
+  // Handle either videoId or videoUrl
+  const resolveVimeoId = (): string | null => {
+    // If videoId is directly provided, use it
+    if (videoId) return videoId;
+    
+    // Otherwise try to extract from URL
+    if (videoUrl) {
+      const regex = /vimeo\.com\/(\d+)/;
+      const match = videoUrl.match(regex);
+      return match ? match[1] : null;
+    }
+    
+    return null;
   };
   
-  const vimeoId = getVimeoId(videoUrl);
+  const vimeoId = resolveVimeoId();
 
   // Set up event listeners for the Vimeo player
   useEffect(() => {
@@ -94,7 +107,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
   }, [vimeoId, onComplete, onTimeUpdate, onDurationChange]);
   
   if (!vimeoId) {
-    return <div className="p-4 text-center text-red-500">Invalid Vimeo URL</div>;
+    return <div className="p-4 text-center text-red-500">Invalid Vimeo URL or ID</div>;
   }
   
   return (
@@ -106,7 +119,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       )}
       <iframe
         ref={iframeRef}
-        src={`https://player.vimeo.com/video/${vimeoId}?title=0&byline=0&portrait=0&autoplay=0`}
+        src={`https://player.vimeo.com/video/${vimeoId}?title=0&byline=0&portrait=0&autoplay=${autoplay ? '1' : '0'}`}
         className="absolute top-0 left-0 w-full h-full"
         frameBorder="0"
         allow="autoplay; fullscreen; picture-in-picture"

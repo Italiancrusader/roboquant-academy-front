@@ -18,8 +18,8 @@ const VideoDialog: React.FC<VideoDialogProps> = ({ videoId }) => {
       <div className="relative aspect-video w-full">
         <VimeoPlayer 
           videoId={videoId}
-          autoplay
-          responsive
+          autoplay={true}
+          responsive={true}
         />
       </div>
     </DialogContent>

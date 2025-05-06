@@ -7,6 +7,9 @@ import VideoBackground from './hero/VideoBackground';
 import HeroContent from './hero/HeroContent';
 import VideoDialog from './hero/VideoDialog';
 
+// Define the Vimeo video ID that will be used for the demo
+const DEMO_VIDEO_ID = "783455537"; // Replace with your actual Vimeo video ID
+
 const Hero: React.FC = () => {
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -45,7 +48,7 @@ const Hero: React.FC = () => {
         onOpenChange={setDialogOpen}
       >
         <HeroContent imageLoaded={imageLoaded} onOpenVideoDialog={() => setDialogOpen(true)} />
-        {dialogOpen && <VideoDialog />}
+        {dialogOpen && <VideoDialog videoId={DEMO_VIDEO_ID} />}
       </Dialog>
       
       <div 
