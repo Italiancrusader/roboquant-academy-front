@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
 import MT5ReportGenie from './pages/MT5ReportGenie';
@@ -37,8 +38,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Toast } from '@/components/ui/toast';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from './contexts/CartContext';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { ReactQueryDevtools } from 'react-query/devtools';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query/devtools';
 import { GoogleAnalytics } from './components/GoogleAnalytics';
 import { MetaPixel } from './components/MetaPixel';
 import { CrispChat } from './components/CrispChat';
