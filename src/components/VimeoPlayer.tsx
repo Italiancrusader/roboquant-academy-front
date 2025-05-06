@@ -126,7 +126,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       )}
       <iframe
         ref={iframeRef}
-        src={`https://player.vimeo.com/video/${vimeoId}?title=0&byline=0&portrait=0&autoplay=${autoplay ? '1' : '0'}&dnt=${dnt ? '1' : '0'}&controls=${controls ? '1' : '0'}&transparent=${transparent ? '1' : '0'}&app_id=58479&player_id=player${vimeoId}`}
+        src={`https://player.vimeo.com/video/${vimeoId}?title=0&byline=0&portrait=0&autoplay=${autoplay ? '1' : '0'}&dnt=${dnt ? '1' : '0'}&controls=${controls ? '1' : '0'}&transparent=${transparent ? '1' : '0'}&app_id=58479&player_id=player${vimeoId}&pip=0&portrait=0&badge=0&background=true`}
         className="absolute top-0 left-0 w-full h-full"
         frameBorder="0"
         allow="autoplay; fullscreen; picture-in-picture"
