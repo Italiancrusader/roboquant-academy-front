@@ -39,7 +39,8 @@ import { Toast } from '@/components/ui/toast';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from './contexts/CartContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query/devtools';
+// Fix: Import ReactQueryDevtools correctly from the package
+import { ReactQueryDevtools } from '@tanstack/react-query';
 import { GoogleAnalytics } from './components/GoogleAnalytics';
 import { MetaPixel } from './components/MetaPixel';
 import { CrispChat } from './components/CrispChat';
