@@ -16,7 +16,9 @@ export const submitLead = async (leadData: LeadData) => {
     // Insert a single lead object rather than an array
     const { data, error } = await supabase
       .from('leads')
-      .insert(leadData);
+      .insert(leadData)
+      .select()
+      .single();
     
     if (error) throw new Error(error.message);
     

@@ -41,24 +41,29 @@ const Quiz = () => {
       
       // Save lead in Supabase using our service
       const result = await submitLead({
-        name: "Quiz Lead", // Providing a default name since it's now required
+        name: "Quiz Lead", // Providing a default name since it's required
         email: email,
-        phone: "Not provided", // Providing a default phone since it's now required
+        phone: "Not provided", // Providing a default phone since it's required
         source: "quiz",
         leadMagnet: "application"
       });
       
       if (!result.success) {
-        throw new Error(result.error);
+        throw new Error(result.error || "Failed to save your information");
       }
+      
+      toast({
+        title: "Success!",
+        description: "Your email has been submitted. Please continue with the survey.",
+      });
       
       // Proceed to questions
       setStep('questions');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting email:', error);
       toast({
         title: "Error",
-        description: "There was an error saving your email. Please try again.",
+        description: error.message || "There was an error saving your email. Please try again.",
         variant: "destructive",
       });
     } finally {
