@@ -16,9 +16,7 @@ import { useNavigate } from 'react-router-dom';
 // Declare TypeForm embed widget type for TypeScript
 declare global {
   interface Window {
-    tf: {
-      createWidget: () => void;
-    }
+    tf: any;
   }
 }
 
@@ -126,86 +124,59 @@ const Quiz = () => {
       
       // Create Typeform container first
       const typeformContainer = document.getElementById('typeform-container');
-      if (typeformContainer) {
-        // Clear existing container content
-        typeformContainer.innerHTML = '';
-        
-        // Create div for Typeform to target
-        const embedDiv = document.createElement('div');
-        embedDiv.id = 'typeform-embed-div';
-        typeformContainer.appendChild(embedDiv);
-        
-        // Load Typeform script
-        const script = document.createElement('script');
-        script.src = "https://embed.typeform.com/next/embed.js";
-        script.async = true;
-        script.onload = () => {
-          console.log('Typeform script loaded');
-          
-          // Give a short delay to ensure script is initialized
-          setTimeout(() => {
-            // Check if tf is available in window
-            if (window.tf) {
-              console.log('Creating Typeform widget');
-              
-              // Create a new embed
-              const embedElement = document.getElementById('typeform-embed-div');
-              if (embedElement) {
-                // Create hidden fields configuration
-                const hiddenFields = {
-                  email: userInfo.email,
-                  firstName: userInfo.firstName,
-                  lastName: userInfo.lastName,
-                  phone: userInfo.phone
-                };
-                
-                // Use embed ID to place the form
-                const embed = document.createElement('div');
-                embed.dataset.tfWidget = typeformEmbedId;
-                embed.dataset.tfMedium = "snippet";
-                embed.dataset.tfHideHeaders = "true";
-                embed.dataset.tfHideFooter = "true";
-                embed.dataset.tfOpacity = "100";
-                
-                // Add hidden fields if we have user data
-                if (userInfo.email) {
-                  embed.dataset.tfHidden = JSON.stringify(hiddenFields);
-                }
-                
-                // Append the widget and re-initialize
-                embedElement.innerHTML = '';
-                embedElement.appendChild(embed);
-                
-                // Force widget creation
-                if (typeof window.tf?.createWidget === 'function') {
-                  window.tf.createWidget();
-                  
-                  // Mark loading as complete after a short delay
-                  setTimeout(() => {
-                    console.log('Typeform widget should now be visible');
-                    setIsTypeformLoading(false);
-                  }, 1500);
-                } else {
-                  console.error('Typeform widget creation function not available');
-                }
-              }
-            } else {
-              console.error('Typeform not loaded properly');
-            }
-          }, 500);
+      if (!typeformContainer) return;
+      
+      // Clear existing container content
+      typeformContainer.innerHTML = '';
+      
+      // Create div for Typeform to target
+      const embedDiv = document.createElement('div');
+      embedDiv.id = 'typeform-embed-div';
+      typeformContainer.appendChild(embedDiv);
+      
+      // Add Typeform embed code directly
+      const embed = document.createElement('div');
+      embed.dataset.tfWidget = typeformEmbedId;
+      embed.dataset.tfMedium = "snippet";
+      embed.dataset.tfHideHeaders = "true";
+      embed.dataset.tfHideFooter = "true";
+      embed.dataset.tfOpacity = "100";
+      
+      // Add hidden fields if we have user data
+      if (userInfo.email) {
+        const hiddenFields = {
+          email: userInfo.email,
+          firstName: userInfo.firstName,
+          lastName: userInfo.lastName,
+          phone: userInfo.phone
         };
-        
-        script.onerror = () => {
-          console.error('Failed to load Typeform script');
-          toast({
-            title: "Error",
-            description: "Failed to load the survey. Please refresh the page and try again.",
-            variant: "destructive",
-          });
-        };
-        
-        document.body.appendChild(script);
+        embed.dataset.tfHidden = JSON.stringify(hiddenFields);
       }
+      
+      // Append the embed div to the container
+      embedDiv.appendChild(embed);
+      
+      // Load Typeform script properly
+      const script = document.createElement('script');
+      script.src = "https://embed.typeform.com/next/embed.js";
+      script.async = true;
+      script.onload = () => {
+        console.log('Typeform script loaded');
+        setTimeout(() => {
+          setIsTypeformLoading(false);
+        }, 1500);
+      };
+      
+      script.onerror = () => {
+        console.error('Failed to load Typeform script');
+        toast({
+          title: "Error",
+          description: "Failed to load the survey. Please refresh the page and try again.",
+          variant: "destructive",
+        });
+      };
+      
+      document.body.appendChild(script);
       
       return () => {
         // Clean up any Typeform scripts when component unmounts
@@ -286,7 +257,7 @@ const Quiz = () => {
                 id="typeform-container"
                 className={`w-full min-h-[650px] ${isTypeformLoading ? 'hidden' : 'block'}`}
               >
-                <div id="typeform-embed-div"></div>
+                {/* Typeform will be embedded here by the script */}
               </div>
               
               <p className="text-xs mt-4 text-center text-muted-foreground">
