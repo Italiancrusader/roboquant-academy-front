@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Check, Calendar } from 'lucide-react';
+import { Loader2, Check, Calendar, Clock, User, FileCheck, Trophy } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { handleStripeCheckout } from '@/services/stripe';
 import { trackEvent } from '@/utils/googleAnalytics';
@@ -84,6 +84,13 @@ const BookCall = () => {
         description: "Your strategy call has been scheduled. Check your email for details.",
         variant: "default"
       });
+      
+      // Show confirmation message after booking
+      const bookingConfirmation = document.getElementById('booking-confirmation');
+      if (bookingConfirmation) {
+        bookingConfirmation.classList.remove('hidden');
+        bookingConfirmation.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
   
@@ -98,12 +105,44 @@ const BookCall = () => {
       <Navbar />
       
       <div className="flex-grow container mx-auto px-4 pt-32 pb-20">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center gradient-text">
-            Book Your Strategy Call
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center gradient-text">
+            Book Your 1-on-1 Strategy Session
           </h1>
           
-          <div className="bg-card p-8 rounded-lg shadow-lg">
+          <p className="text-xl text-muted-foreground text-center mb-8 max-w-2xl mx-auto">
+            Get personalized guidance on implementing profitable trading algorithms with our expert team
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {[
+              { 
+                icon: <Clock className="h-8 w-8 text-primary mb-2" />,
+                title: "30-Minute Deep Dive", 
+                description: "Focused session analyzing your trading strategy and automation needs"
+              },
+              { 
+                icon: <User className="h-8 w-8 text-primary mb-2" />,
+                title: "Senior Strategist", 
+                description: "Direct access to our experienced trading automation experts"
+              },
+              { 
+                icon: <FileCheck className="h-8 w-8 text-primary mb-2" />,
+                title: "Custom Action Plan", 
+                description: "Leave with clear next steps to automate your trading"
+              }
+            ].map((item, i) => (
+              <Card key={i} className="bg-card border border-border">
+                <CardContent className="p-6 flex flex-col items-center text-center">
+                  {item.icon}
+                  <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="bg-card p-8 rounded-lg shadow-lg mb-8">
             <div className="mb-8">
               <div className="flex justify-center mb-6">
                 <div className="flex items-center">
@@ -118,55 +157,139 @@ const BookCall = () => {
               </div>
               
               <h2 className="text-xl font-semibold text-center mb-2">
-                {step === 'deposit' ? 'Step 1: Pay Seat Deposit' : 'Step 2: Schedule Your Call'}
+                {step === 'deposit' ? 'Step 1: Reserve Your Spot' : 'Step 2: Choose a Time That Works For You'}
               </h2>
               <p className="text-center text-muted-foreground mb-6">
                 {step === 'deposit' 
-                  ? 'Secure your call with a $100 fully-refundable deposit'
-                  : 'Choose a time that works best for your schedule'}
+                  ? 'Secure your dedicated strategy session with a fully-refundable $100 deposit'
+                  : 'Select a convenient time slot for your personalized consultation'}
               </p>
             </div>
             
             {step === 'deposit' ? (
-              <div className="text-center">
+              <div>
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-6 mb-6">
+                  <h3 className="text-lg font-medium mb-4 flex items-center">
+                    <Trophy className="mr-2 h-5 w-5 text-primary" />
+                    What You'll Get From This Call:
+                  </h3>
+                  <ul className="space-y-3">
+                    {[
+                      "Expert assessment of your current trading strategy",
+                      "Custom automation roadmap for your specific needs",
+                      "Implementation timeline with clear next steps",
+                      "Technical feasibility analysis of your strategy",
+                      "Recommendations for your specific market and trading style"
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-start">
+                        <Check className="text-green-500 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
                 <Card className="mb-6">
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-medium mb-4">Strategy Call Deposit</h3>
-                    <p className="mb-2">$100 USD</p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      100% refundable after your call
-                    </p>
-                    <Button 
-                      onClick={handlePayDeposit}
-                      className="w-full py-6"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          Pay $100 Seat Deposit <Calendar className="ml-2 h-5 w-5" />
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                      <div>
+                        <h3 className="text-lg font-medium mb-1">Strategy Call Reservation</h3>
+                        <p className="text-primary font-semibold text-xl mb-1">$100 USD</p>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-medium">100% refundable</span> after your call
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={handlePayDeposit}
+                        className="py-6 px-8"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            Reserve Your Call Now <Calendar className="ml-2 h-5 w-5" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
-                <p className="text-sm text-muted-foreground">
-                  Your deposit ensures commitment and is fully refunded after your call.
-                </p>
+                
+                <div className="text-sm text-center text-muted-foreground space-y-2">
+                  <p>The deposit ensures you're committed to the call and helps us prepare effectively for your session.</p>
+                  <p>Your deposit is fully refunded immediately after your call is completed.</p>
+                </div>
               </div>
             ) : (
-              <div id="calendlyWrap" className="min-h-[650px]">
-                <div 
-                  className="calendly-inline-widget" 
-                  data-url="https://calendly.com/tim-hutter92/30min" 
-                  style={{ minWidth: '320px', height: '650px' }} 
-                />
+              <div>
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-6 mb-6">
+                  <h3 className="text-lg font-medium mb-4">To Prepare For Your Call:</h3>
+                  <ul className="space-y-3">
+                    {[
+                      "Have your trading strategy notes ready to share",
+                      "Think about your goals for automation",
+                      "Prepare questions about implementation challenges",
+                      "Consider your budget and timeline constraints",
+                      "Be ready to discuss your technical comfort level"
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-start">
+                        <Check className="text-green-500 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div id="calendlyWrap" className="mb-6">
+                  <div 
+                    className="calendly-inline-widget" 
+                    data-url="https://calendly.com/tim-hutter92/30min" 
+                    style={{ minWidth: '320px', height: '650px' }} 
+                  />
+                </div>
+                
+                <div id="booking-confirmation" className="hidden bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-6 text-center">
+                  <h3 className="text-xl font-semibold mb-2">Your Call is Confirmed!</h3>
+                  <p className="mb-4">Check your email for details and calendar invitation.</p>
+                  <p className="text-sm text-muted-foreground">
+                    We'll send a reminder 24 hours before your call with preparation instructions to make the most of your session.
+                  </p>
+                </div>
               </div>
             )}
+          </div>
+          
+          <div className="bg-card p-8 rounded-lg shadow-md">
+            <h3 className="font-semibold text-xl mb-4">Frequently Asked Questions</h3>
+            <div className="space-y-4">
+              {[
+                {
+                  q: "Why do I need to pay a deposit?",
+                  a: "The deposit ensures you're serious about the call and helps us prepare properly. It's fully refunded after your call is completed."
+                },
+                {
+                  q: "How long is the strategy session?",
+                  a: "Each call is scheduled for 30 minutes with one of our senior trading automation strategists."
+                },
+                {
+                  q: "What should I prepare before the call?",
+                  a: "Have a basic outline of your trading strategy ready, and think about what you want to automate. Any specific challenges you're facing are helpful to discuss."
+                },
+                {
+                  q: "What if I need to reschedule?",
+                  a: "You can reschedule through the calendar link in your confirmation email up to 24 hours before the call."
+                }
+              ].map((item, i) => (
+                <div key={i}>
+                  <h4 className="font-medium mb-1">{item.q}</h4>
+                  <p className="text-muted-foreground">{item.a}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
