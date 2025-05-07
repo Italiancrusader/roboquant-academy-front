@@ -117,17 +117,20 @@ const Quiz = () => {
     }
   }, [step, isTypeformLoading]);
   
-  // Load Typeform script when needed
+  // Load Typeform script and configure the embed
   useEffect(() => {
     // Only load the script when on questions step
     if (step === 'questions') {
       console.log('Loading Typeform script');
+      
+      // Create a script element for the Typeform embed script
       const script = document.createElement('script');
       script.src = "//embed.typeform.com/next/embed.js";
       script.async = true;
       
       // Listen for when Typeform is fully loaded
       const checkTypeformLoaded = setInterval(() => {
+        // Check if the Typeform script has been loaded
         const typeformEmbed = document.querySelector('[data-tf-loaded="true"]');
         if (typeformEmbed) {
           console.log('Typeform fully loaded');
@@ -138,6 +141,25 @@ const Quiz = () => {
       
       document.body.appendChild(script);
       
+      // Create a specific configuration to prevent redirect
+      const embedConfig = document.createElement('div');
+      embedConfig.dataset.tfEmbed = typeformEmbedId;
+      embedConfig.dataset.tfHideHeaders = "true";
+      embedConfig.dataset.tfHideFooter = "true";
+      embedConfig.dataset.tfOpacity = "100";
+      embedConfig.dataset.tfTransitiveSearchParams = "";
+      embedConfig.dataset.tfMedium = "snippet";
+      
+      // Add hidden fields with user data
+      embedConfig.dataset.tfHidden = `email=${encodeURIComponent(userInfo.email)}&firstName=${encodeURIComponent(userInfo.firstName)}&lastName=${encodeURIComponent(userInfo.lastName)}&phone=${encodeURIComponent(userInfo.phone)}`;
+      
+      // Replace any existing container with our new configuration
+      const typeformContainer = document.getElementById('typeform-container');
+      if (typeformContainer) {
+        typeformContainer.innerHTML = '';
+        typeformContainer.appendChild(embedConfig);
+      }
+      
       return () => {
         // Cleanup script and interval when component unmounts
         if (document.body.contains(script)) {
@@ -146,24 +168,7 @@ const Quiz = () => {
         clearInterval(checkTypeformLoaded);
       };
     }
-  }, [step]);
-  
-  // Handle visibility check for Typeform container
-  useEffect(() => {
-    if (step === 'questions' && !isTypeformLoading) {
-      // Additional check after Typeform is considered loaded
-      const typeformInterval = setInterval(() => {
-        const typeformEmbed = document.querySelector('.typeform-iframe');
-        if (typeformEmbed) {
-          console.log('Typeform iframe detected in DOM');
-          setIsTypeformLoading(false);
-          clearInterval(typeformInterval);
-        }
-      }, 500);
-      
-      return () => clearInterval(typeformInterval);
-    }
-  }, [step, isTypeformLoading]);
+  }, [step, userInfo]);
   
   // Handle performance optimization and cleanup
   useEffect(() => {
@@ -223,11 +228,10 @@ const Quiz = () => {
                 </div>
               ) : null}
               
+              {/* Typeform container with specific configuration to prevent redirect */}
               <div 
-                data-tf-live={typeformEmbedId}
+                id="typeform-container"
                 className={`w-full min-h-[650px] ${isTypeformLoading ? 'hidden' : 'block'}`}
-                data-tf-medium="snippet"
-                data-tf-hidden={`email=${encodeURIComponent(userInfo.email)}&firstName=${encodeURIComponent(userInfo.firstName)}&lastName=${encodeURIComponent(userInfo.lastName)}&phone=${encodeURIComponent(userInfo.phone)}`}
               ></div>
               
               <p className="text-xs mt-4 text-center text-muted-foreground">
