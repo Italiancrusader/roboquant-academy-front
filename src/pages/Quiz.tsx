@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 const TYPEFORM_ID = "Mxpdceu1";
 
 const Quiz = () => {
-  const [step, setStep] = useState<'form' | 'questions'>('form');
+  const [step, setStep] = useState<'form' | 'questions' | 'completed'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTypeformLoading, setIsTypeformLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -94,6 +94,23 @@ const Quiz = () => {
     }
   };
   
+  // Handle form completion
+  const handleTypeformSubmit = () => {
+    console.log('Typeform submitted successfully');
+    setStep('completed');
+    
+    // Track completion event
+    trackEvent('quiz_completed', {
+      event_category: 'Quiz',
+      event_label: userInfo.email || 'Unknown'
+    });
+    
+    // Redirect to the VSL page with qualified parameter
+    setTimeout(() => {
+      navigate('/vsl?qualified=true');
+    }, 1500);
+  };
+  
   // Simulate loading progress
   useEffect(() => {
     if (step === 'questions' && isTypeformLoading) {
@@ -147,6 +164,25 @@ const Quiz = () => {
       iframe.onload = () => {
         console.log('Typeform iframe loaded');
         setIsTypeformLoading(false);
+        
+        // Add message listener for form completion
+        window.addEventListener('message', (event) => {
+          // Verify the origin matches Typeform
+          if (event.origin.includes('typeform.com')) {
+            try {
+              const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+              
+              // Check if the form was submitted
+              if (data.type === 'form-submit' || 
+                  (data.eventName && data.eventName === 'form_submit') ||
+                  (data.event && data.event === 'submit')) {
+                handleTypeformSubmit();
+              }
+            } catch (error) {
+              console.error('Error parsing message from Typeform:', error);
+            }
+          }
+        });
       };
       
       iframe.onerror = () => {
@@ -165,9 +201,11 @@ const Quiz = () => {
         if (typeformContainer) {
           typeformContainer.innerHTML = '';
         }
+        // Clean up message event listener when component unmounts
+        window.removeEventListener('message', () => {});
       };
     }
-  }, [step, userInfo]);
+  }, [step, userInfo, navigate]);
   
   // Handle performance optimization
   useEffect(() => {
@@ -213,6 +251,24 @@ const Quiz = () => {
               <p className="text-xs text-center text-muted-foreground mt-6">
                 We respect your privacy and will never share your information with third parties.
               </p>
+            </div>
+          ) : step === 'completed' ? (
+            <div id="quiz-step-completed" className="bg-card p-8 rounded-lg shadow-lg text-center">
+              <div className="flex justify-center mb-6">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <h2 className="text-2xl font-semibold mb-4">Thank You For Completing The Survey!</h2>
+              <p className="mb-8 text-muted-foreground">
+                We're reviewing your information and will redirect you to the next step shortly.
+              </p>
+              <div className="w-full max-w-md mx-auto">
+                <Progress value={100} className="h-2" />
+              </div>
+              <p className="text-sm text-muted-foreground mt-4">Redirecting you in a moment...</p>
             </div>
           ) : (
             <div id="quiz-step-questions" className="bg-card p-8 rounded-lg shadow-lg">
