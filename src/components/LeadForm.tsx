@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -92,6 +91,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
   const handleSubmit = async (values: any) => {
     if (isLoading) return; // Prevent double submissions
     
+    console.log('LeadForm submission started', values);
     setLocalLoading(true);
     
     try {
@@ -126,12 +126,15 @@ const LeadForm: React.FC<LeadFormProps> = ({
         console.error("Form submission error or timeout:", error);
         // We don't throw here, just log the error
       });
+      
+      console.log('LeadForm submission completed successfully');
     } catch (error) {
       console.error("Error submitting lead form:", error);
     } finally {
       // Ensure loading state is reset after a delay
       setTimeout(() => {
         setLocalLoading(false);
+        console.log('LeadForm loading state reset');
       }, 500);
     }
   };

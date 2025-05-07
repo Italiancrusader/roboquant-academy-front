@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -69,13 +70,20 @@ const Quiz = () => {
         phone: values.phone
       });
       
+      // Explicitly log the step change
+      console.log('Form submitted successfully, changing step to questions');
+      
+      // Show success message
       toast({
         title: "Success!",
         description: "Your information has been submitted. Please continue with the survey.",
       });
       
-      // Proceed to questions
-      setStep('questions');
+      // Proceed to questions - force a small delay to ensure state updates properly
+      setTimeout(() => {
+        setStep('questions');
+        console.log('Step changed to:', 'questions');
+      }, 100);
     } catch (error: any) {
       console.error('Error submitting info:', error);
       toast({
@@ -87,6 +95,11 @@ const Quiz = () => {
       setIsSubmitting(false);
     }
   };
+  
+  // Debug the current step
+  useEffect(() => {
+    console.log('Current step:', step);
+  }, [step]);
   
   // Simulate loading progress
   useEffect(() => {
@@ -108,6 +121,7 @@ const Quiz = () => {
   useEffect(() => {
     // Only load the script when on questions step
     if (step === 'questions') {
+      console.log('Loading Typeform script');
       const script = document.createElement('script');
       script.src = "//embed.typeform.com/next/embed.js";
       script.async = true;
@@ -116,6 +130,7 @@ const Quiz = () => {
       const checkTypeformLoaded = setInterval(() => {
         const typeformEmbed = document.querySelector('[data-tf-loaded="true"]');
         if (typeformEmbed) {
+          console.log('Typeform fully loaded');
           setIsTypeformLoading(false);
           clearInterval(checkTypeformLoaded);
         }
@@ -140,6 +155,7 @@ const Quiz = () => {
       const typeformInterval = setInterval(() => {
         const typeformEmbed = document.querySelector('.typeform-iframe');
         if (typeformEmbed) {
+          console.log('Typeform iframe detected in DOM');
           setIsTypeformLoading(false);
           clearInterval(typeformInterval);
         }
