@@ -20,6 +20,7 @@ const Quiz = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTypeformLoading, setIsTypeformLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [qualificationResult, setQualificationResult] = useState<boolean | null>(null);
   const navigate = useNavigate();
   
   const [userInfo, setUserInfo] = useState({
@@ -97,8 +98,8 @@ const Quiz = () => {
   };
   
   // Handle form completion - detect both manual and automatic completion
-  const handleTypeformSubmit = () => {
-    console.log('Typeform submitted successfully');
+  const handleTypeformSubmit = (data?: any) => {
+    console.log('Typeform submitted successfully', data);
     
     // Only proceed if not already completed
     if (step !== 'completed') {
@@ -110,11 +111,65 @@ const Quiz = () => {
         event_label: userInfo.email || 'Unknown'
       });
       
-      // Redirect to the VSL page with qualified parameter
+      // Determine if user qualifies based on submitted responses
+      // Use data from Typeform if available, otherwise default to not qualified
+      let isQualified = false;
+      
+      if (data) {
+        try {
+          // Check if the data includes qualification status
+          if (typeof data.qualifiesForCall === 'boolean') {
+            isQualified = data.qualifiesForCall;
+          } else if (data.answers) {
+            // Process answers to determine qualification
+            const tradingCapital = getAnswerByFieldName(data.answers, 'trading_capital');
+            const tradingExperience = getAnswerByFieldName(data.answers, 'trading_experience');
+            
+            // Basic qualification rules - higher capital and some experience
+            isQualified = !(
+              ['Under $1,000', '$1,000 – $5,000'].includes(tradingCapital) ||
+              ["I've never traded", "0–1 year"].includes(tradingExperience)
+            );
+          }
+        } catch (error) {
+          console.error('Error processing qualification data:', error);
+          isQualified = false; // Default to not qualified on error
+        }
+      }
+      
+      setQualificationResult(isQualified);
+      
+      // Redirect to the appropriate page based on qualification
       setTimeout(() => {
-        navigate('/vsl?qualified=true');
+        if (isQualified) {
+          navigate('/book-call');
+        } else {
+          navigate('/vsl?qualified=false');
+        }
       }, 1500);
     }
+  };
+  
+  // Helper function to extract answer by field name
+  const getAnswerByFieldName = (answers: any[], fieldName: string): string => {
+    if (!answers || !Array.isArray(answers)) return '';
+    
+    const answer = answers.find(a => 
+      a.field && (a.field.id.includes(fieldName) || a.field.ref.includes(fieldName))
+    );
+    
+    if (!answer) return '';
+    
+    // Extract value based on answer type
+    if (answer.type === 'choice') {
+      return answer.choice.label;
+    } else if (answer.type === 'text') {
+      return answer.text;
+    } else if (answer.type === 'number') {
+      return answer.number.toString();
+    }
+    
+    return '';
   };
   
   // Simulate loading progress
@@ -179,6 +234,7 @@ const Quiz = () => {
           title: "Error",
           description: "Failed to load the survey. Please refresh the page and try again.",
           variant: "destructive",
+          duration: 3000,
         });
       };
       
@@ -189,7 +245,7 @@ const Quiz = () => {
       const fallbackButton = document.createElement('button');
       fallbackButton.textContent = "I've Completed the Survey";
       fallbackButton.className = "w-full mt-4 px-4 py-3 bg-primary text-primary-foreground text-center rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary";
-      fallbackButton.onclick = handleTypeformSubmit;
+      fallbackButton.onclick = () => handleTypeformSubmit();
       typeformContainer.appendChild(fallbackButton);
       
       // Set up a message listener to detect form submission
@@ -204,7 +260,7 @@ const Quiz = () => {
             if (data.type === 'form-submit' || 
                 (data.eventName && data.eventName === 'form_submit') ||
                 (data.event && data.event === 'submit')) {
-              handleTypeformSubmit();
+              handleTypeformSubmit(data);
             }
           } catch (error) {
             console.error('Error parsing message from Typeform:', error);
@@ -293,7 +349,7 @@ const Quiz = () => {
               </div>
               <h2 className="text-2xl font-semibold mb-4">Thank You For Completing The Survey!</h2>
               <p className="mb-8 text-muted-foreground">
-                We're reviewing your information and will redirect you to the next step shortly.
+                We're reviewing your information and will redirect you to {qualificationResult ? 'book a strategy call' : 'the next step'} shortly.
               </p>
               <div className="w-full max-w-md mx-auto">
                 <Progress value={100} className="h-2" />
