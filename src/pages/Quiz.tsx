@@ -15,8 +15,8 @@ const Quiz = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Enter your actual Typeform URL
-  // Ideally this would come from an environment variable or configuration
+  // Replace this with your actual Typeform URL from your Typeform dashboard
+  // Format should be: https://yourworkspace.typeform.com/to/FORM_ID
   const typeformUrl = "https://form.typeform.com/to/abcdefgh"; // Replace with your actual Typeform ID
   
   const handleEmailSubmit = async (e: React.FormEvent) => {
