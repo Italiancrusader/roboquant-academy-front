@@ -2,59 +2,47 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { trackLead } from '@/utils/metaPixel';
 import { submitLead } from '@/services/leadService';
 import { preconnectToDomains } from '@/utils/performance';
+import LeadForm from '@/components/LeadForm';
 
 const Quiz = () => {
-  const [step, setStep] = useState<'email' | 'questions'>('email');
-  const [email, setEmail] = useState('');
+  const [step, setStep] = useState<'form' | 'questions'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Typeform embed ID from your code
   const typeformEmbedId = "01JTNA7K4WFXEEAEX34KT7NFR9";
+  const [userInfo, setUserInfo] = useState({
+    name: '',
+    email: '',
+    phone: ''
+  });
   
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !email.includes('@')) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
-      return;
-    }
-    
+  const handleLeadSubmit = async (values: { name: string, email: string, phone: string }) => {
     setIsSubmitting(true);
     
     try {
       // Track email submission event
       trackEvent('lead_email_submit', {
         event_category: 'Quiz',
-        event_label: email
+        event_label: values.email
       });
       
       trackLead({
         content_name: 'Quiz Lead',
-        email: email
+        email: values.email
       });
-      
-      // Generate a name from the email - Use part before @ or fallback
-      const namePart = email.split('@')[0] || "";
-      // Make it look more like a name (capitalize first letter)
-      const generatedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
       
       // Save lead in Supabase using our service
       const result = await submitLead({
-        name: generatedName || "Quiz User", // Use generated name or default
-        email: email.toLowerCase().trim(),
-        phone: "Not provided via quiz", // Provide a clearer placeholder
+        name: values.name,
+        email: values.email.toLowerCase().trim(),
+        phone: values.phone,
         source: "quiz",
-        leadMagnet: "application_quiz", // Specify the lead magnet type more clearly
+        leadMagnet: "application_quiz",
         metadata: { 
           submission_date: new Date().toISOString(),
           entry_point: "quiz_page"
@@ -65,18 +53,25 @@ const Quiz = () => {
         throw new Error(result.error || "Failed to save your information");
       }
       
+      // Store user info for typeform hidden fields
+      setUserInfo({
+        name: values.name,
+        email: values.email,
+        phone: values.phone
+      });
+      
       toast({
         title: "Success!",
-        description: "Your email has been submitted. Please continue with the survey.",
+        description: "Your information has been submitted. Please continue with the survey.",
       });
       
       // Proceed to questions
       setStep('questions');
     } catch (error: any) {
-      console.error('Error submitting email:', error);
+      console.error('Error submitting info:', error);
       toast({
         title: "Error",
-        description: error.message || "There was an error saving your email. Please try again.",
+        description: error.message || "There was an error saving your information. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -123,48 +118,24 @@ const Quiz = () => {
             Apply For RoboQuant Academy
           </h1>
           
-          {step === 'email' ? (
-            <div id="quiz-step-email" className="bg-card p-8 rounded-lg shadow-lg">
+          {step === 'form' ? (
+            <div id="quiz-step-form" className="bg-card p-8 rounded-lg shadow-lg">
               <h2 className="text-2xl font-semibold mb-6">Let's get started</h2>
               <p className="mb-8 text-muted-foreground">
-                Enter your best email to start the application process and see if you qualify for our program.
+                Please fill in your details below to start the application process and see if you qualify for our program.
               </p>
               
-              <form id="leadEmailForm" onSubmit={handleEmailSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <label htmlFor="leadEmail" className="block text-sm font-medium">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="leadEmail"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your best email"
-                    className="w-full p-3 border border-input bg-background rounded-md"
-                    required
-                  />
-                </div>
-                
-                <Button
-                  type="submit"
-                  className="w-full py-6"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Start Survey →"
-                  )}
-                </Button>
-                
-                <p className="text-xs text-center text-muted-foreground">
-                  We respect your privacy and will never share your email with third parties.
-                </p>
-              </form>
+              <LeadForm 
+                onSubmit={handleLeadSubmit}
+                buttonText="Start Survey →"
+                source="quiz"
+                leadMagnet="application_quiz"
+                isSubmitting={isSubmitting}
+              />
+              
+              <p className="text-xs text-center text-muted-foreground mt-6">
+                We respect your privacy and will never share your information with third parties.
+              </p>
             </div>
           ) : (
             <div id="quiz-step-questions" className="bg-card p-8 rounded-lg shadow-lg">
@@ -174,7 +145,7 @@ const Quiz = () => {
                 data-tf-live={typeformEmbedId}
                 className="w-full min-h-[650px]"
                 data-tf-medium="snippet"
-                data-tf-hidden={`email=${encodeURIComponent(email)}`}
+                data-tf-hidden={`email=${encodeURIComponent(userInfo.email)}&name=${encodeURIComponent(userInfo.name)}&phone=${encodeURIComponent(userInfo.phone)}`}
               ></div>
               
               <p className="text-xs mt-4 text-center text-muted-foreground">
