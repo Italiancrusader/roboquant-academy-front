@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -129,8 +130,8 @@ const VSL = () => {
               <h2 className="text-2xl font-bold mb-4">You've Qualified For A Strategy Call</h2>
               <p className="text-muted-foreground mb-8">
                 {isQualified 
-                  ? 'Based on your survey answers, you're eligible to speak with our team and get personalized guidance.'
-                  : 'Based on your survey answers and video completion, you're eligible to speak with our team and get personalized guidance.'}
+                  ? "Based on your survey answers, you're eligible to speak with our team and get personalized guidance."
+                  : "Based on your survey answers and video completion, you're eligible to speak with our team and get personalized guidance."}
               </p>
               
               <Button 
