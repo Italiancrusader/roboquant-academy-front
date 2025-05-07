@@ -8,13 +8,13 @@
  * @param domains Array of domains to preconnect to
  */
 export const preconnectToDomains = (domains: string[]): (() => void) => {
-  // Skip if no domains are provided
-  if (!domains || domains.length === 0) return () => {};
+  // Skip if no domains are provided or if not in browser environment
+  if (!domains || domains.length === 0 || typeof document === 'undefined') return () => {};
   
   const preconnectLinks: HTMLLinkElement[] = [];
   
   domains.forEach(domain => {
-    if (!domain) return; // Skip empty domains
+    if (!domain || domain.trim() === '') return; // Skip empty domains
     
     const link = document.createElement('link');
     link.rel = 'preconnect';
@@ -38,15 +38,15 @@ export const preconnectToDomains = (domains: string[]): (() => void) => {
  * Preload critical resources - only use for resources that will definitely be used immediately
  * @param urls Array of URLs to preload
  * @param type Resource type (image, font, etc.)
- * @param timeoutMs Time in ms to automatically clean up preload links if unused (default: 10000ms)
+ * @param timeoutMs Time in ms to automatically clean up preload links if unused (default: 5000ms)
  */
 export const preloadResources = (
   urls: string[], 
   type: 'image' | 'font' | 'style' | 'script',
-  timeoutMs: number = 10000
+  timeoutMs: number = 5000
 ): (() => void) => {
-  // Skip preloading if no URLs are provided to avoid warnings
-  if (!urls || urls.length === 0) return () => {};
+  // Skip preloading if no URLs are provided to avoid warnings or if not in browser environment
+  if (!urls || urls.length === 0 || typeof document === 'undefined') return () => {};
   
   // Filter out empty URLs
   const validUrls = urls.filter(url => url && url.trim() !== '');
@@ -81,6 +81,7 @@ export const preloadResources = (
   });
   
   // Set a timeout to automatically clean up preload links if they haven't been used
+  // This helps prevent console warnings
   const timeoutId = setTimeout(() => {
     preloadLinks.forEach(link => {
       if (document.head.contains(link)) {

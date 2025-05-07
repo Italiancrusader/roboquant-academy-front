@@ -38,13 +38,8 @@ export const submitLead = async (leadData: LeadData) => {
       phone: leadData.phone.trim(),
       source: leadData.source,
       lead_magnet: leadData.leadMagnet || null, // Match column name in database
+      metadata: leadData.metadata || null // Now properly formatted as JSONB
     };
-    
-    // If metadata exists, add it
-    if (leadData.metadata) {
-      // @ts-ignore - Supabase accepts JSON for metadata
-      cleanLead.metadata = leadData.metadata;
-    }
     
     console.log("Submitting lead with data:", cleanLead);
     

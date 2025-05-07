@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { trackLead } from '@/utils/metaPixel';
 import { submitLead } from '@/services/leadService';
+import { preconnectToDomains, preloadResources } from '@/utils/performance';
 
 const Quiz = () => {
   const [step, setStep] = useState<'email' | 'questions'>('email');
@@ -83,13 +84,20 @@ const Quiz = () => {
   // Set the correct Typeform URL with your actual form ID - replace this with the correct URL
   const typeformUrl = "https://form.typeform.com/to/YourTypeformID";
   
-  // Clean up any performance-related preload issues
+  // Handle performance optimization and cleanup
   useEffect(() => {
-    // Clear any performance-related preloads when component unmounts
+    // Preconnect to typeform domain to improve loading performance
+    const cleanupPreconnect = preconnectToDomains(['https://form.typeform.com']);
+    
     return () => {
+      // Clean up preconnect links when component unmounts
+      cleanupPreconnect();
+      
       // Find and remove any lingering preload links that might cause warnings
       document.querySelectorAll('link[rel="preload"]').forEach(link => {
-        link.remove();
+        if (document.head.contains(link)) {
+          link.remove();
+        }
       });
     };
   }, []);

@@ -119,6 +119,7 @@ export type Database = {
           email: string
           id: string
           lead_magnet: string | null
+          metadata: Json | null
           name: string
           phone: string
           source: string
@@ -128,6 +129,7 @@ export type Database = {
           email: string
           id?: string
           lead_magnet?: string | null
+          metadata?: Json | null
           name: string
           phone: string
           source: string
@@ -137,6 +139,7 @@ export type Database = {
           email?: string
           id?: string
           lead_magnet?: string | null
+          metadata?: Json | null
           name?: string
           phone?: string
           source?: string
