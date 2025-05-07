@@ -8,16 +8,15 @@ import { Loader2 } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { trackLead } from '@/utils/metaPixel';
 import { submitLead } from '@/services/leadService';
-import { preconnectToDomains, preloadResources } from '@/utils/performance';
+import { preconnectToDomains } from '@/utils/performance';
 
 const Quiz = () => {
   const [step, setStep] = useState<'email' | 'questions'>('email');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Replace this with your actual Typeform URL from your Typeform dashboard
-  // Format should be: https://yourworkspace.typeform.com/to/FORM_ID
-  const typeformUrl = "https://form.typeform.com/to/abcdefgh"; // Replace with your actual Typeform ID
+  // Typeform embed ID from your code
+  const typeformEmbedId = "01JTNA7K4WFXEEAEX34KT7NFR9";
   
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,21 +84,32 @@ const Quiz = () => {
     }
   };
   
+  // Load Typeform script when needed
+  useEffect(() => {
+    // Only load the script when on questions step
+    if (step === 'questions') {
+      const script = document.createElement('script');
+      script.src = "//embed.typeform.com/next/embed.js";
+      script.async = true;
+      document.body.appendChild(script);
+      
+      return () => {
+        // Cleanup script when component unmounts
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+      };
+    }
+  }, [step]);
+  
   // Handle performance optimization and cleanup
   useEffect(() => {
     // Preconnect to typeform domain to improve loading performance
-    const cleanupPreconnect = preconnectToDomains(['https://form.typeform.com']);
+    const cleanupPreconnect = preconnectToDomains(['https://embed.typeform.com']);
     
     return () => {
       // Clean up preconnect links when component unmounts
       cleanupPreconnect();
-      
-      // Find and remove any lingering preload links that might cause warnings
-      document.querySelectorAll('link[rel="preload"]').forEach(link => {
-        if (document.head.contains(link)) {
-          link.remove();
-        }
-      });
     };
   }, []);
   
@@ -160,13 +170,12 @@ const Quiz = () => {
             <div id="quiz-step-questions" className="bg-card p-8 rounded-lg shadow-lg">
               <h2 className="text-2xl font-semibold mb-6">Qualification Survey</h2>
               
-              <iframe
-                id="typeformEmbed"
-                src={`${typeformUrl}?email=${encodeURIComponent(email)}`}
-                frameBorder="0"
-                className="w-full h-[650px] rounded-md"
-                title="RoboQuant Qualification Survey"
-              />
+              <div 
+                data-tf-live={typeformEmbedId}
+                className="w-full min-h-[650px]"
+                data-tf-medium="snippet"
+                data-tf-hidden={`email=${encodeURIComponent(email)}`}
+              ></div>
               
               <p className="text-xs mt-4 text-center text-muted-foreground">
                 This information helps us determine if you're a good fit for our program.
