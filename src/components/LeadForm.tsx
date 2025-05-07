@@ -27,22 +27,36 @@ const phonePrefixes = [
   { value: "+971", label: "AE (+971)" },
 ];
 
-const leadFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Please enter a valid email"),
-  phonePrefix: z.string().min(1, "Country code is required"),
-  phoneNumber: z.string().min(1, "Phone number is required")
-});
+// Create two different schemas based on whether we need split name fields
+const createLeadFormSchema = (splitName: boolean) => {
+  const baseSchema = {
+    email: z.string().email("Please enter a valid email"),
+    phonePrefix: z.string().min(1, "Country code is required"),
+    phoneNumber: z.string().min(1, "Phone number is required")
+  };
 
-type LeadFormValues = z.infer<typeof leadFormSchema>;
+  if (splitName) {
+    return z.object({
+      ...baseSchema,
+      firstName: z.string().min(1, "First name is required"),
+      lastName: z.string().min(1, "Last name is required"),
+    });
+  } else {
+    return z.object({
+      ...baseSchema,
+      name: z.string().min(1, "Name is required"),
+    });
+  }
+};
 
 interface LeadFormProps {
-  onSubmit: (values: { name: string, email: string, phone: string }) => Promise<void>;
+  onSubmit: (values: { name?: string, firstName?: string, lastName?: string, email: string, phone: string }) => Promise<void>;
   buttonText?: string;
   source: string;
   leadMagnet?: string;
   onCancel?: () => void;
   isSubmitting?: boolean;
+  splitName?: boolean;
 }
 
 const LeadForm: React.FC<LeadFormProps> = ({ 
@@ -51,14 +65,23 @@ const LeadForm: React.FC<LeadFormProps> = ({
   source,
   leadMagnet,
   onCancel,
-  isSubmitting = false
+  isSubmitting = false,
+  splitName = false
 }) => {
   const [localLoading, setLocalLoading] = useState(false);
   const isLoading = isSubmitting || localLoading;
   
-  const form = useForm<LeadFormValues>({
+  const leadFormSchema = createLeadFormSchema(splitName);
+  
+  const form = useForm({
     resolver: zodResolver(leadFormSchema),
-    defaultValues: {
+    defaultValues: splitName ? {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phonePrefix: "+1",
+      phoneNumber: ""
+    } : {
       name: "",
       email: "",
       phonePrefix: "+1",
@@ -66,7 +89,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
     }
   });
   
-  const handleSubmit = async (values: LeadFormValues) => {
+  const handleSubmit = async (values: any) => {
     if (isLoading) return; // Prevent double submissions
     
     setLocalLoading(true);
@@ -85,7 +108,12 @@ const LeadForm: React.FC<LeadFormProps> = ({
       
       // Set a timeout to ensure the loading state doesn't get stuck
       const submitPromise = onSubmit({
-        name: values.name,
+        ...(splitName ? { 
+          firstName: values.firstName, 
+          lastName: values.lastName 
+        } : { 
+          name: values.name 
+        }),
         email: values.email,
         phone: fullPhoneNumber
       });
@@ -111,19 +139,51 @@ const LeadForm: React.FC<LeadFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your name" {...field} disabled={isLoading} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {splitName ? (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter first name" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter last name" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        ) : (
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your name" {...field} disabled={isLoading} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         
         <FormField
           control={form.control}

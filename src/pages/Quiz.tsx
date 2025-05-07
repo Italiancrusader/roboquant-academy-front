@@ -16,12 +16,13 @@ const Quiz = () => {
   // Typeform embed ID from your code
   const typeformEmbedId = "01JTNA7K4WFXEEAEX34KT7NFR9";
   const [userInfo, setUserInfo] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: ''
   });
   
-  const handleLeadSubmit = async (values: { name: string, email: string, phone: string }) => {
+  const handleLeadSubmit = async (values: { firstName: string, lastName: string, email: string, phone: string }) => {
     setIsSubmitting(true);
     
     try {
@@ -37,15 +38,18 @@ const Quiz = () => {
       });
       
       // Save lead in Supabase using our service
+      const fullName = `${values.firstName} ${values.lastName}`;
       const result = await submitLead({
-        name: values.name,
+        name: fullName,
         email: values.email.toLowerCase().trim(),
         phone: values.phone,
         source: "quiz",
         leadMagnet: "application_quiz",
         metadata: { 
           submission_date: new Date().toISOString(),
-          entry_point: "quiz_page"
+          entry_point: "quiz_page",
+          firstName: values.firstName,
+          lastName: values.lastName
         }
       });
       
@@ -55,7 +59,8 @@ const Quiz = () => {
       
       // Store user info for typeform hidden fields
       setUserInfo({
-        name: values.name,
+        firstName: values.firstName,
+        lastName: values.lastName,
         email: values.email,
         phone: values.phone
       });
@@ -131,6 +136,7 @@ const Quiz = () => {
                 source="quiz"
                 leadMagnet="application_quiz"
                 isSubmitting={isSubmitting}
+                splitName={true}  // Add this flag to indicate we want split name fields
               />
               
               <p className="text-xs text-center text-muted-foreground mt-6">
@@ -145,7 +151,7 @@ const Quiz = () => {
                 data-tf-live={typeformEmbedId}
                 className="w-full min-h-[650px]"
                 data-tf-medium="snippet"
-                data-tf-hidden={`email=${encodeURIComponent(userInfo.email)}&name=${encodeURIComponent(userInfo.name)}&phone=${encodeURIComponent(userInfo.phone)}`}
+                data-tf-hidden={`email=${encodeURIComponent(userInfo.email)}&firstName=${encodeURIComponent(userInfo.firstName)}&lastName=${encodeURIComponent(userInfo.lastName)}&phone=${encodeURIComponent(userInfo.phone)}`}
               ></div>
               
               <p className="text-xs mt-4 text-center text-muted-foreground">
