@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Unlock, Check, ArrowRight, ShieldCheck, BadgeCheck } from 'lucide-react';
+import { ShieldCheck, Check, ArrowRight } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -107,15 +107,6 @@ const VSL = () => {
     navigate('/checkout');
   };
   
-  // Navigate to book call page
-  const handleBookCall = () => {
-    trackEvent('vsl_book_call', {
-      event_category: 'Conversion',
-      event_label: 'VSL Book Call'
-    });
-    navigate('/book-call');
-  };
-  
   // FAQ items for the accordion
   const faqItems = [
     {
@@ -194,14 +185,6 @@ const VSL = () => {
                     <ShieldCheck className="mr-2 h-5 w-5" /> 
                     Get Instant Access — $1,500
                   </Button>
-                  
-                  <Button 
-                    onClick={handleBookCall}
-                    className="w-full py-6 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                  >
-                    <Unlock className="mr-2 h-5 w-5" /> 
-                    Book a Free Strategy Call
-                  </Button>
                 </div>
                 
                 <p className="text-sm text-muted-foreground mt-4 text-center">
@@ -213,10 +196,10 @@ const VSL = () => {
           
           {/* Trust Indicators */}
           <div className="mb-16">
-            <h3 className="text-xl font-medium mb-6 text-center">Trusted by traders from</h3>
+            <h3 className="text-xl font-medium mb-6 text-center">What our customers are saying</h3>
             <div className="flex flex-wrap justify-center gap-8 opacity-70">
-              {['JP Morgan', 'Goldman Sachs', 'BlackRock', 'Citadel', 'Interactive Brokers'].map((company, i) => (
-                <div key={i} className="text-lg font-medium">{company}</div>
+              {['"Deployed my first bot in 5 days"', '"Made my strategy fully automated"', '"Best trading course investment"', '"Finally no more coding needed"', '"Worth every penny"'].map((quote, i) => (
+                <div key={i} className="text-lg italic font-medium">{quote}</div>
               ))}
             </div>
           </div>
@@ -239,7 +222,7 @@ const VSL = () => {
             ].map((benefit, i) => (
               <div key={i} className="bg-card border border-border p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold mb-2 flex items-center">
-                  <BadgeCheck className="mr-2 h-5 w-5 text-primary" />
+                  <Check className="mr-2 h-5 w-5 text-primary" />
                   {benefit.title}
                 </h3>
                 <p className="text-muted-foreground">{benefit.description}</p>
@@ -270,19 +253,12 @@ const VSL = () => {
             <p className="text-lg mb-6 max-w-2xl mx-auto">
               Join RoboQuant Academy today and build your first profitable trading bot within days, even if you have no coding experience.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Button 
                 onClick={handleCheckout}
                 className="py-6 px-8 bg-primary hover:bg-primary/90 text-primary-foreground text-lg"
               >
                 Get Instant Access <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button 
-                onClick={handleBookCall}
-                variant="outline"
-                className="py-6 px-8"
-              >
-                Book a Free Strategy Call
               </Button>
             </div>
           </div>
