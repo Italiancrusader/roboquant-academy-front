@@ -15,6 +15,10 @@ const Quiz = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Enter your actual Typeform URL
+  // Ideally this would come from an environment variable or configuration
+  const typeformUrl = "https://form.typeform.com/to/abcdefgh"; // Replace with your actual Typeform ID
+  
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
@@ -80,9 +84,6 @@ const Quiz = () => {
       setIsSubmitting(false);
     }
   };
-  
-  // Set the correct Typeform URL with your actual form ID - replace this with the correct URL
-  const typeformUrl = "https://form.typeform.com/to/YourTypeformID";
   
   // Handle performance optimization and cleanup
   useEffect(() => {
