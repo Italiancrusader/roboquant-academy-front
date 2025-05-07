@@ -1,21 +1,33 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { toast } from '@/components/ui/use-toast';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { trackLead } from '@/utils/metaPixel';
 import { submitLead } from '@/services/leadService';
+import { preconnectToDomains } from '@/utils/performance';
 import LeadForm from '@/components/LeadForm';
+import { LoaderCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const Quiz = () => {
-  const [step, setStep] = useState<'form' | 'redirect'>('form');
+  const [step, setStep] = useState<'form' | 'questions'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTypeformLoading, setIsTypeformLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const navigate = useNavigate();
+  
+  // Typeform embed ID from your code
+  const typeformEmbedId = "01JTNA7K4WFXEEAEX34KT7NFR9";
+  const [userInfo, setUserInfo] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
+  });
   
   const handleLeadSubmit = async (values: { firstName: string, lastName: string, email: string, phone: string }) => {
     setIsSubmitting(true);
@@ -52,21 +64,28 @@ const Quiz = () => {
         throw new Error(result.error || "Failed to save your information");
       }
       
+      // Store user info for typeform hidden fields
+      setUserInfo({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        phone: values.phone
+      });
+      
+      // Explicitly log the step change
+      console.log('Form submitted successfully, changing step to questions');
+      
       // Show success message
       toast({
         title: "Success!",
-        description: "Your information has been submitted successfully.",
+        description: "Your information has been submitted. Please continue with the survey.",
       });
       
-      // Update state to show redirect options
-      setStep('redirect');
-      
-      // Track completion
-      trackEvent('quiz_lead_captured', {
-        event_category: 'Quiz',
-        event_label: values.email
-      });
-      
+      // Proceed to questions - force a small delay to ensure state updates properly
+      setTimeout(() => {
+        setStep('questions');
+        console.log('Step changed to:', 'questions');
+      }, 100);
     } catch (error: any) {
       console.error('Error submitting info:', error);
       toast({
@@ -79,17 +98,115 @@ const Quiz = () => {
     }
   };
   
-  // Navigate to Typeform survey (externally)
-  const goToSurvey = () => {
-    // Redirect to the external Typeform survey
-    // Replace with your actual Typeform URL
-    window.location.href = "https://form.typeform.com/to/01JTNA7K4WFXEEAEX34KT7NFR9";
-  };
+  // Debug the current step
+  useEffect(() => {
+    console.log('Current step:', step);
+  }, [step]);
   
-  // Skip survey and go directly to VSL
-  const skipToVSL = () => {
-    navigate('/vsl');
-  };
+  // Simulate loading progress
+  useEffect(() => {
+    if (step === 'questions' && isTypeformLoading) {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 5;
+        setLoadingProgress(progress);
+        if (progress >= 100) {
+          clearInterval(interval);
+        }
+      }, 150);
+      
+      return () => clearInterval(interval);
+    }
+  }, [step, isTypeformLoading]);
+  
+  // Load Typeform script and configure the embed
+  useEffect(() => {
+    // Only load the script when on questions step
+    if (step === 'questions') {
+      console.log('Loading Typeform script');
+      
+      // Create a script element for the Typeform embed script
+      const script = document.createElement('script');
+      script.src = "//embed.typeform.com/next/embed.js";
+      script.async = true;
+      
+      // Listen for when Typeform is fully loaded
+      const checkTypeformLoaded = setInterval(() => {
+        // Check if the Typeform script has been loaded
+        const typeformEmbed = document.querySelector('[data-tf-loaded="true"]');
+        if (typeformEmbed) {
+          console.log('Typeform fully loaded');
+          setIsTypeformLoading(false);
+          clearInterval(checkTypeformLoaded);
+        }
+      }, 300);
+      
+      document.body.appendChild(script);
+      
+      // Create a specific configuration to prevent redirect
+      const embedConfig = document.createElement('div');
+      embedConfig.dataset.tfEmbed = typeformEmbedId;
+      embedConfig.dataset.tfHideHeaders = "true";
+      embedConfig.dataset.tfHideFooter = "true";
+      embedConfig.dataset.tfOpacity = "100";
+      embedConfig.dataset.tfTransitiveSearchParams = "";
+      embedConfig.dataset.tfMedium = "snippet";
+      
+      // Add hidden fields with user data
+      embedConfig.dataset.tfHidden = `email=${encodeURIComponent(userInfo.email)}&firstName=${encodeURIComponent(userInfo.firstName)}&lastName=${encodeURIComponent(userInfo.lastName)}&phone=${encodeURIComponent(userInfo.phone)}`;
+      
+      // Add a callback for when the form is submitted
+      window.addEventListener('message', (event) => {
+        // Check if the message is from Typeform
+        if (event.data.type === 'form-submit') {
+          console.log('Typeform submitted!');
+          trackEvent('quiz_completed', {
+            event_category: 'Quiz',
+            event_label: userInfo.email
+          });
+          
+          // Redirect based on the qualification logic from our backend
+          // The actual redirection will happen via the webhook
+          toast({
+            title: "Form submitted!",
+            description: "Processing your responses...",
+          });
+          
+          // We won't navigate here - the webhook will handle redirection
+          // This is just a fallback in case the webhook fails
+          setTimeout(() => {
+            navigate('/checkout'); // Default fallback
+          }, 5000);
+        }
+      });
+      
+      // Replace any existing container with our new configuration
+      const typeformContainer = document.getElementById('typeform-container');
+      if (typeformContainer) {
+        typeformContainer.innerHTML = '';
+        typeformContainer.appendChild(embedConfig);
+      }
+      
+      return () => {
+        // Cleanup script and interval when component unmounts
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+        clearInterval(checkTypeformLoaded);
+      };
+    }
+  }, [step, userInfo, navigate]);
+  
+  // Handle performance optimization and cleanup
+  useEffect(() => {
+    // Preconnect to typeform domain to improve loading performance
+    const cleanupPreconnect = preconnectToDomains(['https://embed.typeform.com']);
+    
+    return () => {
+      // Clean up preconnect links when component unmounts
+      cleanupPreconnect();
+    };
+  }, []);
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -110,7 +227,7 @@ const Quiz = () => {
               
               <LeadForm 
                 onSubmit={handleLeadSubmit}
-                buttonText="Continue →"
+                buttonText="Start Survey →"
                 source="quiz"
                 leadMagnet="application_quiz"
                 isSubmitting={isSubmitting}
@@ -122,36 +239,31 @@ const Quiz = () => {
               </p>
             </div>
           ) : (
-            <div id="quiz-step-redirect" className="bg-card p-8 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-semibold mb-6">Thank You!</h2>
-              <p className="mb-8 text-muted-foreground">
-                Your information has been submitted successfully. You can now proceed to our qualification survey or go directly to watch our video.
+            <div id="quiz-step-questions" className="bg-card p-8 rounded-lg shadow-lg">
+              <h2 className="text-2xl font-semibold mb-6">Qualification Survey</h2>
+              
+              {isTypeformLoading ? (
+                <div className="flex flex-col items-center justify-center space-y-6 py-16">
+                  <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
+                  <div className="text-center">
+                    <h3 className="text-lg font-medium mb-3">Loading your survey...</h3>
+                    <div className="w-full max-w-md mx-auto">
+                      <Progress value={loadingProgress} className="h-2" />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">Please wait while we prepare your application survey</p>
+                  </div>
+                </div>
+              ) : null}
+              
+              {/* Typeform container with specific configuration to prevent redirect */}
+              <div 
+                id="typeform-container"
+                className={`w-full min-h-[650px] ${isTypeformLoading ? 'hidden' : 'block'}`}
+              ></div>
+              
+              <p className="text-xs mt-4 text-center text-muted-foreground">
+                This information helps us determine if you're a good fit for our program.
               </p>
-              
-              <Alert className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Important</AlertTitle>
-                <AlertDescription>
-                  Taking our qualification survey helps us determine if you're eligible for a personalized strategy call.
-                </AlertDescription>
-              </Alert>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  onClick={goToSurvey} 
-                  className="flex-1"
-                  variant="default"
-                >
-                  Take Qualification Survey
-                </Button>
-                <Button 
-                  onClick={skipToVSL} 
-                  className="flex-1"
-                  variant="outline"
-                >
-                  Skip to Video
-                </Button>
-              </div>
             </div>
           )}
         </div>
