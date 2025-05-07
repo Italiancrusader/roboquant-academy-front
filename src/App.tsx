@@ -101,9 +101,9 @@ function App() {
                 <Route path="/admin" element={<AdminCheck><AdminDashboard /></AdminCheck>} />
                 <Route path="/admin/dashboard" element={<AdminCheck><AdminDashboard /></AdminCheck>} />
                 <Route path="/admin/courses" element={<AdminCheck><AdminCourses /></AdminCheck>} />
-                <Route path="/admin/courses/config/:courseId" element={<AdminCheck><CourseConfigPage /></AdminCheck>} />
-                <Route path="/admin/courses/analytics/:courseId" element={<AdminCheck><CourseAnalytics /></AdminCheck>} />
-                <Route path="/admin/courses/all-lessons" element={<AdminCheck><AllLessonsManagement /></AdminCheck>} />
+                <Route path="/admin/courses/:courseId/configure" element={<AdminCheck><CourseConfigPage /></AdminCheck>} />
+                <Route path="/admin/courses/:courseId/analytics" element={<AdminCheck><CourseAnalytics /></AdminCheck>} />
+                <Route path="/admin/lessons" element={<AdminCheck><AllLessonsManagement /></AdminCheck>} />
                 <Route path="/admin/users" element={<AdminCheck><AdminUsers /></AdminCheck>} />
                 <Route path="/admin/settings" element={<AdminCheck><AdminSettings /></AdminCheck>} />
                 <Route path="/admin/analytics" element={<AdminCheck><AdminAnalytics /></AdminCheck>} />
@@ -111,8 +111,6 @@ function App() {
                 <Route path="/admin/community" element={<AdminCheck><AdminCommunity /></AdminCheck>} />
                 <Route path="/admin/certificates" element={<AdminCheck><AdminCertificates /></AdminCheck>} />
                 <Route path="/admin/notifications" element={<AdminCheck><AdminNotifications /></AdminCheck>} />
-                <Route path="/admin/course-management" element={<AdminCheck><CourseManagement /></AdminCheck>} />
-                <Route path="/admin/lesson-management" element={<AdminCheck><LessonManagement /></AdminCheck>} />
                 <Route path="/admin/email-testing" element={<AdminCheck><AdminEmailTesting /></AdminCheck>} />
 
                 <Route path="*" element={<NotFound />} />

@@ -1,10 +1,10 @@
 
-import React, { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import React from 'react';
+import CourseManagement from './CourseManagement';
 
 const AdminCourses = () => {
-  // This component now just redirects to the CourseManagement page
-  return <Navigate to="/admin/courses" replace />;
+  // Render the CourseManagement component directly instead of redirecting
+  return <CourseManagement />;
 };
 
 export default AdminCourses;
