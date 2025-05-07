@@ -13,6 +13,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 
+// Declare TypeForm embed widget type for TypeScript
+declare global {
+  interface Window {
+    tf: {
+      createWidget: () => void;
+    }
+  }
+}
+
 const Quiz = () => {
   const [step, setStep] = useState<'form' | 'questions'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,7 +29,7 @@ const Quiz = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const navigate = useNavigate();
   
-  // Typeform embed ID from your code
+  // Typeform embed ID
   const typeformEmbedId = "01JTNA7K4WFXEEAEX34KT7NFR9";
   const [userInfo, setUserInfo] = useState({
     firstName: '',
@@ -72,20 +81,16 @@ const Quiz = () => {
         phone: values.phone
       });
       
-      // Explicitly log the step change
-      console.log('Form submitted successfully, changing step to questions');
-      
       // Show success message
       toast({
         title: "Success!",
         description: "Your information has been submitted. Please continue with the survey.",
       });
       
-      // Proceed to questions - force a small delay to ensure state updates properly
-      setTimeout(() => {
-        setStep('questions');
-        console.log('Step changed to:', 'questions');
-      }, 100);
+      // Proceed to questions
+      setStep('questions');
+      console.log('Step changed to questions, will load Typeform now');
+      
     } catch (error: any) {
       console.error('Error submitting info:', error);
       toast({
@@ -97,11 +102,6 @@ const Quiz = () => {
       setIsSubmitting(false);
     }
   };
-  
-  // Debug the current step
-  useEffect(() => {
-    console.log('Current step:', step);
-  }, [step]);
   
   // Simulate loading progress
   useEffect(() => {
@@ -119,94 +119,120 @@ const Quiz = () => {
     }
   }, [step, isTypeformLoading]);
   
-  // Load Typeform script and configure the embed
+  // Load and configure Typeform
   useEffect(() => {
-    // Only load the script when on questions step
     if (step === 'questions') {
-      console.log('Loading Typeform script');
+      console.log('Loading Typeform...');
       
-      // Create a script element for the Typeform embed script
-      const script = document.createElement('script');
-      script.src = "//embed.typeform.com/next/embed.js";
-      script.async = true;
-      
-      // Listen for when Typeform is fully loaded
-      const checkTypeformLoaded = setInterval(() => {
-        // Check if the Typeform script has been loaded
-        const typeformEmbed = document.querySelector('[data-tf-loaded="true"]');
-        if (typeformEmbed) {
-          console.log('Typeform fully loaded');
-          setIsTypeformLoading(false);
-          clearInterval(checkTypeformLoaded);
-        }
-      }, 300);
-      
-      document.body.appendChild(script);
-      
-      // Create a specific configuration to prevent redirect
-      const embedConfig = document.createElement('div');
-      embedConfig.dataset.tfEmbed = typeformEmbedId;
-      embedConfig.dataset.tfHideHeaders = "true";
-      embedConfig.dataset.tfHideFooter = "true";
-      embedConfig.dataset.tfOpacity = "100";
-      embedConfig.dataset.tfTransitiveSearchParams = "";
-      embedConfig.dataset.tfMedium = "snippet";
-      
-      // Add hidden fields with user data
-      embedConfig.dataset.tfHidden = `email=${encodeURIComponent(userInfo.email)}&firstName=${encodeURIComponent(userInfo.firstName)}&lastName=${encodeURIComponent(userInfo.lastName)}&phone=${encodeURIComponent(userInfo.phone)}`;
-      
-      // Add a callback for when the form is submitted
-      window.addEventListener('message', (event) => {
-        // Check if the message is from Typeform
-        if (event.data.type === 'form-submit') {
-          console.log('Typeform submitted!');
-          trackEvent('quiz_completed', {
-            event_category: 'Quiz',
-            event_label: userInfo.email
-          });
-          
-          // Redirect based on the qualification logic from our backend
-          // The actual redirection will happen via the webhook
-          toast({
-            title: "Form submitted!",
-            description: "Processing your responses...",
-          });
-          
-          // We won't navigate here - the webhook will handle redirection
-          // This is just a fallback in case the webhook fails
-          setTimeout(() => {
-            navigate('/checkout'); // Default fallback
-          }, 5000);
-        }
-      });
-      
-      // Replace any existing container with our new configuration
+      // Create Typeform container first
       const typeformContainer = document.getElementById('typeform-container');
       if (typeformContainer) {
+        // Clear existing container content
         typeformContainer.innerHTML = '';
-        typeformContainer.appendChild(embedConfig);
+        
+        // Create div for Typeform to target
+        const embedDiv = document.createElement('div');
+        embedDiv.id = 'typeform-embed-div';
+        typeformContainer.appendChild(embedDiv);
+        
+        // Load Typeform script
+        const script = document.createElement('script');
+        script.src = "https://embed.typeform.com/next/embed.js";
+        script.async = true;
+        script.onload = () => {
+          console.log('Typeform script loaded');
+          
+          // Give a short delay to ensure script is initialized
+          setTimeout(() => {
+            // Check if tf is available in window
+            if (window.tf) {
+              console.log('Creating Typeform widget');
+              
+              // Create a new embed
+              const embedElement = document.getElementById('typeform-embed-div');
+              if (embedElement) {
+                // Create hidden fields configuration
+                const hiddenFields = {
+                  email: userInfo.email,
+                  firstName: userInfo.firstName,
+                  lastName: userInfo.lastName,
+                  phone: userInfo.phone
+                };
+                
+                // Use embed ID to place the form
+                const embed = document.createElement('div');
+                embed.dataset.tfWidget = typeformEmbedId;
+                embed.dataset.tfMedium = "snippet";
+                embed.dataset.tfHideHeaders = "true";
+                embed.dataset.tfHideFooter = "true";
+                embed.dataset.tfOpacity = "100";
+                
+                // Add hidden fields if we have user data
+                if (userInfo.email) {
+                  embed.dataset.tfHidden = JSON.stringify(hiddenFields);
+                }
+                
+                // Append the widget and re-initialize
+                embedElement.innerHTML = '';
+                embedElement.appendChild(embed);
+                
+                // Force widget creation
+                if (typeof window.tf?.createWidget === 'function') {
+                  window.tf.createWidget();
+                  
+                  // Mark loading as complete after a short delay
+                  setTimeout(() => {
+                    console.log('Typeform widget should now be visible');
+                    setIsTypeformLoading(false);
+                  }, 1500);
+                } else {
+                  console.error('Typeform widget creation function not available');
+                }
+              }
+            } else {
+              console.error('Typeform not loaded properly');
+            }
+          }, 500);
+        };
+        
+        script.onerror = () => {
+          console.error('Failed to load Typeform script');
+          toast({
+            title: "Error",
+            description: "Failed to load the survey. Please refresh the page and try again.",
+            variant: "destructive",
+          });
+        };
+        
+        document.body.appendChild(script);
       }
       
       return () => {
-        // Cleanup script and interval when component unmounts
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-        clearInterval(checkTypeformLoaded);
+        // Clean up any Typeform scripts when component unmounts
+        const scripts = document.querySelectorAll('script[src*="typeform"]');
+        scripts.forEach(script => {
+          if (document.body.contains(script)) {
+            document.body.removeChild(script);
+          }
+        });
       };
     }
-  }, [step, userInfo, navigate]);
+  }, [step, typeformEmbedId, userInfo]);
   
-  // Handle performance optimization and cleanup
+  // Handle performance optimization
   useEffect(() => {
     // Preconnect to typeform domain to improve loading performance
     const cleanupPreconnect = preconnectToDomains(['https://embed.typeform.com']);
     
     return () => {
-      // Clean up preconnect links when component unmounts
       cleanupPreconnect();
     };
   }, []);
+
+  // Debug the current step
+  useEffect(() => {
+    console.log('Current step:', step);
+  }, [step]);
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -255,11 +281,13 @@ const Quiz = () => {
                 </div>
               ) : null}
               
-              {/* Typeform container with specific configuration to prevent redirect */}
+              {/* Typeform container */}
               <div 
                 id="typeform-container"
                 className={`w-full min-h-[650px] ${isTypeformLoading ? 'hidden' : 'block'}`}
-              ></div>
+              >
+                <div id="typeform-embed-div"></div>
+              </div>
               
               <p className="text-xs mt-4 text-center text-muted-foreground">
                 This information helps us determine if you're a good fit for our program.
