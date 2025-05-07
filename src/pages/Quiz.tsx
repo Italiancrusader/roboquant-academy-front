@@ -9,16 +9,11 @@ import { submitLead } from '@/services/leadService';
 import { preconnectToDomains } from '@/utils/performance';
 import LeadForm from '@/components/LeadForm';
 import { LoaderCircle } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 
-// Declare TypeForm embed widget type for TypeScript
-declare global {
-  interface Window {
-    tf: any;
-  }
-}
+// Typeform embed ID - using the correct form ID from the URL
+const TYPEFORM_ID = "Mxpdceu1";
 
 const Quiz = () => {
   const [step, setStep] = useState<'form' | 'questions'>('form');
@@ -27,8 +22,6 @@ const Quiz = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const navigate = useNavigate();
   
-  // Typeform embed ID
-  const typeformEmbedId = "01JTNA7K4WFXEEAEX34KT7NFR9";
   const [userInfo, setUserInfo] = useState({
     firstName: '',
     lastName: '',
@@ -129,46 +122,35 @@ const Quiz = () => {
       // Clear existing container content
       typeformContainer.innerHTML = '';
       
-      // Create div for Typeform to target
-      const embedDiv = document.createElement('div');
-      embedDiv.id = 'typeform-embed-div';
-      typeformContainer.appendChild(embedDiv);
+      // Create an iframe for the Typeform
+      const iframe = document.createElement('iframe');
+      iframe.id = 'typeform-iframe';
+      iframe.src = `https://form.typeform.com/to/${TYPEFORM_ID}?typeform-medium=embed-sdk&typeform-embed=embed-widget&embed-hide-header=true&embed-hide-footer=true`;
       
-      // Add Typeform embed code directly
-      const embed = document.createElement('div');
-      embed.dataset.tfWidget = typeformEmbedId;
-      embed.dataset.tfMedium = "snippet";
-      embed.dataset.tfHideHeaders = "true";
-      embed.dataset.tfHideFooter = "true";
-      embed.dataset.tfOpacity = "100";
-      
-      // Add hidden fields if we have user data
+      // Add hidden fields to URL if available
       if (userInfo.email) {
-        const hiddenFields = {
-          email: userInfo.email,
-          firstName: userInfo.firstName,
-          lastName: userInfo.lastName,
-          phone: userInfo.phone
-        };
-        embed.dataset.tfHidden = JSON.stringify(hiddenFields);
+        const hiddenFields = new URLSearchParams({
+          'email': userInfo.email,
+          'firstName': userInfo.firstName,
+          'lastName': userInfo.lastName,
+          'phone': userInfo.phone
+        });
+        iframe.src += `&${hiddenFields.toString()}`;
       }
       
-      // Append the embed div to the container
-      embedDiv.appendChild(embed);
+      // Set iframe attributes
+      iframe.style.width = '100%';
+      iframe.style.height = '650px';
+      iframe.style.border = 'none';
       
-      // Load Typeform script properly
-      const script = document.createElement('script');
-      script.src = "https://embed.typeform.com/next/embed.js";
-      script.async = true;
-      script.onload = () => {
-        console.log('Typeform script loaded');
-        setTimeout(() => {
-          setIsTypeformLoading(false);
-        }, 1500);
+      // Add loading event listener
+      iframe.onload = () => {
+        console.log('Typeform iframe loaded');
+        setIsTypeformLoading(false);
       };
       
-      script.onerror = () => {
-        console.error('Failed to load Typeform script');
+      iframe.onerror = () => {
+        console.error('Failed to load Typeform iframe');
         toast({
           title: "Error",
           description: "Failed to load the survey. Please refresh the page and try again.",
@@ -176,24 +158,21 @@ const Quiz = () => {
         });
       };
       
-      document.body.appendChild(script);
+      // Append the iframe to the container
+      typeformContainer.appendChild(iframe);
       
       return () => {
-        // Clean up any Typeform scripts when component unmounts
-        const scripts = document.querySelectorAll('script[src*="typeform"]');
-        scripts.forEach(script => {
-          if (document.body.contains(script)) {
-            document.body.removeChild(script);
-          }
-        });
+        if (typeformContainer) {
+          typeformContainer.innerHTML = '';
+        }
       };
     }
-  }, [step, typeformEmbedId, userInfo]);
+  }, [step, userInfo]);
   
   // Handle performance optimization
   useEffect(() => {
     // Preconnect to typeform domain to improve loading performance
-    const cleanupPreconnect = preconnectToDomains(['https://embed.typeform.com']);
+    const cleanupPreconnect = preconnectToDomains(['https://form.typeform.com']);
     
     return () => {
       cleanupPreconnect();
@@ -257,7 +236,7 @@ const Quiz = () => {
                 id="typeform-container"
                 className={`w-full min-h-[650px] ${isTypeformLoading ? 'hidden' : 'block'}`}
               >
-                {/* Typeform will be embedded here by the script */}
+                {/* Typeform iframe will be added here */}
               </div>
               
               <p className="text-xs mt-4 text-center text-muted-foreground">
