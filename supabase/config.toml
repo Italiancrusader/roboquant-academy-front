@@ -1,8 +1,27 @@
 
 project_id = "gqnzsnzolqvsalyzbhmq"
-[functions.send-lead-magnet]
-verify_jwt = false
-[functions.test-resend]
-verify_jwt = false
-[functions.send-test-emails]
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://localhost"
+
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+
+[functions]
+[functions.typeform-webhook]
 verify_jwt = false

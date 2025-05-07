@@ -11,12 +11,14 @@ import LeadForm from '@/components/LeadForm';
 import { LoaderCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
+import { useNavigate } from 'react-router-dom';
 
 const Quiz = () => {
   const [step, setStep] = useState<'form' | 'questions'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTypeformLoading, setIsTypeformLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const navigate = useNavigate();
   
   // Typeform embed ID from your code
   const typeformEmbedId = "01JTNA7K4WFXEEAEX34KT7NFR9";
@@ -153,6 +155,31 @@ const Quiz = () => {
       // Add hidden fields with user data
       embedConfig.dataset.tfHidden = `email=${encodeURIComponent(userInfo.email)}&firstName=${encodeURIComponent(userInfo.firstName)}&lastName=${encodeURIComponent(userInfo.lastName)}&phone=${encodeURIComponent(userInfo.phone)}`;
       
+      // Add a callback for when the form is submitted
+      window.addEventListener('message', (event) => {
+        // Check if the message is from Typeform
+        if (event.data.type === 'form-submit') {
+          console.log('Typeform submitted!');
+          trackEvent('quiz_completed', {
+            event_category: 'Quiz',
+            event_label: userInfo.email
+          });
+          
+          // Redirect based on the qualification logic from our backend
+          // The actual redirection will happen via the webhook
+          toast({
+            title: "Form submitted!",
+            description: "Processing your responses...",
+          });
+          
+          // We won't navigate here - the webhook will handle redirection
+          // This is just a fallback in case the webhook fails
+          setTimeout(() => {
+            navigate('/checkout'); // Default fallback
+          }, 5000);
+        }
+      });
+      
       // Replace any existing container with our new configuration
       const typeformContainer = document.getElementById('typeform-container');
       if (typeformContainer) {
@@ -168,7 +195,7 @@ const Quiz = () => {
         clearInterval(checkTypeformLoaded);
       };
     }
-  }, [step, userInfo]);
+  }, [step, userInfo, navigate]);
   
   // Handle performance optimization and cleanup
   useEffect(() => {

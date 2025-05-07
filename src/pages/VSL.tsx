@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Unlock } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // Define interface for YouTube player
 interface YouTubePlayer {
@@ -30,7 +29,23 @@ declare global {
 const VSL = () => {
   const [watched, setWatched] = useState(false);
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  
+  // Check if user is qualified from URL parameter
+  const isQualified = searchParams.get('qualified') === 'true';
+  
+  // If user is qualified, show them as having "watched" the video
+  useEffect(() => {
+    if (isQualified) {
+      setWatched(true);
+      
+      trackEvent('qualified_viewer', {
+        event_category: 'Qualification',
+        event_label: 'Qualified via quiz'
+      });
+    }
+  }, [isQualified]);
   
   // Load YouTube iframe API
   useEffect(() => {
@@ -113,7 +128,9 @@ const VSL = () => {
             <div id="unlockBooking" className="animate-fade-in text-center">
               <h2 className="text-2xl font-bold mb-4">You've Qualified For A Strategy Call</h2>
               <p className="text-muted-foreground mb-8">
-                Based on your survey answers and video completion, you're eligible to speak with our team and get personalized guidance.
+                {isQualified 
+                  ? 'Based on your survey answers, you're eligible to speak with our team and get personalized guidance.'
+                  : 'Based on your survey answers and video completion, you're eligible to speak with our team and get personalized guidance.'}
               </p>
               
               <Button 
