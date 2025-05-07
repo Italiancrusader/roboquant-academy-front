@@ -31,31 +31,22 @@ export const submitLead = async (leadData: LeadData) => {
       throw new Error("Source is required");
     }
     
-    // Create a clean lead object with only the fields that match the Supabase table schema
-    const cleanLead = {
+    // Using the new secure function to insert lead (bypasses RLS)
+    const { data, error } = await supabase.rpc('insert_lead_service', {
       name: leadData.name.trim(),
-      email: leadData.email.trim().toLowerCase(), // Normalize email
+      email: leadData.email.trim().toLowerCase(),
       phone: leadData.phone.trim(),
       source: leadData.source,
-      lead_magnet: leadData.leadMagnet || null, // Match column name in database
-      metadata: leadData.metadata || null // Now properly formatted as JSONB
-    };
-    
-    console.log("Submitting lead with data:", cleanLead);
-    
-    // Insert a single lead object
-    const { data, error } = await supabase
-      .from('leads')
-      .insert(cleanLead)
-      .select()
-      .single();
+      lead_magnet: leadData.leadMagnet || null,
+      metadata: leadData.metadata || null
+    });
     
     if (error) {
       console.error("Supabase error details:", error);
       throw new Error(error.message);
     }
     
-    console.log("Lead submitted successfully:", data);
+    console.log("Lead submitted successfully, ID:", data);
     return { success: true, data };
   } catch (error: any) {
     console.error('Error submitting lead:', error);

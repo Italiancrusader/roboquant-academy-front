@@ -419,6 +419,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      insert_lead_service: {
+        Args: {
+          name: string
+          email: string
+          phone: string
+          source: string
+          lead_magnet?: string
+          metadata?: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "instructor" | "student"
