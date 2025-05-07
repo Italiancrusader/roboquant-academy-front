@@ -94,21 +94,25 @@ const Quiz = () => {
     }
   };
   
-  // Handle form completion
+  // Handle form completion - detect both manual and automatic completion
   const handleTypeformSubmit = () => {
     console.log('Typeform submitted successfully');
-    setStep('completed');
     
-    // Track completion event
-    trackEvent('quiz_completed', {
-      event_category: 'Quiz',
-      event_label: userInfo.email || 'Unknown'
-    });
-    
-    // Redirect to the VSL page with qualified parameter
-    setTimeout(() => {
-      navigate('/vsl?qualified=true');
-    }, 1500);
+    // Only proceed if not already completed
+    if (step !== 'completed') {
+      setStep('completed');
+      
+      // Track completion event
+      trackEvent('quiz_completed', {
+        event_category: 'Quiz',
+        event_label: userInfo.email || 'Unknown'
+      });
+      
+      // Redirect to the VSL page with qualified parameter
+      setTimeout(() => {
+        navigate('/vsl?qualified=true');
+      }, 1500);
+    }
   };
   
   // Simulate loading progress
@@ -127,7 +131,7 @@ const Quiz = () => {
     }
   }, [step, isTypeformLoading]);
   
-  // Load and configure Typeform
+  // Load and configure Typeform - simplified approach to avoid fetch errors
   useEffect(() => {
     if (step === 'questions') {
       console.log('Loading Typeform...');
@@ -139,50 +143,32 @@ const Quiz = () => {
       // Clear existing container content
       typeformContainer.innerHTML = '';
       
-      // Create an iframe for the Typeform
+      // Use simple iframe method instead of SDK to avoid fetch errors
       const iframe = document.createElement('iframe');
       iframe.id = 'typeform-iframe';
-      iframe.src = `https://form.typeform.com/to/${TYPEFORM_ID}?typeform-medium=embed-sdk&typeform-embed=embed-widget&embed-hide-header=true&embed-hide-footer=true`;
+      
+      // Build the URL with hidden fields
+      let typeformUrl = `https://form.typeform.com/to/${TYPEFORM_ID}?embed-hide-header=true&embed-hide-footer=true`;
       
       // Add hidden fields to URL if available
       if (userInfo.email) {
-        const hiddenFields = new URLSearchParams({
-          'email': userInfo.email,
-          'firstName': userInfo.firstName,
-          'lastName': userInfo.lastName,
-          'phone': userInfo.phone
-        });
-        iframe.src += `&${hiddenFields.toString()}`;
+        typeformUrl += `&email=${encodeURIComponent(userInfo.email)}`;
+        typeformUrl += `&firstName=${encodeURIComponent(userInfo.firstName)}`;
+        typeformUrl += `&lastName=${encodeURIComponent(userInfo.lastName)}`;
+        typeformUrl += `&phone=${encodeURIComponent(userInfo.phone)}`;
       }
+      
+      iframe.src = typeformUrl;
       
       // Set iframe attributes
       iframe.style.width = '100%';
       iframe.style.height = '650px';
       iframe.style.border = 'none';
       
-      // Add loading event listener
+      // Handle iframe load event
       iframe.onload = () => {
         console.log('Typeform iframe loaded');
         setIsTypeformLoading(false);
-        
-        // Add message listener for form completion
-        window.addEventListener('message', (event) => {
-          // Verify the origin matches Typeform
-          if (event.origin.includes('typeform.com')) {
-            try {
-              const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-              
-              // Check if the form was submitted
-              if (data.type === 'form-submit' || 
-                  (data.eventName && data.eventName === 'form_submit') ||
-                  (data.event && data.event === 'submit')) {
-                handleTypeformSubmit();
-              }
-            } catch (error) {
-              console.error('Error parsing message from Typeform:', error);
-            }
-          }
-        });
       };
       
       iframe.onerror = () => {
@@ -197,12 +183,54 @@ const Quiz = () => {
       // Append the iframe to the container
       typeformContainer.appendChild(iframe);
       
+      // Add button at the bottom for manual submission in case the auto-detection fails
+      const fallbackButton = document.createElement('button');
+      fallbackButton.textContent = "I've Completed the Survey";
+      fallbackButton.className = "w-full mt-4 px-4 py-3 bg-primary text-primary-foreground text-center rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary";
+      fallbackButton.onclick = handleTypeformSubmit;
+      typeformContainer.appendChild(fallbackButton);
+      
+      // Set up a message listener to detect form submission
+      const messageHandler = (event: MessageEvent) => {
+        // Check if the message is from Typeform
+        if (event.origin.includes('typeform.com')) {
+          try {
+            // Parse the data if it's a string
+            const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+            
+            // Check if the form was submitted - look for multiple possible event formats
+            if (data.type === 'form-submit' || 
+                (data.eventName && data.eventName === 'form_submit') ||
+                (data.event && data.event === 'submit')) {
+              handleTypeformSubmit();
+            }
+          } catch (error) {
+            console.error('Error parsing message from Typeform:', error);
+          }
+        }
+      };
+      
+      // Add event listener for messages
+      window.addEventListener('message', messageHandler);
+      
+      // Handle automatic completion after 5 minutes in case other methods fail
+      const autoCompleteTimeout = setTimeout(() => {
+        // If still on questions step after 5 minutes, assume completion
+        if (step === 'questions') {
+          console.log('Auto-completing survey after timeout');
+          handleTypeformSubmit();
+        }
+      }, 300000); // 5 minutes
+      
+      // Cleanup function
       return () => {
         if (typeformContainer) {
           typeformContainer.innerHTML = '';
         }
-        // Clean up message event listener when component unmounts
-        window.removeEventListener('message', () => {});
+        
+        // Clean up event listener and timeout
+        window.removeEventListener('message', messageHandler);
+        clearTimeout(autoCompleteTimeout);
       };
     }
   }, [step, userInfo, navigate]);
