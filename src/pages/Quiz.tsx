@@ -72,10 +72,11 @@ const Quiz = () => {
         phone: values.phone
       });
       
-      // Show success message
+      // Show success message with 3 second duration
       toast({
         title: "Success!",
         description: "Your information has been submitted. Please continue with the survey.",
+        duration: 3000, // 3 seconds duration
       });
       
       // Proceed to questions
@@ -88,6 +89,7 @@ const Quiz = () => {
         title: "Error",
         description: error.message || "There was an error saving your information. Please try again.",
         variant: "destructive",
+        duration: 3000, // Also add 3 second duration for error messages
       });
     } finally {
       setIsSubmitting(false);
