@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -155,9 +154,9 @@ const TicketsManager = () => {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(ticket => 
         ticket.subject.toLowerCase().includes(term) ||
-        (ticket.profile?.email && ticket.profile.email.toLowerCase().includes(term)) ||
-        (ticket.profile?.first_name && ticket.profile.first_name.toLowerCase().includes(term)) ||
-        (ticket.profile?.last_name && ticket.profile.last_name.toLowerCase().includes(term))
+        (ticket.profile?.email ? ticket.profile.email.toLowerCase().includes(term) : false) ||
+        (ticket.profile?.first_name ? ticket.profile.first_name.toLowerCase().includes(term) : false) ||
+        (ticket.profile?.last_name ? ticket.profile.last_name.toLowerCase().includes(term) : false)
       );
     }
     
