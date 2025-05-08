@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import FileUploadZone from '@/components/mt5reportgenie/FileUploadZone';
@@ -7,10 +8,16 @@ import { toast } from '@/components/ui/use-toast';
 import { FileType } from '@/types/mt5reportgenie';
 import { Link } from 'react-router-dom';
 import { Github } from 'lucide-react';
+import PDFReportGenerator from '@/components/mt5reportgenie/PDFReportGenerator';
+import MonteCarloSimulation from '@/components/mt5reportgenie/MonteCarloSimulation';
+import StrategyOptimizer from '@/components/mt5reportgenie/StrategyOptimizer';
+
 const MT5ReportGenie = () => {
   const [files, setFiles] = useState<FileType[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingSteps, setProcessingSteps] = useState<string>('');
+  const [activeDialog, setActiveDialog] = useState<'pdf' | 'monteCarlo' | 'optimize' | null>(null);
+  
   const handleFilesUploaded = (newFiles: FileType[]) => {
     // isProcessing is already set to true when processing step is triggered
     console.log("Processing files:", newFiles);
@@ -26,12 +33,14 @@ const MT5ReportGenie = () => {
       console.log("Files processed and added to state");
     }, 2000);
   };
+  
   const handleProcessingStep = (step: string) => {
     console.log("Processing step:", step);
     // Set processing state to true as soon as any processing step is initiated
     setIsProcessing(true);
     setProcessingSteps(step);
   };
+  
   const handleClearFiles = () => {
     setFiles([]);
     toast({
@@ -39,6 +48,47 @@ const MT5ReportGenie = () => {
       description: "Your workspace has been reset."
     });
   };
+  
+  const handleGeneratePDF = () => {
+    if (!files.length) {
+      toast({
+        title: "No data available",
+        description: "Please upload at least one report file first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setActiveDialog('pdf');
+  };
+  
+  const handleMonteCarloSimulation = () => {
+    if (!files.length) {
+      toast({
+        title: "No data available",
+        description: "Please upload at least one report file first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setActiveDialog('monteCarlo');
+  };
+  
+  const handleOptimizeStrategy = () => {
+    if (!files.length) {
+      toast({
+        title: "No data available",
+        description: "Please upload at least one report file first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setActiveDialog('optimize');
+  };
+  
+  const closeDialog = () => {
+    setActiveDialog(null);
+  };
+
   return <div className="flex flex-col min-h-screen bg-background text-foreground font-neulis">
       <Navbar />
       {isProcessing && <LoadingOverlay message={processingSteps} />}
@@ -57,9 +107,47 @@ const MT5ReportGenie = () => {
         </div>
         
         <div className="mb-20">
-          {files.length === 0 ? <FileUploadZone onFilesUploaded={handleFilesUploaded} isProcessing={isProcessing} onProcessingStep={handleProcessingStep} /> : <ReportDashboard files={files} onClearFiles={handleClearFiles} />}
+          {files.length === 0 ? (
+            <FileUploadZone 
+              onFilesUploaded={handleFilesUploaded} 
+              isProcessing={isProcessing} 
+              onProcessingStep={handleProcessingStep} 
+            />
+          ) : (
+            <ReportDashboard 
+              files={files} 
+              onClearFiles={handleClearFiles}
+              onGeneratePDF={handleGeneratePDF}
+              onMonteCarloSimulation={handleMonteCarloSimulation}
+              onOptimizeStrategy={handleOptimizeStrategy}
+            />
+          )}
         </div>
       </main>
+      
+      {/* PDF Report Dialog */}
+      {activeDialog === 'pdf' && (
+        <PDFReportGenerator 
+          data={files.find(f => f.id === files[0]?.id)?.parsedData} 
+          onClose={closeDialog} 
+        />
+      )}
+      
+      {/* Monte Carlo Simulation Dialog */}
+      {activeDialog === 'monteCarlo' && (
+        <MonteCarloSimulation 
+          trades={files.find(f => f.id === files[0]?.id)?.parsedData?.trades || []} 
+          onClose={closeDialog}
+        />
+      )}
+      
+      {/* Strategy Optimizer Dialog */}
+      {activeDialog === 'optimize' && (
+        <StrategyOptimizer 
+          data={files.find(f => f.id === files[0]?.id)?.parsedData} 
+          onClose={closeDialog}
+        />
+      )}
       
       <footer className="py-6 border-t border-border bg-secondary mt-auto">
         <div className="container mx-auto px-4">

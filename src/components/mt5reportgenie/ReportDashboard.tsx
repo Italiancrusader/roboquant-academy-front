@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -34,9 +35,18 @@ import CorrelationAnalysis from './CorrelationAnalysis';
 interface ReportDashboardProps {
   files: FileType[];
   onClearFiles: () => void;
+  onGeneratePDF: () => void;
+  onMonteCarloSimulation: () => void;
+  onOptimizeStrategy: () => void;
 }
 
-const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }) => {
+const ReportDashboard: React.FC<ReportDashboardProps> = ({ 
+  files, 
+  onClearFiles, 
+  onGeneratePDF, 
+  onMonteCarloSimulation, 
+  onOptimizeStrategy 
+}) => {
   const [activeFileId, setActiveFileId] = useState<string>(files[0]?.id);
   
   const activeFile = files.find(file => file.id === activeFileId);
@@ -278,15 +288,15 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({ files, onClearFiles }
       </Tabs>
       
       <div className="flex justify-end space-x-3 pt-4 mt-6">
-        <Button variant="outline">
+        <Button variant="outline" onClick={onGeneratePDF}>
           <Download className="h-4 w-4 mr-2" />
           Export PDF Report
         </Button>
-        <Button variant="outline">
+        <Button variant="outline" onClick={onMonteCarloSimulation}>
           <Calculator className="h-4 w-4 mr-2" />
           Monte Carlo Simulation
         </Button>
-        <Button>
+        <Button onClick={onOptimizeStrategy}>
           <CircleDollarSign className="h-4 w-4 mr-2" />
           Optimize Strategy
         </Button>
