@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { getOAuthRedirectUrl } from './auth-utils';
 
 export const useSignIn = (setError?: (error: string | null) => void) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,43 +42,32 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
   const signInWithGoogle = async () => {
     setIsLoading(true);
     try {
-      // Get current URL information
-      const currentDomain = window.location.hostname;
-      const protocol = window.location.protocol;
-      const currentOrigin = window.location.origin;
+      const redirectTo = getOAuthRedirectUrl();
       
-      // Determine if we're in a development/preview environment
-      const isDevelopment = 
-        currentDomain.includes('localhost') || 
-        currentDomain.includes('lovableproject.com') ||
-        currentDomain.includes('lovable.app');
-      
-      // Base URL configuration - always prioritize the current origin first
-      let baseUrl = currentOrigin;
-      
-      // For production on roboquant.ai, ensure we use the proper URL format
-      if (currentDomain.includes('roboquant.ai')) {
-        // Always use www prefix for roboquant.ai
-        baseUrl = `${protocol}//www.roboquant.ai`;
-      }
-      
-      // Always use /auth as the redirect path
-      const redirectTo = `${baseUrl}/auth`;
-      
-      // Log extensive debugging information
+      // Log extensive debugging information about the auth attempt
       console.log("=== GOOGLE AUTH INITIALIZATION ===");
-      console.log("Initiating sign-in with redirect to:", redirectTo);
+      console.log("Initiating Google sign-in");
       console.log("Current URL:", window.location.href);
-      console.log("Current hostname:", currentDomain);
-      console.log("Current origin:", currentOrigin);
-      console.log("Is development:", isDevelopment);
-      console.log("Full redirect URL to be used:", redirectTo);
+      console.log("Current hostname:", window.location.hostname);
+      console.log("Current origin:", window.location.origin);
+      console.log("Redirect URL to be used:", redirectTo);
+      
+      // Special case for www.roboquant.ai to ensure proper authentication
+      const isMissingWWW = window.location.hostname === 'roboquant.ai';
+      
+      if (isMissingWWW) {
+        console.log("Detected roboquant.ai without www prefix - redirecting to www version");
+        // Redirect to www version which has proper OAuth configuration
+        window.location.href = `https://www.roboquant.ai${window.location.pathname}${window.location.search}`;
+        return;
+      }
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectTo,
           queryParams: {
+            // These help with token refreshing and provide an improved user experience
             access_type: 'offline',
             prompt: 'consent',
           }
@@ -111,7 +101,8 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
         description: error.message || "Failed to connect to Google authentication service",
         variant: "destructive",
       });
-      throw error;
+      // Don't throw error here to allow for UI recovery
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }

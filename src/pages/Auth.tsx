@@ -6,17 +6,21 @@ import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
 import AuthError from '@/components/auth/AuthError';
 import { useAuth } from '@/contexts/AuthContext';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import { handleHashTokens, processUrlErrors } from '@/contexts/auth/auth-utils';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [showDebugInfo, setShowDebugInfo] = useState(false);
+  const [isProcessingCallback, setIsProcessingCallback] = useState(false);
+  const [callbackStatus, setCallbackStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   
   const from = location.state?.from?.pathname || '/dashboard';
   const redirectPath = searchParams.get('redirect') || from;
@@ -27,35 +31,120 @@ const Auth = () => {
   // Handle error message from URL parameters (e.g., after OAuth redirect)
   const errorMessage = searchParams.get('error_description') || searchParams.get('error');
   
+  // Handle potential OAuth callback
   useEffect(() => {
     console.log("Auth page mounted");
     console.log("Current URL:", window.location.href);
     console.log("Search params:", Object.fromEntries(searchParams.entries()));
     console.log("Location state:", location.state);
+    console.log("Location pathname:", location.pathname);
+    console.log("URL hash present:", !!window.location.hash);
+    
+    // Process URL for error messages first
+    processUrlErrors();
     
     // Set URL error if present
     if (errorMessage) {
       console.error("Auth error from URL:", errorMessage);
       setAuthError(errorMessage);
     }
-  }, [errorMessage, searchParams]);
+    
+    // Handle OAuth callback if this looks like one
+    const isCallback = 
+      window.location.pathname === '/auth' && 
+      (window.location.hash.includes('access_token') || 
+       window.location.search.includes('code='));
+    
+    if (isCallback) {
+      console.log("Detected potential OAuth callback - processing tokens");
+      setIsProcessingCallback(true);
+      setCallbackStatus('processing');
+      
+      const processCallback = async () => {
+        try {
+          const session = await handleHashTokens();
+          if (session) {
+            console.log("Successfully processed callback and restored session");
+            setCallbackStatus('success');
+            setTimeout(() => {
+              navigate('/dashboard', { replace: true });
+            }, 1000);
+          } else {
+            console.log("Failed to process callback or no session available");
+            setCallbackStatus('error');
+          }
+        } catch (error) {
+          console.error("Error processing callback:", error);
+          setCallbackStatus('error');
+        } finally {
+          setIsProcessingCallback(false);
+        }
+      };
+      
+      processCallback();
+    }
+  }, [errorMessage, searchParams, navigate, location.pathname, location.state]);
   
+  // Handle redirect if user is already logged in
   useEffect(() => {
-    // If user is already logged in, redirect to the intended destination
-    if (user && !isLoading) {
+    if (user && !authLoading && !isProcessingCallback) {
       console.log("User is logged in, redirecting to:", redirectPath);
       navigate(redirectPath, { replace: true });
     }
-  }, [user, isLoading, navigate, redirectPath]);
+  }, [user, authLoading, isProcessingCallback, navigate, redirectPath]);
 
   const toggleDebugInfo = () => {
     setShowDebugInfo(prev => !prev);
   };
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Show special callback processing UI
+  if (isProcessingCallback) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background">
+        <div className="w-full max-w-md space-y-8 px-4 text-center">
+          <h1 className="text-3xl font-bold gradient-text">Authentication in progress</h1>
+          
+          {callbackStatus === 'processing' && (
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              <p className="text-muted-foreground">Processing your Google sign-in...</p>
+            </div>
+          )}
+          
+          {callbackStatus === 'success' && (
+            <Alert className="bg-green-950/30 border-green-600 mt-4">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <AlertTitle className="text-green-400">Authentication successful</AlertTitle>
+              <AlertDescription>
+                You have successfully signed in. Redirecting to dashboard...
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {callbackStatus === 'error' && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Authentication failed</AlertTitle>
+              <AlertDescription>
+                <p>There was a problem processing your sign in.</p>
+                <button 
+                  onClick={() => navigate('/auth')}
+                  className="text-blue-400 underline mt-2"
+                >
+                  Return to login page
+                </button>
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
       </div>
     );
   }
