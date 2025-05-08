@@ -150,10 +150,13 @@ export const useTickets = () => {
           return false;
         }
         
-        // Safely check each profile property with optional chaining and nullish checks
-        const emailMatches = ticket.profile?.email?.toLowerCase().includes(term) || false;
-        const firstNameMatches = ticket.profile?.first_name?.toLowerCase().includes(term) || false;
-        const lastNameMatches = ticket.profile?.last_name?.toLowerCase().includes(term) || false;
+        // Using non-null assertion operator since we've already checked if profile is null
+        const profile = ticket.profile!;
+        
+        // Safely check each profile property
+        const emailMatches = profile.email?.toLowerCase().includes(term) || false;
+        const firstNameMatches = profile.first_name?.toLowerCase().includes(term) || false;
+        const lastNameMatches = profile.last_name?.toLowerCase().includes(term) || false;
         
         return emailMatches || firstNameMatches || lastNameMatches;
       });
