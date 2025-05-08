@@ -6,10 +6,9 @@ import { Home, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const NotFound = () => {
-  // Get the current domain
+  // Get the current domain and path
   const currentDomain = window.location.hostname;
   const currentPath = window.location.pathname;
-  const isDomainSetup = currentDomain.includes('roboquant.ai');
   const isOAuthCallback = currentPath.includes('/auth/v1/callback') || 
                           currentPath.includes('/auth') && window.location.search.includes('error');
 
@@ -23,49 +22,43 @@ const NotFound = () => {
             The page you are looking for doesn't exist or has been moved.
           </p>
 
-          {isDomainSetup && (
-            <Alert variant="destructive" className="mb-8 text-left">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Domain Configuration Issue</AlertTitle>
-              <AlertDescription>
-                <p className="mb-2">It appears that {currentDomain} may not be properly configured with your hosting provider.</p>
-                <p className="mb-2">Please ensure:</p>
-                <ol className="list-decimal pl-5 space-y-1 mb-2">
-                  <li>Your domain is properly connected to your hosting service</li>
-                  <li>DNS settings are properly configured</li>
-                  <li>The build has been deployed to the correct environment</li>
-                </ol>
-                <p>If you're using a custom domain, make sure it's properly set up in your hosting provider.</p>
-              </AlertDescription>
-            </Alert>
-          )}
-
           {isOAuthCallback && (
             <Alert variant="destructive" className="mb-8 text-left">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Authentication Redirect Issue</AlertTitle>
               <AlertDescription>
                 <p className="mb-2">This appears to be an OAuth callback after Google sign-in.</p>
-                <p className="mb-2">The authentication might have worked, but the redirect failed.</p>
-                <ol className="list-decimal pl-5 space-y-1 mb-2">
-                  <li>Check your redirect URL configuration in Supabase (Site URL and Redirect URLs)</li>
-                  <li>Ensure your Google OAuth configuration includes all necessary domains and callback URLs</li>
-                  <li>Make sure the application is properly deployed to the domain</li>
+                <p className="mb-2">Try these steps to resolve the issue:</p>
+                <ol className="list-decimal pl-5 space-y-1 mb-4">
+                  <li>Make sure your application is deployed to the domain configured in Supabase</li>
+                  <li>Visit the homepage directly at <a href="/" className="underline">https://{currentDomain}/</a></li>
+                  <li>Try signing in again after confirming the site is properly deployed</li>
                 </ol>
-                <p>Try directly visiting the main site instead of waiting for the redirect.</p>
               </AlertDescription>
             </Alert>
           )}
         </div>
         
-        <Button 
-          asChild 
-          className="cta-button text-white py-5 px-8"
-        >
-          <Link to="/">
-            <Home className="mr-2 h-5 w-5" /> Return to Home
-          </Link>
-        </Button>
+        <div className="space-y-4">
+          <Button 
+            asChild 
+            className="cta-button text-white py-5 px-8 w-full"
+          >
+            <Link to="/">
+              <Home className="mr-2 h-5 w-5" /> Return to Home
+            </Link>
+          </Button>
+          
+          <Button 
+            asChild 
+            variant="outline"
+            className="w-full"
+          >
+            <Link to="/auth">
+              Sign In / Sign Up
+            </Link>
+          </Button>
+        </div>
         
         <div className="mt-16">
           <img 

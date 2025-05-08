@@ -7,9 +7,10 @@ import SignUpForm from '@/components/auth/SignUpForm';
 import AuthError from '@/components/auth/AuthError';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Home } from 'lucide-react';
 import { handleHashTokens, processUrlErrors } from '@/contexts/auth/auth-utils';
-import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const Auth = () => {
   const { user, isLoading: authLoading } = useAuth();
@@ -134,13 +135,28 @@ const Auth = () => {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Authentication failed</AlertTitle>
               <AlertDescription>
-                <p>There was a problem processing your sign in.</p>
-                <button 
-                  onClick={() => navigate('/auth')}
-                  className="text-blue-400 underline mt-2"
-                >
-                  Return to login page
-                </button>
+                <div className="space-y-4">
+                  <p>There was a problem processing your sign in.</p>
+                  
+                  <div className="flex flex-col space-y-4">
+                    <Button 
+                      onClick={() => navigate('/auth')}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Return to login page
+                    </Button>
+                    
+                    <Button 
+                      asChild 
+                      className="w-full"
+                    >
+                      <Link to="/">
+                        <Home className="mr-2 h-4 w-4" /> Go to home page
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
               </AlertDescription>
             </Alert>
           )}
@@ -206,6 +222,18 @@ const Auth = () => {
               />
             </TabsContent>
           </Tabs>
+        </div>
+
+        <div className="text-center mt-6">
+          <Button 
+            asChild 
+            variant="ghost" 
+            className="text-gray-400 hover:text-white"
+          >
+            <Link to="/">
+              <Home className="mr-2 h-4 w-4" /> Return to Home
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

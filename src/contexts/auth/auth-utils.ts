@@ -149,16 +149,9 @@ export const getOAuthRedirectUrl = () => {
   // Get the current URL information
   const currentDomain = window.location.hostname;
   const protocol = window.location.protocol;
-  const currentOrigin = window.location.origin;
   
-  // Base URL configuration - always prioritize the current origin first
-  let baseUrl = currentOrigin;
-  
-  // For production on roboquant.ai, ensure we use the proper URL format
-  if (currentDomain.includes('roboquant.ai')) {
-    // Always use www prefix for roboquant.ai
-    baseUrl = `${protocol}//www.roboquant.ai`;
-  }
+  // Base URL will be the current origin by default
+  let baseUrl = window.location.origin;
   
   // Always use /auth as the redirect path
   return `${baseUrl}/auth`;

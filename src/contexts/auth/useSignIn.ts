@@ -44,7 +44,7 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
     try {
       const redirectTo = getOAuthRedirectUrl();
       
-      // Log extensive debugging information about the auth attempt
+      // Log debugging information about the auth attempt
       console.log("=== GOOGLE AUTH INITIALIZATION ===");
       console.log("Initiating Google sign-in");
       console.log("Current URL:", window.location.href);
@@ -52,22 +52,14 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
       console.log("Current origin:", window.location.origin);
       console.log("Redirect URL to be used:", redirectTo);
       
-      // Special case for www.roboquant.ai to ensure proper authentication
-      const isMissingWWW = window.location.hostname === 'roboquant.ai';
-      
-      if (isMissingWWW) {
-        console.log("Detected roboquant.ai without www prefix - redirecting to www version");
-        // Redirect to www version which has proper OAuth configuration
-        window.location.href = `https://www.roboquant.ai${window.location.pathname}${window.location.search}`;
-        return;
-      }
+      // We no longer need to handle the www redirect here as domain is properly configured
+      // Just handle the auth flow directly
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectTo,
           queryParams: {
-            // These help with token refreshing and provide an improved user experience
             access_type: 'offline',
             prompt: 'consent',
           }
