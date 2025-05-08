@@ -152,12 +152,25 @@ const TicketsManager = () => {
     
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(ticket => 
-        ticket.subject.toLowerCase().includes(term) ||
-        (ticket.profile?.email ? ticket.profile.email.toLowerCase().includes(term) : false) ||
-        (ticket.profile?.first_name ? ticket.profile.first_name.toLowerCase().includes(term) : false) ||
-        (ticket.profile?.last_name ? ticket.profile.last_name.toLowerCase().includes(term) : false)
-      );
+      filtered = filtered.filter(ticket => {
+        // Separate the profile checks to handle null safely
+        const emailMatch = ticket.profile ? 
+          (ticket.profile.email ? ticket.profile.email.toLowerCase().includes(term) : false) : 
+          false;
+          
+        const firstNameMatch = ticket.profile ? 
+          (ticket.profile.first_name ? ticket.profile.first_name.toLowerCase().includes(term) : false) : 
+          false;
+          
+        const lastNameMatch = ticket.profile ? 
+          (ticket.profile.last_name ? ticket.profile.last_name.toLowerCase().includes(term) : false) : 
+          false;
+        
+        return ticket.subject.toLowerCase().includes(term) ||
+               emailMatch ||
+               firstNameMatch ||
+               lastNameMatch;
+      });
     }
     
     if (statusFilter) {
