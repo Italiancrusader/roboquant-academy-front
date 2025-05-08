@@ -145,12 +145,12 @@ export const useTickets = () => {
           return true;
         }
         
-        // Short-circuit if profile is null
+        // If no profile, we can only match on subject
         if (!ticket.profile) {
           return false;
         }
         
-        // Safely check profile properties with optional chaining
+        // Safely check each profile property with optional chaining and nullish checks
         const emailMatches = ticket.profile?.email?.toLowerCase().includes(term) || false;
         const firstNameMatches = ticket.profile?.first_name?.toLowerCase().includes(term) || false;
         const lastNameMatches = ticket.profile?.last_name?.toLowerCase().includes(term) || false;
