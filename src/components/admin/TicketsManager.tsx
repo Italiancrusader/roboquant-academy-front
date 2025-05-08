@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -153,23 +154,36 @@ const TicketsManager = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(ticket => {
-        // Separate the profile checks to handle null safely
-        const emailMatch = ticket.profile ? 
-          (ticket.profile.email ? ticket.profile.email.toLowerCase().includes(term) : false) : 
-          false;
-          
-        const firstNameMatch = ticket.profile ? 
-          (ticket.profile.first_name ? ticket.profile.first_name.toLowerCase().includes(term) : false) : 
-          false;
-          
-        const lastNameMatch = ticket.profile ? 
-          (ticket.profile.last_name ? ticket.profile.last_name.toLowerCase().includes(term) : false) : 
-          false;
+        // First check if the subject matches (this doesn't involve profile)
+        if (ticket.subject.toLowerCase().includes(term)) {
+          return true;
+        }
         
-        return ticket.subject.toLowerCase().includes(term) ||
-               emailMatch ||
-               firstNameMatch ||
-               lastNameMatch;
+        // Then handle profile checks safely with multiple guards
+        if (!ticket.profile) {
+          return false;
+        }
+        
+        // Check email if it exists
+        if (typeof ticket.profile.email === 'string' && 
+            ticket.profile.email.toLowerCase().includes(term)) {
+          return true;
+        }
+        
+        // Check first name if it exists
+        if (typeof ticket.profile.first_name === 'string' && 
+            ticket.profile.first_name.toLowerCase().includes(term)) {
+          return true;
+        }
+        
+        // Check last name if it exists
+        if (typeof ticket.profile.last_name === 'string' && 
+            ticket.profile.last_name.toLowerCase().includes(term)) {
+          return true;
+        }
+        
+        // If none of the above matched, return false
+        return false;
       });
     }
     
