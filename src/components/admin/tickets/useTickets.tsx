@@ -135,27 +135,23 @@ export const useTickets = () => {
       const term = searchTerm.toLowerCase();
       debugLog("Filtering by search term", term);
       
-      // Log how many tickets have null profiles
-      const nullProfileCount = tickets.filter(t => t.profile === null).length;
-      debugLog(`Number of tickets with null profiles`, nullProfileCount);
-      
       filtered = filtered.filter(ticket => {
         // First check if the subject matches (this doesn't involve profile)
         if (ticket.subject.toLowerCase().includes(term)) {
           return true;
         }
         
-        // If no profile, we can only match on subject
+        // Handle null profile case
         if (!ticket.profile) {
           return false;
         }
         
-        // Get the profile properties, with fallbacks for null/undefined values
+        // Safely extract profile values with defaults to avoid null/undefined issues
         const email = ticket.profile.email || '';
         const firstName = ticket.profile.first_name || '';
         const lastName = ticket.profile.last_name || '';
         
-        // Check if any of the profile properties match the search term
+        // Now we can safely check these values
         return email.toLowerCase().includes(term) || 
                firstName.toLowerCase().includes(term) || 
                lastName.toLowerCase().includes(term);
