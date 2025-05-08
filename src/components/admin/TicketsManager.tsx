@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -159,26 +158,35 @@ const TicketsManager = () => {
           return true;
         }
         
-        // Then handle profile checks safely with multiple guards
-        if (!ticket.profile) {
+        // If profile is null, we can't match on any profile properties
+        if (ticket.profile === null) {
           return false;
         }
         
-        // Check email if it exists
-        if (typeof ticket.profile.email === 'string' && 
-            ticket.profile.email.toLowerCase().includes(term)) {
+        // Now we know profile is not null, check email if it exists
+        if (
+          ticket.profile.email && 
+          typeof ticket.profile.email === 'string' && 
+          ticket.profile.email.toLowerCase().includes(term)
+        ) {
           return true;
         }
         
         // Check first name if it exists
-        if (typeof ticket.profile.first_name === 'string' && 
-            ticket.profile.first_name.toLowerCase().includes(term)) {
+        if (
+          ticket.profile.first_name && 
+          typeof ticket.profile.first_name === 'string' && 
+          ticket.profile.first_name.toLowerCase().includes(term)
+        ) {
           return true;
         }
         
         // Check last name if it exists
-        if (typeof ticket.profile.last_name === 'string' && 
-            ticket.profile.last_name.toLowerCase().includes(term)) {
+        if (
+          ticket.profile.last_name && 
+          typeof ticket.profile.last_name === 'string' && 
+          ticket.profile.last_name.toLowerCase().includes(term)
+        ) {
           return true;
         }
         
