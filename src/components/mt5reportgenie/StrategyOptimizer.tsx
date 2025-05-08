@@ -113,13 +113,14 @@ const StrategyOptimizer: React.FC<StrategyOptimizerProps> = ({ data, onClose }) 
           } else {
             const range = (param.max || 100) - (param.min || 0);
             const variation = (Math.random() - 0.5) * range * 0.5;
-            params[param.name] = Math.round(((param.current as number) + variation) / (param.step || 1)) * (param.step || 1);
+            const numericCurrent = param.current as number;
+            params[param.name] = Math.round((numericCurrent + variation) / (param.step || 1)) * (param.step || 1);
             
             // Clamp to min/max
-            if (param.min !== undefined && params[param.name] < param.min) {
+            if (param.min !== undefined && (params[param.name] as number) < param.min) {
               params[param.name] = param.min;
             }
-            if (param.max !== undefined && params[param.name] > param.max) {
+            if (param.max !== undefined && (params[param.name] as number) > param.max) {
               params[param.name] = param.max;
             }
           }
@@ -441,26 +442,34 @@ const StrategyOptimizer: React.FC<StrategyOptimizerProps> = ({ data, onClose }) 
                         <div className="bg-muted/30 p-4 rounded-lg">
                           <h3 className="font-medium mb-2">Parameter Comparison</h3>
                           <div className="space-y-3">
-                            {parameters.map(param => (
-                              <div key={param.name} className="grid grid-cols-3 gap-2">
-                                <div className="text-sm font-medium">{param.name}</div>
-                                <div className="text-sm">
-                                  Original: <span className="font-semibold">{param.current.toString()}</span>
+                            {parameters.map(param => {
+                              const originalValue = param.current;
+                              const optimizedValue = selectedResult.params[param.name];
+                              // Type guard to ensure we only compare numbers with numbers
+                              const showArrow = typeof originalValue === 'number' && typeof optimizedValue === 'number' && 
+                                                originalValue !== optimizedValue;
+                              const isHigher = typeof originalValue === 'number' && typeof optimizedValue === 'number' && 
+                                              optimizedValue > originalValue;
+
+                              return (
+                                <div key={param.name} className="grid grid-cols-3 gap-2">
+                                  <div className="text-sm font-medium">{param.name}</div>
+                                  <div className="text-sm">
+                                    Original: <span className="font-semibold">{originalValue.toString()}</span>
+                                  </div>
+                                  <div className="text-sm">
+                                    Optimized: <span className="font-semibold">{optimizedValue?.toString()}</span>
+                                    {showArrow && (
+                                      isHigher ? (
+                                        <ArrowUp className="h-3 w-3 inline ml-1 text-green-500" />
+                                      ) : (
+                                        <ArrowDown className="h-3 w-3 inline ml-1 text-amber-500" />
+                                      )
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="text-sm">
-                                  Optimized: <span className="font-semibold">{
-                                    selectedResult.params[param.name]?.toString()
-                                  }</span>
-                                  {param.current !== selectedResult.params[param.name] && (
-                                    selectedResult.params[param.name] > param.current ? (
-                                      <ArrowUp className="h-3 w-3 inline ml-1 text-green-500" />
-                                    ) : (
-                                      <ArrowDown className="h-3 w-3 inline ml-1 text-amber-500" />
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                         

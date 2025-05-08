@@ -139,6 +139,30 @@ const MonteCarloSimulation: React.FC<MonteCarloSimulationProps> = ({ trades, onC
   
   const finalStats = getFinalStats();
 
+  // Chart configuration
+  const chartConfig = {
+    equity: {
+      theme: { light: "hsl(var(--primary))", dark: "hsl(var(--primary))" },
+      label: "Equity"
+    },
+    median: {
+      theme: { light: "hsl(var(--primary))", dark: "hsl(var(--primary))" },
+      label: "Median Outcome"
+    },
+    pct95: {
+      theme: { light: "hsl(var(--success))", dark: "hsl(var(--success))" },
+      label: "Best Case (95%)"
+    },
+    pct5: {
+      theme: { light: "hsl(var(--destructive))", dark: "hsl(var(--destructive))" },
+      label: "Worst Case (5%)"
+    },
+    maxDrawdownPct95: {
+      theme: { light: "hsl(var(--destructive))", dark: "hsl(var(--destructive))" },
+      label: "Max Drawdown (95%)"
+    }
+  };
+
   return (
     <Dialog open={true} onOpenChange={() => !isRunning && onClose()}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
@@ -226,7 +250,7 @@ const MonteCarloSimulation: React.FC<MonteCarloSimulationProps> = ({ trades, onC
                     <Card className="p-4">
                       <div className="h-[300px]">
                         {stats && (
-                          <ChartContainer>
+                          <ChartContainer config={chartConfig}>
                             <ResponsiveContainer width="100%" height="100%">
                               <RechartsLineChart data={stats}>
                                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
@@ -269,7 +293,7 @@ const MonteCarloSimulation: React.FC<MonteCarloSimulationProps> = ({ trades, onC
                     <Card className="p-4">
                       <div className="h-[300px]">
                         {stats && (
-                          <ChartContainer>
+                          <ChartContainer config={chartConfig}>
                             <ResponsiveContainer width="100%" height="100%">
                               <RechartsLineChart data={stats}>
                                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
