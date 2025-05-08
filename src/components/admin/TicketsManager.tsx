@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -60,33 +59,22 @@ const TicketsManager = () => {
         
         if (ticketsError) throw ticketsError;
         
-        // Get auth users separately to get their emails
-        const { data: authUsersData, error: authUsersError } = await supabase
-          .rpc('get_auth_users');
-          
-        if (authUsersError) throw authUsersError;
-        
-        // Now get all profiles separately
+        // Instead of using the RPC function which might have permission issues,
+        // let's directly join with profiles table to get user information
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name');
+          .select('id, first_name, last_name, email');
           
         if (profilesError) throw profilesError;
         
-        // Create a map of emails by user_id
-        const emailsMap: Record<string, string> = {};
-        authUsersData?.forEach(user => {
-          emailsMap[user.id] = user.email || '';
-        });
-        
-        // Create a map of profiles by user_id for easy lookup and add email
+        // Create a map of profiles by user_id for easy lookup
         const profilesMap: Record<string, Profile> = {};
         profilesData?.forEach(profile => {
           if (profile && typeof profile === 'object' && 'id' in profile) {
             profilesMap[profile.id] = {
               first_name: profile.first_name,
               last_name: profile.last_name,
-              email: emailsMap[profile.id] // Add email from auth users
+              email: profile.email
             };
           }
         });
@@ -115,6 +103,7 @@ const TicketsManager = () => {
           description: error.message,
           variant: "destructive",
         });
+        console.error("Error fetching tickets:", error);
       } finally {
         setIsLoading(false);
       }

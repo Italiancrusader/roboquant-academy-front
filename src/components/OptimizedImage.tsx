@@ -25,6 +25,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   
+  // Only preload if priority is true
   useEffect(() => {
     setLoaded(false);
     setError(false);
@@ -47,13 +48,12 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
   
   const handleLoad = () => {
-    console.log('Image loaded:', src);
     setLoaded(true);
     if (onLoad) onLoad();
   };
   
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error(`Failed to load image: ${src}`, e);
+    console.error(`Failed to load image: ${src}`);
     setError(true);
   };
   
