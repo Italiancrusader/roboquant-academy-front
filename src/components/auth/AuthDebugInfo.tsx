@@ -1,14 +1,22 @@
 
 import React, { useState } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
 const AuthDebugInfo: React.FC = () => {
   const [showDebugInfo, setShowDebugInfo] = useState(false);
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const toggleDebugInfo = () => {
     setShowDebugInfo(prev => !prev);
   };
+
+  // Extract the redirect path from either search params or location state
+  const redirectPath = searchParams.get('redirect') || 
+                      (location.state?.from?.pathname) || 
+                      '/dashboard';
 
   return (
     <>
@@ -30,9 +38,9 @@ const AuthDebugInfo: React.FC = () => {
               <p><strong>Path:</strong> {window.location.pathname}</p>
               <p><strong>Search:</strong> {window.location.search}</p>
               <p><strong>Hash:</strong> {window.location.hash}</p>
-              <p><strong>From:</strong> {window.location.state?.from?.pathname || '/dashboard'}</p>
-              <p><strong>Redirect path:</strong> {new URLSearchParams(window.location.search).get('redirect') || window.location.state?.from?.pathname || '/dashboard'}</p>
-              <p><strong>Error:</strong> {new URLSearchParams(window.location.search).get('error_description') || new URLSearchParams(window.location.search).get('error') || "None"}</p>
+              <p><strong>From:</strong> {location.state?.from?.pathname || '/dashboard'}</p>
+              <p><strong>Redirect path:</strong> {redirectPath}</p>
+              <p><strong>Error:</strong> {searchParams.get('error_description') || searchParams.get('error') || "None"}</p>
             </div>
           </AlertDescription>
         </Alert>
