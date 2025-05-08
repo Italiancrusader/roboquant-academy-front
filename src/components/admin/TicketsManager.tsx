@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -24,6 +23,12 @@ import { useNavigate } from 'react-router-dom';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Loader2, Search, MoreHorizontal, MessageCircle } from 'lucide-react';
 
+interface Profile {
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+}
+
 interface Ticket {
   id: string;
   subject: string;
@@ -31,11 +36,7 @@ interface Ticket {
   created_at: string;
   last_message_at: string;
   user_id: string;
-  profile: {
-    first_name: string | null;
-    last_name: string | null;
-    email: string;
-  };
+  profile: Profile | null;
   unreadCount: number;
 }
 
@@ -50,19 +51,33 @@ const TicketsManager = () => {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        // First get all tickets and join with profiles
-        const { data, error } = await supabase
+        // First get all tickets
+        const { data: ticketsData, error: ticketsError } = await supabase
           .from('tickets')
-          .select(`
-            *,
-            profile:profiles(first_name, last_name, email)
-          `)
+          .select('*')
           .order('last_message_at', { ascending: false });
         
-        if (error) throw error;
+        if (ticketsError) throw ticketsError;
         
-        // For each ticket, count unread messages
-        const ticketsWithUnread = await Promise.all((data || []).map(async (ticket) => {
+        // Now get all profiles separately
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email');
+          
+        if (profilesError) throw profilesError;
+        
+        // Create a map of profiles by user_id for easy lookup
+        const profilesMap: Record<string, Profile> = {};
+        profilesData?.forEach(profile => {
+          profilesMap[profile.id] = {
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            email: profile.email || ''
+          };
+        });
+        
+        // For each ticket, count unread messages and add profile info
+        const ticketsWithUnread = await Promise.all((ticketsData || []).map(async (ticket) => {
           const { count, error: countError } = await supabase
             .from('ticket_messages')
             .select('*', { count: 'exact', head: true })
@@ -72,6 +87,7 @@ const TicketsManager = () => {
           
           return {
             ...ticket,
+            profile: profilesMap[ticket.user_id] || null,
             unreadCount: count || 0
           };
         }));
@@ -178,7 +194,7 @@ const TicketsManager = () => {
     }
   };
   
-  const getUserName = (profile: any) => {
+  const getUserName = (profile: Profile | null) => {
     if (!profile) return 'Unknown User';
     if (profile.first_name || profile.last_name) {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
