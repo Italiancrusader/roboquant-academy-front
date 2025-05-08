@@ -14,9 +14,18 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({ onClick, isLoading, buttonT
     // Log extensive debugging information
     const currentUrl = window.location.href;
     const currentDomain = window.location.hostname;
-    const isLocalDev = currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com');
+    const isDevelopment = 
+      currentDomain.includes('localhost') || 
+      currentDomain.includes('lovableproject.com') ||
+      currentDomain.includes('lovable.app');
+    
     const protocol = window.location.protocol;
-    const baseUrl = isLocalDev ? window.location.origin : `${protocol}//${currentDomain}`;
+    let baseUrl = isDevelopment ? window.location.origin : `${protocol}//${currentDomain}`;
+    
+    // Special handling for roboquant.ai without www
+    if (currentDomain === 'roboquant.ai') {
+      baseUrl = `${protocol}//www.${currentDomain}`;
+    }
     
     console.log("=== GOOGLE AUTH DEBUGGING ===");
     console.log("Google sign-in button clicked");
@@ -24,7 +33,7 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({ onClick, isLoading, buttonT
     console.log("Current hostname:", currentDomain);
     console.log("Current origin:", window.location.origin);
     console.log("Base URL to be used:", baseUrl);
-    console.log("Environment:", isLocalDev ? "Development" : "Production");
+    console.log("Environment:", isDevelopment ? "Development" : "Production");
     console.log("Auth path:", `${baseUrl}/auth`);
     
     // Call the provided onClick handler

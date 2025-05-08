@@ -114,27 +114,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInWithGoogle = async () => {
     try {
       // Get the current URL to determine environment
-      const currentUrl = window.location.href;
       const currentDomain = window.location.hostname;
+      const protocol = window.location.protocol;
       
       // Domain detection logic
-      let baseUrl = '';
-      if (currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com')) {
-        // Local/preview environment
-        baseUrl = window.location.origin;
-      } else {
-        // Production environment - match the current domain structure (with or without www)
-        const protocol = window.location.protocol;
-        baseUrl = `${protocol}//${currentDomain}`;
+      // Determine if we're in a development/preview environment
+      const isDevelopment = 
+        currentDomain.includes('localhost') || 
+        currentDomain.includes('lovableproject.com') ||
+        currentDomain.includes('lovable.app');
+      
+      // Base URL configuration
+      let baseUrl = isDevelopment 
+        ? window.location.origin 
+        : `${protocol}//${currentDomain}`;
+      
+      // Explicitly add the www prefix for roboquant.ai domain if not already there
+      if (currentDomain === 'roboquant.ai') {
+        baseUrl = `${protocol}//www.${currentDomain}`;
       }
       
       // Always use /auth as the redirect path
       const redirectTo = `${baseUrl}/auth`;
       
       // Log the redirect URL for debugging
+      console.log("=== GOOGLE AUTH SETUP ===");
       console.log("Google sign-in with redirect to:", redirectTo);
       console.log("Current domain:", currentDomain);
-      console.log("Current environment:", baseUrl === window.location.origin ? "Development/Preview" : "Production");
+      console.log("Current environment:", isDevelopment ? "Development/Preview" : "Production");
+      console.log("Current URL:", window.location.href);
+      console.log("Current origin:", window.location.origin);
+      console.log("Application base URL:", baseUrl);
+      console.log("Full redirect URL to be used:", redirectTo);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

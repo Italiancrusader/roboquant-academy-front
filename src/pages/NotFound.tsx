@@ -8,7 +8,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 const NotFound = () => {
   // Get the current domain
   const currentDomain = window.location.hostname;
+  const currentPath = window.location.pathname;
   const isDomainSetup = currentDomain.includes('roboquant.ai');
+  const isOAuthCallback = currentPath.includes('/auth/v1/callback') || 
+                          currentPath.includes('/auth') && window.location.search.includes('error');
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 font-neulis">
@@ -33,6 +36,23 @@ const NotFound = () => {
                   <li>The build has been deployed to the correct environment</li>
                 </ol>
                 <p>If you're using a custom domain, make sure it's properly set up in your hosting provider.</p>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isOAuthCallback && (
+            <Alert variant="warning" className="mb-8 text-left">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Authentication Redirect Issue</AlertTitle>
+              <AlertDescription>
+                <p className="mb-2">This appears to be an OAuth callback after Google sign-in.</p>
+                <p className="mb-2">The authentication might have worked, but the redirect failed.</p>
+                <ol className="list-decimal pl-5 space-y-1 mb-2">
+                  <li>Check your redirect URL configuration in Supabase (Site URL and Redirect URLs)</li>
+                  <li>Ensure your Google OAuth configuration includes all necessary domains and callback URLs</li>
+                  <li>Make sure the application is properly deployed to the domain</li>
+                </ol>
+                <p>Try directly visiting the main site instead of waiting for the redirect.</p>
               </AlertDescription>
             </Alert>
           )}

@@ -41,20 +41,24 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
   const signInWithGoogle = async () => {
     setIsLoading(true);
     try {
-      // Get the current URL to determine environment
-      const currentUrl = window.location.href;
+      // Always use the actual domain the app is running on for redirects
+      const currentDomain = window.location.hostname;
+      const protocol = window.location.protocol;
       
-      // Domain detection logic
-      let baseUrl = '';
-      if (currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com')) {
-        // Local/preview environment
-        baseUrl = window.location.origin;
-      } else {
-        // Production environment - important: don't include www prefix
-        baseUrl = 'https://roboquant.ai';
-        
-        // Log the domain we're redirecting to
-        console.log("Using production domain for redirect:", baseUrl);
+      // Determine if we're in a development/preview environment
+      const isDevelopment = 
+        currentDomain.includes('localhost') || 
+        currentDomain.includes('lovableproject.com') ||
+        currentDomain.includes('lovable.app');
+      
+      // Base URL configuration
+      let baseUrl = isDevelopment 
+        ? window.location.origin 
+        : `${protocol}//${currentDomain}`;
+      
+      // Explicitly add the www prefix for roboquant.ai domain if not already there
+      if (currentDomain === 'roboquant.ai') {
+        baseUrl = `${protocol}//www.${currentDomain}`;
       }
       
       // Always use /auth as the redirect path
@@ -63,10 +67,10 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
       // Log extensive debugging information
       console.log("=== GOOGLE AUTH INITIALIZATION ===");
       console.log("Initiating sign-in with redirect to:", redirectTo);
-      console.log("Current environment:", baseUrl === window.location.origin ? "Development/Preview" : "Production");
       console.log("Current URL:", window.location.href);
+      console.log("Current hostname:", currentDomain);
       console.log("Current origin:", window.location.origin);
-      console.log("Application base URL:", baseUrl);
+      console.log("Is development:", isDevelopment);
       console.log("Full redirect URL to be used:", redirectTo);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
