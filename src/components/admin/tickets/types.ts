@@ -2,7 +2,7 @@
 export interface Profile {
   first_name: string | null;
   last_name: string | null;
-  email?: string;
+  email: string | null;
 }
 
 export interface Ticket {
@@ -15,3 +15,5 @@ export interface Ticket {
   profile: Profile | null;
   unreadCount: number;
 }
+
+export type TicketStatus = 'open' | 'waiting' | 'closed';

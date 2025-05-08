@@ -2,14 +2,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Ticket, Profile } from './types';
+import { Ticket, Profile, TicketStatus } from './types';
 
 export const useTickets = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | null>(null);
 
   // Debug log function to track our data safely
   const debugLog = (message: string, data: any) => {
@@ -29,8 +29,7 @@ export const useTickets = () => {
         
         debugLog("Raw tickets data", ticketsData);
         
-        // Instead of using the RPC function which might have permission issues,
-        // let's directly join with profiles table to get user information
+        // Get profiles data
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, email');
@@ -44,8 +43,8 @@ export const useTickets = () => {
         profilesData?.forEach(profile => {
           if (profile && typeof profile === 'object' && 'id' in profile) {
             profilesMap[profile.id] = {
-              first_name: profile.first_name || null,
-              last_name: profile.last_name || null,
+              first_name: profile.first_name,
+              last_name: profile.last_name,
               email: profile.email
             };
           }
@@ -63,7 +62,6 @@ export const useTickets = () => {
             .is('read_at', null);
           
           const userProfile = profilesMap[ticket.user_id] || null;
-          debugLog(`Profile for user ${ticket.user_id}`, userProfile);
           
           return {
             ...ticket,
@@ -141,20 +139,20 @@ export const useTickets = () => {
           return true;
         }
         
-        // Handle null profile case
-        if (!ticket.profile) {
+        // Handle profile checking safely
+        if (ticket.profile === null) {
           return false;
         }
         
-        // Safely extract profile values with defaults to avoid null/undefined issues
-        const email = ticket.profile.email || '';
-        const firstName = ticket.profile.first_name || '';
-        const lastName = ticket.profile.last_name || '';
+        // Now we know profile is not null, extract values with fallbacks
+        const { email, first_name, last_name } = ticket.profile;
+        const emailStr = email ?? '';
+        const firstNameStr = first_name ?? '';
+        const lastNameStr = last_name ?? '';
         
-        // Now we can safely check these values
-        return email.toLowerCase().includes(term) || 
-               firstName.toLowerCase().includes(term) || 
-               lastName.toLowerCase().includes(term);
+        return emailStr.toLowerCase().includes(term) || 
+               firstNameStr.toLowerCase().includes(term) || 
+               lastNameStr.toLowerCase().includes(term);
       });
     }
     

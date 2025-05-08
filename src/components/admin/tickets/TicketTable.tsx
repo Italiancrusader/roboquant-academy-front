@@ -58,12 +58,16 @@ const TicketTable = ({ tickets, isLoading }: TicketTableProps) => {
     }
   };
   
-  const getUserName = (profile: { first_name: string | null; last_name: string | null; email?: string } | null) => {
-    if (!profile) return 'Unknown User';
-    if (profile.first_name || profile.last_name) {
-      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+  const getUserName = (ticket: Ticket): string => {
+    if (!ticket.profile) return 'Unknown User';
+    
+    const { first_name, last_name, email } = ticket.profile;
+    
+    if (first_name || last_name) {
+      return `${first_name || ''} ${last_name || ''}`.trim();
     }
-    return profile.email || 'Unknown User';
+    
+    return email || 'Unknown User';
   };
   
   const getStatusBadge = (status: string) => {
@@ -117,7 +121,7 @@ const TicketTable = ({ tickets, isLoading }: TicketTableProps) => {
                   )}
                 </div>
               </TableCell>
-              <TableCell>{getUserName(ticket.profile)}</TableCell>
+              <TableCell>{getUserName(ticket)}</TableCell>
               <TableCell>{getStatusBadge(ticket.status)}</TableCell>
               <TableCell className="text-muted-foreground">
                 {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
