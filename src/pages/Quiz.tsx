@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -240,13 +239,6 @@ const Quiz = () => {
       
       // Append the iframe to the container
       typeformContainer.appendChild(iframe);
-      
-      // Add button at the bottom for manual submission in case the auto-detection fails
-      const fallbackButton = document.createElement('button');
-      fallbackButton.textContent = "I've Completed the Survey";
-      fallbackButton.className = "w-full mt-4 px-4 py-3 bg-primary text-primary-foreground text-center rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary";
-      fallbackButton.onclick = () => handleTypeformSubmit();
-      typeformContainer.appendChild(fallbackButton);
       
       // Set up a message listener to detect form submission
       const messageHandler = (event: MessageEvent) => {
