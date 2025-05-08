@@ -36,7 +36,7 @@ export const processUrlErrors = () => {
     // Clean up URL but preserve the error information in console
     console.log("Cleaning up URL, removing error params");
     if (window.history && window.history.replaceState) {
-      window.history.replaceState(null, document.title, window.location.pathname);
+      window.history.replaceState(null, document.title, window.location.pathname + '?error=' + encodeURIComponent(errorMsg));
     }
   } else {
     console.log("No auth errors detected in URL");
@@ -146,12 +146,19 @@ export const handleHashTokens = async () => {
  * Gets the appropriate redirect URL for OAuth authentication
  */
 export const getOAuthRedirectUrl = () => {
-  // Get the current URL to determine environment
-  const currentUrl = window.location.href;
-  const isLocalDev = currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com');
+  // Get the current URL information
+  const currentDomain = window.location.hostname;
+  const protocol = window.location.protocol;
+  const currentOrigin = window.location.origin;
   
-  // If in local dev, use the current origin, otherwise use the non-www production URL
-  const baseUrl = isLocalDev ? window.location.origin : 'https://roboquant.ai'; // Changed from www.roboquant.ai
+  // Base URL configuration - always prioritize the current origin first
+  let baseUrl = currentOrigin;
+  
+  // For production on roboquant.ai, ensure we use the proper URL format
+  if (currentDomain.includes('roboquant.ai')) {
+    // Always use www prefix for roboquant.ai
+    baseUrl = `${protocol}//www.roboquant.ai`;
+  }
   
   // Always use /auth as the redirect path
   return `${baseUrl}/auth`;

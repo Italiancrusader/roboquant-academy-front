@@ -41,9 +41,10 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
   const signInWithGoogle = async () => {
     setIsLoading(true);
     try {
-      // Always use the actual domain the app is running on for redirects
+      // Get current URL information
       const currentDomain = window.location.hostname;
       const protocol = window.location.protocol;
+      const currentOrigin = window.location.origin;
       
       // Determine if we're in a development/preview environment
       const isDevelopment = 
@@ -51,14 +52,13 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
         currentDomain.includes('lovableproject.com') ||
         currentDomain.includes('lovable.app');
       
-      // Base URL configuration
-      let baseUrl = isDevelopment 
-        ? window.location.origin 
-        : `${protocol}//${currentDomain}`;
+      // Base URL configuration - always prioritize the current origin first
+      let baseUrl = currentOrigin;
       
-      // Explicitly add the www prefix for roboquant.ai domain if not already there
-      if (currentDomain === 'roboquant.ai') {
-        baseUrl = `${protocol}//www.${currentDomain}`;
+      // For production on roboquant.ai, ensure we use the proper URL format
+      if (currentDomain.includes('roboquant.ai')) {
+        // Always use www prefix for roboquant.ai
+        baseUrl = `${protocol}//www.roboquant.ai`;
       }
       
       // Always use /auth as the redirect path
@@ -69,7 +69,7 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
       console.log("Initiating sign-in with redirect to:", redirectTo);
       console.log("Current URL:", window.location.href);
       console.log("Current hostname:", currentDomain);
-      console.log("Current origin:", window.location.origin);
+      console.log("Current origin:", currentOrigin);
       console.log("Is development:", isDevelopment);
       console.log("Full redirect URL to be used:", redirectTo);
       

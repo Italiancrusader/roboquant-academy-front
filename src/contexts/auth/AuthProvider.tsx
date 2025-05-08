@@ -116,6 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Get the current URL to determine environment
       const currentDomain = window.location.hostname;
       const protocol = window.location.protocol;
+      const currentOrigin = window.location.origin;
       
       // Domain detection logic
       // Determine if we're in a development/preview environment
@@ -124,14 +125,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentDomain.includes('lovableproject.com') ||
         currentDomain.includes('lovable.app');
       
-      // Base URL configuration
-      let baseUrl = isDevelopment 
-        ? window.location.origin 
-        : `${protocol}//${currentDomain}`;
+      // Base URL configuration - always prioritize the origin first
+      let baseUrl = currentOrigin;
       
-      // Explicitly add the www prefix for roboquant.ai domain if not already there
-      if (currentDomain === 'roboquant.ai') {
-        baseUrl = `${protocol}//www.${currentDomain}`;
+      // For production on roboquant.ai, ensure we use the proper URL format
+      if (currentDomain.includes('roboquant.ai')) {
+        // Always use www prefix for roboquant.ai
+        baseUrl = `${protocol}//www.roboquant.ai`;
       }
       
       // Always use /auth as the redirect path

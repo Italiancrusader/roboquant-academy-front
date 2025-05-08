@@ -14,24 +14,27 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({ onClick, isLoading, buttonT
     // Log extensive debugging information
     const currentUrl = window.location.href;
     const currentDomain = window.location.hostname;
+    const currentOrigin = window.location.origin;
+    
+    // Determine environment
     const isDevelopment = 
       currentDomain.includes('localhost') || 
       currentDomain.includes('lovableproject.com') ||
       currentDomain.includes('lovable.app');
     
-    const protocol = window.location.protocol;
-    let baseUrl = isDevelopment ? window.location.origin : `${protocol}//${currentDomain}`;
+    // Base URL determination
+    let baseUrl = currentOrigin;
     
-    // Special handling for roboquant.ai without www
-    if (currentDomain === 'roboquant.ai') {
-      baseUrl = `${protocol}//www.${currentDomain}`;
+    // Special handling for roboquant.ai domain
+    if (currentDomain.includes('roboquant.ai')) {
+      baseUrl = `${window.location.protocol}//www.roboquant.ai`;
     }
     
     console.log("=== GOOGLE AUTH DEBUGGING ===");
     console.log("Google sign-in button clicked");
-    console.log("Current URL:", window.location.href);
+    console.log("Current URL:", currentUrl);
     console.log("Current hostname:", currentDomain);
-    console.log("Current origin:", window.location.origin);
+    console.log("Current origin:", currentOrigin);
     console.log("Base URL to be used:", baseUrl);
     console.log("Environment:", isDevelopment ? "Development" : "Production");
     console.log("Auth path:", `${baseUrl}/auth`);
