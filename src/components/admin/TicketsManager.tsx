@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -72,8 +73,8 @@ const TicketsManager = () => {
         profilesData?.forEach(profile => {
           if (profile && typeof profile === 'object' && 'id' in profile) {
             profilesMap[profile.id] = {
-              first_name: profile.first_name,
-              last_name: profile.last_name,
+              first_name: profile.first_name || null,
+              last_name: profile.last_name || null,
               email: profile.email
             };
           }
