@@ -115,6 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Get the current URL to determine environment
       const currentUrl = window.location.href;
+      const currentDomain = window.location.hostname;
       
       // Domain detection logic
       let baseUrl = '';
@@ -122,8 +123,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Local/preview environment
         baseUrl = window.location.origin;
       } else {
-        // Production environment - do NOT use www prefix
-        baseUrl = 'https://roboquant.ai';
+        // Production environment - match the current domain structure (with or without www)
+        const protocol = window.location.protocol;
+        baseUrl = `${protocol}//${currentDomain}`;
       }
       
       // Always use /auth as the redirect path
@@ -131,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Log the redirect URL for debugging
       console.log("Google sign-in with redirect to:", redirectTo);
+      console.log("Current domain:", currentDomain);
       console.log("Current environment:", baseUrl === window.location.origin ? "Development/Preview" : "Production");
       
       const { data, error } = await supabase.auth.signInWithOAuth({

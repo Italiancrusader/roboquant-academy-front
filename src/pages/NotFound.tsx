@@ -6,8 +6,9 @@ import { Home, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const NotFound = () => {
-  // Check if we're on the domain that might need configuration
-  const isDomainSetup = window.location.hostname === 'www.roboquant.ai';
+  // Get the current domain
+  const currentDomain = window.location.hostname;
+  const isDomainSetup = currentDomain.includes('roboquant.ai');
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 font-neulis">
@@ -24,7 +25,7 @@ const NotFound = () => {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Domain Configuration Issue</AlertTitle>
               <AlertDescription>
-                <p className="mb-2">It appears that www.roboquant.ai may not be properly configured with your hosting provider.</p>
+                <p className="mb-2">It appears that {currentDomain} may not be properly configured with your hosting provider.</p>
                 <p className="mb-2">Please ensure:</p>
                 <ol className="list-decimal pl-5 space-y-1 mb-2">
                   <li>Your domain is properly connected to your hosting service</li>

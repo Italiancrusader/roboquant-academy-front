@@ -13,12 +13,15 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({ onClick, isLoading, buttonT
   const handleClick = () => {
     // Log extensive debugging information
     const currentUrl = window.location.href;
+    const currentDomain = window.location.hostname;
     const isLocalDev = currentUrl.includes('localhost') || currentUrl.includes('lovableproject.com');
-    const baseUrl = isLocalDev ? window.location.origin : 'https://roboquant.ai'; // Changed from www.roboquant.ai to roboquant.ai
+    const protocol = window.location.protocol;
+    const baseUrl = isLocalDev ? window.location.origin : `${protocol}//${currentDomain}`;
     
     console.log("=== GOOGLE AUTH DEBUGGING ===");
     console.log("Google sign-in button clicked");
     console.log("Current URL:", window.location.href);
+    console.log("Current hostname:", currentDomain);
     console.log("Current origin:", window.location.origin);
     console.log("Base URL to be used:", baseUrl);
     console.log("Environment:", isLocalDev ? "Development" : "Production");

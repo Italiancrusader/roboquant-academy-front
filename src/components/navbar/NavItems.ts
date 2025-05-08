@@ -14,7 +14,7 @@ export const mainNavItems = [
   },
   {
     title: 'About',
-    href: '/full#about',
+    href: '/#about',
   },
   {
     title: 'Support',
