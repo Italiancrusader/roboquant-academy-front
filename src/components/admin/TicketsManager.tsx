@@ -48,6 +48,11 @@ const TicketsManager = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // Debug log function to track our data safely
+  const debugLog = (message: string, data: any) => {
+    console.log(`[TicketsManager Debug] ${message}:`, data);
+  };
+
   useEffect(() => {
     const fetchTickets = async () => {
       try {
@@ -59,6 +64,8 @@ const TicketsManager = () => {
         
         if (ticketsError) throw ticketsError;
         
+        debugLog("Raw tickets data", ticketsData);
+        
         // Instead of using the RPC function which might have permission issues,
         // let's directly join with profiles table to get user information
         const { data: profilesData, error: profilesError } = await supabase
@@ -66,6 +73,8 @@ const TicketsManager = () => {
           .select('id, first_name, last_name, email');
           
         if (profilesError) throw profilesError;
+        
+        debugLog("Raw profiles data", profilesData);
         
         // Create a map of profiles by user_id for easy lookup
         const profilesMap: Record<string, Profile> = {};
@@ -79,6 +88,8 @@ const TicketsManager = () => {
           }
         });
         
+        debugLog("Profiles map created", profilesMap);
+        
         // For each ticket, count unread messages and add profile info
         const ticketsWithUnread = await Promise.all((ticketsData || []).map(async (ticket) => {
           const { count, error: countError } = await supabase
@@ -88,12 +99,17 @@ const TicketsManager = () => {
             .eq('is_admin', false)
             .is('read_at', null);
           
+          const userProfile = profilesMap[ticket.user_id] || null;
+          debugLog(`Profile for user ${ticket.user_id}`, userProfile);
+          
           return {
             ...ticket,
-            profile: profilesMap[ticket.user_id] || null,
+            profile: userProfile,
             unreadCount: count || 0
           };
         }));
+        
+        debugLog("Tickets with profiles and unread counts", ticketsWithUnread);
         
         setTickets(ticketsWithUnread);
         setFilteredTickets(ticketsWithUnread);
@@ -148,56 +164,51 @@ const TicketsManager = () => {
   
   // Filter tickets when search term or status filter changes
   useEffect(() => {
+    debugLog("Filter criteria changed", { searchTerm, statusFilter });
+    
     let filtered = [...tickets];
     
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
+      debugLog("Filtering by search term", term);
+      
+      // Log how many tickets have null profiles
+      const nullProfileCount = tickets.filter(t => t.profile === null).length;
+      debugLog(`Number of tickets with null profiles`, nullProfileCount);
+      
       filtered = filtered.filter(ticket => {
         // First check if the subject matches (this doesn't involve profile)
         if (ticket.subject.toLowerCase().includes(term)) {
           return true;
         }
         
-        // If profile is null, we can't match on any profile properties
-        if (ticket.profile === null) {
+        // Short-circuit if profile is null
+        if (!ticket.profile) {
           return false;
         }
         
-        // Now we know profile is not null, check email if it exists
-        if (
-          ticket.profile.email && 
-          typeof ticket.profile.email === 'string' && 
-          ticket.profile.email.toLowerCase().includes(term)
-        ) {
-          return true;
-        }
+        // Using optional chaining and nullish checks for all profile properties
+        const emailMatches = ticket.profile.email ? 
+          ticket.profile.email.toLowerCase().includes(term) : false;
+          
+        const firstNameMatches = ticket.profile.first_name ? 
+          ticket.profile.first_name.toLowerCase().includes(term) : false;
+          
+        const lastNameMatches = ticket.profile.last_name ? 
+          ticket.profile.last_name.toLowerCase().includes(term) : false;
         
-        // Check first name if it exists
-        if (
-          ticket.profile.first_name && 
-          typeof ticket.profile.first_name === 'string' && 
-          ticket.profile.first_name.toLowerCase().includes(term)
-        ) {
-          return true;
-        }
-        
-        // Check last name if it exists
-        if (
-          ticket.profile.last_name && 
-          typeof ticket.profile.last_name === 'string' && 
-          ticket.profile.last_name.toLowerCase().includes(term)
-        ) {
-          return true;
-        }
-        
-        // If none of the above matched, return false
-        return false;
+        return emailMatches || firstNameMatches || lastNameMatches;
       });
     }
     
     if (statusFilter) {
       filtered = filtered.filter(ticket => ticket.status === statusFilter);
     }
+    
+    debugLog("Filtered tickets result", { 
+      total: tickets.length,
+      filtered: filtered.length
+    });
     
     setFilteredTickets(filtered);
   }, [searchTerm, statusFilter, tickets]);
