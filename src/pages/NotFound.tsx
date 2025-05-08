@@ -41,7 +41,7 @@ const NotFound = () => {
           )}
 
           {isOAuthCallback && (
-            <Alert variant="warning" className="mb-8 text-left">
+            <Alert variant="destructive" className="mb-8 text-left">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Authentication Redirect Issue</AlertTitle>
               <AlertDescription>
