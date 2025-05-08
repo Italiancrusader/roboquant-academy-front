@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -26,7 +27,7 @@ import { Loader2, Search, MoreHorizontal, MessageCircle } from 'lucide-react';
 interface Profile {
   first_name: string | null;
   last_name: string | null;
-  email: string;
+  email?: string; // Make email optional since it might not be in the profiles table
 }
 
 interface Ticket {
@@ -59,21 +60,35 @@ const TicketsManager = () => {
         
         if (ticketsError) throw ticketsError;
         
+        // Get auth users separately to get their emails
+        const { data: authUsersData, error: authUsersError } = await supabase
+          .rpc('get_auth_users');
+          
+        if (authUsersError) throw authUsersError;
+        
         // Now get all profiles separately
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, email');
+          .select('id, first_name, last_name');
           
         if (profilesError) throw profilesError;
         
-        // Create a map of profiles by user_id for easy lookup
+        // Create a map of emails by user_id
+        const emailsMap: Record<string, string> = {};
+        authUsersData?.forEach(user => {
+          emailsMap[user.id] = user.email || '';
+        });
+        
+        // Create a map of profiles by user_id for easy lookup and add email
         const profilesMap: Record<string, Profile> = {};
         profilesData?.forEach(profile => {
-          profilesMap[profile.id] = {
-            first_name: profile.first_name,
-            last_name: profile.last_name,
-            email: profile.email || ''
-          };
+          if (profile && typeof profile === 'object' && 'id' in profile) {
+            profilesMap[profile.id] = {
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              email: emailsMap[profile.id] // Add email from auth users
+            };
+          }
         });
         
         // For each ticket, count unread messages and add profile info
