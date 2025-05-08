@@ -8,7 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
-import { Clock, Book } from 'lucide-react';
+import { Clock, Book, MessageSquare, BadgePlus } from 'lucide-react';
 import { useAdminStatus } from '@/hooks/useAdminStatus';
 
 interface EnrolledCourse {
@@ -23,11 +23,20 @@ interface EnrolledCourse {
   completed_lessons: number;
 }
 
+interface TicketSummary {
+  totalTickets: number;
+  openTickets: number;
+}
+
 const Dashboard = () => {
   const { user } = useAuth();
   const { isAdmin } = useAdminStatus(user?.id);
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [ticketSummary, setTicketSummary] = useState<TicketSummary>({
+    totalTickets: 0,
+    openTickets: 0
+  });
 
   useEffect(() => {
     const fetchEnrolledCourses = async () => {
@@ -164,6 +173,41 @@ const Dashboard = () => {
 
     fetchEnrolledCourses();
   }, [user, isAdmin]);
+  
+  useEffect(() => {
+    const fetchTickets = async () => {
+      if (!user) return;
+      
+      try {
+        // Get total tickets for this user
+        const { count: totalCount, error: totalError } = await supabase
+          .from('tickets')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+          
+        if (totalError) throw totalError;
+        
+        // Get open tickets for this user
+        const { count: openCount, error: openError } = await supabase
+          .from('tickets')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'open');
+          
+        if (openError) throw openError;
+        
+        setTicketSummary({
+          totalTickets: totalCount || 0,
+          openTickets: openCount || 0
+        });
+        
+      } catch (error) {
+        console.error("Error fetching ticket summary:", error);
+      }
+    };
+    
+    fetchTickets();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -171,6 +215,64 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 pt-24 pb-20">
         <h1 className="text-3xl font-bold gradient-text mb-2">Your Dashboard</h1>
         <p className="text-muted-foreground mb-8">Track your progress and continue your learning journey</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          {/* Support Card */}
+          <Card className="md:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                Support Center
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p>Have questions or need help? Our team is ready to assist you.</p>
+                
+                {ticketSummary.totalTickets > 0 ? (
+                  <div className="text-sm mt-4">
+                    <p>You have <strong>{ticketSummary.openTickets}</strong> open {ticketSummary.openTickets === 1 ? 'ticket' : 'tickets'}</p>
+                    <p>Total tickets: {ticketSummary.totalTickets}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No support tickets yet</p>
+                )}
+              </div>
+            </CardContent>
+            <CardFooter className="flex gap-2">
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/support">View Tickets</Link>
+              </Button>
+              <Button asChild className="w-full">
+                <Link to="/support" className="flex items-center">
+                  <BadgePlus className="h-4 w-4 mr-2" />
+                  New Ticket
+                </Link>
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          {/* Admin Quick Link - Only for admins */}
+          {isAdmin && (
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Admin Tools</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>You have admin privileges. Use the admin panel to manage courses, users, and support tickets.</p>
+                
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <Button asChild variant="outline">
+                    <Link to="/admin/dashboard">Admin Dashboard</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/admin/support">Manage Support</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
         
         <h2 className="text-2xl font-semibold mb-4">My Courses</h2>
         

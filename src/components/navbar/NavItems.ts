@@ -1,29 +1,69 @@
 
-export interface NavItem {
-  title: string;
-  href: string;
-  description: string;
-}
+export const mainNavItems = [
+  {
+    title: 'Home',
+    href: '/',
+  },
+  {
+    title: 'Courses',
+    href: '/courses',
+  },
+  {
+    title: 'Pricing',
+    href: '/pricing',
+  },
+  {
+    title: 'About',
+    href: '/full#about',
+  },
+  {
+    title: 'Support',
+    href: '/support',
+  },
+  {
+    title: 'MT5 Report Genie',
+    href: '/mt5-report-genie',
+  },
+];
 
-export const navItems: NavItem[] = [
+export const userNavItems = [
   {
-    title: "Courses",
-    href: "/courses",
-    description: "Explore our wide range of courses.",
+    title: 'Dashboard',
+    href: '/dashboard',
   },
   {
-    title: "MT5 Report Genie",
-    href: "/mt5-report-genie",
-    description: "Generate detailed MT5 trading reports effortlessly.",
+    title: 'Profile',
+    href: '/profile',
   },
   {
-    title: "Privacy Policy",
-    href: "/privacy-policy",
-    description: "Read our privacy policy.",
+    title: 'My Courses',
+    href: '/courses',
   },
   {
-    title: "Terms of Service",
-    href: "/terms-of-service",
-    description: "View our terms of service.",
+    title: 'Support',
+    href: '/support',
+  },
+];
+
+export const adminNavItems = [
+  {
+    title: 'Dashboard',
+    href: '/admin/dashboard',
+  },
+  {
+    title: 'Courses',
+    href: '/admin/courses',
+  },
+  {
+    title: 'Users',
+    href: '/admin/users',
+  },
+  {
+    title: 'Support',
+    href: '/admin/support',
+  },
+  {
+    title: 'Settings',
+    href: '/admin/settings',
   },
 ];
