@@ -1,4 +1,3 @@
-
 import { read, utils, write } from 'xlsx';
 import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/strategyreportgenie';
 
@@ -125,7 +124,7 @@ const cleanNumeric = (value: string): number => {
 /**
  * Parse TradingView Excel report file
  */
-const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> => {
+const parseTradingViewExcel = async (file: File, initialBalance?: number): Promise<ParsedStrategyReport> => {
   // Read the Excel file
   const buffer = await file.arrayBuffer();
   const workbook = read(buffer, { type: 'array' });
@@ -138,6 +137,9 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
   const summary: StrategySummary = {};
   const trades: StrategyTrade[] = [];
   let headerRowIndex = 0; // TradingView typically has header in first row
+  
+  // Use provided initialBalance or default to 10,000
+  const startingBalance = initialBalance || 10000;
   
   // Process TradingView format
   if (rows.length > 0) {
@@ -157,11 +159,10 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
     const cumulativeProfitPctIndex = headers.findIndex((h: string) => h === 'Cumulative profit %');
     const drawdownUsdIndex = headers.findIndex((h: string) => h === 'Drawdown USD');
     
-    // Initial values for calculating running statistics
-    let initialBalance = 0;
-    let runningBalance = 0;
+    // Initialize with the provided initial balance
+    let runningBalance = startingBalance;
     let maxDrawdown = 0;
-    let peakBalance = 0;
+    let peakBalance = startingBalance;
     
     // Process data rows
     for (let i = headerRowIndex + 1; i < rows.length; i++) {
@@ -176,7 +177,6 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
       const priceStr = priceIndex >= 0 ? String(row[priceIndex]) : '0';
       const contracts = contractsIndex >= 0 ? cleanNumeric(String(row[contractsIndex])) : 0;
       const profitUsd = profitUsdIndex >= 0 ? cleanNumeric(String(row[profitUsdIndex])) : 0;
-      const cumulativeProfit = cumulativeProfitUsdIndex >= 0 ? cleanNumeric(String(row[cumulativeProfitUsdIndex])) : 0;
       
       // Parse price, ensuring it properly handles commas
       const price = cleanNumeric(priceStr);
@@ -222,15 +222,13 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
         side = 'short';
       }
       
-      // Calculate initial balance for the first row
-      if (i === headerRowIndex + 1 && direction === 'out') {
-        initialBalance = cumulativeProfit - profitUsd;
-        runningBalance = initialBalance;
-      }
-      
       // Update running balance
-      if (direction === 'out') {
-        runningBalance = cumulativeProfit;
+      if (i === headerRowIndex + 1 && direction === 'in') {
+        // First entry trade begins with initial balance
+        // Do nothing, using the initial balance
+      } else if (direction === 'out') {
+        // For exit trades, add profit to balance
+        runningBalance += profitUsd;
         
         if (runningBalance > peakBalance) {
           peakBalance = runningBalance;
@@ -252,14 +250,14 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
         direction: direction,
         side: side,
         volumeLots: contracts,
-        priceOpen: price, // Now using the properly parsed price
+        priceOpen: price,
         stopLoss: null,
         takeProfit: null,
         timeFlag: openTime,
         state: signal || '',
         comment: signal || '',
         profit: profitUsd,
-        balance: direction === 'out' ? cumulativeProfit : undefined,
+        balance: direction === 'out' ? runningBalance : undefined,
         commission: 0, // TradingView doesn't typically include commission
         swap: 0,       // TradingView doesn't typically include swap
       };
@@ -279,7 +277,7 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
     summary['Loss Trades'] = lossTrades;
     summary['Win Rate'] = `${winRate}%`;
     summary['Total Net Profit'] = totalProfit;
-    summary['Initial Balance'] = initialBalance;
+    summary['Initial Balance'] = startingBalance;
     summary['Final Balance'] = runningBalance;
     summary['Max Drawdown'] = maxDrawdown;
   }
@@ -302,7 +300,7 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
 /**
  * Parses MT5/MT4 Excel file and extracts trades
  */
-export const parseMT5Excel = async (file: File): Promise<ParsedStrategyReport> => {
+export const parseMT5Excel = async (file: File, initialBalance?: number): Promise<ParsedStrategyReport> => {
   // Read the Excel file
   const buffer = await file.arrayBuffer();
   const workbook = read(buffer, { type: 'array' });
@@ -311,7 +309,7 @@ export const parseMT5Excel = async (file: File): Promise<ParsedStrategyReport> =
   const hasTradingViewSheet = workbook.SheetNames.some(name => name === "List of trades");
   if (hasTradingViewSheet) {
     console.log("Detected TradingView export format");
-    return parseTradingViewExcel(file);
+    return parseTradingViewExcel(file, initialBalance);
   }
   
   const worksheet = workbook.Sheets[workbook.SheetNames[0]];

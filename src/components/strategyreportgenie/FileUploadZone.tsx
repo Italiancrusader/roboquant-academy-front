@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { FileType } from '@/types/strategyreportgenie';
 import { toast } from '@/components/ui/use-toast';
 import { parseMT5Excel, validateStrategyFile } from '@/utils/strategyparser';
+import InitialBalanceDialog from './InitialBalanceDialog';
 
 interface FileUploadZoneProps {
   onFilesUploaded: (files: FileType[]) => void;
@@ -21,6 +22,9 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [localProcessing, setLocalProcessing] = useState(false);
+  const [showBalanceDialog, setShowBalanceDialog] = useState(false);
+  const [currentFile, setCurrentFile] = useState<File | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<{file: File, isTradingView: boolean}[]>([]);
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Filter for .xlsx files
@@ -47,6 +51,38 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     }
   });
 
+  const processFile = async (file: File, initialBalance?: number) => {
+    try {
+      onProcessingStep?.(`Parsing file: ${file.name}`);
+      console.log(`Parsing file: ${file.name}`);
+      
+      const parsedData = await parseMT5Excel(file, initialBalance);
+      console.log("Parsed data:", parsedData);
+      
+      // Determine source type based on filename or parsed data
+      let source: 'MT4' | 'MT5' | 'TradingView' = parsedData.source;
+      
+      return {
+        id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        file: file,
+        dateUploaded: new Date(),
+        parsedData,
+        source
+      };
+    } catch (error) {
+      console.error(`Error parsing file ${file.name}:`, error);
+      toast({
+        title: `Error parsing ${file.name}`,
+        description: "The file format appears to be invalid. Please ensure it's a valid report file.",
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return;
     
@@ -60,41 +96,32 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       // Small delay to ensure UI updates before heavy processing begins
       await new Promise(resolve => setTimeout(resolve, 10));
       
-      const processedFiles: FileType[] = [];
+      // Check each file to see if it's a TradingView file
+      const filesToProcess: {file: File, isTradingView: boolean}[] = [];
       
       for (const file of selectedFiles) {
-        try {
-          onProcessingStep?.(`Parsing file: ${file.name}`);
-          console.log(`Parsing file: ${file.name}`);
-          
-          const parsedData = await parseMT5Excel(file);
-          console.log("Parsed data:", parsedData);
-          
-          // Determine source type based on filename or parsed data
-          let source: 'MT4' | 'MT5' | 'TradingView' = parsedData.source;
-          
-          processedFiles.push({
-            id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            file: file,
-            dateUploaded: new Date(),
-            parsedData,
-            source
-          });
-        } catch (error) {
-          console.error(`Error parsing file ${file.name}:`, error);
-          toast({
-            title: `Error parsing ${file.name}`,
-            description: "The file format appears to be invalid. Please ensure it's a valid report file.",
-            variant: "destructive"
-          });
+        // Quick check of filename to determine if it might be a TradingView file
+        const isTradingView = file.name.toLowerCase().includes('tradingview') || 
+                             file.name.toLowerCase().includes('tv');
+        
+        filesToProcess.push({ file, isTradingView });
+      }
+      
+      // If there are any TradingView files, handle them specially
+      if (filesToProcess.some(f => f.isTradingView)) {
+        setPendingFiles(filesToProcess);
+        const tradingViewFile = filesToProcess.find(f => f.isTradingView);
+        if (tradingViewFile) {
+          setCurrentFile(tradingViewFile.file);
+          setShowBalanceDialog(true);
+          return;
         }
       }
-
+      
+      // If no TradingView files, process normally
+      const processedFiles = await processFilesBatch(filesToProcess);
+      
       if (processedFiles.length > 0) {
-        console.log("Files processed successfully:", processedFiles);
         onFilesUploaded(processedFiles);
         setSelectedFiles([]);
       } else {
@@ -114,6 +141,62 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     } finally {
       setLocalProcessing(false);
     }
+  };
+  
+  const handleBalanceConfirm = async (initialBalance: number) => {
+    setShowBalanceDialog(false);
+    
+    try {
+      setLocalProcessing(true);
+      const processedFiles = await processFilesBatch(pendingFiles, initialBalance);
+      
+      if (processedFiles.length > 0) {
+        onFilesUploaded(processedFiles);
+        setSelectedFiles([]);
+      }
+    } catch (error) {
+      console.error('Error processing files after balance input:', error);
+      toast({
+        title: "Processing failed",
+        description: "There was an error processing the files. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setPendingFiles([]);
+      setCurrentFile(null);
+      setLocalProcessing(false);
+    }
+  };
+  
+  const handleBalanceCancel = () => {
+    setShowBalanceDialog(false);
+    setPendingFiles([]);
+    setCurrentFile(null);
+    setLocalProcessing(false);
+    
+    toast({
+      title: "Upload canceled",
+      description: "TradingView file upload was canceled.",
+      variant: "default"
+    });
+  };
+  
+  const processFilesBatch = async (
+    files: {file: File, isTradingView: boolean}[], 
+    initialBalance?: number
+  ) => {
+    const processedFiles: FileType[] = [];
+    
+    for (const { file, isTradingView } of files) {
+      // Only pass initialBalance to TradingView files
+      const fileBalance = isTradingView ? initialBalance : undefined;
+      const processed = await processFile(file, fileBalance);
+      if (processed) {
+        processedFiles.push(processed);
+      }
+    }
+    
+    return processedFiles;
   };
 
   return (
@@ -206,6 +289,16 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
           </div>
         </div>
       </div>
+      
+      {/* Initial Balance Dialog for TradingView files */}
+      {currentFile && (
+        <InitialBalanceDialog
+          open={showBalanceDialog}
+          onClose={handleBalanceCancel}
+          onConfirm={handleBalanceConfirm}
+          fileName={currentFile.name}
+        />
+      )}
     </div>
   );
 };
