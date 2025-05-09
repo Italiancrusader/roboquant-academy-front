@@ -1,3 +1,4 @@
+
 import { read, utils, write } from 'xlsx';
 import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/strategyreportgenie';
 
@@ -88,9 +89,37 @@ const parseMT5Date = (dateStr: string): Date => {
  */
 const cleanNumeric = (value: string): number => {
   if (!value) return 0;
-  // Remove spaces and replace commas with dots
-  const cleaned = value.replace(/\s+/g, '').replace(',', '.');
-  return Number(cleaned);
+  // Remove spaces and replace commas with dots for decimal parsing
+  // This handles European format (1.234,56) as well as US format (1,234.56)
+  const cleaned = String(value).replace(/\s+/g, '');
+  
+  // Check if the value contains both commas and dots
+  if (cleaned.includes(',') && cleaned.includes('.')) {
+    // Determine which is the decimal separator based on position
+    const lastCommaPos = cleaned.lastIndexOf(',');
+    const lastDotPos = cleaned.lastIndexOf('.');
+    
+    if (lastCommaPos > lastDotPos) {
+      // European format: 1.234,56 -> comma is decimal separator
+      return parseFloat(cleaned.replace(/\./g, '').replace(',', '.'));
+    } else {
+      // US format: 1,234.56 -> dot is decimal separator
+      return parseFloat(cleaned.replace(/,/g, ''));
+    }
+  } else if (cleaned.includes(',')) {
+    // Check if comma is a decimal separator or thousands separator
+    const parts = cleaned.split(',');
+    if (parts[parts.length - 1].length <= 2) {
+      // Likely a decimal separator: 1234,56
+      return parseFloat(cleaned.replace(',', '.'));
+    } else {
+      // Likely a thousands separator: 1,234
+      return parseFloat(cleaned.replace(/,/g, ''));
+    }
+  }
+  
+  // Default case - just try to parse it
+  return parseFloat(cleaned);
 };
 
 /**
@@ -144,12 +173,16 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
       const type = typeIndex >= 0 ? row[typeIndex] : '';
       const signal = signalIndex >= 0 ? row[signalIndex] : '';
       const dateTimeStr = dateTimeIndex >= 0 ? row[dateTimeIndex] : '';
-      const price = priceIndex >= 0 ? cleanNumeric(String(row[priceIndex])) : 0;
+      const priceStr = priceIndex >= 0 ? String(row[priceIndex]) : '0';
       const contracts = contractsIndex >= 0 ? cleanNumeric(String(row[contractsIndex])) : 0;
       const profitUsd = profitUsdIndex >= 0 ? cleanNumeric(String(row[profitUsdIndex])) : 0;
       const cumulativeProfit = cumulativeProfitUsdIndex >= 0 ? cleanNumeric(String(row[cumulativeProfitUsdIndex])) : 0;
       
-      // Parse date/time - FIXED: properly handle TradingView date format (YYYY-MM-DD HH:MM)
+      // Parse price, ensuring it properly handles commas
+      const price = cleanNumeric(priceStr);
+      console.log(`Parsed price from '${priceStr}' to ${price}`);
+      
+      // Parse date/time - using the time spacing logic for consistent time progression
       let openTime: Date;
       try {
         // Generate slightly different timestamps for each trade to prevent them all having the same time
@@ -167,10 +200,6 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
         openTime = new Date(baseDate);
         openTime.setHours(openTime.getHours() + hoursToAdd);
         openTime.setMinutes(openTime.getMinutes() + minutesToAdd);
-        
-        // Log the generated time for debugging
-        console.log(`Generated time for trade ${i}: ${openTime.toISOString()}`);
-        
       } catch (e) {
         console.error("Error creating trade timestamp:", e);
         openTime = new Date(); // Use current date as fallback
@@ -223,7 +252,7 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
         direction: direction,
         side: side,
         volumeLots: contracts,
-        priceOpen: price,
+        priceOpen: price, // Now using the properly parsed price
         stopLoss: null,
         takeProfit: null,
         timeFlag: openTime,

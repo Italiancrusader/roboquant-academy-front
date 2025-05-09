@@ -50,6 +50,11 @@ const CsvViewer: React.FC<CsvViewerProps> = ({ csvUrl, fileName, parsedData }) =
     // Check if this is the Time column (usually column D, which is index 3)
     const isTimeColumn = headers[columnIndex]?.toLowerCase() === 'time' || columnIndex === 0;
     
+    // Check if this is the Price column
+    const isPriceColumn = 
+      headers[columnIndex]?.toLowerCase().includes('price') || 
+      columnIndex === 6; // Price is usually column E or index 6 in the CSV
+    
     if (isTimeColumn && content) {
       try {
         // Check if it's already in the correct format MM/DD/YYYY HH:MM:SS
@@ -72,6 +77,23 @@ const CsvViewer: React.FC<CsvViewerProps> = ({ csvUrl, fileName, parsedData }) =
         }
       } catch (e) {
         console.error('Error formatting date:', e);
+      }
+    } else if (isPriceColumn && content) {
+      // Format price numbers by removing commas and parsing as float
+      try {
+        // Remove any commas and spaces
+        const cleanedValue = content.replace(/,/g, '').trim();
+        const numberValue = parseFloat(cleanedValue);
+        
+        if (!isNaN(numberValue)) {
+          // Return formatted number with commas for thousands
+          return numberValue.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        }
+      } catch (e) {
+        console.error('Error formatting price:', e);
       }
     }
     
