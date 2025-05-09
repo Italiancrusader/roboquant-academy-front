@@ -97,11 +97,11 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
   // Define chart configuration
   const chartConfig: ChartConfig = {
     profit: {
-      label: "",  // Removed the label completely
+      label: "",  // Empty label
       color: "#9b87f5" // Purple color for bars
     },
     loss: {
-      label: "",  // Removed the label completely
+      label: "",  // Empty label
       color: "#ea384c" // Red color for negative bars
     }
   };
@@ -201,8 +201,21 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 }}
                 wrapperStyle={{ zIndex: 100 }}
               />
+              {/* Custom Legend that doesn't show the profit legend item */}
               <Legend 
                 wrapperStyle={{ bottom: -10, paddingTop: 30 }} // Adjusted legend positioning
+                content={() => (
+                  <div className="flex justify-center items-center mt-2">
+                    <div className="flex items-center gap-2 mr-4">
+                      <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#9b87f5", opacity: 0.85 }}></div>
+                      <span className="text-xs text-muted-foreground">Profit</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#ea384c", opacity: 0.85 }}></div>
+                      <span className="text-xs text-muted-foreground">Loss</span>
+                    </div>
+                  </div>
+                )}
               />
               <Bar
                 dataKey="profit"
