@@ -346,7 +346,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       const row = rows[i];
       if (!row || row.length === 0) continue;
       
-      console.log(`Processing row ${i}:`, row);
+      console.log(`Processing row ${i}:`, row);\
       
       // Get values from the row with safer fallbacks
       const getRowValue = (index: number): string => {
@@ -802,4 +802,4 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
           side = row[3] as 'buy' | 'sell';
           state = row[4] || ''; // Usually 'in'
         } else {
-          state = row[4] || ''; // Usually 'out'
+          state = row[4] || ''; // Usually
