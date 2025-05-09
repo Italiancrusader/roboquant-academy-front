@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   ResponsiveContainer,
@@ -81,6 +82,12 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     if (chartData.length <= 10) return 0; // Show all ticks for small datasets
     if (chartData.length <= 30) return Math.floor(chartData.length / 10);
     return 'preserveStartEnd'; // For large datasets, only show start and end
+  };
+
+  // Function to get a unique identifier for a date that can be used as the x value
+  const getDateKey = (date: Date): string => {
+    if (!(date instanceof Date)) return '';
+    return date.toISOString();
   };
 
   return (
@@ -197,9 +204,9 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 strokeWidth={2}
                 isAnimationActive={false}
               />
-              {/* Using index for reference dots instead of dates */}
+              {/* Fix: Convert Date to string for reference dots */}
               <ReferenceDot
-                x={chartData[0].date}
+                x={getDateKey(firstPoint.date)}
                 y={firstPoint.equity}
                 yAxisId="left"
                 r={6}
@@ -208,7 +215,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 strokeWidth={2}
               />
               <ReferenceDot
-                x={chartData[chartData.length - 1].date}
+                x={getDateKey(lastPoint.date)}
                 y={lastPoint.equity}
                 yAxisId="left"
                 r={6}
