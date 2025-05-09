@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   ResponsiveContainer,
@@ -202,14 +203,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
               />
               {/* Custom Legend that doesn't show the profit legend item */}
               <Legend 
-                wrapperStyle={{ 
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  paddingTop: 5, // Reduced padding
-                  marginTop: 0, // Closer to axis
-                  position: 'relative'
-                }} 
+                wrapperStyle={{ bottom: -10, paddingTop: 30 }} // Adjusted legend positioning
                 content={() => (
                   <div className="flex justify-center items-center mt-2">
                     <div className="flex items-center gap-2 mr-4">
