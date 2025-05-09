@@ -15,12 +15,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartConfig } from '@/components/ui/chart';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import { CalendarArrowUp, Calendar } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MonthlyReturnsProps {
   trades: StrategyTrade[];
 }
 
 const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
+  const isMobile = useIsMobile();
+  
   // Filter to trades with valid dates
   const validTrades = React.useMemo(() => {
     return trades.filter(trade => 
@@ -30,11 +33,6 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
       trade.direction === 'out'
     );
   }, [trades]);
-  
-  console.log("Valid trades for monthly returns:", validTrades.length);
-  if (validTrades.length > 0) {
-    console.log("First valid trade date:", validTrades[0].openTime);
-  }
   
   // Generate monthly returns data
   const monthlyData = React.useMemo(() => {
@@ -69,7 +67,6 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
     const monthlyArray = Array.from(monthlyMap.values());
     monthlyArray.sort((a, b) => a.sortKey - b.sortKey);
     
-    console.log("Monthly data generated:", monthlyArray);
     return monthlyArray;
   }, [validTrades]);
   
@@ -88,7 +85,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
   
   if (monthlyData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64 bg-muted/30 rounded-lg">
         <p className="text-muted-foreground">No monthly data available</p>
       </div>
     );
@@ -97,12 +94,12 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
   // Define chart configuration
   const chartConfig: ChartConfig = {
     profit: {
-      label: "",  // Empty label
-      color: "#9b87f5" // Purple color for bars
+      label: "",
+      color: "#9b87f5"
     },
     loss: {
-      label: "",  // Empty label
-      color: "#ea384c" // Red color for negative bars
+      label: "",
+      color: "#ea384c"
     }
   };
 
@@ -125,25 +122,28 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
         </div>
       </div>
       
-      <div className="h-[450px] w-full">
+      <div className="h-[350px] md:h-[450px] w-full">
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
-              margin={{ top: 20, right: 20, left: 0, bottom: 70 }}
+              margin={isMobile ? 
+                { top: 20, right: 10, left: 0, bottom: 60 } : 
+                { top: 20, right: 20, left: 0, bottom: 70 }
+              }
               barGap={0}
-              maxBarSize={50}
+              maxBarSize={isMobile ? 30 : 50}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} opacity={0.5} />
               <XAxis 
                 dataKey="month"
                 stroke="hsl(var(--muted-foreground))"
                 height={60}
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: isMobile ? 10 : 12 }}
                 tickMargin={15}
                 angle={-45}
                 textAnchor="end"
-                interval={0} // Show all month labels
+                interval={isMobile ? 'preserveStartEnd' : 0}
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
@@ -154,6 +154,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 tickLine={{ stroke: 'hsl(var(--border))' }}
                 domain={['auto', 'auto']}
                 padding={{ top: 20, bottom: 20 }}
+                tick={{ fontSize: isMobile ? 10 : 12 }}
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -193,8 +194,8 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                   return null;
                 }}
                 wrapperStyle={{ zIndex: 100 }}
+                cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
               />
-              {/* Legend positioned under chart */}
               <Legend 
                 verticalAlign="bottom"
                 height={36}
@@ -221,7 +222,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                   <Cell 
                     key={`cell-${index}`}
                     fill={entry.profit >= 0 ? '#9b87f5' : '#ea384c'} // Purple for profit, Red for loss
-                    fillOpacity={0.85} // Added opacity for a nicer look
+                    fillOpacity={0.85}
                   />
                 ))}
               </Bar>
