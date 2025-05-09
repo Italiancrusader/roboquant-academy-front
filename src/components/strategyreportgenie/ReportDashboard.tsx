@@ -276,19 +276,19 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
           </TabsContent>
           
           <TabsContent value="distribution" className="my-2">
-            <Card className="p-6">
+            <Card className="p-6 overflow-visible">
               <TradeDistribution trades={trades} />
             </Card>
           </TabsContent>
           
           <TabsContent value="correlation" className="my-2">
-            <Card className="p-6">
+            <Card className="p-6 overflow-visible">
               <CorrelationAnalysis trades={trades} />
             </Card>
           </TabsContent>
           
           <TabsContent value="calendar" className="my-2">
-            <Card className="p-6">
+            <Card className="p-6 overflow-visible">
               <PerformanceHeatmap trades={trades} />
             </Card>
           </TabsContent>

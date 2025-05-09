@@ -139,25 +139,34 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
     );
   }
 
+  // Calculate appropriate margin based on data length
+  const calculateMargin = (dataLength: number) => {
+    const baseMargin = { top: 20, right: 30, left: 30, bottom: 40 };
+    if (dataLength > 15) {
+      return { ...baseMargin, bottom: 60 }; // More space for x-axis labels
+    }
+    return baseMargin;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Trade Distribution</h2>
       </div>
 
-      <Card>
+      <Card className="overflow-visible">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Hourly Distribution
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[400px]">
+          <div className="h-[350px] min-h-[300px] max-h-[450px]">
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={hourlyWinRateData}
-                  margin={{ top: 20, right: 30, left: 30, bottom: 40 }}
+                  margin={calculateMargin(hourlyWinRateData.length)}
                   barGap={0}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -173,6 +182,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                       offset: -15,
                       fill: 'hsl(var(--muted-foreground))'
                     }}
+                    interval={hourlyWinRateData.length > 12 ? 'preserveStartEnd' : 0}
                   />
                   <YAxis
                     stroke="hsl(var(--muted-foreground))"
@@ -189,6 +199,8 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                       position: 'insideLeft',
                       style: { fill: 'hsl(var(--muted-foreground))' }
                     }}
+                    domain={[0, 'dataMax']}
+                    padding={{ top: 20, bottom: 0 }}
                   />
                   <Tooltip
                     content={({ active, payload }) => {
@@ -237,6 +249,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                     fill="hsl(var(--primary))"
                     fillOpacity={0}
                     stroke="none"
+                    barSize={hourlyWinRateData.length > 12 ? 15 : 25} // Adjust bar size based on data length
                   >
                     {hourlyWinRateData.map((entry, index) => (
                       <Cell
@@ -252,19 +265,19 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="overflow-visible">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Weekday Distribution
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[400px]">
+          <div className="h-[350px] min-h-[300px] max-h-[450px]">
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={weekdayWinRateData}
-                  margin={{ top: 20, right: 30, left: 30, bottom: 40 }}
+                  margin={calculateMargin(weekdayWinRateData.length)}
                   barGap={0}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -296,6 +309,8 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                       position: 'insideLeft',
                       style: { fill: 'hsl(var(--muted-foreground))' }
                     }}
+                    domain={[0, 'dataMax']}
+                    padding={{ top: 20, bottom: 0 }}
                   />
                   <Tooltip
                     content={({ active, payload }) => {
@@ -344,6 +359,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                     fill="hsl(var(--primary))"
                     fillOpacity={0}
                     stroke="none"
+                    barSize={25}
                   >
                     {weekdayWinRateData.map((entry, index) => (
                       <Cell
