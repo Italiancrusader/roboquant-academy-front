@@ -1,3 +1,4 @@
+
 import { read, utils, write } from 'xlsx';
 import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/strategyreportgenie';
 
@@ -346,7 +347,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       const row = rows[i];
       if (!row || row.length === 0) continue;
       
-      console.log(`Processing row ${i}:`, row);\
+      console.log(`Processing row ${i}:`, row);
       
       // Get values from the row with safer fallbacks
       const getRowValue = (index: number): string => {
@@ -802,4 +803,34 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
           side = row[3] as 'buy' | 'sell';
           state = row[4] || ''; // Usually 'in'
         } else {
-          state = row[4] || ''; // Usually
+          state = row[4] || ''; // Usually 'out'
+        }
+        
+        // More code would follow here...
+      }
+    }
+  }
+  
+  // Generate CSV from processed data
+  const csvContent = generateCSV(trades);
+  
+  // Create a Blob and downloadable URL for the CSV
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const csvUrl = URL.createObjectURL(blob);
+  
+  return { 
+    summary, 
+    trades,
+    csvUrl,
+    source: 'MT5'
+  };
+};
+
+/**
+ * Basic validation for strategy files
+ */
+export const validateStrategyFile = (file: File): boolean => {
+  const validExtensions = ['.xlsx'];
+  const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+  return validExtensions.includes(fileExtension);
+};
