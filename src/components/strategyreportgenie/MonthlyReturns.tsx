@@ -130,30 +130,31 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
-              margin={{ top: 20, right: 40, left: 40, bottom: 80 }} // Increased bottom margin
+              margin={{ top: 20, right: 40, left: 40, bottom: 50 }} // Adjusted bottom margin
               barGap={0}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="month"
                 stroke="hsl(var(--muted-foreground))"
-                height={70}
+                height={50}
                 tick={{ fontSize: 12 }}
-                tickMargin={25}
+                tickMargin={10}
+                interval={0} // Ensure all ticks are displayed
                 label={{ 
-                  value: 'Month', 
+                  value: 'Date', 
                   position: 'insideBottom', 
-                  offset: -20, // Further adjusted to prevent any overlap
+                  offset: -10, // Positioned closer to axis
                   fill: 'hsl(var(--muted-foreground))' 
                 }}
-                interval={monthlyData.length > 12 ? 'preserveStartEnd' : 0}
+                allowDataOverflow={false} // Prevent data overflow
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
                 width={80}
                 tickFormatter={(value) => `$${value.toLocaleString()}`}
                 label={{ 
-                  value: 'Profit/Loss ($)', 
+                  value: 'Equity ($)', 
                   angle: -90, 
                   position: 'insideLeft',
                   style: { fill: 'hsl(var(--muted-foreground))' }
