@@ -3,12 +3,13 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { TicketStatus } from './types';
 
 interface TicketFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  statusFilter: string | null;
-  onStatusChange: (status: string | null) => void;
+  statusFilter: TicketStatus | null;
+  onStatusChange: (status: TicketStatus | null) => void;
 }
 
 const TicketFilters = ({
