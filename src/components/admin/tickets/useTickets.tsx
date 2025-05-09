@@ -61,8 +61,10 @@ export const useTickets = () => {
             .eq('is_admin', false)
             .is('read_at', null);
           
-          // Get profile from map or set to null if not found
-          const userProfile = ticket.user_id ? (profilesMap[ticket.user_id] || null) : null;
+          // Get profile from map if user_id exists, otherwise null
+          const userProfile = ticket.user_id && profilesMap[ticket.user_id] 
+            ? profilesMap[ticket.user_id] 
+            : null;
           
           return {
             ...ticket,
@@ -140,15 +142,18 @@ export const useTickets = () => {
           return true;
         }
         
-        // Check if ticket has a profile before trying to access its properties
+        // If no profile, we can only search by subject (which we already did)
         if (!ticket.profile) {
           return false;
         }
         
+        // Using type guard to ensure TypeScript knows profile is not null here
+        const profile = ticket.profile;
+        
         // Now we can safely access profile properties
-        const email = ticket.profile.email || '';
-        const firstName = ticket.profile.first_name || '';
-        const lastName = ticket.profile.last_name || '';
+        const email = profile.email || '';
+        const firstName = profile.first_name || '';
+        const lastName = profile.last_name || '';
         
         // Check these strings for matches
         return email.toLowerCase().includes(term) || 
