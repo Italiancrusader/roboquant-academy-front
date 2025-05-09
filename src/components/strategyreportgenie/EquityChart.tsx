@@ -29,17 +29,22 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     
     if (tradesWithBalance.length === 0) return [];
     
-    console.log("First few trades for chart data:", tradesWithBalance.slice(0, 3));
+    console.log("First few trades for chart data:", tradesWithBalance.slice(0, 3).map(t => ({
+      openTime: t.openTime instanceof Date ? t.openTime.toISOString() : 'Invalid Date',
+      balance: t.balance
+    })));
     
     // Keep only relevant fields for chart
     const chartPoints = tradesWithBalance.map((trade) => {
-      // Ensure trade.openTime is a valid Date object
-      const openTime = trade.openTime instanceof Date && !isNaN(trade.openTime.getTime()) 
-        ? trade.openTime
-        : new Date();
+      // Validate that trade.openTime is a proper Date object
+      const validDate = trade.openTime instanceof Date && !isNaN(trade.openTime.getTime());
+      
+      if (!validDate) {
+        console.error("Invalid date found in trade:", trade);
+      }
       
       return {
-        date: openTime,
+        date: validDate ? trade.openTime : new Date(),
         equity: trade.balance || 0
       };
     });

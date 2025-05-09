@@ -1,4 +1,3 @@
-
 import { read, utils, write } from 'xlsx';
 import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/strategyreportgenie';
 
@@ -75,6 +74,28 @@ const parseDate = (dateStr: string): Date => {
     
     // Remove any extra spaces that might be present
     dateStr = dateStr.trim();
+    
+    // Handle TradingView specific format: "YYYY-MM-DD HH:MM"
+    const tvFormatRegex = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/;
+    const tvMatch = dateStr.match(tvFormatRegex);
+    
+    if (tvMatch) {
+      const [, yearStr, monthStr, dayStr, hoursStr, minutesStr] = tvMatch;
+      
+      const year = parseInt(yearStr, 10);
+      const month = parseInt(monthStr, 10) - 1; // Month is 0-indexed in JS
+      const day = parseInt(dayStr, 10);
+      const hours = parseInt(hoursStr, 10);
+      const minutes = parseInt(minutesStr, 10);
+      
+      console.log(`TradingView format matched: ${year}-${month+1}-${day} ${hours}:${minutes}`);
+      
+      // Create date directly with the parsed components
+      const parsedDate = new Date(year, month, day, hours, minutes, 0);
+      
+      console.log(`Successfully parsed TradingView date: ${parsedDate.toISOString()}, Original: ${dateStr}`);
+      return parsedDate;
+    }
     
     // Handle different date formats:
     
@@ -378,19 +399,29 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       let openTime: Date;
       try {
         if (dateTimeStr) {
-          openTime = parseDate(dateTimeStr);
-          console.log(`Parsed date "${dateTimeStr}" -> ${openTime}`);
+          // Try to directly parse YYYY-MM-DD HH:MM format for TradingView files
+          const tvFormatMatch = dateTimeStr.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
+          
+          if (tvFormatMatch) {
+            const [, yearStr, monthStr, dayStr, hoursStr, minutesStr] = tvFormatMatch;
+            
+            const year = parseInt(yearStr, 10);
+            const month = parseInt(monthStr, 10) - 1; // Month is 0-indexed in JS
+            const day = parseInt(dayStr, 10);
+            const hours = parseInt(hoursStr, 10);
+            const minutes = parseInt(minutesStr, 10);
+            
+            openTime = new Date(year, month, day, hours, minutes, 0);
+            console.log(`Directly parsed TV date format: "${dateTimeStr}" -> ${openTime.toISOString()}`);
+          } else {
+            // Fall back to standard parser
+            openTime = parseDate(dateTimeStr);
+            console.log(`Standard parse date: "${dateTimeStr}" -> ${openTime.toISOString()}`);
+          }
         } else {
           console.warn(`Missing date/time for row ${i}, generating placeholder`);
           // Generate slightly different timestamps for each trade if no date is provided
-          const baseDate = new Date();
-          baseDate.setDate(1);
-          const hoursToAdd = (i - headerRowIndex) * 2;
-          const minutesToAdd = (i - headerRowIndex) * 15; // 15 minute intervals
-          
-          openTime = new Date(baseDate);
-          openTime.setHours(openTime.getHours() + hoursToAdd);
-          openTime.setMinutes(openTime.getMinutes() + minutesToAdd);
+          openTime = new Date(); // Use current date as fallback
         }
       } catch (e) {
         console.error(`Error creating trade timestamp for "${dateTimeStr}":`, e);
@@ -439,7 +470,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
         openTime,
         order: Number(tradeNum) || i,
         dealId: `TV-${tradeNum || i}`,
-        symbol: '', // TradingView export might not include symbol
+        symbol: '', 
         type: type,
         direction: direction,
         side: side,
@@ -452,12 +483,12 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
         comment: signal || '',
         profit: profitUsd,
         balance: direction === 'out' ? runningBalance : undefined,
-        commission: 0, // TradingView doesn't typically include commission
-        swap: 0,       // TradingView doesn't typically include swap
+        commission: 0,
+        swap: 0,
       };
       
       trades.push(trade);
-      console.log(`Added trade with timestamp ${trade.openTime}`);
+      console.log(`Added trade with timestamp ${trade.openTime.toISOString()}`);
     }
     
     // Update summary
@@ -772,100 +803,3 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
           state = row[4] || ''; // Usually 'in'
         } else {
           state = row[4] || ''; // Usually 'out'
-        }
-
-        // Parse trade data
-        const trade: StrategyTrade = {
-          openTime,
-          order: Number(dealId) || 0,
-          dealId: dealId, // Store the original deal ID string
-          symbol: String(row[2]),
-          side,
-          volumeLots: Number(String(row[5]).replace(',', '.')),
-          priceOpen: Number(String(row[6]).replace(',', '.')),
-          stopLoss: null,
-          takeProfit: null,
-          timeFlag: openTime,
-          state,
-          comment: String(row[12] || ''),
-        };
-
-        // Parse stop loss and take profit from comment if available
-        const comment = trade.comment;
-        if (comment) {
-          const slMatch = comment.match(/sl (\d+\.?\d*)/i);
-          const tpMatch = comment.match(/tp (\d+\.?\d*)/i);
-          
-          if (slMatch) {
-            trade.stopLoss = Number(slMatch[1]);
-          }
-          if (tpMatch) {
-            trade.takeProfit = Number(tpMatch[1]);
-          }
-        }
-
-        // Add profit and balance if present
-        const profitIndex = row.length > 10 ? 10 : 9;
-        const balanceIndex = row.length > 11 ? 11 : 10;
-        
-        const profit = Number(String(row[profitIndex]).replace(',', '.'));
-        const balance = Number(String(row[balanceIndex]).replace(',', '.'));
-        
-        if (!isNaN(profit)) {
-          trade.profit = profit;
-        }
-        if (!isNaN(balance)) {
-          trade.balance = balance;
-        }
-
-        trades.push(trade);
-      }
-    }
-  }
-  
-  // Calculate trade statistics
-  const inTrades = trades.filter(t => t.direction === 'in');
-  const outTrades = trades.filter(t => t.direction === 'out');
-  const completeTrades = Math.min(inTrades.length, outTrades.length);
-  const profitableTrades = trades.filter(t => t.profit !== undefined && t.profit > 0);
-  const lossTrades = trades.filter(t => t.profit !== undefined && t.profit < 0);
-  
-  // Update summary
-  summary['Total Deals'] = trades.length;
-  summary['In Deals'] = inTrades.length;
-  summary['Out Deals'] = outTrades.length;
-  summary['Complete Trades'] = completeTrades;
-  summary['Profitable Deals'] = profitableTrades.length;
-  summary['Loss Deals'] = lossTrades.length;
-  summary['Win Rate'] = outTrades.length > 0 
-    ? (profitableTrades.length / outTrades.length * 100).toFixed(2) + '%'
-    : '0.00%';
-  
-  const totalProfit = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
-  summary['Total Net Profit'] = totalProfit;
-  
-  // Find the last balance value
-  const lastTrade = trades[trades.length - 1];
-  const finalBalance = lastTrade ? lastTrade.balance : summary['Initial Balance'];
-  summary['Final Balance'] = finalBalance;
-
-  // Generate CSV from processed data
-  const csvContent = generateCSV(trades);
-  
-  // Create a Blob and downloadable URL for the CSV
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const csvUrl = URL.createObjectURL(blob);
-  
-  console.log('MT5 parsing complete, generated CSV');
-
-  return { 
-    summary, 
-    trades,
-    csvUrl,
-    source: file.name.toLowerCase().includes('mt4') ? 'MT4' : 'MT5'
-  };
-};
-
-export const validateStrategyFile = (file: File): boolean => {
-  return file.name.endsWith('.xlsx');
-};
