@@ -41,17 +41,19 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
   // Calculate min and max equity values
   const minEquity = React.useMemo(() => {
     if (chartData.length === 0) return 0;
-    return Math.min(...chartData.map(d => d.equity));
+    // Use Math.floor to ensure we get a bit lower than the actual minimum
+    return Math.floor(Math.min(...chartData.map(d => d.equity)) * 0.95);
   }, [chartData]);
   
   const maxEquity = React.useMemo(() => {
     if (chartData.length === 0) return 0;
-    return Math.max(...chartData.map(d => d.equity));
+    // Use Math.ceil to ensure we get a bit higher than the actual maximum
+    return Math.ceil(Math.max(...chartData.map(d => d.equity)) * 1.05);
   }, [chartData]);
   
-  // Calculate padding to ensure all points are visible (10% padding)
+  // Calculate padding to ensure all points are visible (15% padding instead of 10%)
   const equityPadding = React.useMemo(() => {
-    return (maxEquity - minEquity) * 0.1;
+    return (maxEquity - minEquity) * 0.15;
   }, [minEquity, maxEquity]);
   
   const yAxisMin = Math.max(0, minEquity - equityPadding);
@@ -65,8 +67,15 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     );
   }
 
-  // Get first point for initial marker
+  // Get first and last point for markers
   const firstPoint = chartData[0];
+  const lastPoint = chartData[chartData.length - 1];
+
+  // Format date for display in the chart
+  const formatDate = (date: Date) => {
+    if (!(date instanceof Date)) return '';
+    return `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear().toString().substring(2)}`;
+  };
 
   return (
     <div className="space-y-4">
@@ -76,11 +85,11 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
           <div className="text-sm text-muted-foreground">
             Initial: ${firstPoint.equity.toLocaleString()}
             <span className="mx-2">•</span>
-            Final: ${chartData[chartData.length - 1].equity.toLocaleString()}
+            Final: ${lastPoint.equity.toLocaleString()}
           </div>
         )}
       </div>
-      <div className="h-[350px] w-full">
+      <div className="h-[400px] w-full"> {/* Increased height for better visibility */}
         <ChartContainer config={{
           equity: { color: "hsl(var(--primary))" }
         }}>
@@ -88,10 +97,10 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
             <ComposedChart
               data={chartData}
               margin={{
-                top: 10,
+                top: 20,
                 right: 30,
-                left: 20,
-                bottom: 30,
+                left: 25,
+                bottom: 40,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -100,29 +109,34 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 stroke="hsl(var(--muted-foreground))"
                 tickFormatter={(date) => {
                   if (!(date instanceof Date)) return '';
-                  return `${date.getMonth()+1}/${date.getDate()}`;
+                  return formatDate(date);
                 }}
-                height={50}
+                height={60}
                 tick={{ fontSize: 12 }}
-                tickMargin={10}
+                tickMargin={15}
                 label={{ 
                   value: 'Date', 
                   position: 'insideBottom', 
-                  offset: -15,
+                  offset: -20,
                   fill: 'hsl(var(--muted-foreground))' 
                 }}
+                interval="preserveStartEnd"
+                padding={{ left: 10, right: 10 }}
               />
               <YAxis 
                 yAxisId="left" 
                 stroke="hsl(var(--muted-foreground))" 
                 domain={[yAxisMin, yAxisMax]}
                 label={{ 
-                  value: 'Balance', 
+                  value: 'Balance ($)', 
                   angle: -90, 
                   position: 'insideLeft',
+                  offset: -5,
                   style: { fill: 'hsl(var(--muted-foreground))' }
                 }}
-                tickFormatter={value => `$${value}`}
+                tickFormatter={value => `$${value.toLocaleString()}`}
+                width={80}
+                tickMargin={8}
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -130,7 +144,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                     const data = payload[0].payload;
                     return (
                       <div className="rounded-lg border bg-background p-3 shadow-lg">
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                           <div className="flex flex-col">
                             <span className="text-[0.70rem] uppercase text-muted-foreground">
                               Date
@@ -160,6 +174,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
 
                   return null;
                 }}
+                wrapperStyle={{ zIndex: 1000 }}
               />
               <Legend 
                 iconType="circle" 
@@ -176,13 +191,23 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 strokeWidth={2}
                 isAnimationActive={false}
               />
-              {/* Marker for first point - Fixed to use index instead of Date object */}
+              {/* Marker for first point */}
               <ReferenceDot
                 x={0}  // Use the index (0) instead of the Date object
                 y={firstPoint.equity}
                 yAxisId="left"
                 r={6}
                 fill="hsl(var(--primary))"
+                stroke="hsl(var(--background))"
+                strokeWidth={2}
+              />
+              {/* Marker for last point */}
+              <ReferenceDot
+                x={chartData.length - 1}  // Last index
+                y={lastPoint.equity}
+                yAxisId="left"
+                r={6}
+                fill="hsl(var(--success))"
                 stroke="hsl(var(--background))"
                 strokeWidth={2}
               />

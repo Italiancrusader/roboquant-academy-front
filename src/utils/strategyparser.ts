@@ -148,14 +148,43 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
       const profitUsd = profitUsdIndex >= 0 ? cleanNumeric(String(row[profitUsdIndex])) : 0;
       const cumulativeProfit = cumulativeProfitUsdIndex >= 0 ? cleanNumeric(String(row[cumulativeProfitUsdIndex])) : 0;
       
-      // Parse date/time
+      // Parse date/time - Fix for TradingView format (YYYY-MM-DD HH:MM)
       let openTime: Date;
       try {
-        // TradingView date format is typically YYYY-MM-DD HH:MM
-        openTime = new Date(dateTimeStr);
+        if (typeof dateTimeStr === 'string') {
+          // Handle different date formats
+          if (dateTimeStr.includes('-')) {
+            // Format: YYYY-MM-DD HH:MM
+            const [datePart, timePart] = dateTimeStr.split(' ');
+            const [year, month, day] = datePart.split('-');
+            const [hour, minute] = timePart ? timePart.split(':') : ['0', '0'];
+            
+            openTime = new Date(
+              Number(year),
+              Number(month) - 1,  // month is 0-indexed
+              Number(day),
+              Number(hour),
+              Number(minute)
+            );
+          } else {
+            // Fallback to default parsing
+            openTime = new Date(dateTimeStr);
+          }
+          
+          // Check if the date is valid
+          if (isNaN(openTime.getTime())) {
+            console.error("Invalid date format:", dateTimeStr);
+            openTime = new Date(); // Use current date as fallback
+          }
+        } else if (dateTimeStr instanceof Date) {
+          openTime = dateTimeStr;
+        } else {
+          console.error("Unknown date format:", dateTimeStr);
+          openTime = new Date(); // Use current date as fallback
+        }
       } catch (e) {
-        console.error("Error parsing date:", e);
-        openTime = new Date();
+        console.error("Error parsing date:", e, dateTimeStr);
+        openTime = new Date(); // Use current date as fallback
       }
       
       // Determine trade direction and state
@@ -165,20 +194,26 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
       
       // Determine trade side
       let side: 'long' | 'short' | undefined;
-      if (type.toLowerCase().includes('long')) {
+      if (signal && signal.toLowerCase().includes('long')) {
+        side = 'long';
+      } else if (signal && signal.toLowerCase().includes('short')) {
+        side = 'short';
+      } else if (type.toLowerCase().includes('long')) {
         side = 'long';
       } else if (type.toLowerCase().includes('short')) {
         side = 'short';
       }
       
+      // Calculate initial balance for the first row
+      if (i === headerRowIndex + 1 && direction === 'out') {
+        initialBalance = cumulativeProfit - profitUsd;
+        runningBalance = initialBalance;
+      }
+      
       // Update running balance
-      if (i === headerRowIndex + 1) {
-        // First row, initialize running values
-        initialBalance = 0;  // TradingView doesn't provide initial balance
+      if (direction === 'out') {
         runningBalance = cumulativeProfit;
-        peakBalance = runningBalance > 0 ? runningBalance : 0;
-      } else {
-        runningBalance = cumulativeProfit;
+        
         if (runningBalance > peakBalance) {
           peakBalance = runningBalance;
         }
@@ -206,7 +241,7 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
         state: signal || '',
         comment: signal || '',
         profit: profitUsd,
-        balance: cumulativeProfit,
+        balance: direction === 'out' ? cumulativeProfit : undefined,
         commission: 0, // TradingView doesn't typically include commission
         swap: 0,       // TradingView doesn't typically include swap
       };
@@ -215,10 +250,10 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
     }
     
     // Update summary
-    const totalTrades = trades.length;
-    const profitableTrades = trades.filter(t => t.profit !== undefined && t.profit > 0).length;
-    const lossTrades = trades.filter(t => t.profit !== undefined && t.profit < 0).length;
-    const totalProfit = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
+    const totalTrades = trades.filter(t => t.direction === 'out').length;
+    const profitableTrades = trades.filter(t => t.profit !== undefined && t.profit > 0 && t.direction === 'out').length;
+    const lossTrades = trades.filter(t => t.profit !== undefined && t.profit < 0 && t.direction === 'out').length;
+    const totalProfit = trades.filter(t => t.direction === 'out').reduce((sum, t) => sum + (t.profit || 0), 0);
     const winRate = (totalTrades > 0) ? (profitableTrades / totalTrades * 100).toFixed(2) : '0';
     
     summary['Total Trades'] = totalTrades;

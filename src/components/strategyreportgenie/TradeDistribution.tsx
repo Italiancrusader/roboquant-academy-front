@@ -99,6 +99,8 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
     }));
     
     completedTrades.forEach(trade => {
+      if (!(trade.openTime instanceof Date)) return;
+      
       const hour = trade.openTime.getHours();
       
       hourDistribution[hour].totalTrades++;
@@ -112,7 +114,6 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
     // Calculate win rate for each hour
     hourDistribution.forEach(hour => {
       hour.winRate = hour.totalTrades > 0 ? (hour.winningTrades / hour.totalTrades) * 100 : 0;
-      hour.hour = hour.hour; // Keep the numeric value
       hour.hourFormatted = `${hour.hour}:00`; // Add a string representation
     });
     
@@ -186,6 +187,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                     outerRadius={100}
                     fill="#8884d8"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    isAnimationActive={false}
                   >
                     {tradeTypeDistribution.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -194,6 +196,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                   <Tooltip 
                     formatter={(value, name) => [value, name]} 
                     labelFormatter={() => 'Trade Count'} 
+                    wrapperStyle={{ zIndex: 1000 }}
                   />
                   <Legend />
                 </PieChart>
@@ -212,16 +215,32 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
           <CardContent className="h-[300px]">
             <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={profitDistribution}>
+                <BarChart 
+                  data={profitDistribution}
+                  margin={{
+                    top: 5, 
+                    right: 20, 
+                    left: 20, 
+                    bottom: 40
+                  }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="range" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => [`${value} trades`, 'Count']} />
+                  <XAxis 
+                    dataKey="range"
+                    angle={-30}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis 
+                    width={40}
+                  />
+                  <Tooltip formatter={(value) => [`${value} trades`, 'Count']} wrapperStyle={{ zIndex: 1000 }} />
                   <Legend />
                   <Bar 
                     dataKey="count" 
                     name="Trade Count" 
                     fill="hsl(var(--primary))" 
+                    isAnimationActive={false}
                   >
                     {profitDistribution.map((entry, index) => (
                       <Cell 
@@ -249,48 +268,66 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
                 data={tradeTimeDistribution}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 10, right: 40, left: 20, bottom: 20 }}
+                barGap={0}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="hourFormatted" 
                   name="Hour"
+                  height={50}
+                  tickMargin={8}
                 />
                 <YAxis 
                   yAxisId="left" 
                   orientation="left"
+                  width={45}
                   label={{ 
                     value: 'Number of Trades', 
                     angle: -90, 
                     position: 'insideLeft',
-                    style: { fill: 'hsl(var(--muted-foreground))' }
+                    style: { fill: 'hsl(var(--muted-foreground))' },
+                    offset: -5
                   }} 
                 />
                 <YAxis 
                   yAxisId="right" 
                   orientation="right" 
                   domain={[0, 100]} 
+                  width={55}
                   label={{ 
                     value: 'Win Rate %', 
                     angle: -90, 
                     position: 'insideRight',
-                    style: { fill: 'hsl(var(--muted-foreground))' }
+                    style: { fill: 'hsl(var(--muted-foreground))' },
+                    offset: 15
                   }} 
                   tickFormatter={(value) => `${value}%`}
+                  tickMargin={8}
                 />
-                <Tooltip />
+                <Tooltip 
+                  formatter={(value, name) => {
+                    if (name === 'Win Rate') return [`${value.toFixed(1)}%`, name];
+                    return [value, name];
+                  }}
+                  wrapperStyle={{ zIndex: 1000 }}
+                />
                 <Legend />
                 <Bar 
                   yAxisId="left" 
                   dataKey="totalTrades" 
                   name="Total Trades" 
                   fill="hsl(var(--primary))" 
+                  isAnimationActive={false}
+                  maxBarSize={60}
                 />
                 <Bar 
                   yAxisId="right" 
                   dataKey="winRate" 
                   name="Win Rate" 
                   fill="hsl(var(--accent))" 
+                  isAnimationActive={false}
+                  maxBarSize={60}
                 />
               </BarChart>
             </ResponsiveContainer>
