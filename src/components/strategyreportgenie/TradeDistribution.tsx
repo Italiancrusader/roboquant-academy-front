@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +20,17 @@ import { Layers, ArrowUpDown, Clock } from 'lucide-react';
 
 interface TradeDistributionProps {
   trades: StrategyTrade[];
+}
+
+// Add an interface for the hour distribution data
+interface HourDistributionData {
+  hour: number;
+  count: number;
+  profit: number;
+  winRate: number;
+  winningTrades: number;
+  totalTrades: number;
+  hourFormatted: string; // Add the hourFormatted property to the interface
 }
 
 const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
@@ -76,13 +88,14 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
     if (!completedTrades.length) return [];
     
     // Initialize hours array
-    const hourDistribution = Array.from({ length: 24 }, (_, i) => ({
+    const hourDistribution: HourDistributionData[] = Array.from({ length: 24 }, (_, i) => ({
       hour: i,
       count: 0,
       profit: 0,
       winRate: 0,
       winningTrades: 0,
-      totalTrades: 0
+      totalTrades: 0,
+      hourFormatted: `${i}:00` // Initialize the hourFormatted property
     }));
     
     completedTrades.forEach(trade => {
