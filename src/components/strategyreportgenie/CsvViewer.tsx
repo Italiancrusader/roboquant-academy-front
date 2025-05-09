@@ -48,7 +48,7 @@ const CsvViewer: React.FC<CsvViewerProps> = ({ csvUrl, fileName, parsedData }) =
   // Function to format cell content properly for display
   const formatCellContent = (content: string, columnIndex: number, headers: string[]): React.ReactNode => {
     // Check if this is the Time column (usually column D, which is index 3)
-    const isTimeColumn = headers[columnIndex]?.toLowerCase() === 'time' || columnIndex === 3;
+    const isTimeColumn = headers[columnIndex]?.toLowerCase() === 'time' || columnIndex === 0;
     
     if (isTimeColumn && content) {
       try {
