@@ -60,23 +60,79 @@ const generateCSV = (trades: StrategyTrade[]): string => {
 };
 
 /**
- * Parse date string from MT5 format (YYYY.MM.DD HH:MM:SS) to JavaScript Date
+ * Parse date string from various formats to JavaScript Date
  */
-const parseMT5Date = (dateStr: string): Date => {
+const parseDate = (dateStr: string): Date => {
   try {
-    // Check if the date is in YYYY.MM.DD format
+    // Handle different date formats:
+    
+    // 1. YYYY-MM-DD HH:MM:SS or YYYY-MM-DD HH:MM format (used in your data)
+    const isoFormatRegex = /^(\d{4})-(\d{2})-(\d{2})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?$/;
+    if (isoFormatRegex.test(dateStr)) {
+      const match = dateStr.match(isoFormatRegex);
+      if (match) {
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1; // Month is 0-indexed
+        const day = parseInt(match[3], 10);
+        const hour = match[4] ? parseInt(match[4], 10) : 0;
+        const minute = match[5] ? parseInt(match[5], 10) : 0;
+        const second = match[6] ? parseInt(match[6], 10) : 0;
+        
+        return new Date(year, month, day, hour, minute, second);
+      }
+    }
+    
+    // 2. YYYY.MM.DD HH:MM:SS format (MT5 common format)
     if (dateStr.includes('.') && dateStr.split('.')[0].length === 4) {
       const [datePart, timePart] = dateStr.split(' ');
       const [year, month, day] = datePart.split('.');
-      const [hours, minutes, seconds] = timePart.split(':');
       
-      // Create a new Date object (month is 0-indexed in JavaScript)
-      return new Date(Number(year), Number(month) - 1, Number(day), 
-                      Number(hours), Number(minutes), Number(seconds));
-    } else {
-      // Fallback for other formats
-      return new Date(dateStr);
+      if (timePart) {
+        const [hours, minutes, seconds] = timePart.split(':');
+        
+        // Create a new Date object (month is 0-indexed in JavaScript)
+        return new Date(
+          Number(year), 
+          Number(month) - 1, 
+          Number(day), 
+          Number(hours) || 0, 
+          Number(minutes) || 0, 
+          Number(seconds) || 0
+        );
+      } else {
+        return new Date(Number(year), Number(month) - 1, Number(day));
+      }
     }
+    
+    // 3. MM/DD/YYYY HH:MM:SS format (US format)
+    if (dateStr.includes('/')) {
+      const [datePart, timePart] = dateStr.split(' ');
+      const [month, day, year] = datePart.split('/');
+      
+      if (timePart) {
+        const [hours, minutes, seconds] = timePart.split(':');
+        
+        return new Date(
+          Number(year), 
+          Number(month) - 1, 
+          Number(day), 
+          Number(hours) || 0, 
+          Number(minutes) || 0, 
+          Number(seconds) || 0
+        );
+      } else {
+        return new Date(Number(year), Number(month) - 1, Number(day));
+      }
+    }
+    
+    // Fallback to standard Date parsing
+    const parsedDate = new Date(dateStr);
+    if (!isNaN(parsedDate.getTime())) {
+      return parsedDate;
+    }
+    
+    console.error('Unable to parse date properly:', dateStr);
+    return new Date(); // Return current date as fallback
   } catch (e) {
     console.error('Error parsing date:', e, dateStr);
     return new Date(); // Return current date as fallback
@@ -228,26 +284,24 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       
       // Parse price, ensuring it properly handles commas
       const price = cleanNumeric(priceStr);
-      console.log(`Parsed price from '${priceStr}' to ${price}`);
       
-      // Parse date/time - using the time spacing logic for consistent time progression
+      // Parse date/time
       let openTime: Date;
       try {
-        // Generate slightly different timestamps for each trade to prevent them all having the same time
-        // This creates a more realistic view of trades over time
-        const baseDate = new Date();
-        
-        // Set the base date to start of the month for consistency
-        baseDate.setDate(1);
-        
-        // Add some hours and minutes based on the trade index to create variation
-        // Each trade will be spaced by about 2 hours
-        const hoursToAdd = (i - headerRowIndex) * 2;
-        const minutesToAdd = (i - headerRowIndex) * 15; // 15 minute intervals
-        
-        openTime = new Date(baseDate);
-        openTime.setHours(openTime.getHours() + hoursToAdd);
-        openTime.setMinutes(openTime.getMinutes() + minutesToAdd);
+        if (dateTimeStr) {
+          // Use the improved date parser
+          openTime = parseDate(dateTimeStr);
+        } else {
+          // Generate slightly different timestamps for each trade if no date is provided
+          const baseDate = new Date();
+          baseDate.setDate(1);
+          const hoursToAdd = (i - headerRowIndex) * 2;
+          const minutesToAdd = (i - headerRowIndex) * 15; // 15 minute intervals
+          
+          openTime = new Date(baseDate);
+          openTime.setHours(openTime.getHours() + hoursToAdd);
+          openTime.setMinutes(openTime.getMinutes() + minutesToAdd);
+        }
       } catch (e) {
         console.error("Error creating trade timestamp:", e);
         openTime = new Date(); // Use current date as fallback
@@ -288,7 +342,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
         }
       }
       
-      // Create trade object with the varying timestamp
+      // Create trade object with the parsed timestamp
       const trade: StrategyTrade = {
         openTime,
         order: Number(tradeNum) || i,
@@ -422,8 +476,10 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
       // Skip empty rows
       if (!timeValue && !dealValue) continue;
       
-      // Parse date
-      const openTime = parseMT5Date(timeValue);
+      console.log(`Parsing date: ${timeValue}`);
+      // Parse date using improved function
+      const openTime = parseDate(timeValue);
+      console.log(`Parsed date: ${openTime}`);
       
       // Determine if this is a balance entry
       const isBalanceEntry = typeValue === 'balance' || typeValue === '';
@@ -548,7 +604,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
           // Still create a trade entry for balance rows
           const openTime = dateStr.includes('/') 
             ? new Date(dateStr.split('/')[2] + '-' + dateStr.split('/')[0] + '-' + dateStr.split('/')[1] + 'T' + timeStr)
-            : parseMT5Date(dateStr);
+            : parseDate(dateStr);
             
           trades.push({
             openTime,
@@ -577,7 +633,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
           openTime = new Date(`${year}-${month}-${day}T${timeStr}`);
         } else if (dateStr.includes('.')) {
           // DD.MM.YYYY format
-          openTime = parseMT5Date(dateStr);
+          openTime = parseDate(dateStr);
         } else {
           // Fallback
           openTime = new Date(dateStr + ' ' + timeStr);

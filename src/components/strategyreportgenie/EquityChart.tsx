@@ -80,7 +80,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
 
   // Format date for display in the chart
   const formatDate = (date: Date) => {
-    if (!(date instanceof Date)) return '';
+    if (!(date instanceof Date) || isNaN(date.getTime())) return '';
     return `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear().toString().substring(2)}`;
   };
   
@@ -93,7 +93,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
 
   // Function to get a unique identifier for a date that can be used as the x value
   const getDateKey = (date: Date): string => {
-    if (!(date instanceof Date)) return '';
+    if (!(date instanceof Date) || isNaN(date.getTime())) return '';
     return date.toISOString();
   };
 
@@ -140,7 +140,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 dataKey="date" 
                 stroke="hsl(var(--muted-foreground))"
                 tickFormatter={(date) => {
-                  if (!(date instanceof Date)) return '';
+                  if (!(date instanceof Date) || isNaN(date.getTime())) return '';
                   return formatDate(date);
                 }}
                 height={60}
@@ -184,7 +184,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                               Date
                             </span>
                             <span className="font-bold text-foreground">
-                              {data.date instanceof Date
+                              {data.date instanceof Date && !isNaN(data.date.getTime())
                                 ? data.date.toLocaleDateString(undefined, {
                                     year: 'numeric',
                                     month: 'short',
@@ -225,25 +225,29 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 strokeWidth={2}
                 isAnimationActive={false}
               />
-              {/* Fix: Convert Date to string for reference dots */}
-              <ReferenceDot
-                x={getDateKey(firstPoint.date)}
-                y={firstPoint.equity}
-                yAxisId="left"
-                r={6}
-                fill="hsl(var(--primary))"
-                stroke="hsl(var(--background))"
-                strokeWidth={2}
-              />
-              <ReferenceDot
-                x={getDateKey(lastPoint.date)}
-                y={lastPoint.equity}
-                yAxisId="left"
-                r={6}
-                fill="hsl(var(--success))"
-                stroke="hsl(var(--background))"
-                strokeWidth={2}
-              />
+              {/* Convert Date to string for reference dots */}
+              {firstPoint.date instanceof Date && !isNaN(firstPoint.date.getTime()) && (
+                <ReferenceDot
+                  x={getDateKey(firstPoint.date)}
+                  y={firstPoint.equity}
+                  yAxisId="left"
+                  r={6}
+                  fill="hsl(var(--primary))"
+                  stroke="hsl(var(--background))"
+                  strokeWidth={2}
+                />
+              )}
+              {lastPoint.date instanceof Date && !isNaN(lastPoint.date.getTime()) && (
+                <ReferenceDot
+                  x={getDateKey(lastPoint.date)}
+                  y={lastPoint.equity}
+                  yAxisId="left"
+                  r={6}
+                  fill="hsl(var(--success))"
+                  stroke="hsl(var(--background))"
+                  strokeWidth={2}
+                />
+              )}
             </ComposedChart>
           </ResponsiveContainer>
         </ChartContainer>
