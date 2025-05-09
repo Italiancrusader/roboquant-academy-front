@@ -97,7 +97,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
   // Define chart configuration
   const chartConfig: ChartConfig = {
     profit: {
-      label: "Monthly P&L",
+      label: "Profit", // Changed from "Monthly P&L" to just "Profit"
       color: "#9b87f5" // Purple color for bars
     },
     loss: {
@@ -137,13 +137,13 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
               <XAxis 
                 dataKey="month"
                 stroke="hsl(var(--muted-foreground))"
-                height={70} // Increased height for labels
+                height={70}
                 tick={{ fontSize: 12 }}
-                tickMargin={25} // Increased tick margin
+                tickMargin={25}
                 label={{ 
                   value: 'Month', 
                   position: 'insideBottom', 
-                  offset: -25, // Adjusted offset to prevent overlap
+                  offset: -20, // Further adjusted to prevent any overlap
                   fill: 'hsl(var(--muted-foreground))' 
                 }}
                 interval={monthlyData.length > 12 ? 'preserveStartEnd' : 0}
@@ -201,7 +201,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 wrapperStyle={{ zIndex: 100 }}
               />
               <Legend 
-                wrapperStyle={{ bottom: 0, paddingTop: 20 }}
+                wrapperStyle={{ bottom: -10, paddingTop: 30 }} // Adjusted legend positioning
               />
               <Bar
                 dataKey="profit"
