@@ -62,29 +62,71 @@ serve(async (req) => {
       attachmentUrl = 'https://www.roboquant.ai/storage/v1/object/public/leadmagnet//No%20Wick%20PineScript%20Source%20Code.rtf';
       attachmentName = 'RoboQuant_Free_Bot.rtf';
       emailSubject = 'Your Free MT5 Bot Source Code from RoboQuant';
+    } else if (leadMagnet === 'mt5_report_analysis') {
+      // For MT5 Report Genie users
+      attachmentUrl = '';  // No attachment for this one, just access to the tool
+      attachmentName = '';
+      emailSubject = 'Your Access to MT5 Report Genie - RoboQuant Academy';
     }
 
-    console.log("Sending email to:", email, "with attachment:", attachmentUrl);
+    console.log("Sending email to:", email, "for lead magnet:", leadMagnet);
+
+    // Prepare email content based on lead magnet type
+    let emailText = '';
+    let emailHtml = '';
+    
+    if (leadMagnet === 'mt5_report_analysis') {
+      emailText = `Hello ${name},\n\nThank you for your interest in RoboQuant Academy's MT5 Report Genie! You now have full access to our professional trading analysis tools.\n\nSimply return to the MT5 Report Genie page to analyze your trading reports, run Monte Carlo simulations, and optimize your strategies.\n\nIf you have any questions or need assistance with the tools, feel free to reply to this email or join our community.\n\nHappy Trading,\nTim from RoboQuant Academy`;
+      
+      emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Welcome to MT5 Report Genie!</h2>
+          <p>Hello ${name},</p>
+          <p>Thank you for your interest in RoboQuant Academy's MT5 Report Genie!</p>
+          <p>You now have <strong>full access</strong> to our professional trading analysis tools. Simply return to the MT5 Report Genie page to:</p>
+          <ul>
+            <li>Analyze your trading reports with in-depth metrics</li>
+            <li>Run Monte Carlo simulations to understand risk and potential</li>
+            <li>Optimize your trading strategies for better performance</li>
+          </ul>
+          <p>If you have any questions or need assistance with the tools, feel free to reply to this email or join our community.</p>
+          <p>Happy Trading,<br>Tim from RoboQuant Academy</p>
+        </div>
+      `;
+    } else {
+      emailText = `Hello ${name},\n\nThank you for your interest in RoboQuant Academy! As promised, I've attached your free bot source code.\n\nIf you have any questions or need assistance implementing this bot, feel free to reply to this email or join our community.\n\nHappy Trading,\nTim from RoboQuant Academy`;
+    }
 
     // Send email with attachment via Resend
+    const emailPayload: any = {
+      from: "RoboQuant <team@updates.roboquant.ai>",
+      to: email,
+      subject: emailSubject,
+      text: emailText
+    };
+    
+    // Add HTML content if available
+    if (emailHtml) {
+      emailPayload.html = emailHtml;
+    }
+    
+    // Add attachment if available
+    if (attachmentUrl && attachmentName) {
+      emailPayload.attachments = [
+        {
+          filename: attachmentName,
+          path: attachmentUrl
+        }
+      ];
+    }
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: "RoboQuant <team@updates.roboquant.ai>",
-        to: email,
-        subject: emailSubject,
-        text: `Hello ${name},\n\nThank you for your interest in RoboQuant Academy! As promised, I've attached your free bot source code.\n\nIf you have any questions or need assistance implementing this bot, feel free to reply to this email or join our community.\n\nHappy Trading,\nTim from RoboQuant Academy`,
-        attachments: [
-          {
-            filename: attachmentName,
-            path: attachmentUrl
-          }
-        ]
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     // Handle timeouts and connection issues more gracefully

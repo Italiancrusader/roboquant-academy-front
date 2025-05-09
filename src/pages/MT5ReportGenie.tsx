@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import FileUploadZone from '@/components/mt5reportgenie/FileUploadZone';
 import ReportDashboard from '@/components/mt5reportgenie/ReportDashboard';
@@ -7,18 +7,41 @@ import LoadingOverlay from '@/components/mt5reportgenie/LoadingOverlay';
 import { toast } from '@/components/ui/use-toast';
 import { FileType } from '@/types/mt5reportgenie';
 import { Link } from 'react-router-dom';
-import { Github } from 'lucide-react';
 import PDFReportGenerator from '@/components/mt5reportgenie/PDFReportGenerator';
 import MonteCarloSimulation from '@/components/mt5reportgenie/MonteCarloSimulation';
 import StrategyOptimizer from '@/components/mt5reportgenie/StrategyOptimizer';
+import LeadCaptureDialog from '@/components/mt5reportgenie/LeadCaptureDialog';
 
 const MT5ReportGenie = () => {
   const [files, setFiles] = useState<FileType[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingSteps, setProcessingSteps] = useState<string>('');
   const [activeDialog, setActiveDialog] = useState<'pdf' | 'monteCarlo' | 'optimize' | null>(null);
+  const [showLeadDialog, setShowLeadDialog] = useState(false);
+  const [hasCompletedLeadForm, setHasCompletedLeadForm] = useState(false);
+  
+  // Check if the user has already filled the lead form
+  useEffect(() => {
+    const hasCompleted = localStorage.getItem('mt5_lead_completed') === 'true';
+    setHasCompletedLeadForm(hasCompleted);
+    
+    // If they haven't completed the lead form, show the dialog after a short delay
+    if (!hasCompleted) {
+      const timer = setTimeout(() => {
+        setShowLeadDialog(true);
+      }, 3000); // Show after 3 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
   
   const handleFilesUploaded = (newFiles: FileType[]) => {
+    // If the user hasn't completed the lead form, show it before processing files
+    if (!hasCompletedLeadForm) {
+      setShowLeadDialog(true);
+      return;
+    }
+    
     // isProcessing is already set to true when processing step is triggered
     console.log("Processing files:", newFiles);
 
@@ -58,6 +81,13 @@ const MT5ReportGenie = () => {
       });
       return;
     }
+    
+    // Check if the user has completed the lead form
+    if (!hasCompletedLeadForm) {
+      setShowLeadDialog(true);
+      return;
+    }
+    
     setActiveDialog('pdf');
   };
   
@@ -70,6 +100,13 @@ const MT5ReportGenie = () => {
       });
       return;
     }
+    
+    // Check if the user has completed the lead form
+    if (!hasCompletedLeadForm) {
+      setShowLeadDialog(true);
+      return;
+    }
+    
     setActiveDialog('monteCarlo');
   };
   
@@ -82,11 +119,25 @@ const MT5ReportGenie = () => {
       });
       return;
     }
+    
+    // Check if the user has completed the lead form
+    if (!hasCompletedLeadForm) {
+      setShowLeadDialog(true);
+      return;
+    }
+    
     setActiveDialog('optimize');
   };
   
   const closeDialog = () => {
     setActiveDialog(null);
+  };
+  
+  const handleLeadDialogClose = () => {
+    setShowLeadDialog(false);
+    // Mark that the user has completed the lead form
+    localStorage.setItem('mt5_lead_completed', 'true');
+    setHasCompletedLeadForm(true);
   };
 
   return <div className="flex flex-col min-h-screen bg-background text-foreground font-neulis">
@@ -148,6 +199,12 @@ const MT5ReportGenie = () => {
           onClose={closeDialog}
         />
       )}
+      
+      {/* Lead Capture Dialog */}
+      <LeadCaptureDialog 
+        isOpen={showLeadDialog} 
+        onClose={handleLeadDialogClose} 
+      />
       
       <footer className="py-6 border-t border-border bg-secondary mt-auto">
         <div className="container mx-auto px-4">
