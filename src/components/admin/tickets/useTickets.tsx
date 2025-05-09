@@ -140,11 +140,11 @@ export const useTickets = () => {
         }
         
         // If profile is null, we can't match against user details
-        if (ticket.profile === null) {
+        if (!ticket.profile) {
           return false;
         }
         
-        // Safely access profile properties with nullish coalescing to provide fallbacks
+        // Now safely access profile properties
         const email = ticket.profile.email ?? '';
         const firstName = ticket.profile.first_name ?? '';
         const lastName = ticket.profile.last_name ?? '';
