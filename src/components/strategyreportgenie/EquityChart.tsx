@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -13,12 +13,15 @@ import {
 } from 'recharts';
 import { ChartContainer } from '@/components/ui/chart';
 import { StrategyTrade } from '@/types/strategyreportgenie';
+import { Toggle } from '@/components/ui/toggle';
 
 interface EquityChartProps {
   trades: StrategyTrade[];
 }
 
 const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
+  const [useLogScale, setUseLogScale] = useState(false);
+  
   const chartData = React.useMemo(() => {
     if (!trades.length) return [];
     
@@ -56,7 +59,11 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     return (maxEquity - minEquity) * 0.2;
   }, [minEquity, maxEquity]);
   
-  const yAxisMin = Math.max(0, minEquity - equityPadding);
+  // For log scale, we need positive values only
+  const safeMinEquity = Math.max(1, minEquity - equityPadding);
+  
+  // Use different y-axis min/max based on scale type
+  const yAxisMin = useLogScale ? safeMinEquity : Math.max(0, minEquity - equityPadding);
   const yAxisMax = maxEquity + equityPadding;
 
   if (chartData.length === 0) {
@@ -94,13 +101,25 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Equity Growth</h2>
-        {chartData.length > 0 && (
-          <div className="text-sm text-muted-foreground">
-            Initial: ${firstPoint.equity.toLocaleString()}
-            <span className="mx-2">•</span>
-            Final: ${lastPoint.equity.toLocaleString()}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <Toggle
+              aria-label="Toggle logarithmic scale"
+              pressed={useLogScale}
+              onPressedChange={setUseLogScale}
+              size="sm"
+            >
+              Log Scale
+            </Toggle>
           </div>
-        )}
+          {chartData.length > 0 && (
+            <div className="text-sm text-muted-foreground">
+              Initial: ${firstPoint.equity.toLocaleString()}
+              <span className="mx-2">•</span>
+              Final: ${lastPoint.equity.toLocaleString()}
+            </div>
+          )}
+        </div>
       </div>
       <div className="min-h-[400px] max-h-[600px] w-full"> 
         <ChartContainer config={{
@@ -140,6 +159,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 yAxisId="left" 
                 stroke="hsl(var(--muted-foreground))" 
                 domain={[yAxisMin, yAxisMax]}
+                scale={useLogScale ? 'log' : 'auto'}
                 label={{ 
                   value: 'Balance ($)', 
                   angle: -90, 
@@ -150,6 +170,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 tickFormatter={value => `$${value.toLocaleString()}`}
                 width={80}
                 tickMargin={8}
+                allowDataOverflow={useLogScale}
               />
               <Tooltip
                 content={({ active, payload }) => {
