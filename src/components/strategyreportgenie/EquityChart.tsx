@@ -1,10 +1,8 @@
-
 import React from 'react';
 import {
   ResponsiveContainer,
   ComposedChart,
   Line,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -28,26 +26,13 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     if (tradesWithBalance.length === 0) return [];
     
     // Keep only relevant fields for chart
-    const chartPoints = tradesWithBalance.map((trade, index) => {
+    const chartPoints = tradesWithBalance.map((trade) => {
       const date = trade.openTime;
       const equity = trade.balance || 0;
       
-      // Calculate peak and drawdown
-      let peak = 0;
-      tradesWithBalance.slice(0, index + 1).forEach(t => {
-        if ((t.balance || 0) > peak) {
-          peak = t.balance || 0;
-        }
-      });
-      
-      const drawdown = peak > 0 ? peak - equity : 0;
-      const drawdownPct = peak > 0 ? (drawdown / peak) * 100 : 0;
-      
       return {
         date,
-        equity,
-        drawdown,
-        drawdownPct
+        equity
       };
     });
     
@@ -67,8 +52,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
       <h2 className="text-xl font-semibold mb-4">Equity Growth</h2>
       <div className="h-[350px]">
         <ChartContainer config={{
-          equity: { color: "hsl(var(--primary))" },
-          drawdown: { color: "hsl(var(--destructive))" }
+          equity: { color: "hsl(var(--primary))" }
         }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
@@ -97,18 +81,6 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 }}
                 tickFormatter={value => `$${value}`}
               />
-              <YAxis 
-                yAxisId="right"
-                orientation="right"
-                stroke="hsl(var(--muted-foreground))"
-                label={{ 
-                  value: 'Drawdown %', 
-                  angle: -90, 
-                  position: 'insideRight',
-                  style: { fill: 'hsl(var(--muted-foreground))' }
-                }}
-                tickFormatter={value => `${value}%`}
-              />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
@@ -134,22 +106,6 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                               ${data.equity.toFixed(2)}
                             </span>
                           </div>
-                          <div className="flex flex-col">
-                            <span className="text-[0.70rem] uppercase text-muted-foreground">
-                              Drawdown
-                            </span>
-                            <span className="font-bold text-foreground">
-                              ${data.drawdown.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[0.70rem] uppercase text-muted-foreground">
-                              Drawdown %
-                            </span>
-                            <span className="font-bold text-foreground">
-                              {data.drawdownPct.toFixed(2)}%
-                            </span>
-                          </div>
                         </div>
                       </div>
                     );
@@ -168,14 +124,6 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 activeDot={{ r: 8 }}
                 dot={false}
                 strokeWidth={2}
-              />
-              <Area
-                yAxisId="right"
-                type="monotone"
-                dataKey="drawdownPct"
-                fill="hsl(var(--destructive)/0.2)"
-                name="Drawdown %"
-                stroke="hsl(var(--destructive))"
               />
             </ComposedChart>
           </ResponsiveContainer>
