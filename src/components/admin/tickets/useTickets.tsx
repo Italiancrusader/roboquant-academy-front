@@ -139,20 +139,20 @@ export const useTickets = () => {
           return true;
         }
         
-        // Handle profile checking safely
+        // If profile is null, we can't match against user details
         if (ticket.profile === null) {
           return false;
         }
         
-        // Now we know profile is not null, extract values with fallbacks
-        const { email, first_name, last_name } = ticket.profile;
-        const emailStr = email ?? '';
-        const firstNameStr = first_name ?? '';
-        const lastNameStr = last_name ?? '';
+        // Safely access profile properties with nullish coalescing to provide fallbacks
+        const email = ticket.profile.email ?? '';
+        const firstName = ticket.profile.first_name ?? '';
+        const lastName = ticket.profile.last_name ?? '';
         
-        return emailStr.toLowerCase().includes(term) || 
-               firstNameStr.toLowerCase().includes(term) || 
-               lastNameStr.toLowerCase().includes(term);
+        // Now we can safely check these strings
+        return email.toLowerCase().includes(term) || 
+               firstName.toLowerCase().includes(term) || 
+               lastName.toLowerCase().includes(term);
       });
     }
     
