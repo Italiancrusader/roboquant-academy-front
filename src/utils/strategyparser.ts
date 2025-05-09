@@ -1,6 +1,59 @@
-
 import { read, utils, write } from 'xlsx';
 import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/strategyreportgenie';
+
+/**
+ * Debug utility for the strategy parser
+ */
+const DEBUG = {
+  enabled: true,
+  dateProcessing: true,
+  rowProcessing: false,
+  columnMapping: true,
+  
+  log: (category: string, message: string, data?: any) => {
+    if (!DEBUG.enabled) return;
+    
+    const timestamp = new Date().toISOString();
+    const prefix = `[DEBUG:${category}] ${timestamp}`;
+    
+    switch (category) {
+      case 'date':
+        if (!DEBUG.dateProcessing) return;
+        break;
+      case 'row':
+        if (!DEBUG.rowProcessing) return;
+        break;
+      case 'columns':
+        if (!DEBUG.columnMapping) return;
+        break;
+    }
+    
+    if (data !== undefined) {
+      console.log(`${prefix} ${message}`, data);
+    } else {
+      console.log(`${prefix} ${message}`);
+    }
+  },
+  
+  inspect: (dateStr: string, parsedDate: Date) => {
+    if (!DEBUG.enabled || !DEBUG.dateProcessing) return;
+    
+    console.group(`🔍 Date Parsing Inspection for: "${dateStr}"`);
+    console.log(`Original string: "${dateStr}"`);
+    console.log(`Parsed result: ${parsedDate.toISOString()}`);
+    console.log(`Local string: ${parsedDate.toString()}`);
+    console.log(`UTC string: ${parsedDate.toUTCString()}`);
+    console.log(`Time values:`, {
+      year: parsedDate.getFullYear(),
+      month: parsedDate.getMonth() + 1, // +1 because getMonth is 0-indexed
+      day: parsedDate.getDate(),
+      hours: parsedDate.getHours(),
+      minutes: parsedDate.getMinutes(),
+      seconds: parsedDate.getSeconds()
+    });
+    console.groupEnd();
+  }
+};
 
 /**
  * Format date and time in a more readable format (MM/DD/YYYY HH:MM:SS)
@@ -62,19 +115,20 @@ const generateCSV = (trades: StrategyTrade[]): string => {
 
 /**
  * Parse date string from various formats to JavaScript Date
- * Enhanced to better handle TradingView date formats
+ * Enhanced with better debugging and specific format handling
  */
 const parseDate = (dateStr: string): Date => {
   try {
-    console.log(`Attempting to parse date: "${dateStr}"`);
+    DEBUG.log('date', `Attempting to parse date: "${dateStr}"`);
     
     if (!dateStr || typeof dateStr !== 'string') {
-      console.error('Invalid date string provided:', dateStr);
+      DEBUG.log('date', 'Invalid date string provided:', dateStr);
       return new Date();
     }
     
     // Remove any extra spaces that might be present
     dateStr = dateStr.trim();
+    DEBUG.log('date', `Trimmed date string: "${dateStr}"`);
     
     // Handle the specific format "2025-05-07 09:15" (YYYY-MM-DD HH:MM)
     const specificFormatRegex = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/;
@@ -89,14 +143,42 @@ const parseDate = (dateStr: string): Date => {
       const hours = parseInt(hoursStr, 10);
       const minutes = parseInt(minutesStr, 10);
       
-      console.log(`Specific format matched: ${year}-${month+1}-${day} ${hours}:${minutes}`);
+      DEBUG.log('date', `MATCH FOUND - Specific format: ${year}-${month+1}-${day} ${hours}:${minutes}`);
       
-      const parsedDate = new Date(year, month, day, hours, minutes, 0);
-      console.log(`Successfully parsed specific date format: ${parsedDate.toISOString()}, Original: ${dateStr}`);
+      // Create date object using UTC to avoid timezone issues
+      const parsedDate = new Date(Date.UTC(year, month, day, hours, minutes, 0));
+      DEBUG.log('date', `Successfully parsed specific date format to UTC: ${parsedDate.toISOString()}`);
+      DEBUG.log('date', `Local time equivalent: ${parsedDate.toString()}`);
+      
+      DEBUG.inspect(dateStr, parsedDate);
       return parsedDate;
     }
     
-    // Handle different date formats:
+    // Handle MM/DD/YYYY HH:MM:SS format (like "05/09/2025 17:28:11")
+    const usDateTimeRegex = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/;
+    const usMatch = dateStr.match(usDateTimeRegex);
+    
+    if (usMatch) {
+      const [, monthStr, dayStr, yearStr, hoursStr, minutesStr, secondsStr] = usMatch;
+      
+      const year = parseInt(yearStr, 10);
+      const month = parseInt(monthStr, 10) - 1; // Month is 0-indexed in JS
+      const day = parseInt(dayStr, 10);
+      const hours = parseInt(hoursStr, 10);
+      const minutes = parseInt(minutesStr, 10);
+      const seconds = parseInt(secondsStr, 10);
+      
+      DEBUG.log('date', `MATCH FOUND - US date format: ${month+1}/${day}/${year} ${hours}:${minutes}:${seconds}`);
+      
+      // Create date object using UTC to avoid timezone issues
+      const parsedDate = new Date(Date.UTC(year, month, day, hours, minutes, seconds));
+      DEBUG.log('date', `Successfully parsed US date format: ${parsedDate.toISOString()}`);
+      
+      DEBUG.inspect(dateStr, parsedDate);
+      return parsedDate;
+    }
+    
+    // Handle different date formats (existing logic with added debugging):
     
     // 1. YYYY-MM-DD HH:MM:SS or YYYY-MM-DD HH:MM format (common in TradingView)
     const isoFormatRegex = /^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/;
@@ -111,7 +193,7 @@ const parseDate = (dateStr: string): Date => {
         const second = match[6] ? parseInt(match[6], 10) : 0;
         
         const parsedDate = new Date(year, month, day, hour, minute, second);
-        console.log(`Successfully parsed YYYY-MM-DD HH:MM[:SS] format: ${parsedDate}`);
+        DEBUG.log('date', `Successfully parsed YYYY-MM-DD HH:MM[:SS] format: ${parsedDate}`);
         return parsedDate;
       }
     }
@@ -133,11 +215,11 @@ const parseDate = (dateStr: string): Date => {
           Number(minutes) || 0, 
           Number(seconds) || 0
         );
-        console.log(`Successfully parsed YYYY.MM.DD HH:MM:SS format: ${parsedDate}`);
+        DEBUG.log(`Successfully parsed YYYY.MM.DD HH:MM:SS format: ${parsedDate}`);
         return parsedDate;
       } else {
         const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-        console.log(`Successfully parsed YYYY.MM.DD format: ${parsedDate}`);
+        DEBUG.log(`Successfully parsed YYYY.MM.DD format: ${parsedDate}`);
         return parsedDate;
       }
     }
@@ -158,12 +240,45 @@ const parseDate = (dateStr: string): Date => {
           Number(minutes) || 0, 
           Number(seconds) || 0
         );
-        console.log(`Successfully parsed MM/DD/YYYY HH:MM:SS format: ${parsedDate}`);
+        DEBUG.log(`Successfully parsed MM/DD/YYYY HH:MM:SS format: ${parsedDate}`);
         return parsedDate;
       } else {
         const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-        console.log(`Successfully parsed MM/DD/YYYY format: ${parsedDate}`);
+        DEBUG.log(`Successfully parsed MM/DD/YYYY format: ${parsedDate}`);
         return parsedDate;
+      }
+    }
+    
+    // Enhanced debugging for TradingView specific format
+    if (dateStr.includes('-') && dateStr.split('-')[0].length === 4) {
+      DEBUG.log('date', 'Detected possible TradingView date format with year first');
+      
+      // Additional handling for TradingView format
+      const parts = dateStr.split(' ');
+      if (parts.length === 2) {
+        const datePart = parts[0]; // e.g. "2025-05-07"
+        const timePart = parts[1]; // e.g. "09:15"
+        
+        const dateBits = datePart.split('-');
+        const timeBits = timePart.split(':');
+        
+        if (dateBits.length === 3 && timeBits.length >= 2) {
+          const year = parseInt(dateBits[0], 10);
+          const month = parseInt(dateBits[1], 10) - 1;
+          const day = parseInt(dateBits[2], 10);
+          const hours = parseInt(timeBits[0], 10);
+          const minutes = parseInt(timeBits[1], 10);
+          const seconds = timeBits[2] ? parseInt(timeBits[2], 10) : 0;
+          
+          DEBUG.log('date', `Creating date from components: Y=${year}, M=${month+1}, D=${day}, h=${hours}, m=${minutes}, s=${seconds}`);
+          
+          // Create date object using UTC to avoid timezone issues
+          const parsedDate = new Date(Date.UTC(year, month, day, hours, minutes, seconds));
+          DEBUG.log('date', `Created TradingView format date: ${parsedDate.toISOString()}`);
+          
+          DEBUG.inspect(dateStr, parsedDate);
+          return parsedDate;
+        }
       }
     }
     
@@ -171,20 +286,23 @@ const parseDate = (dateStr: string): Date => {
     try {
       const parsedDate = new Date(dateStr);
       if (!isNaN(parsedDate.getTime())) {
-        console.log(`Successfully parsed using standard Date constructor: ${parsedDate}`);
+        DEBUG.log('date', `Standard Date constructor parsing succeeded: ${parsedDate.toISOString()}`);
+        DEBUG.inspect(dateStr, parsedDate);
         return parsedDate;
       } else {
-        console.error(`Standard Date constructor failed to parse: "${dateStr}"`);
+        DEBUG.log('date', `Standard Date constructor failed to parse: "${dateStr}"`);
       }
     } catch (e) {
-      console.error(`Error in standard Date parsing for "${dateStr}":`, e);
+      DEBUG.log('date', `Error in standard Date parsing for "${dateStr}":`, e);
     }
     
-    console.error(`All parsing methods failed for date string: "${dateStr}"`);
-    return new Date(); // Return current date as fallback
+    DEBUG.log('date', `❌ ALL PARSING METHODS FAILED for date string: "${dateStr}"`);
+    const fallbackDate = new Date();
+    DEBUG.log('date', `Using fallback current date: ${fallbackDate.toISOString()}`);
+    return fallbackDate;
   } catch (e) {
-    console.error(`Exception in parseDate for "${dateStr}":`, e);
-    return new Date(); // Return current date as fallback
+    DEBUG.log('date', `‼️ EXCEPTION in parseDate for "${dateStr}":`, e);
+    return new Date();
   }
 };
 
@@ -275,9 +393,11 @@ const detectTradingViewFile = async (file: File): Promise<boolean> => {
 };
 
 /**
- * Parse TradingView Excel report file with enhanced date parsing
+ * Parse TradingView Excel report file with enhanced date parsing and debugging
  */
 const parseTradingViewExcel = async (file: File, initialBalance?: number): Promise<ParsedStrategyReport> => {
+  DEBUG.log('parser', `Starting TradingView Excel parsing for file: ${file.name}`);
+  
   // Read the Excel file
   const buffer = await file.arrayBuffer();
   const workbook = read(buffer, { type: 'array' });
@@ -287,9 +407,8 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
   const worksheet = workbook.Sheets[sheetName];
   const rows = utils.sheet_to_json<any>(worksheet, { header: 1 });
   
-  console.log(`Parsing TradingView Excel file: ${file.name}`);
-  console.log(`Found sheet: ${sheetName}`);
-  console.log(`Total rows: ${rows.length}`);
+  DEBUG.log('parser', `Found sheet: ${sheetName}`);
+  DEBUG.log('parser', `Total rows: ${rows.length}`);
   
   const summary: StrategySummary = {};
   const trades: StrategyTrade[] = [];
@@ -297,12 +416,13 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
   
   // Use provided initialBalance or default to 10,000
   const startingBalance = initialBalance || 10000;
+  DEBUG.log('parser', `Using initial balance: ${startingBalance}`);
   
   // Process TradingView format
   if (rows.length > 0) {
     // Find the headers (TradingView usually has headers in first row)
     const headers = rows[headerRowIndex];
-    console.log('Headers row:', headers);
+    DEBUG.log('columns', 'Headers row:', headers);
     
     // Find column indexes for important fields - use case-insensitive search and be more flexible
     const findColumnIndex = (possibleHeaders: string[]): number => {
@@ -323,7 +443,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
     const profitPctIndex = findColumnIndex(['Profit %', 'Return', 'Return %']);
     const cumulativeProfitUsdIndex = findColumnIndex(['Cumulative profit USD', 'Cumulative Profit', 'Balance']);
     
-    console.log(`Found column indexes:`, {
+    DEBUG.log('columns', `Found column indexes:`, {
       tradeNumIndex,
       typeIndex,
       signalIndex,
@@ -345,7 +465,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       const row = rows[i];
       if (!row || row.length === 0) continue;
       
-      console.log(`Processing row ${i}:`, row);
+      DEBUG.log('row', `Processing row ${i}:`, row);
       
       // Get values from the row with safer fallbacks
       const getRowValue = (index: number): string => {
@@ -361,7 +481,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       const contractsStr = getRowValue(contractsIndex);
       const profitUsdStr = getRowValue(profitUsdIndex);
       
-      console.log(`Trade ${i} extracted values:`, {
+      DEBUG.log('row', `Trade ${i} extracted values:`, {
         tradeNum,
         type,
         signal,
@@ -379,25 +499,28 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       try {
         contracts = cleanNumeric(contractsStr);
       } catch (e) {
-        console.error(`Error parsing contracts value "${contractsStr}":`, e);
+        DEBUG.log('row', `Error parsing contracts value "${contractsStr}":`, e);
       }
       
       try {
         profitUsd = cleanNumeric(profitUsdStr);
       } catch (e) {
-        console.error(`Error parsing profit value "${profitUsdStr}":`, e);
+        DEBUG.log('row', `Error parsing profit value "${profitUsdStr}":`, e);
       }
       
       try {
         price = cleanNumeric(priceStr);
       } catch (e) {
-        console.error(`Error parsing price value "${priceStr}":`, e);
+        DEBUG.log('row', `Error parsing price value "${priceStr}":`, e);
       }
       
       // Parse date/time with enhanced date parser
       let openTime: Date;
       try {
         if (dateTimeStr) {
+          // Create a clean copy for direct debug inspection
+          DEBUG.log('date', `Row ${i} - Date string before parsing: "${dateTimeStr}"`);
+          
           // First try specific format YYYY-MM-DD HH:MM (like "2025-05-07 09:15")
           const specificFormatMatch = dateTimeStr.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
           
@@ -410,23 +533,71 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
             const hours = parseInt(hoursStr, 10);
             const minutes = parseInt(minutesStr, 10);
             
-            openTime = new Date(year, month, day, hours, minutes, 0);
-            console.log(`Directly parsed specific date format: "${dateTimeStr}" -> ${openTime.toISOString()}`);
+            DEBUG.log('date', `Trade ${i} - Creating date directly from components: Y=${year}, M=${month+1}, D=${day}, h=${hours}, m=${minutes}`);
+            
+            // Create the date using UTC to avoid timezone issues
+            openTime = new Date(Date.UTC(year, month, day, hours, minutes, 0));
+            
+            // Debug date creation
+            DEBUG.log('date', `Trade ${i} - Direct parsing result: ${openTime.toISOString()}`);
+            DEBUG.log('date', `Trade ${i} - UTC string: ${openTime.toUTCString()}`);
+            DEBUG.log('date', `Trade ${i} - Local string: ${openTime.toString()}`);
           } else {
-            // Fall back to standard parser
-            openTime = parseDate(dateTimeStr);
-            console.log(`Standard parse date: "${dateTimeStr}" -> ${openTime.toISOString()}`);
+            // Try alternate format MM/DD/YYYY HH:MM:SS
+            const usDtFormat = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/;
+            const usMatch = dateTimeStr.match(usDtFormat);
+            
+            if (usMatch) {
+              const [, monthStr, dayStr, yearStr, hoursStr, minutesStr, secondsStr] = usMatch;
+              
+              const year = parseInt(yearStr, 10);
+              const month = parseInt(monthStr, 10) - 1;
+              const day = parseInt(dayStr, 10);
+              const hours = parseInt(hoursStr, 10);
+              const minutes = parseInt(minutesStr, 10);
+              const seconds = parseInt(secondsStr, 10);
+              
+              DEBUG.log('date', `Trade ${i} - Creating date from US format: M=${month+1}, D=${day}, Y=${year}, h=${hours}, m=${minutes}, s=${seconds}`);
+              
+              // Create the date using UTC to avoid timezone issues
+              openTime = new Date(Date.UTC(year, month, day, hours, minutes, seconds));
+              DEBUG.log('date', `Trade ${i} - US format parsing result: ${openTime.toISOString()}`);
+            } else {
+              // Fall back to standard parser
+              openTime = parseDate(dateTimeStr);
+              DEBUG.log('date', `Trade ${i} - Standard parse date result: ${openTime.toISOString()}`);
+            }
+          }
+          
+          // Validate the parsed date to ensure it's not too far in the future or past
+          const now = new Date();
+          const fiveYearsAgo = new Date();
+          fiveYearsAgo.setFullYear(now.getFullYear() - 5);
+          const fiveYearsFromNow = new Date();
+          fiveYearsFromNow.setFullYear(now.getFullYear() + 5);
+          
+          if (openTime < fiveYearsAgo || openTime > fiveYearsFromNow) {
+            DEBUG.log('date', `⚠️ Trade ${i} - Date validation warning: ${openTime.toISOString()} is outside reasonable range`);
           }
         } else {
-          console.warn(`Missing date/time for row ${i}, generating placeholder`);
+          DEBUG.log('date', `Trade ${i} - Missing date/time, generating placeholder`);
           // Generate timestamp with trade number to ensure uniqueness
           openTime = new Date(); 
           // Make each trade have a slightly different time by offset based on trade number
           openTime.setMinutes(openTime.getMinutes() - Number(tradeNum || i));
+          DEBUG.log('date', `Trade ${i} - Generated placeholder date: ${openTime.toISOString()}`);
         }
       } catch (e) {
-        console.error(`Error creating trade timestamp for "${dateTimeStr}":`, e);
+        DEBUG.log('date', `‼️ Trade ${i} - Error creating trade timestamp for "${dateTimeStr}":`, e);
         openTime = new Date(); // Use current date as fallback
+        openTime.setMinutes(openTime.getMinutes() - i); // Ensure uniqueness
+        DEBUG.log('date', `Trade ${i} - Fallback date after error: ${openTime.toISOString()}`);
+      }
+      
+      // Ensure date is valid
+      if (isNaN(openTime.getTime())) {
+        DEBUG.log('date', `⚠️ Trade ${i} - Invalid date detected, using current time`);
+        openTime = new Date();
         openTime.setMinutes(openTime.getMinutes() - i); // Ensure uniqueness
       }
       
@@ -435,7 +606,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       const isExit = type.toLowerCase().includes('exit');
       const direction = isEntry ? 'in' : (isExit ? 'out' : '');
       
-      console.log(`Trade ${i} direction: ${direction} (isEntry: ${isEntry}, isExit: ${isExit})`);
+      DEBUG.log('row', `Trade ${i} direction: ${direction} (isEntry: ${isEntry}, isExit: ${isExit})`);
       
       // Determine trade side
       let side: 'long' | 'short' | undefined;
@@ -490,7 +661,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       };
       
       trades.push(trade);
-      console.log(`Added trade with timestamp ${trade.openTime.toISOString()}`);
+      DEBUG.log('row', `Added trade ${i} with timestamp ${trade.openTime.toISOString()}`);
     }
     
     // Update summary
@@ -509,8 +680,8 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
     summary['Final Balance'] = runningBalance;
     summary['Max Drawdown'] = maxDrawdown;
     
-    console.log('Summary generated:', summary);
-    console.log('Total trades processed:', trades.length);
+    DEBUG.log('parser', 'Summary generated:', summary);
+    DEBUG.log('parser', `Total trades processed: ${trades.length}`);
   }
   
   // Generate CSV from processed data
@@ -520,7 +691,12 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const csvUrl = URL.createObjectURL(blob);
   
-  console.log('CSV generated and URL created');
+  DEBUG.log('parser', 'CSV generated and URL created');
+  
+  // Log first few trades for debugging
+  if (trades.length > 0) {
+    DEBUG.log('parser', 'First 3 trades for verification:', trades.slice(0, 3));
+  }
 
   return { 
     summary, 
@@ -534,22 +710,22 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
  * Parses MT5/MT4 Excel file and extracts trades with enhanced date parsing
  */
 export const parseMT5Excel = async (file: File, initialBalance?: number): Promise<ParsedStrategyReport> => {
+  DEBUG.log('parser', `Starting MT5/MT4 Excel parsing for file: ${file.name}`);
+  
   // Read the Excel file
   const buffer = await file.arrayBuffer();
   const workbook = read(buffer, { type: 'array' });
   
-  console.log(`Parsing MT5/MT4 Excel file: ${file.name}`);
-  
   // Check if this might be a TradingView export
   const isTradingView = await detectTradingViewFile(file);
   if (isTradingView) {
-    console.log("Detected TradingView export format");
+    DEBUG.log('parser', "Detected TradingView export format, switching parser");
     return parseTradingViewExcel(file, initialBalance);
   }
   
   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
   const rows = utils.sheet_to_json<string[]>(worksheet, { header: 1 });
-  console.log(`Total rows in MT5 file: ${rows.length}`);
+  DEBUG.log('parser', `Total rows in MT5 file: ${rows.length}`);
 
   const summary: StrategySummary = {};
   const trades: StrategyTrade[] = [];
@@ -564,7 +740,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
     if ((row[0] === 'Time' && row[1] === 'Deal') || 
         (row[0]?.includes('Time') && row[1]?.includes('Deal'))) {
       headerRowIndex = i;
-      console.log(`Found header row at index ${i}:`, row);
+      DEBUG.log('parser', `Found header row at index ${i}:`, row);
       break;
     }
   }
@@ -588,7 +764,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
     const balanceIndex = headerRow.findIndex(h => h === 'Balance');
     const commentIndex = headerRow.findIndex(h => h === 'Comment');
     
-    console.log(`Found column indexes:`, {
+    DEBUG.log('parser', `Found column indexes:`, {
       timeIndex,
       dealIndex,
       symbolIndex,
@@ -632,11 +808,11 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
       // Skip empty rows
       if (!timeValue && !dealValue) continue;
       
-      console.log(`Processing row ${i}, Date value: "${timeValue}"`);
+      DEBUG.log('parser', `Processing row ${i}, Date value: "${timeValue}"`);
       
       // Parse date using improved function
       const openTime = parseDate(timeValue);
-      console.log(`Parsed date: ${openTime}`);
+      DEBUG.log('parser', `Parsed date: ${openTime}`);
       
       // Determine if this is a balance entry
       const isBalanceEntry = typeValue === 'balance' || typeValue === '';
@@ -684,7 +860,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
     }
   } else {
     // Fallback to the old parsing logic if header row is not found
-    console.warn('Header row not found, falling back to default parsing');
+    DEBUG.log('parser', 'Header row not found, falling back to default parsing');
     
     let isDealsSection = false;
     let headerRow: string[] = [];
@@ -838,6 +1014,8 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
   // Create a Blob and downloadable URL for the CSV
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const csvUrl = URL.createObjectURL(blob);
+  
+  DEBUG.log('parser', 'MT5 parsing completed');
   
   return { 
     summary, 

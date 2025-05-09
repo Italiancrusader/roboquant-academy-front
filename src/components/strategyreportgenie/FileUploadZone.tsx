@@ -23,6 +23,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [localProcessing, setLocalProcessing] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Filter for .xlsx files
@@ -69,6 +70,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
           onProcessingStep?.(`Parsing file: ${file.name}`);
           console.log(`Parsing file: ${file.name}`);
           
+          // Forward the initialBalance to the parser
           const parsedData = await parseMT5Excel(file, initialBalance);
           console.log("Parsed data:", parsedData);
           
@@ -82,6 +84,37 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
             parsedData,
             source: parsedData.source // Add the source property from parsedData
           });
+          
+          // Debug info for first few trades to help with date troubleshooting
+          if (debugMode && parsedData.trades.length > 0) {
+            console.group('Debug: First 3 trades');
+            parsedData.trades.slice(0, 3).forEach((trade, idx) => {
+              console.log(`Trade #${idx + 1}:`, {
+                openTime: trade.openTime,
+                openTimeISO: trade.openTime.toISOString(),
+                openTimeLocal: trade.openTime.toString(),
+                dealId: trade.dealId,
+                symbol: trade.symbol,
+                type: trade.type,
+                direction: trade.direction,
+                side: trade.side,
+                profit: trade.profit,
+                balance: trade.balance
+              });
+            });
+            console.groupEnd();
+            
+            // Also log the last date string from trades
+            if (parsedData.trades.length > 0) {
+              const lastDate = parsedData.trades[parsedData.trades.length - 1].openTime;
+              console.log('Last trade date:', {
+                date: lastDate,
+                iso: lastDate.toISOString(),
+                local: lastDate.toString(),
+                utc: lastDate.toUTCString()
+              });
+            }
+          }
         } catch (error) {
           console.error(`Error parsing file ${file.name}:`, error);
           toast({
@@ -148,7 +181,17 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       
       {selectedFiles.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Selected Files</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Selected Files</h3>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setDebugMode(!debugMode)} 
+              className="text-xs"
+            >
+              {debugMode ? 'Disable Debug Mode' : 'Enable Debug Mode'}
+            </Button>
+          </div>
           <div className="space-y-2">
             {selectedFiles.map((file, index) => (
               <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted">
@@ -189,6 +232,21 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
                 'Analyze Files'
               )}
             </Button>
+          </div>
+        </div>
+      )}
+      
+      {debugMode && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <AlertCircle className="h-5 w-5 text-yellow-500 mr-3 mt-0.5" />
+            <div>
+              <h4 className="font-medium text-yellow-800">Debug Mode Enabled</h4>
+              <p className="text-sm text-yellow-700 mt-1">
+                Additional debug information will be logged to the browser console during file processing.
+                This can help identify issues with date parsing and trade data extraction.
+              </p>
+            </div>
           </div>
         </div>
       )}
