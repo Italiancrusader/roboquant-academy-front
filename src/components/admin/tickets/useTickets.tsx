@@ -139,15 +139,15 @@ export const useTickets = () => {
           return true;
         }
         
-        // If profile is null, we can't match against user details
+        // Check if ticket has a profile before trying to access its properties
         if (!ticket.profile) {
           return false;
         }
         
-        // Now safely access profile properties
-        const email = ticket.profile.email ?? '';
-        const firstName = ticket.profile.first_name ?? '';
-        const lastName = ticket.profile.last_name ?? '';
+        // Now we can safely access profile properties using optional chaining and nullish coalescing
+        const email = ticket.profile?.email ?? '';
+        const firstName = ticket.profile?.first_name ?? '';
+        const lastName = ticket.profile?.last_name ?? '';
         
         // Now we can safely check these strings
         return email.toLowerCase().includes(term) || 
