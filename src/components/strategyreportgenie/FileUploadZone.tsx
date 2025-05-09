@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, File, FileUp, AlertCircle, Loader2 } from 'lucide-react';
@@ -79,7 +78,8 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
             type: file.type,
             file: file,
             dateUploaded: new Date(),
-            parsedData
+            parsedData,
+            source: parsedData.source // Add the source property from parsedData
           });
         } catch (error) {
           console.error(`Error parsing file ${file.name}:`, error);
