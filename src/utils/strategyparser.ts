@@ -1,4 +1,3 @@
-
 import { read, utils, write } from 'xlsx';
 import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/strategyreportgenie';
 
@@ -76,12 +75,12 @@ const parseDate = (dateStr: string): Date => {
     // Remove any extra spaces that might be present
     dateStr = dateStr.trim();
     
-    // Handle TradingView specific format: "YYYY-MM-DD HH:MM"
-    const tvFormatRegex = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/;
-    const tvMatch = dateStr.match(tvFormatRegex);
+    // Handle the specific format "2025-05-07 09:15" (YYYY-MM-DD HH:MM)
+    const specificFormatRegex = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/;
+    const specificMatch = dateStr.match(specificFormatRegex);
     
-    if (tvMatch) {
-      const [, yearStr, monthStr, dayStr, hoursStr, minutesStr] = tvMatch;
+    if (specificMatch) {
+      const [, yearStr, monthStr, dayStr, hoursStr, minutesStr] = specificMatch;
       
       const year = parseInt(yearStr, 10);
       const month = parseInt(monthStr, 10) - 1; // Month is 0-indexed in JS
@@ -89,12 +88,10 @@ const parseDate = (dateStr: string): Date => {
       const hours = parseInt(hoursStr, 10);
       const minutes = parseInt(minutesStr, 10);
       
-      console.log(`TradingView format matched: ${year}-${month+1}-${day} ${hours}:${minutes}`);
+      console.log(`Specific format matched: ${year}-${month+1}-${day} ${hours}:${minutes}`);
       
-      // Create date directly with the parsed components
       const parsedDate = new Date(year, month, day, hours, minutes, 0);
-      
-      console.log(`Successfully parsed TradingView date: ${parsedDate.toISOString()}, Original: ${dateStr}`);
+      console.log(`Successfully parsed specific date format: ${parsedDate.toISOString()}, Original: ${dateStr}`);
       return parsedDate;
     }
     
@@ -400,11 +397,11 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       let openTime: Date;
       try {
         if (dateTimeStr) {
-          // Try to directly parse YYYY-MM-DD HH:MM format for TradingView files
-          const tvFormatMatch = dateTimeStr.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
+          // First try specific format YYYY-MM-DD HH:MM (like "2025-05-07 09:15")
+          const specificFormatMatch = dateTimeStr.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
           
-          if (tvFormatMatch) {
-            const [, yearStr, monthStr, dayStr, hoursStr, minutesStr] = tvFormatMatch;
+          if (specificFormatMatch) {
+            const [, yearStr, monthStr, dayStr, hoursStr, minutesStr] = specificFormatMatch;
             
             const year = parseInt(yearStr, 10);
             const month = parseInt(monthStr, 10) - 1; // Month is 0-indexed in JS
@@ -413,7 +410,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
             const minutes = parseInt(minutesStr, 10);
             
             openTime = new Date(year, month, day, hours, minutes, 0);
-            console.log(`Directly parsed TV date format: "${dateTimeStr}" -> ${openTime.toISOString()}`);
+            console.log(`Directly parsed specific date format: "${dateTimeStr}" -> ${openTime.toISOString()}`);
           } else {
             // Fall back to standard parser
             openTime = parseDate(dateTimeStr);
@@ -421,12 +418,14 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
           }
         } else {
           console.warn(`Missing date/time for row ${i}, generating placeholder`);
-          // Generate slightly different timestamps for each trade if no date is provided
-          openTime = new Date(); // Use current date as fallback
+          // Generate timestamp with row index to ensure uniqueness
+          openTime = new Date(); 
+          openTime.setMinutes(openTime.getMinutes() - i); // Make each row have a slightly different time
         }
       } catch (e) {
         console.error(`Error creating trade timestamp for "${dateTimeStr}":`, e);
         openTime = new Date(); // Use current date as fallback
+        openTime.setMinutes(openTime.getMinutes() - i); // Ensure uniqueness
       }
       
       // Determine trade direction and state
@@ -685,8 +684,6 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
     // Fallback to the old parsing logic if header row is not found
     console.warn('Header row not found, falling back to default parsing');
     
-    const summary: StrategySummary = {};
-    const trades: StrategyTrade[] = [];
     let isDealsSection = false;
     let headerRow: string[] = [];
     
@@ -727,8 +724,8 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
             // Format like "MM/DD/YYYY HH:MM:SS" in first column
             const parts = row[0].split(' ');
             if (parts.length >= 2) {
-              dateStr = parts[0].replace(/["']/g, '');
-              timeStr = parts[1].replace(/["']/g, '');
+              dateStr = parts[0].replace(/[\"']/g, '');
+              timeStr = parts[1].replace(/[\"']/g, '');
             }
             dealId = row[1];
           }
@@ -742,7 +739,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
           dealId = row[1];
           
           // Try to split the first column if it contains both date and time
-          const firstCol = String(row[0]).replace(/["']/g, '');
+          const firstCol = String(row[0]).replace(/[\"']/g, '');
           if (firstCol.includes(' ')) {
             const parts = firstCol.split(' ');
             dateStr = parts[0];
@@ -806,7 +803,29 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
           state = row[4] || ''; // Usually 'out'
         }
         
-        // More code would follow here...
+        // Create trade entry
+        const trade: StrategyTrade = {
+          openTime,
+          order: Number(dealId) || 0,
+          dealId: dealId,
+          symbol: row[2] || '',
+          type: row[3] || '',
+          direction: state,
+          side,
+          volumeLots: Number(row[5]?.replace(',', '.')) || 0,
+          priceOpen: Number(row[6]?.replace(',', '.')) || 0,
+          stopLoss: null,
+          takeProfit: null,
+          timeFlag: openTime,
+          state,
+          comment: row[12] || '',
+          commission: Number(row[8]?.replace(',', '.')) || 0,
+          swap: Number(row[9]?.replace(',', '.')) || 0,
+          profit: Number(row[10]?.replace(',', '.')) || 0,
+          balance: Number(row[11]?.replace(',', '.')) || 0
+        };
+        
+        trades.push(trade);
       }
     }
   }
