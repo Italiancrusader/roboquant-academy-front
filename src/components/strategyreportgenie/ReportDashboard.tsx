@@ -247,7 +247,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
         
         <div className="space-y-4">
           <TabsContent value="overview" className="my-2">
-            <Card className="p-6 overflow-hidden">
+            <Card className="p-6">
               <EquityChart trades={trades} />
             </Card>
           </TabsContent>

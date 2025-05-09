@@ -113,12 +113,12 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
         </div>
       </div>
       
-      <div className="h-[400px]">
+      <div className="min-h-[400px] max-h-[600px] w-full">
         <ChartContainer config={{}}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
-              margin={{ top: 20, right: 30, left: 30, bottom: 40 }}
+              margin={{ top: 20, right: 40, left: 40, bottom: 60 }}
               barGap={0}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -134,10 +134,11 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                   offset: -15,
                   fill: 'hsl(var(--muted-foreground))' 
                 }}
+                interval={monthlyData.length > 12 ? 'preserveStartEnd' : 0}
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
-                width={65}
+                width={80}
                 tickFormatter={(value) => `$${value.toLocaleString()}`}
                 label={{ 
                   value: 'Profit/Loss ($)', 
@@ -145,6 +146,8 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                   position: 'insideLeft',
                   style: { fill: 'hsl(var(--muted-foreground))' }
                 }}
+                domain={['auto', 'auto']}
+                padding={{ top: 20, bottom: 20 }}
               />
               <Tooltip
                 content={({ active, payload }) => {

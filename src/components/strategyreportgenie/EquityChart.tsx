@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   ResponsiveContainer,
@@ -51,9 +50,9 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     return Math.ceil(Math.max(...chartData.map(d => d.equity)) * 1.05);
   }, [chartData]);
   
-  // Calculate padding to ensure all points are visible (15% padding instead of 10%)
+  // Calculate padding to ensure all points are visible (increased from 15% to 20%)
   const equityPadding = React.useMemo(() => {
-    return (maxEquity - minEquity) * 0.15;
+    return (maxEquity - minEquity) * 0.2;
   }, [minEquity, maxEquity]);
   
   const yAxisMin = Math.max(0, minEquity - equityPadding);
@@ -76,6 +75,13 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     if (!(date instanceof Date)) return '';
     return `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear().toString().substring(2)}`;
   };
+  
+  // Calculate appropriate interval for x-axis ticks based on data length
+  const calculateTickInterval = () => {
+    if (chartData.length <= 10) return 0; // Show all ticks for small datasets
+    if (chartData.length <= 30) return Math.floor(chartData.length / 10);
+    return 'preserveStartEnd'; // For large datasets, only show start and end
+  };
 
   return (
     <div className="space-y-4">
@@ -89,7 +95,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
           </div>
         )}
       </div>
-      <div className="h-[400px] w-full"> {/* Increased height for better visibility */}
+      <div className="min-h-[400px] max-h-[600px] w-full"> 
         <ChartContainer config={{
           equity: { color: "hsl(var(--primary))" }
         }}>
@@ -98,9 +104,9 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
               data={chartData}
               margin={{
                 top: 20,
-                right: 30,
-                left: 25,
-                bottom: 40,
+                right: 40,
+                left: 40,
+                bottom: 60,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -120,7 +126,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   offset: -20,
                   fill: 'hsl(var(--muted-foreground))' 
                 }}
-                interval="preserveStartEnd"
+                interval={calculateTickInterval()}
                 padding={{ left: 10, right: 10 }}
               />
               <YAxis 
@@ -191,9 +197,9 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 strokeWidth={2}
                 isAnimationActive={false}
               />
-              {/* Marker for first point */}
+              {/* Using index for reference dots instead of dates */}
               <ReferenceDot
-                x={0}  // Use the index (0) instead of the Date object
+                x={chartData[0].date}
                 y={firstPoint.equity}
                 yAxisId="left"
                 r={6}
@@ -201,9 +207,8 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 stroke="hsl(var(--background))"
                 strokeWidth={2}
               />
-              {/* Marker for last point */}
               <ReferenceDot
-                x={chartData.length - 1}  // Last index
+                x={chartData[chartData.length - 1].date}
                 y={lastPoint.equity}
                 yAxisId="left"
                 r={6}
