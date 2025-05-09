@@ -12,7 +12,7 @@ import {
   Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer } from '@/components/ui/chart';
+import { ChartContainer, ChartConfig } from '@/components/ui/chart';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import { CalendarArrowUp, Calendar } from 'lucide-react';
 
@@ -94,6 +94,18 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
     );
   }
 
+  // Define chart configuration
+  const chartConfig: ChartConfig = {
+    profit: {
+      label: "Monthly P&L",
+      color: "hsl(var(--success))"
+    },
+    loss: {
+      label: "Loss",
+      color: "hsl(var(--destructive))"
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -114,7 +126,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
       </div>
       
       <div className="min-h-[400px] max-h-[600px] w-full">
-        <ChartContainer config={{}}>
+        <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
@@ -192,10 +204,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
               <Bar
                 dataKey="profit"
                 name="Monthly P&L"
-                isAnimationActive={false}
-                fill="hsl(var(--primary))"
-                fillOpacity={0}
-                stroke="none"
+                radius={[4, 4, 0, 0]}
               >
                 {monthlyData.map((entry, index) => (
                   <Cell 
