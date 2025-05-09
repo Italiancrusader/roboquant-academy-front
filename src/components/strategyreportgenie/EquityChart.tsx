@@ -176,9 +176,9 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 strokeWidth={2}
                 isAnimationActive={false}
               />
-              {/* Marker for first point */}
+              {/* Marker for first point - Fixed to use index instead of Date object */}
               <ReferenceDot
-                x={firstPoint.date}
+                x={0}  // Use the index (0) instead of the Date object
                 y={firstPoint.equity}
                 yAxisId="left"
                 r={6}
