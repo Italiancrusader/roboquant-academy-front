@@ -1,3 +1,4 @@
+
 import { read, utils, write } from 'xlsx';
 import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/strategyreportgenie';
 
@@ -418,9 +419,10 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
           }
         } else {
           console.warn(`Missing date/time for row ${i}, generating placeholder`);
-          // Generate timestamp with row index to ensure uniqueness
+          // Generate timestamp with trade number to ensure uniqueness
           openTime = new Date(); 
-          openTime.setMinutes(openTime.getMinutes() - i); // Make each row have a slightly different time
+          // Make each trade have a slightly different time by offset based on trade number
+          openTime.setMinutes(openTime.getMinutes() - Number(tradeNum || i));
         }
       } catch (e) {
         console.error(`Error creating trade timestamp for "${dateTimeStr}":`, e);
