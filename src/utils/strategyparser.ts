@@ -1,3 +1,4 @@
+
 import { read, utils, write } from 'xlsx';
 import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/strategyreportgenie';
 
@@ -148,7 +149,7 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
       const profitUsd = profitUsdIndex >= 0 ? cleanNumeric(String(row[profitUsdIndex])) : 0;
       const cumulativeProfit = cumulativeProfitUsdIndex >= 0 ? cleanNumeric(String(row[cumulativeProfitUsdIndex])) : 0;
       
-      // Parse date/time - Fix for TradingView format (YYYY-MM-DD HH:MM)
+      // Parse date/time - FIXED: properly handle TradingView date format (YYYY-MM-DD HH:MM)
       let openTime: Date;
       try {
         if (typeof dateTimeStr === 'string') {
@@ -157,7 +158,13 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
             // Format: YYYY-MM-DD HH:MM
             const [datePart, timePart] = dateTimeStr.split(' ');
             const [year, month, day] = datePart.split('-');
-            const [hour, minute] = timePart ? timePart.split(':') : ['0', '0'];
+            let hour = '0', minute = '0';
+            
+            if (timePart) {
+              const timeParts = timePart.split(':');
+              hour = timeParts[0] || '0';
+              minute = timeParts[1] || '0';
+            }
             
             openTime = new Date(
               Number(year),
@@ -166,6 +173,12 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
               Number(hour),
               Number(minute)
             );
+            
+            // Validate the date created - if it's invalid, try an alternative approach
+            if (isNaN(openTime.getTime())) {
+              console.error("Invalid date created from parts:", dateTimeStr);
+              openTime = new Date(dateTimeStr);
+            }
           } else {
             // Fallback to default parsing
             openTime = new Date(dateTimeStr);
@@ -182,6 +195,10 @@ const parseTradingViewExcel = async (file: File): Promise<ParsedStrategyReport> 
           console.error("Unknown date format:", dateTimeStr);
           openTime = new Date(); // Use current date as fallback
         }
+        
+        // Log the parsed date for debugging
+        console.log(`Parsed date from '${dateTimeStr}' to:`, openTime.toISOString());
+        
       } catch (e) {
         console.error("Error parsing date:", e, dateTimeStr);
         openTime = new Date(); // Use current date as fallback

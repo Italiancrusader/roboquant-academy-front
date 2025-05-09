@@ -1,7 +1,4 @@
-
 import React from 'react';
-import { StrategyTrade } from '@/types/strategyreportgenie';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ResponsiveContainer,
   BarChart,
@@ -11,333 +8,354 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  PieChart,
-  Pie,
-  Cell
+  Cell,
 } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer } from '@/components/ui/chart';
-import { Layers, ArrowUpDown, Clock } from 'lucide-react';
+import { StrategyTrade } from '@/types/strategyreportgenie';
+import { Calendar } from 'lucide-react';
+import { ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
 interface TradeDistributionProps {
   trades: StrategyTrade[];
 }
 
-// Add an interface for the hour distribution data
-interface HourDistributionData {
-  hour: number;
-  count: number;
-  profit: number;
-  winRate: number;
-  winningTrades: number;
-  totalTrades: number;
-  hourFormatted: string; // Add the hourFormatted property to the interface
-}
-
 const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
-  // Get completed trades
-  const completedTrades = trades.filter(t => 
-    t.profit !== undefined && 
-    t.direction === 'out' && 
-    t.type !== 'balance' && 
-    t.type !== '');
-  
-  // Generate trade type distribution (long vs short)
-  const tradeTypeDistribution = React.useMemo(() => {
-    if (!completedTrades.length) return [];
-    
-    const typeMap = new Map();
-    
-    completedTrades.forEach(trade => {
-      // Determine trade direction (buy/sell or long/short)
-      let tradeType = 'Unknown';
-      if (trade.side) {
-        tradeType = trade.side.charAt(0).toUpperCase() + trade.side.slice(1);
-      } else if (trade.type) {
-        if (trade.type.toLowerCase().includes('buy')) tradeType = 'Buy';
-        else if (trade.type.toLowerCase().includes('sell')) tradeType = 'Sell';
-      }
-      
-      if (!typeMap.has(tradeType)) {
-        typeMap.set(tradeType, {
-          name: tradeType,
-          count: 0,
+  // Filter to trades with valid dates and profit values
+  const validTrades = React.useMemo(() => {
+    return trades.filter(trade => 
+      trade.openTime instanceof Date && 
+      !isNaN(trade.openTime.getTime()) &&
+      trade.profit !== undefined && 
+      trade.direction === 'out'
+    );
+  }, [trades]);
+
+  // Group trades by hour
+  const hourlyData = React.useMemo(() => {
+    if (validTrades.length === 0) return [];
+
+    const hourlyMap = new Map();
+
+    validTrades.forEach(trade => {
+      const date = trade.openTime;
+      const hour = date.getHours();
+
+      if (!hourlyMap.has(hour)) {
+        hourlyMap.set(hour, {
+          hour: hour,
           profit: 0,
-          winningTrades: 0
+          trades: 0,
+          wins: 0,
+          losses: 0,
         });
       }
-      
-      const stats = typeMap.get(tradeType);
-      stats.count++;
-      stats.profit += trade.profit || 0;
-      
-      if ((trade.profit || 0) > 0) {
-        stats.winningTrades++;
-      }
-    });
-    
-    // Calculate win rate
-    typeMap.forEach(stats => {
-      stats.winRate = stats.count > 0 ? (stats.winningTrades / stats.count) * 100 : 0;
-    });
-    
-    return Array.from(typeMap.values());
-  }, [completedTrades]);
-  
-  // Generate trade time distribution (by hour of day)
-  const tradeTimeDistribution = React.useMemo(() => {
-    if (!completedTrades.length) return [];
-    
-    // Initialize hours array
-    const hourDistribution: HourDistributionData[] = Array.from({ length: 24 }, (_, i) => ({
-      hour: i,
-      count: 0,
-      profit: 0,
-      winRate: 0,
-      winningTrades: 0,
-      totalTrades: 0,
-      hourFormatted: `${i}:00` // Initialize the hourFormatted property
-    }));
-    
-    completedTrades.forEach(trade => {
-      if (!(trade.openTime instanceof Date)) return;
-      
-      const hour = trade.openTime.getHours();
-      
-      hourDistribution[hour].totalTrades++;
-      hourDistribution[hour].profit += trade.profit || 0;
-      
-      if ((trade.profit || 0) > 0) {
-        hourDistribution[hour].winningTrades++;
-      }
-    });
-    
-    // Calculate win rate for each hour
-    hourDistribution.forEach(hour => {
-      hour.winRate = hour.totalTrades > 0 ? (hour.winningTrades / hour.totalTrades) * 100 : 0;
-      hour.hourFormatted = `${hour.hour}:00`; // Add a string representation
-    });
-    
-    // Keep only hours with trades
-    return hourDistribution.filter(hour => hour.totalTrades > 0);
-  }, [completedTrades]);
-  
-  // Generate profit distribution histogram
-  const profitDistribution = React.useMemo(() => {
-    if (!completedTrades.length) return [];
-    
-    // Define profit buckets
-    const buckets = [
-      { range: "< -500", min: -Infinity, max: -500, count: 0 },
-      { range: "-500 to -200", min: -500, max: -200, count: 0 },
-      { range: "-200 to -100", min: -200, max: -100, count: 0 },
-      { range: "-100 to -50", min: -100, max: -50, count: 0 },
-      { range: "-50 to 0", min: -50, max: 0, count: 0 },
-      { range: "0 to 50", min: 0, max: 50, count: 0 },
-      { range: "50 to 100", min: 50, max: 100, count: 0 },
-      { range: "100 to 200", min: 100, max: 200, count: 0 },
-      { range: "200 to 500", min: 200, max: 500, count: 0 },
-      { range: "> 500", min: 500, max: Infinity, count: 0 },
-    ];
-    
-    // Count trades in each bucket
-    completedTrades.forEach(trade => {
-      const profit = trade.profit || 0;
-      
-      const bucket = buckets.find(b => profit > b.min && profit <= b.max);
-      if (bucket) {
-        bucket.count++;
-      }
-    });
-    
-    return buckets;
-  }, [completedTrades]);
-  
-  // COLORS for the charts
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  if (!completedTrades.length) {
+      const hourData = hourlyMap.get(hour);
+      hourData.profit += trade.profit || 0;
+      hourData.trades++;
+
+      if (trade.profit !== undefined) {
+        if (trade.profit > 0) {
+          hourData.wins++;
+        } else {
+          hourData.losses++;
+        }
+      }
+    });
+
+    // Convert to array and sort by hour
+    const hourlyArray = Array.from(hourlyMap.values());
+    hourlyArray.sort((a, b) => a.hour - b.hour);
+
+    return hourlyArray;
+  }, [validTrades]);
+
+  // Calculate win rate for each hour
+  const hourlyWinRateData = React.useMemo(() => {
+    return hourlyData.map(hourData => ({
+      ...hourData,
+      winRate: hourData.trades > 0 ? (hourData.wins / hourData.trades) * 100 : 0,
+    }));
+  }, [hourlyData]);
+
+  // Group trades by day of the week
+  const weekdayData = React.useMemo(() => {
+    if (validTrades.length === 0) return [];
+
+    const weekdayMap = new Map();
+
+    validTrades.forEach(trade => {
+      const date = trade.openTime;
+      const day = date.getDay(); // 0 (Sunday) to 6 (Saturday)
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+
+      if (!weekdayMap.has(day)) {
+        weekdayMap.set(day, {
+          day: dayName,
+          profit: 0,
+          trades: 0,
+          wins: 0,
+          losses: 0,
+        });
+      }
+
+      const dayData = weekdayMap.get(day);
+      dayData.profit += trade.profit || 0;
+      dayData.trades++;
+
+      if (trade.profit !== undefined) {
+        if (trade.profit > 0) {
+          dayData.wins++;
+        } else {
+          dayData.losses++;
+        }
+      }
+    });
+
+    // Convert to array and sort by day
+    const weekdayArray = Array.from(weekdayMap.values());
+    weekdayArray.sort((a, b) => {
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      return days.indexOf(a.day) - days.indexOf(b.day);
+    });
+
+    return weekdayArray;
+  }, [validTrades]);
+
+  // Calculate win rate for each day of the week
+  const weekdayWinRateData = React.useMemo(() => {
+    return weekdayData.map(dayData => ({
+      ...dayData,
+      winRate: dayData.trades > 0 ? (dayData.wins / dayData.trades) * 100 : 0,
+    }));
+  }, [weekdayData]);
+
+  if (validTrades.length === 0) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <p className="text-muted-foreground">No trade data available for distribution analysis</p>
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">No trade distribution data available</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Trade Distribution</h2>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Trade Type Distribution */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <ArrowUpDown className="h-5 w-5" /> Trade Direction
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Trade Distribution</h2>
+      </div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Calendar className="h-4 w-4" /> Hourly Distribution
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px]">
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    dataKey="count"
-                    data={tradeTypeDistribution}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    fill="#8884d8"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    isAnimationActive={false}
-                  >
-                    {tradeTypeDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value, name) => [value, name]} 
-                    labelFormatter={() => 'Trade Count'} 
-                    wrapperStyle={{ zIndex: 1000 }}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        
-        {/* Profit Distribution Histogram */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Layers className="h-5 w-5" /> Profit Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={profitDistribution}
-                  margin={{
-                    top: 5, 
-                    right: 20, 
-                    left: 20, 
-                    bottom: 40
-                  }}
+                <BarChart
+                  data={hourlyWinRateData}
+                  margin={{ top: 20, right: 30, left: 30, bottom: 40 }}
+                  barGap={0}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="range"
-                    angle={-30}
-                    textAnchor="end"
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="hour"
+                    stroke="hsl(var(--muted-foreground))"
                     height={60}
+                    tick={{ fontSize: 12 }}
+                    tickMargin={15}
+                    label={{
+                      value: 'Hour',
+                      position: 'insideBottom',
+                      offset: -15,
+                      fill: 'hsl(var(--muted-foreground))'
+                    }}
                   />
-                  <YAxis 
-                    width={40}
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    width={65}
+                    tickFormatter={(value: ValueType) => {
+                      if (typeof value === 'number') {
+                        return `${value.toFixed(0)}%`;
+                      }
+                      return String(value);
+                    }}
+                    label={{
+                      value: 'Win Rate (%)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      style: { fill: 'hsl(var(--muted-foreground))' }
+                    }}
                   />
-                  <Tooltip formatter={(value) => [`${value} trades`, 'Count']} wrapperStyle={{ zIndex: 1000 }} />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="rounded-lg border bg-background p-3 shadow-lg">
+                            <div className="grid grid-cols-1 gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Hour
+                                </span>
+                                <span className="font-bold text-foreground">
+                                  {data.hour}
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Win Rate
+                                </span>
+                                <span className="font-bold text-green-500">
+                                  {data.winRate.toFixed(2)}%
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Trades
+                                </span>
+                                <span className="font-mono text-foreground">
+                                  {data.trades}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                    wrapperStyle={{ zIndex: 100 }}
+                  />
                   <Legend />
-                  <Bar 
-                    dataKey="count" 
-                    name="Trade Count" 
-                    fill="hsl(var(--primary))" 
+                  <Bar
+                    dataKey="winRate"
+                    name="Hourly Win Rate"
                     isAnimationActive={false}
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0}
+                    stroke="none"
                   >
-                    {profitDistribution.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.min >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} 
+                    {hourlyWinRateData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.winRate >= 50 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'}
                       />
                     ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Time Distribution */}
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Clock className="h-5 w-5" /> Trading Hour Performance
+          <CardTitle className="text-base flex items-center gap-2">
+            <Calendar className="h-4 w-4" /> Weekday Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[350px]">
-          <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={tradeTimeDistribution}
-                margin={{ top: 10, right: 40, left: 20, bottom: 20 }}
-                barGap={0}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="hourFormatted" 
-                  name="Hour"
-                  height={50}
-                  tickMargin={8}
-                />
-                <YAxis 
-                  yAxisId="left" 
-                  orientation="left"
-                  width={45}
-                  label={{ 
-                    value: 'Number of Trades', 
-                    angle: -90, 
-                    position: 'insideLeft',
-                    style: { fill: 'hsl(var(--muted-foreground))' },
-                    offset: -5
-                  }} 
-                />
-                <YAxis 
-                  yAxisId="right" 
-                  orientation="right" 
-                  domain={[0, 100]} 
-                  width={55}
-                  label={{ 
-                    value: 'Win Rate %', 
-                    angle: -90, 
-                    position: 'insideRight',
-                    style: { fill: 'hsl(var(--muted-foreground))' },
-                    offset: 15
-                  }} 
-                  tickFormatter={(value) => `${value}%`}
-                  tickMargin={8}
-                />
-                <Tooltip 
-                  formatter={(value, name) => {
-                    // Fix the toFixed error by checking if value is a number first
-                    if (name === 'Win Rate') {
-                      // Convert value to number if it's not already
-                      const numericValue = typeof value === 'number' ? value : Number(value);
-                      // Only use toFixed if it's a valid number
-                      return [!isNaN(numericValue) ? `${numericValue.toFixed(1)}%` : `${value}%`, name];
-                    }
-                    return [value, name];
-                  }}
-                  wrapperStyle={{ zIndex: 1000 }}
-                />
-                <Legend />
-                <Bar 
-                  yAxisId="left" 
-                  dataKey="totalTrades" 
-                  name="Total Trades" 
-                  fill="hsl(var(--primary))" 
-                  isAnimationActive={false}
-                  maxBarSize={60}
-                />
-                <Bar 
-                  yAxisId="right" 
-                  dataKey="winRate" 
-                  name="Win Rate" 
-                  fill="hsl(var(--accent))" 
-                  isAnimationActive={false}
-                  maxBarSize={60}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+        <CardContent>
+          <div className="h-[400px]">
+            <ChartContainer config={{}}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={weekdayWinRateData}
+                  margin={{ top: 20, right: 30, left: 30, bottom: 40 }}
+                  barGap={0}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="day"
+                    stroke="hsl(var(--muted-foreground))"
+                    height={60}
+                    tick={{ fontSize: 12 }}
+                    tickMargin={15}
+                    label={{
+                      value: 'Day of Week',
+                      position: 'insideBottom',
+                      offset: -15,
+                      fill: 'hsl(var(--muted-foreground))'
+                    }}
+                  />
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    width={65}
+                    tickFormatter={(value: ValueType) => {
+                      if (typeof value === 'number') {
+                        return `${value.toFixed(0)}%`;
+                      }
+                      return String(value);
+                    }}
+                    label={{
+                      value: 'Win Rate (%)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      style: { fill: 'hsl(var(--muted-foreground))' }
+                    }}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="rounded-lg border bg-background p-3 shadow-lg">
+                            <div className="grid grid-cols-1 gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Day of Week
+                                </span>
+                                <span className="font-bold text-foreground">
+                                  {data.day}
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Win Rate
+                                </span>
+                                <span className="font-bold text-green-500">
+                                  {data.winRate.toFixed(2)}%
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Trades
+                                </span>
+                                <span className="font-mono text-foreground">
+                                  {data.trades}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                    wrapperStyle={{ zIndex: 100 }}
+                  />
+                  <Legend />
+                  <Bar
+                    dataKey="winRate"
+                    name="Weekday Win Rate"
+                    isAnimationActive={false}
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0}
+                    stroke="none"
+                  >
+                    {weekdayWinRateData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.winRate >= 50 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
         </CardContent>
       </Card>
     </div>

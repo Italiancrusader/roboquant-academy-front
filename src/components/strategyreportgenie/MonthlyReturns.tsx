@@ -31,6 +31,11 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
     );
   }, [trades]);
   
+  console.log("Valid trades for monthly returns:", validTrades.length);
+  if (validTrades.length > 0) {
+    console.log("First valid trade date:", validTrades[0].openTime);
+  }
+  
   // Generate monthly returns data
   const monthlyData = React.useMemo(() => {
     if (validTrades.length === 0) return [];
@@ -64,6 +69,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
     const monthlyArray = Array.from(monthlyMap.values());
     monthlyArray.sort((a, b) => a.sortKey - b.sortKey);
     
+    console.log("Monthly data generated:", monthlyArray);
     return monthlyArray;
   }, [validTrades]);
   
@@ -112,7 +118,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
-              margin={{ top: 10, right: 30, left: 30, bottom: 40 }}
+              margin={{ top: 20, right: 30, left: 30, bottom: 40 }}
               barGap={0}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -185,7 +191,6 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 name="Monthly P&L"
                 isAnimationActive={false}
                 fill="hsl(var(--primary))"
-                /* Fixed the type error by using fillOpacity to keep the conditional color logic */
                 fillOpacity={0}
                 stroke="none"
               >
