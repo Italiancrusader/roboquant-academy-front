@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { FileType } from '@/types/strategyreportgenie';
 import { 
   CircleDollarSign, 
@@ -17,7 +19,8 @@ import {
   ChartBar,
   Target,
   Calculator,
-  Globe
+  Globe,
+  RefreshCw
 } from 'lucide-react';
 
 // These components will need to be moved/copied from mt5reportgenie to strategyreportgenie folder
@@ -31,6 +34,7 @@ import TradeDistribution from './TradeDistribution';
 import PerformanceHeatmap from './PerformanceHeatmap';
 import DrawdownAnalysis from './DrawdownAnalysis';
 import CorrelationAnalysis from './CorrelationAnalysis';
+import { toast } from '@/components/ui/use-toast';
 
 interface ReportDashboardProps {
   files: FileType[];
@@ -48,9 +52,11 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
   onOptimizeStrategy 
 }) => {
   const [activeFileId, setActiveFileId] = useState<string>(files[0]?.id);
+  const [initialBalance, setInitialBalance] = useState<string>("10000.00");
+  const [calculatedTrades, setCalculatedTrades] = useState<any[]>([]);
   
   const activeFile = files.find(file => file.id === activeFileId);
-  const trades = activeFile?.parsedData?.trades || [];
+  const trades = calculatedTrades.length > 0 ? calculatedTrades : (activeFile?.parsedData?.trades || []);
   
   // Get file source for display
   const getSourceBadge = (source: 'MT4' | 'MT5' | 'TradingView' | undefined) => {
@@ -65,6 +71,61 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
         return null;
     }
   };
+  
+  // Function to recalculate trades with new initial balance
+  const recalculateTrades = () => {
+    if (!activeFile || !activeFile.parsedData?.trades.length) return;
+    
+    const parsedBalance = parseFloat(initialBalance.replace(/,/g, ''));
+    if (isNaN(parsedBalance) || parsedBalance <= 0) {
+      toast({
+        title: "Invalid balance",
+        description: "Please enter a valid positive number for initial balance.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Clone the original trades to avoid mutating the source
+      const originalTrades = [...activeFile.parsedData.trades];
+      const newTrades = [...originalTrades];
+      
+      // Find the first trade with a balance
+      let firstBalanceIndex = newTrades.findIndex(t => t.balance !== undefined);
+      if (firstBalanceIndex === -1) return;
+      
+      // Calculate the difference between the current first balance and the new initial balance
+      const oldInitialBalance = newTrades[firstBalanceIndex].balance || 0;
+      const balanceDiff = parsedBalance - oldInitialBalance;
+      
+      // Adjust all balances by the difference
+      for (let i = 0; i < newTrades.length; i++) {
+        if (newTrades[i].balance !== undefined) {
+          newTrades[i].balance = (newTrades[i].balance || 0) + balanceDiff;
+        }
+      }
+      
+      setCalculatedTrades(newTrades);
+      
+      toast({
+        title: "Balance updated",
+        description: `Recalculated metrics with initial balance: $${parsedBalance.toLocaleString()}`,
+      });
+    } catch (error) {
+      console.error("Error recalculating with new balance:", error);
+      toast({
+        title: "Calculation error",
+        description: "There was an error recalculating metrics with the new balance.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // Reset calculated trades when active file changes
+  useEffect(() => {
+    setCalculatedTrades([]);
+  }, [activeFileId]);
   
   const metrics = React.useMemo(() => {
     
@@ -214,6 +275,39 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
           Clear All
         </Button>
       </div>
+      
+      {/* Initial Balance Input */}
+      <Card className="p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex items-center">
+            <CircleDollarSign className="h-5 w-5 text-primary mr-2" />
+            <Label htmlFor="initialBalance" className="font-medium">Initial Balance:</Label>
+          </div>
+          <div className="flex gap-2 flex-1 max-w-xs">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+              <Input
+                id="initialBalance"
+                className="pl-7"
+                value={initialBalance}
+                onChange={(e) => setInitialBalance(e.target.value)}
+                placeholder="10000.00"
+              />
+            </div>
+            <Button 
+              variant="secondary" 
+              className="flex items-center" 
+              onClick={recalculateTrades}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Recalculate
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1 sm:mt-0 sm:ml-2">
+            Update balance to recalculate all performance metrics
+          </p>
+        </div>
+      </Card>
       
       <KpiCards metrics={metrics} />
       

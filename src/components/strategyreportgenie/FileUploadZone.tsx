@@ -9,6 +9,7 @@ import { toast } from '@/components/ui/use-toast';
 import { parseMT5Excel, validateStrategyFile } from '@/utils/strategyparser';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import InitialBalanceDialog from './InitialBalanceDialog';
 
 interface FileUploadZoneProps {
   onFilesUploaded: (files: FileType[]) => void;
@@ -25,6 +26,8 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   const [localProcessing, setLocalProcessing] = useState(false);
   const [initialBalance, setInitialBalance] = useState<string>("10000.00");
   const [hasTradingViewFile, setHasTradingViewFile] = useState(false);
+  const [showBalanceDialog, setShowBalanceDialog] = useState(false);
+  const [currentTVFile, setCurrentTVFile] = useState<File | null>(null);
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Filter for .xlsx files
@@ -118,6 +121,19 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       
       // Process all files
       for (const file of selectedFiles) {
+        // If it's a TradingView file, show the dialog for initial balance
+        const isTradingView = file.name.toLowerCase().includes('tradingview') || 
+                          file.name.toLowerCase().includes('tv') ||
+                          file.name.toLowerCase().includes('trading view') ||
+                          file.name.toLowerCase().includes('list of trades');
+                          
+        if (isTradingView) {
+          setCurrentTVFile(file);
+          setShowBalanceDialog(true);
+          setLocalProcessing(false);
+          return;
+        }
+        
         const processed = await processFile(file);
         if (processed) {
           processedFiles.push(processed);
@@ -143,7 +159,37 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         variant: "destructive"
       });
     } finally {
-      setLocalProcessing(false);
+      if (!showBalanceDialog) {
+        setLocalProcessing(false);
+      }
+    }
+  };
+  
+  const handleBalanceConfirm = async (balance: number) => {
+    setInitialBalance(balance.toString());
+    setShowBalanceDialog(false);
+    
+    if (currentTVFile) {
+      setLocalProcessing(true);
+      
+      try {
+        const processed = await processFile(currentTVFile);
+        if (processed) {
+          onFilesUploaded([processed]);
+          setSelectedFiles([]);
+          setHasTradingViewFile(false);
+          setCurrentTVFile(null);
+        }
+      } catch (error) {
+        console.error('Error processing file after balance confirmation:', error);
+        toast({
+          title: "Processing failed",
+          description: "There was an error processing the file. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setLocalProcessing(false);
+      }
     }
   };
 
@@ -210,10 +256,10 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
           <div className="space-y-2">
             {selectedFiles.map((file, index) => (
               <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted">
-                <div className="flex items-center">
-                  <File className="h-5 w-5 mr-3 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">{file.name}</p>
+                <div className="flex items-center flex-1 min-w-0">
+                  <File className="h-5 w-5 mr-3 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{file.name}</p>
                     <p className="text-sm text-muted-foreground">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
@@ -222,6 +268,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm"
+                  className="ml-2 flex-shrink-0"
                   onClick={() => {
                     const newFiles = selectedFiles.filter((_, i) => i !== index);
                     setSelectedFiles(newFiles);
@@ -273,6 +320,20 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
           </div>
         </div>
       </div>
+      
+      {/* Initial Balance Dialog for TradingView files */}
+      {showBalanceDialog && currentTVFile && (
+        <InitialBalanceDialog
+          open={showBalanceDialog}
+          onClose={() => {
+            setShowBalanceDialog(false);
+            setLocalProcessing(false);
+            setCurrentTVFile(null);
+          }}
+          onConfirm={handleBalanceConfirm}
+          fileName={currentTVFile.name}
+        />
+      )}
     </div>
   );
 };
