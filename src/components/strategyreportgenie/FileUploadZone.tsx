@@ -1,13 +1,14 @@
 
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, File, FileUp, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, File, FileUp, AlertCircle, Loader2, CircleDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileType } from '@/types/strategyreportgenie';
 import { toast } from '@/components/ui/use-toast';
 import { parseMT5Excel, validateStrategyFile } from '@/utils/strategyparser';
-import InitialBalanceDialog from './InitialBalanceDialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface FileUploadZoneProps {
   onFilesUploaded: (files: FileType[]) => void;
@@ -22,9 +23,8 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [localProcessing, setLocalProcessing] = useState(false);
-  const [showBalanceDialog, setShowBalanceDialog] = useState(false);
-  const [currentFile, setCurrentFile] = useState<File | null>(null);
-  const [pendingFiles, setPendingFiles] = useState<{file: File, isTradingView: boolean}[]>([]);
+  const [initialBalance, setInitialBalance] = useState<string>("10000.00");
+  const [hasTradingViewFile, setHasTradingViewFile] = useState(false);
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Filter for .xlsx files
@@ -41,6 +41,16 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     if (validFiles.length > 0) {
       setSelectedFiles(validFiles);
       console.log("Files selected:", validFiles);
+      
+      // Check if any of the files might be TradingView files
+      const possiblyTradingView = validFiles.some(file => 
+        file.name.toLowerCase().includes('tradingview') || 
+        file.name.toLowerCase().includes('tv') ||
+        file.name.toLowerCase().includes('trading view') ||
+        file.name.toLowerCase().includes('list of trades')
+      );
+      
+      setHasTradingViewFile(possiblyTradingView);
     }
   }, []);
 
@@ -51,15 +61,23 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     }
   });
 
-  const processFile = async (file: File, initialBalance?: number) => {
+  const processFile = async (file: File) => {
     try {
       onProcessingStep?.(`Parsing file: ${file.name}`);
       console.log(`Parsing file: ${file.name}`);
       
-      const parsedData = await parseMT5Excel(file, initialBalance);
+      // Check if this might be a TradingView file based on filename
+      const isTradingView = file.name.toLowerCase().includes('tradingview') || 
+                            file.name.toLowerCase().includes('tv') ||
+                            file.name.toLowerCase().includes('trading view') ||
+                            file.name.toLowerCase().includes('list of trades');
+      
+      // Parse with initial balance if it's a TradingView file
+      const parsedBalance = isTradingView ? parseFloat(initialBalance.replace(/,/g, '')) : undefined;
+      const parsedData = await parseMT5Excel(file, parsedBalance);
       console.log("Parsed data:", parsedData);
       
-      // Determine source type based on filename or parsed data
+      // Determine source type based on parsed data
       let source: 'MT4' | 'MT5' | 'TradingView' = parsedData.source;
       
       return {
@@ -96,38 +114,20 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       // Small delay to ensure UI updates before heavy processing begins
       await new Promise(resolve => setTimeout(resolve, 10));
       
-      // Check each file to see if it's a TradingView file
-      const filesToProcess: {file: File, isTradingView: boolean}[] = [];
+      const processedFiles: FileType[] = [];
       
+      // Process all files
       for (const file of selectedFiles) {
-        // Improved detection for TradingView files - check both name and content
-        const isTradingView = file.name.toLowerCase().includes('tradingview') || 
-                             file.name.toLowerCase().includes('tv') ||
-                             file.name.toLowerCase().includes('trading view') ||
-                             file.name.toLowerCase().includes('list of trades');
-        
-        console.log(`File ${file.name} isTradingView: ${isTradingView}`);
-        filesToProcess.push({ file, isTradingView });
-      }
-      
-      // If there are any TradingView files, handle them specially
-      if (filesToProcess.some(f => f.isTradingView)) {
-        setPendingFiles(filesToProcess);
-        const tradingViewFile = filesToProcess.find(f => f.isTradingView);
-        if (tradingViewFile) {
-          setCurrentFile(tradingViewFile.file);
-          setShowBalanceDialog(true);
-          console.log("Showing balance dialog for file:", tradingViewFile.file.name);
-          return; // Important: exit function here to prevent further processing
+        const processed = await processFile(file);
+        if (processed) {
+          processedFiles.push(processed);
         }
       }
-      
-      // If no TradingView files, process normally
-      const processedFiles = await processFilesBatch(filesToProcess);
       
       if (processedFiles.length > 0) {
         onFilesUploaded(processedFiles);
         setSelectedFiles([]);
+        setHasTradingViewFile(false);
       } else {
         toast({
           title: "No valid files found",
@@ -145,63 +145,6 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     } finally {
       setLocalProcessing(false);
     }
-  };
-  
-  const handleBalanceConfirm = async (initialBalance: number) => {
-    setShowBalanceDialog(false);
-    
-    try {
-      setLocalProcessing(true);
-      console.log("Processing files with initial balance:", initialBalance);
-      const processedFiles = await processFilesBatch(pendingFiles, initialBalance);
-      
-      if (processedFiles.length > 0) {
-        onFilesUploaded(processedFiles);
-        setSelectedFiles([]);
-      }
-    } catch (error) {
-      console.error('Error processing files after balance input:', error);
-      toast({
-        title: "Processing failed",
-        description: "There was an error processing the files. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setPendingFiles([]);
-      setCurrentFile(null);
-      setLocalProcessing(false);
-    }
-  };
-  
-  const handleBalanceCancel = () => {
-    setShowBalanceDialog(false);
-    setPendingFiles([]);
-    setCurrentFile(null);
-    setLocalProcessing(false);
-    
-    toast({
-      title: "Upload canceled",
-      description: "TradingView file upload was canceled.",
-      variant: "default"
-    });
-  };
-  
-  const processFilesBatch = async (
-    files: {file: File, isTradingView: boolean}[], 
-    initialBalance?: number
-  ) => {
-    const processedFiles: FileType[] = [];
-    
-    for (const { file, isTradingView } of files) {
-      // Only pass initialBalance to TradingView files
-      const fileBalance = isTradingView ? initialBalance : undefined;
-      const processed = await processFile(file, fileBalance);
-      if (processed) {
-        processedFiles.push(processed);
-      }
-    }
-    
-    return processedFiles;
   };
 
   return (
@@ -235,6 +178,32 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         </CardContent>
       </Card>
       
+      {hasTradingViewFile && (
+        <div className="bg-blue-primary/10 border border-blue-primary/20 rounded-lg p-4">
+          <div className="flex items-start">
+            <CircleDollarSign className="h-5 w-5 text-blue-primary mr-3 mt-0.5" />
+            <div>
+              <h4 className="font-medium text-foreground">Initial Balance</h4>
+              <p className="text-sm text-muted-foreground mt-1 mb-3">
+                Enter the initial balance for your TradingView report. 
+                This value will be used for calculating performance metrics.
+              </p>
+              <div className="flex items-center max-w-xs">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    className="pl-7"
+                    value={initialBalance}
+                    onChange={(e) => setInitialBalance(e.target.value)}
+                    placeholder="10000.00"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {selectedFiles.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Selected Files</h3>
@@ -254,7 +223,17 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
                   variant="ghost" 
                   size="sm"
                   onClick={() => {
-                    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+                    const newFiles = selectedFiles.filter((_, i) => i !== index);
+                    setSelectedFiles(newFiles);
+                    // Update hasTradingViewFile flag if we remove a TradingView file
+                    if (newFiles.length === 0 || !newFiles.some(f => 
+                      f.name.toLowerCase().includes('tradingview') || 
+                      f.name.toLowerCase().includes('tv') ||
+                      f.name.toLowerCase().includes('trading view') ||
+                      f.name.toLowerCase().includes('list of trades')
+                    )) {
+                      setHasTradingViewFile(false);
+                    }
                     onProcessingStep?.(`Removed file: ${file.name}`);
                   }}
                 >
@@ -294,16 +273,6 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
           </div>
         </div>
       </div>
-      
-      {/* Initial Balance Dialog for TradingView files */}
-      {currentFile && (
-        <InitialBalanceDialog
-          open={showBalanceDialog}
-          onClose={handleBalanceCancel}
-          onConfirm={handleBalanceConfirm}
-          fileName={currentFile.name}
-        />
-      )}
     </div>
   );
 };
