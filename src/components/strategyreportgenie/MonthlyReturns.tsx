@@ -130,7 +130,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
-              margin={{ top: 20, right: 40, left: 40, bottom: 50 }} // Adjusted bottom margin
+              margin={{ top: 20, right: 30, left: 40, bottom: 50 }} // Adjusted margins
               barGap={0}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -144,14 +144,14 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 label={{ 
                   value: 'Date', 
                   position: 'insideBottom', 
-                  offset: -10, // Positioned closer to axis
+                  offset: -15, // Positioned closer to axis
                   fill: 'hsl(var(--muted-foreground))' 
                 }}
                 allowDataOverflow={false} // Prevent data overflow
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
-                width={80}
+                width={60} // Reduced width to give more space for bars
                 tickFormatter={(value) => `$${value.toLocaleString()}`}
                 label={{ 
                   value: 'Equity ($)', 
@@ -160,7 +160,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                   style: { fill: 'hsl(var(--muted-foreground))' }
                 }}
                 domain={['auto', 'auto']}
-                padding={{ top: 20, bottom: 20 }}
+                padding={{ top: 10, bottom: 10 }} // Added some padding
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -201,9 +201,9 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 }}
                 wrapperStyle={{ zIndex: 100 }}
               />
-              {/* Custom Legend that doesn't show the profit legend item */}
+              {/* Custom Legend */}
               <Legend 
-                wrapperStyle={{ bottom: -10, paddingTop: 30 }} // Adjusted legend positioning
+                wrapperStyle={{ bottom: 0, paddingTop: 20 }} // Adjusted legend positioning
                 content={() => (
                   <div className="flex justify-center items-center mt-2">
                     <div className="flex items-center gap-2 mr-4">
@@ -221,7 +221,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 dataKey="profit"
                 name="" // Removed the name completely
                 radius={[4, 4, 0, 0]}
-                barSize={35} // Increased bar width
+                barSize={30} // Adjusted bar width
               >
                 {monthlyData.map((entry, index) => (
                   <Cell 
