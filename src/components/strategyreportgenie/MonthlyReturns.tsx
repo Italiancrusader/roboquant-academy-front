@@ -98,11 +98,11 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
   const chartConfig: ChartConfig = {
     profit: {
       label: "Monthly P&L",
-      color: "hsl(var(--success))"
+      color: "#9b87f5" // Purple color for bars
     },
     loss: {
       label: "Loss",
-      color: "hsl(var(--destructive))"
+      color: "#ea384c" // Red color for negative bars
     }
   };
 
@@ -130,20 +130,20 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
-              margin={{ top: 20, right: 40, left: 40, bottom: 60 }}
+              margin={{ top: 20, right: 40, left: 40, bottom: 80 }} // Increased bottom margin
               barGap={0}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="month"
                 stroke="hsl(var(--muted-foreground))"
-                height={60}
+                height={70} // Increased height for labels
                 tick={{ fontSize: 12 }}
-                tickMargin={15}
+                tickMargin={25} // Increased tick margin
                 label={{ 
                   value: 'Month', 
                   position: 'insideBottom', 
-                  offset: -15,
+                  offset: -25, // Adjusted offset to prevent overlap
                   fill: 'hsl(var(--muted-foreground))' 
                 }}
                 interval={monthlyData.length > 12 ? 'preserveStartEnd' : 0}
@@ -200,16 +200,20 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 }}
                 wrapperStyle={{ zIndex: 100 }}
               />
-              <Legend />
+              <Legend 
+                wrapperStyle={{ bottom: 0, paddingTop: 20 }}
+              />
               <Bar
                 dataKey="profit"
                 name="Monthly P&L"
                 radius={[4, 4, 0, 0]}
+                barSize={35} // Increased bar width
               >
                 {monthlyData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`}
-                    fill={entry.profit >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'}
+                    fill={entry.profit >= 0 ? '#9b87f5' : '#ea384c'} // Purple for profit, Red for loss
+                    fillOpacity={0.85} // Added opacity for a nicer look
                   />
                 ))}
               </Bar>
