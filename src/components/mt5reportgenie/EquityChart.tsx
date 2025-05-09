@@ -33,6 +33,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
       .filter(trade => trade.balance)
       .map(trade => ({
         date: trade.openTime,
+        dateStr: trade.openTime.toISOString(), // Add string representation of date for ReferenceDot
         equity: trade.balance,
         profit: trade.profit || 0,
       }));
@@ -322,7 +323,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 />
                 {/* Reference dots for first and last points */}
                 <ReferenceDot
-                  x={firstPoint.date}
+                  x={firstPoint.dateStr} // Use string representation of the date
                   y={firstPoint.equity}
                   r={5}
                   fill="hsl(var(--primary))"
@@ -330,7 +331,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   strokeWidth={2}
                 />
                 <ReferenceDot
-                  x={lastPoint.date}
+                  x={lastPoint.dateStr} // Use string representation of the date
                   y={lastPoint.equity}
                   r={5}
                   fill="hsl(var(--success))"
