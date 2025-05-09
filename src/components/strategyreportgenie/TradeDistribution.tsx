@@ -307,7 +307,13 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                 />
                 <Tooltip 
                   formatter={(value, name) => {
-                    if (name === 'Win Rate') return [`${value.toFixed(1)}%`, name];
+                    // Fix the toFixed error by checking if value is a number first
+                    if (name === 'Win Rate') {
+                      // Convert value to number if it's not already
+                      const numericValue = typeof value === 'number' ? value : Number(value);
+                      // Only use toFixed if it's a valid number
+                      return [!isNaN(numericValue) ? `${numericValue.toFixed(1)}%` : `${value}%`, name];
+                    }
                     return [value, name];
                   }}
                   wrapperStyle={{ zIndex: 1000 }}

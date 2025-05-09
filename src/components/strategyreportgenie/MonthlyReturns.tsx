@@ -183,8 +183,18 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 dataKey="profit"
                 name="Monthly P&L"
                 isAnimationActive={false}
-                fill={(data) => (data.profit >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))')}
-              />
+                fill="hsl(var(--primary))"
+                /* Fixed the type error by using fillOpacity to keep the conditional color logic */
+                fillOpacity={0}
+                stroke={0}
+              >
+                {monthlyData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`}
+                    fill={entry.profit >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
