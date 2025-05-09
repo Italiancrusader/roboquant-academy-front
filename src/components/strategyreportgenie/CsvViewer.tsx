@@ -45,6 +45,39 @@ const CsvViewer: React.FC<CsvViewerProps> = ({ csvUrl, fileName, parsedData }) =
     }
   };
 
+  // Function to format cell content properly for display
+  const formatCellContent = (content: string, columnIndex: number, headers: string[]): React.ReactNode => {
+    // Check if this is the Time column (usually column D, which is index 3)
+    const isTimeColumn = headers[columnIndex]?.toLowerCase() === 'time' || columnIndex === 3;
+    
+    if (isTimeColumn && content) {
+      try {
+        // Check if it's already in the correct format MM/DD/YYYY HH:MM:SS
+        const dateFormatRegex = /^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/;
+        if (dateFormatRegex.test(content)) {
+          return content;
+        }
+        
+        // Parse the date and format it correctly
+        const date = new Date(content);
+        if (!isNaN(date.getTime())) {
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const year = date.getFullYear();
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          const seconds = String(date.getSeconds()).padStart(2, '0');
+          
+          return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+        }
+      } catch (e) {
+        console.error('Error formatting date:', e);
+      }
+    }
+    
+    return content;
+  };
+
   // Function to get table statistics
   const getTableStats = () => {
     if (!parsedData?.trades || parsedData.trades.length === 0) return null;
@@ -134,7 +167,7 @@ const CsvViewer: React.FC<CsvViewerProps> = ({ csvUrl, fileName, parsedData }) =
                       <TableRow key={rowIndex}>
                         {row.map((cell, cellIndex) => (
                           <TableCell key={cellIndex} className="font-mono text-xs">
-                            {cell}
+                            {formatCellContent(cell, cellIndex, csvData[0] || [])}
                           </TableCell>
                         ))}
                       </TableRow>
