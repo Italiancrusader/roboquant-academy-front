@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   ResponsiveContainer,
@@ -30,13 +29,28 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     
     if (tradesWithBalance.length === 0) return [];
     
+    console.log("First few trades for chart data:", tradesWithBalance.slice(0, 3));
+    
     // Keep only relevant fields for chart
     const chartPoints = tradesWithBalance.map((trade) => {
+      // Ensure trade.openTime is a valid Date object
+      const openTime = trade.openTime instanceof Date && !isNaN(trade.openTime.getTime()) 
+        ? trade.openTime
+        : new Date();
+      
       return {
-        date: trade.openTime,
+        date: openTime,
         equity: trade.balance || 0
       };
     });
+    
+    // Sort chart points by date
+    chartPoints.sort((a, b) => a.date.getTime() - b.date.getTime());
+    
+    console.log("First few chart points:", chartPoints.slice(0, 3).map(p => ({ 
+      date: p.date.toISOString(),
+      equity: p.equity
+    })));
     
     return chartPoints;
   }, [trades]);

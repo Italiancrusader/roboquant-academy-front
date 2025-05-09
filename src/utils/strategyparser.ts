@@ -1,3 +1,4 @@
+
 import { read, utils, write } from 'xlsx';
 import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/strategyreportgenie';
 
@@ -61,24 +62,37 @@ const generateCSV = (trades: StrategyTrade[]): string => {
 
 /**
  * Parse date string from various formats to JavaScript Date
+ * Enhanced to better handle TradingView date formats
  */
 const parseDate = (dateStr: string): Date => {
   try {
+    console.log(`Attempting to parse date: "${dateStr}"`);
+    
+    if (!dateStr || typeof dateStr !== 'string') {
+      console.error('Invalid date string provided:', dateStr);
+      return new Date();
+    }
+    
+    // Remove any extra spaces that might be present
+    dateStr = dateStr.trim();
+    
     // Handle different date formats:
     
-    // 1. YYYY-MM-DD HH:MM:SS or YYYY-MM-DD HH:MM format (used in your data)
-    const isoFormatRegex = /^(\d{4})-(\d{2})-(\d{2})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?$/;
+    // 1. YYYY-MM-DD HH:MM:SS or YYYY-MM-DD HH:MM format (common in TradingView)
+    const isoFormatRegex = /^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/;
     if (isoFormatRegex.test(dateStr)) {
       const match = dateStr.match(isoFormatRegex);
       if (match) {
         const year = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10) - 1; // Month is 0-indexed
+        const month = parseInt(match[2], 10) - 1; // Month is 0-indexed in JS
         const day = parseInt(match[3], 10);
         const hour = match[4] ? parseInt(match[4], 10) : 0;
         const minute = match[5] ? parseInt(match[5], 10) : 0;
         const second = match[6] ? parseInt(match[6], 10) : 0;
         
-        return new Date(year, month, day, hour, minute, second);
+        const parsedDate = new Date(year, month, day, hour, minute, second);
+        console.log(`Successfully parsed YYYY-MM-DD HH:MM[:SS] format: ${parsedDate}`);
+        return parsedDate;
       }
     }
     
@@ -91,7 +105,7 @@ const parseDate = (dateStr: string): Date => {
         const [hours, minutes, seconds] = timePart.split(':');
         
         // Create a new Date object (month is 0-indexed in JavaScript)
-        return new Date(
+        const parsedDate = new Date(
           Number(year), 
           Number(month) - 1, 
           Number(day), 
@@ -99,8 +113,12 @@ const parseDate = (dateStr: string): Date => {
           Number(minutes) || 0, 
           Number(seconds) || 0
         );
+        console.log(`Successfully parsed YYYY.MM.DD HH:MM:SS format: ${parsedDate}`);
+        return parsedDate;
       } else {
-        return new Date(Number(year), Number(month) - 1, Number(day));
+        const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+        console.log(`Successfully parsed YYYY.MM.DD format: ${parsedDate}`);
+        return parsedDate;
       }
     }
     
@@ -112,7 +130,7 @@ const parseDate = (dateStr: string): Date => {
       if (timePart) {
         const [hours, minutes, seconds] = timePart.split(':');
         
-        return new Date(
+        const parsedDate = new Date(
           Number(year), 
           Number(month) - 1, 
           Number(day), 
@@ -120,21 +138,32 @@ const parseDate = (dateStr: string): Date => {
           Number(minutes) || 0, 
           Number(seconds) || 0
         );
+        console.log(`Successfully parsed MM/DD/YYYY HH:MM:SS format: ${parsedDate}`);
+        return parsedDate;
       } else {
-        return new Date(Number(year), Number(month) - 1, Number(day));
+        const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+        console.log(`Successfully parsed MM/DD/YYYY format: ${parsedDate}`);
+        return parsedDate;
       }
     }
     
-    // Fallback to standard Date parsing
-    const parsedDate = new Date(dateStr);
-    if (!isNaN(parsedDate.getTime())) {
-      return parsedDate;
+    // Fallback to standard Date parsing with explicit logging
+    try {
+      const parsedDate = new Date(dateStr);
+      if (!isNaN(parsedDate.getTime())) {
+        console.log(`Successfully parsed using standard Date constructor: ${parsedDate}`);
+        return parsedDate;
+      } else {
+        console.error(`Standard Date constructor failed to parse: "${dateStr}"`);
+      }
+    } catch (e) {
+      console.error(`Error in standard Date parsing for "${dateStr}":`, e);
     }
     
-    console.error('Unable to parse date properly:', dateStr);
+    console.error(`All parsing methods failed for date string: "${dateStr}"`);
     return new Date(); // Return current date as fallback
   } catch (e) {
-    console.error('Error parsing date:', e, dateStr);
+    console.error(`Exception in parseDate for "${dateStr}":`, e);
     return new Date(); // Return current date as fallback
   }
 };
@@ -226,7 +255,7 @@ const detectTradingViewFile = async (file: File): Promise<boolean> => {
 };
 
 /**
- * Parse TradingView Excel report file
+ * Parse TradingView Excel report file with enhanced date parsing
  */
 const parseTradingViewExcel = async (file: File, initialBalance?: number): Promise<ParsedStrategyReport> => {
   // Read the Excel file
@@ -237,6 +266,10 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
   const sheetName = workbook.SheetNames.find(name => name === "List of trades") || workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
   const rows = utils.sheet_to_json<any>(worksheet, { header: 1 });
+  
+  console.log(`Parsing TradingView Excel file: ${file.name}`);
+  console.log(`Found sheet: ${sheetName}`);
+  console.log(`Total rows: ${rows.length}`);
   
   const summary: StrategySummary = {};
   const trades: StrategyTrade[] = [];
@@ -249,19 +282,38 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
   if (rows.length > 0) {
     // Find the headers (TradingView usually has headers in first row)
     const headers = rows[headerRowIndex];
+    console.log('Headers row:', headers);
     
-    // Find column indexes for important fields
-    const tradeNumIndex = headers.findIndex((h: string) => h === 'Trade #');
-    const typeIndex = headers.findIndex((h: string) => h === 'Type');
-    const signalIndex = headers.findIndex((h: string) => h === 'Signal');
-    const dateTimeIndex = headers.findIndex((h: string) => h === 'Date/Time');
-    const priceIndex = headers.findIndex((h: string) => h === 'Price USD');
-    const contractsIndex = headers.findIndex((h: string) => h === 'Contracts');
-    const profitUsdIndex = headers.findIndex((h: string) => h === 'Profit USD');
-    const profitPctIndex = headers.findIndex((h: string) => h === 'Profit %');
-    const cumulativeProfitUsdIndex = headers.findIndex((h: string) => h === 'Cumulative profit USD');
-    const cumulativeProfitPctIndex = headers.findIndex((h: string) => h === 'Cumulative profit %');
-    const drawdownUsdIndex = headers.findIndex((h: string) => h === 'Drawdown USD');
+    // Find column indexes for important fields - use case-insensitive search and be more flexible
+    const findColumnIndex = (possibleHeaders: string[]): number => {
+      return headers.findIndex((h: string) => {
+        if (!h) return false;
+        const headerText = String(h).toLowerCase();
+        return possibleHeaders.some(possible => headerText.includes(possible.toLowerCase()));
+      });
+    };
+    
+    const tradeNumIndex = findColumnIndex(['Trade #', 'Trade', 'ID', 'Deal']);
+    const typeIndex = findColumnIndex(['Type', 'Action']);
+    const signalIndex = findColumnIndex(['Signal', 'Direction', 'Side']);
+    const dateTimeIndex = findColumnIndex(['Date/Time', 'Date', 'Time', 'DateTime']);
+    const priceIndex = findColumnIndex(['Price', 'Price USD', 'Entry Price']);
+    const contractsIndex = findColumnIndex(['Contracts', 'Volume', 'Size', 'Lot']);
+    const profitUsdIndex = findColumnIndex(['Profit USD', 'Profit', 'P/L']);
+    const profitPctIndex = findColumnIndex(['Profit %', 'Return', 'Return %']);
+    const cumulativeProfitUsdIndex = findColumnIndex(['Cumulative profit USD', 'Cumulative Profit', 'Balance']);
+    
+    console.log(`Found column indexes:`, {
+      tradeNumIndex,
+      typeIndex,
+      signalIndex,
+      dateTimeIndex,
+      priceIndex,
+      contractsIndex,
+      profitUsdIndex,
+      profitPctIndex,
+      cumulativeProfitUsdIndex
+    });
     
     // Initialize with the provided initial balance
     let runningBalance = startingBalance;
@@ -273,25 +325,63 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       const row = rows[i];
       if (!row || row.length === 0) continue;
       
-      // Get values from the row
-      const tradeNum = tradeNumIndex >= 0 ? row[tradeNumIndex] : '';
-      const type = typeIndex >= 0 ? row[typeIndex] : '';
-      const signal = signalIndex >= 0 ? row[signalIndex] : '';
-      const dateTimeStr = dateTimeIndex >= 0 ? row[dateTimeIndex] : '';
-      const priceStr = priceIndex >= 0 ? String(row[priceIndex]) : '0';
-      const contracts = contractsIndex >= 0 ? cleanNumeric(String(row[contractsIndex])) : 0;
-      const profitUsd = profitUsdIndex >= 0 ? cleanNumeric(String(row[profitUsdIndex])) : 0;
+      console.log(`Processing row ${i}:`, row);
       
-      // Parse price, ensuring it properly handles commas
-      const price = cleanNumeric(priceStr);
+      // Get values from the row with safer fallbacks
+      const getRowValue = (index: number): string => {
+        if (index < 0 || index >= row.length) return '';
+        return row[index] !== undefined && row[index] !== null ? String(row[index]) : '';
+      };
       
-      // Parse date/time
+      const tradeNum = getRowValue(tradeNumIndex);
+      const type = getRowValue(typeIndex);
+      const signal = getRowValue(signalIndex);
+      const dateTimeStr = getRowValue(dateTimeIndex);
+      const priceStr = getRowValue(priceIndex);
+      const contractsStr = getRowValue(contractsIndex);
+      const profitUsdStr = getRowValue(profitUsdIndex);
+      
+      console.log(`Trade ${i} extracted values:`, {
+        tradeNum,
+        type,
+        signal,
+        dateTimeStr,
+        priceStr,
+        contractsStr,
+        profitUsdStr
+      });
+      
+      // Parse and validate numeric values with explicit error handling
+      let contracts = 0;
+      let profitUsd = 0;
+      let price = 0;
+      
+      try {
+        contracts = cleanNumeric(contractsStr);
+      } catch (e) {
+        console.error(`Error parsing contracts value "${contractsStr}":`, e);
+      }
+      
+      try {
+        profitUsd = cleanNumeric(profitUsdStr);
+      } catch (e) {
+        console.error(`Error parsing profit value "${profitUsdStr}":`, e);
+      }
+      
+      try {
+        price = cleanNumeric(priceStr);
+      } catch (e) {
+        console.error(`Error parsing price value "${priceStr}":`, e);
+      }
+      
+      // Parse date/time with enhanced date parser
       let openTime: Date;
       try {
         if (dateTimeStr) {
-          // Use the improved date parser
           openTime = parseDate(dateTimeStr);
+          console.log(`Parsed date "${dateTimeStr}" -> ${openTime}`);
         } else {
+          console.warn(`Missing date/time for row ${i}, generating placeholder`);
           // Generate slightly different timestamps for each trade if no date is provided
           const baseDate = new Date();
           baseDate.setDate(1);
@@ -303,7 +393,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
           openTime.setMinutes(openTime.getMinutes() + minutesToAdd);
         }
       } catch (e) {
-        console.error("Error creating trade timestamp:", e);
+        console.error(`Error creating trade timestamp for "${dateTimeStr}":`, e);
         openTime = new Date(); // Use current date as fallback
       }
       
@@ -311,6 +401,8 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       const isEntry = type.toLowerCase().includes('entry');
       const isExit = type.toLowerCase().includes('exit');
       const direction = isEntry ? 'in' : (isExit ? 'out' : '');
+      
+      console.log(`Trade ${i} direction: ${direction} (isEntry: ${isEntry}, isExit: ${isExit})`);
       
       // Determine trade side
       let side: 'long' | 'short' | undefined;
@@ -365,6 +457,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       };
       
       trades.push(trade);
+      console.log(`Added trade with timestamp ${trade.openTime}`);
     }
     
     // Update summary
@@ -382,6 +475,9 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
     summary['Initial Balance'] = startingBalance;
     summary['Final Balance'] = runningBalance;
     summary['Max Drawdown'] = maxDrawdown;
+    
+    console.log('Summary generated:', summary);
+    console.log('Total trades processed:', trades.length);
   }
   
   // Generate CSV from processed data
@@ -390,6 +486,8 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
   // Create a Blob and downloadable URL for the CSV
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const csvUrl = URL.createObjectURL(blob);
+  
+  console.log('CSV generated and URL created');
 
   return { 
     summary, 
@@ -400,12 +498,14 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
 };
 
 /**
- * Parses MT5/MT4 Excel file and extracts trades
+ * Parses MT5/MT4 Excel file and extracts trades with enhanced date parsing
  */
 export const parseMT5Excel = async (file: File, initialBalance?: number): Promise<ParsedStrategyReport> => {
   // Read the Excel file
   const buffer = await file.arrayBuffer();
   const workbook = read(buffer, { type: 'array' });
+  
+  console.log(`Parsing MT5/MT4 Excel file: ${file.name}`);
   
   // Check if this might be a TradingView export
   const isTradingView = await detectTradingViewFile(file);
@@ -416,6 +516,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
   
   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
   const rows = utils.sheet_to_json<string[]>(worksheet, { header: 1 });
+  console.log(`Total rows in MT5 file: ${rows.length}`);
 
   const summary: StrategySummary = {};
   const trades: StrategyTrade[] = [];
@@ -430,6 +531,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
     if ((row[0] === 'Time' && row[1] === 'Deal') || 
         (row[0]?.includes('Time') && row[1]?.includes('Deal'))) {
       headerRowIndex = i;
+      console.log(`Found header row at index ${i}:`, row);
       break;
     }
   }
@@ -453,30 +555,52 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
     const balanceIndex = headerRow.findIndex(h => h === 'Balance');
     const commentIndex = headerRow.findIndex(h => h === 'Comment');
     
+    console.log(`Found column indexes:`, {
+      timeIndex,
+      dealIndex,
+      symbolIndex,
+      typeIndex,
+      directionIndex,
+      volumeIndex,
+      priceIndex,
+      orderIndex,
+      commissionIndex,
+      swapIndex,
+      profitIndex,
+      balanceIndex,
+      commentIndex
+    });
+    
     // Process data rows
     for (let i = headerRowIndex + 1; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length === 0) continue;
       
-      // Extract values based on column indexes
-      const timeValue = timeIndex >= 0 && row[timeIndex] ? String(row[timeIndex]) : '';
-      const dealValue = dealIndex >= 0 && row[dealIndex] ? String(row[dealIndex]) : '';
-      const symbolValue = symbolIndex >= 0 && row[symbolIndex] ? String(row[symbolIndex]) : '';
-      const typeValue = typeIndex >= 0 && row[typeIndex] ? String(row[typeIndex]) : '';
-      const directionValue = directionIndex >= 0 && row[directionIndex] ? String(row[directionIndex]) : '';
-      const volumeValue = volumeIndex >= 0 && row[volumeIndex] ? String(row[volumeIndex]) : '';
-      const priceValue = priceIndex >= 0 && row[priceIndex] ? String(row[priceIndex]) : '';
-      const orderValue = orderIndex >= 0 && row[orderIndex] ? String(row[orderIndex]) : '';
-      const commissionValue = commissionIndex >= 0 && row[commissionIndex] ? String(row[commissionIndex]) : '0';
-      const swapValue = swapIndex >= 0 && row[swapIndex] ? String(row[swapIndex]) : '0';
-      const profitValue = profitIndex >= 0 && row[profitIndex] ? String(row[profitIndex]) : '0';
-      const balanceValue = balanceIndex >= 0 && row[balanceIndex] ? String(row[balanceIndex]) : '0';
-      const commentValue = commentIndex >= 0 && row[commentIndex] ? String(row[commentIndex]) : '';
+      // Extract values based on column indexes with safe fallbacks
+      const getRowValue = (index: number): string => {
+        if (index < 0 || index >= row.length) return '';
+        return row[index] !== undefined && row[index] !== null ? String(row[index]) : '';
+      };
+      
+      const timeValue = getRowValue(timeIndex);
+      const dealValue = getRowValue(dealIndex);
+      const symbolValue = getRowValue(symbolIndex);
+      const typeValue = getRowValue(typeIndex);
+      const directionValue = getRowValue(directionIndex);
+      const volumeValue = getRowValue(volumeIndex);
+      const priceValue = getRowValue(priceIndex);
+      const orderValue = getRowValue(orderIndex);
+      const commissionValue = getRowValue(commissionIndex);
+      const swapValue = getRowValue(swapIndex);
+      const profitValue = getRowValue(profitIndex);
+      const balanceValue = getRowValue(balanceIndex);
+      const commentValue = getRowValue(commentIndex);
       
       // Skip empty rows
       if (!timeValue && !dealValue) continue;
       
-      console.log(`Parsing date: ${timeValue}`);
+      console.log(`Processing row ${i}, Date value: "${timeValue}"`);
+      
       // Parse date using improved function
       const openTime = parseDate(timeValue);
       console.log(`Parsed date: ${openTime}`);
@@ -703,8 +827,8 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
   const inTrades = trades.filter(t => t.direction === 'in');
   const outTrades = trades.filter(t => t.direction === 'out');
   const completeTrades = Math.min(inTrades.length, outTrades.length);
-  const profitableTrades = trades.filter(t => t.profit && t.profit > 0);
-  const lossTrades = trades.filter(t => t.profit && t.profit < 0);
+  const profitableTrades = trades.filter(t => t.profit !== undefined && t.profit > 0);
+  const lossTrades = trades.filter(t => t.profit !== undefined && t.profit < 0);
   
   // Update summary
   summary['Total Deals'] = trades.length;
@@ -731,6 +855,8 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
   // Create a Blob and downloadable URL for the CSV
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const csvUrl = URL.createObjectURL(blob);
+  
+  console.log('MT5 parsing complete, generated CSV');
 
   return { 
     summary, 
