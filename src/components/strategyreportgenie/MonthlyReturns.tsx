@@ -97,11 +97,11 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
   // Define chart configuration
   const chartConfig: ChartConfig = {
     profit: {
-      label: "Profit", // Changed from "Monthly P&L" to just "Profit"
+      label: "",  // Removed the label completely
       color: "#9b87f5" // Purple color for bars
     },
     loss: {
-      label: "Loss",
+      label: "",  // Removed the label completely
       color: "#ea384c" // Red color for negative bars
     }
   };
@@ -205,7 +205,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
               />
               <Bar
                 dataKey="profit"
-                name="Monthly P&L"
+                name="" // Removed the name completely
                 radius={[4, 4, 0, 0]}
                 barSize={35} // Increased bar width
               >
