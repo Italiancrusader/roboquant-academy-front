@@ -1,18 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
-import FileUploadZone from '@/components/mt5reportgenie/FileUploadZone';
-import ReportDashboard from '@/components/mt5reportgenie/ReportDashboard';
-import LoadingOverlay from '@/components/mt5reportgenie/LoadingOverlay';
+import FileUploadZone from '@/components/strategyreportgenie/FileUploadZone';
+import ReportDashboard from '@/components/strategyreportgenie/ReportDashboard';
+import LoadingOverlay from '@/components/strategyreportgenie/LoadingOverlay';
 import { toast } from '@/components/ui/use-toast';
-import { FileType } from '@/types/mt5reportgenie';
+import { FileType } from '@/types/strategyreportgenie';
 import { Link } from 'react-router-dom';
-import PDFReportGenerator from '@/components/mt5reportgenie/PDFReportGenerator';
-import MonteCarloSimulation from '@/components/mt5reportgenie/MonteCarloSimulation';
-import StrategyOptimizer from '@/components/mt5reportgenie/StrategyOptimizer';
-import LeadCaptureDialog from '@/components/mt5reportgenie/LeadCaptureDialog';
+import PDFReportGenerator from '@/components/strategyreportgenie/PDFReportGenerator';
+import MonteCarloSimulation from '@/components/strategyreportgenie/MonteCarloSimulation';
+import StrategyOptimizer from '@/components/strategyreportgenie/StrategyOptimizer';
+import LeadCaptureDialog from '@/components/strategyreportgenie/LeadCaptureDialog';
 
-const MT5ReportGenie = () => {
+const StrategyReportGenie = () => {
   const [files, setFiles] = useState<FileType[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingSteps, setProcessingSteps] = useState<string>('');
@@ -22,7 +22,7 @@ const MT5ReportGenie = () => {
   
   // Check if the user has already filled the lead form
   useEffect(() => {
-    const hasCompleted = localStorage.getItem('mt5_lead_completed') === 'true';
+    const hasCompleted = localStorage.getItem('strategy_report_lead_completed') === 'true';
     setHasCompletedLeadForm(hasCompleted);
     
     // If they haven't completed the lead form, show the dialog after a short delay
@@ -136,7 +136,7 @@ const MT5ReportGenie = () => {
   const handleLeadDialogClose = () => {
     setShowLeadDialog(false);
     // Mark that the user has completed the lead form
-    localStorage.setItem('mt5_lead_completed', 'true');
+    localStorage.setItem('strategy_report_lead_completed', 'true');
     setHasCompletedLeadForm(true);
   };
 
@@ -147,9 +147,9 @@ const MT5ReportGenie = () => {
       <main className="flex-grow container mx-auto px-4 pt-24 pb-20">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">MT5 Report Genie</h1>
+            <h1 className="text-3xl font-bold gradient-text">Strategy Report Genie</h1>
             <p className="text-muted-foreground mt-2">
-              Upload MetaTrader 5 Strategy Tester reports for professional-grade performance analysis
+              Upload MetaTrader 4/5 or TradingView strategy reports for professional-grade performance analysis
             </p>
           </div>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
@@ -216,8 +216,8 @@ const MT5ReportGenie = () => {
               <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Home
               </Link>
-              <Link to="/mt5-report-genie" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                MT5 Report Genie
+              <Link to="/strategy-report-genie" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Strategy Report Genie
               </Link>
               <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Privacy Policy
@@ -231,4 +231,4 @@ const MT5ReportGenie = () => {
       </footer>
     </div>;
 };
-export default MT5ReportGenie;
+export default StrategyReportGenie;

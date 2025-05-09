@@ -1,7 +1,8 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SimpleLanding from './pages/SimpleLanding';
 import Index from './pages/Index';
-import MT5ReportGenie from './pages/MT5ReportGenie';
+import StrategyReportGenie from './pages/StrategyReportGenie';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
@@ -74,7 +75,7 @@ function App() {
                 
                 {/* Keep all other routes for development */}
                 <Route path="/full" element={<Index />} />
-                <Route path="/mt5-report-genie" element={<MT5ReportGenie />} />
+                <Route path="/strategy-report-genie" element={<StrategyReportGenie />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -112,6 +113,9 @@ function App() {
                 <Route path="/admin/certificates" element={<AdminCheck><AdminCertificates /></AdminCheck>} />
                 <Route path="/admin/notifications" element={<AdminCheck><AdminNotifications /></AdminCheck>} />
                 <Route path="/admin/email-testing" element={<AdminCheck><AdminEmailTesting /></AdminCheck>} />
+
+                {/* Legacy MT5 URL redirection */}
+                <Route path="/mt5-report-genie" element={<StrategyReportGenie />} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
