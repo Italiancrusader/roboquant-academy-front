@@ -56,6 +56,58 @@ const DEBUG = {
 };
 
 /**
+ * Convert Excel numeric date to JavaScript Date object
+ * Excel dates are number of days since 1/1/1900 (with a leap year bug)
+ * 
+ * @param excelDate A numeric Excel date value
+ * @returns JavaScript Date object
+ */
+const excelDateToJSDate = (excelDate: number): Date => {
+  // Excel's epoch starts on 1/1/1900
+  // First step is to check if the value is a number
+  if (isNaN(excelDate)) {
+    DEBUG.log('date', `Invalid Excel date value: ${excelDate}`, excelDate);
+    return new Date(); // Return current date as fallback
+  }
+  
+  DEBUG.log('date', `Converting Excel date: ${excelDate}`);
+  
+  // Excel has a leap year bug where it thinks 1900 was a leap year
+  // If date is greater than 60 (2/29/1900 in Excel), adjust by subtracting 1
+  const offsetDays = excelDate > 60 ? 1 : 0;
+  
+  // Excel dates are days since 1/1/1900
+  // Convert to milliseconds and adjust for Excel's leap year bug
+  const milliseconds = Math.round((excelDate - offsetDays) * 86400 * 1000);
+  
+  // Create a new date by adding milliseconds to the Excel epoch (1/1/1900)
+  const excelEpoch = new Date(1900, 0, 1);
+  const resultDate = new Date(excelEpoch.getTime() + milliseconds);
+  
+  DEBUG.log('date', `Excel date ${excelDate} converted to: ${resultDate.toISOString()}`);
+  
+  return resultDate;
+};
+
+/**
+ * Check if a string might be an Excel numeric date
+ */
+const isExcelNumericDate = (dateStr: string): boolean => {
+  // Check if it's a number or a number with decimals
+  const isNumeric = /^[0-9]+(\.[0-9]+)?$/.test(dateStr);
+  
+  // Most Excel dates are big numbers (>40000 for recent dates)
+  if (isNumeric) {
+    const numVal = parseFloat(dateStr);
+    // Valid Excel dates should be a reasonable number (>30000 for dates after 1980)
+    // and less than 50000 (covers dates well into the future)
+    return numVal > 30000 && numVal < 50000;
+  }
+  
+  return false;
+};
+
+/**
  * Format date and time in a more readable format (MM/DD/YYYY HH:MM:SS)
  */
 const formatDateTime = (date: Date): string => {
@@ -129,6 +181,15 @@ const parseDate = (dateStr: string): Date => {
     // Remove any extra spaces that might be present
     dateStr = dateStr.trim();
     DEBUG.log('date', `Trimmed date string: "${dateStr}"`);
+    
+    // Check for Excel numeric date format (e.g. "45777.33333333333")
+    if (isExcelNumericDate(dateStr)) {
+      DEBUG.log('date', `Detected Excel numeric date format: ${dateStr}`);
+      const excelDate = parseFloat(dateStr);
+      const jsDate = excelDateToJSDate(excelDate);
+      DEBUG.inspect(dateStr, jsDate);
+      return jsDate;
+    }
     
     // Handle the specific format "2025-05-07 09:15" (YYYY-MM-DD HH:MM)
     const specificFormatRegex = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/;
