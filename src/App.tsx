@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SimpleLanding from './pages/SimpleLanding';
 import Index from './pages/Index';
@@ -22,8 +21,6 @@ import VSL from './pages/VSL';
 import Checkout from './pages/Checkout';
 import ThankYou from './pages/ThankYou';
 import SurveyFunnel from './pages/SurveyFunnel';
-import Support from './pages/Support';
-import TicketDetail from './pages/TicketDetail';
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -35,7 +32,6 @@ import AdminPayments from './pages/admin/AdminPayments';
 import AdminCommunity from './pages/admin/AdminCommunity';
 import AdminCertificates from './pages/admin/AdminCertificates';
 import AdminNotifications from './pages/admin/AdminNotifications';
-import AdminSupport from './pages/admin/AdminSupport';
 import CourseManagement from './pages/admin/CourseManagement';
 import LessonManagement from './pages/admin/LessonManagement';
 import CourseConfigPage from './pages/admin/CourseConfigPage';
@@ -95,10 +91,6 @@ function App() {
                   element={<ProtectedRoute><CourseLesson /></ProtectedRoute>}
                 />
                 
-                {/* Support System Routes */}
-                <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-                <Route path="/support/ticket/:ticketId" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
-                
                 {/* New Sales Funnel Routes */}
                 <Route path="/quiz" element={<Quiz />} />
                 <Route path="/vsl" element={<VSL />} />
@@ -120,7 +112,6 @@ function App() {
                 <Route path="/admin/certificates" element={<AdminCheck><AdminCertificates /></AdminCheck>} />
                 <Route path="/admin/notifications" element={<AdminCheck><AdminNotifications /></AdminCheck>} />
                 <Route path="/admin/email-testing" element={<AdminCheck><AdminEmailTesting /></AdminCheck>} />
-                <Route path="/admin/support" element={<AdminCheck><AdminSupport /></AdminCheck>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
