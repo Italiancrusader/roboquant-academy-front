@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer } from '@/components/ui/chart';
@@ -186,7 +187,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 fill="hsl(var(--primary))"
                 /* Fixed the type error by using fillOpacity to keep the conditional color logic */
                 fillOpacity={0}
-                stroke={0}
+                stroke="none"
               >
                 {monthlyData.map((entry, index) => (
                   <Cell 
