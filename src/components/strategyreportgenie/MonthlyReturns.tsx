@@ -108,7 +108,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         <h2 className="text-xl font-semibold">Monthly Performance</h2>
         <div className="text-sm text-muted-foreground">
           {bestMonth && (
@@ -125,42 +125,35 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
         </div>
       </div>
       
-      <div className="min-h-[400px] max-h-[600px] w-full">
+      <div className="h-[450px] w-full">
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
-              margin={{ top: 20, right: 30, left: 40, bottom: 50 }} // Adjusted margins
+              margin={{ top: 20, right: 20, left: 0, bottom: 70 }}
               barGap={0}
+              maxBarSize={50}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} opacity={0.5} />
               <XAxis 
                 dataKey="month"
                 stroke="hsl(var(--muted-foreground))"
-                height={50}
+                height={60}
                 tick={{ fontSize: 12 }}
-                tickMargin={10}
-                interval={0} // Ensure all ticks are displayed
-                label={{ 
-                  value: 'Date', 
-                  position: 'insideBottom', 
-                  offset: -15, // Positioned closer to axis
-                  fill: 'hsl(var(--muted-foreground))' 
-                }}
-                allowDataOverflow={false} // Prevent data overflow
+                tickMargin={15}
+                angle={-45}
+                textAnchor="end"
+                interval={0} // Show all month labels
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
-                width={60} // Reduced width to give more space for bars
                 tickFormatter={(value) => `$${value.toLocaleString()}`}
-                label={{ 
-                  value: 'Equity ($)', 
-                  angle: -90, 
-                  position: 'insideLeft',
-                  style: { fill: 'hsl(var(--muted-foreground))' }
-                }}
+                width={70}
+                orientation="left"
+                axisLine={{ stroke: 'hsl(var(--border))' }}
+                tickLine={{ stroke: 'hsl(var(--border))' }}
                 domain={['auto', 'auto']}
-                padding={{ top: 10, bottom: 10 }} // Added some padding
+                padding={{ top: 20, bottom: 20 }}
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -201,17 +194,18 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 }}
                 wrapperStyle={{ zIndex: 100 }}
               />
-              {/* Custom Legend */}
+              {/* Legend positioned under chart */}
               <Legend 
-                wrapperStyle={{ bottom: 0, paddingTop: 20 }} // Adjusted legend positioning
+                verticalAlign="bottom"
+                height={36}
                 content={() => (
-                  <div className="flex justify-center items-center mt-2">
+                  <div className="flex justify-center items-center mt-2 pt-7">
                     <div className="flex items-center gap-2 mr-4">
-                      <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#9b87f5", opacity: 0.85 }}></div>
+                      <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "#9b87f5", opacity: 0.85 }}></div>
                       <span className="text-xs text-muted-foreground">Profit</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#ea384c", opacity: 0.85 }}></div>
+                      <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "#ea384c", opacity: 0.85 }}></div>
                       <span className="text-xs text-muted-foreground">Loss</span>
                     </div>
                   </div>
@@ -219,9 +213,9 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
               />
               <Bar
                 dataKey="profit"
-                name="" // Removed the name completely
+                name=""
                 radius={[4, 4, 0, 0]}
-                barSize={30} // Adjusted bar width
+                maxBarSize={40}
               >
                 {monthlyData.map((entry, index) => (
                   <Cell 
