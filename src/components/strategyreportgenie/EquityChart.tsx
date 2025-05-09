@@ -13,6 +13,7 @@ import {
 import { ChartContainer } from '@/components/ui/chart';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import { Toggle } from '@/components/ui/toggle';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EquityChartProps {
   trades: StrategyTrade[];
@@ -20,6 +21,7 @@ interface EquityChartProps {
 
 const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
   const [useLogScale, setUseLogScale] = useState(false);
+  const isMobile = useIsMobile();
   
   const chartData = React.useMemo(() => {
     if (!trades.length) return [];
@@ -28,11 +30,6 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     const tradesWithBalance = trades.filter(trade => trade.balance !== undefined);
     
     if (tradesWithBalance.length === 0) return [];
-    
-    console.log("First few trades for chart data:", tradesWithBalance.slice(0, 3).map(t => ({
-      openTime: t.openTime instanceof Date ? t.openTime.toISOString() : 'Invalid Date',
-      balance: t.balance
-    })));
     
     // Keep only relevant fields for chart
     const chartPoints = tradesWithBalance.map((trade) => {
@@ -51,11 +48,6 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     
     // Sort chart points by date
     chartPoints.sort((a, b) => a.date.getTime() - b.date.getTime());
-    
-    console.log("First few chart points:", chartPoints.slice(0, 3).map(p => ({ 
-      date: p.date.toISOString(),
-      equity: p.equity
-    })));
     
     return chartPoints;
   }, [trades]);
@@ -87,7 +79,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
 
   if (chartData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64 bg-muted/30 rounded-lg">
         <p className="text-muted-foreground">No equity data available</p>
       </div>
     );
@@ -107,7 +99,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
   const calculateTickInterval = () => {
     if (chartData.length <= 10) return 0; // Show all ticks for small datasets
     if (chartData.length <= 30) return Math.floor(chartData.length / 10);
-    return 'preserveStartEnd'; // For large datasets, only show start and end
+    return isMobile ? 'preserveEnd' : 'preserveStartEnd'; // For large datasets, adjust based on device
   };
 
   // Function to get a unique identifier for a date that can be used as the x value
@@ -118,9 +110,9 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <h2 className="text-xl font-semibold">Equity Growth</h2>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center space-x-2">
             <Toggle
               aria-label="Toggle logarithmic scale"
@@ -140,21 +132,19 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
           )}
         </div>
       </div>
-      <div className="min-h-[400px] max-h-[600px] w-full"> 
+      <div className="h-[350px] md:h-[450px] w-full"> 
         <ChartContainer config={{
           equity: { color: "hsl(var(--primary))" }
         }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={chartData}
-              margin={{
-                top: 20,
-                right: 40,
-                left: 40,
-                bottom: 60,
-              }}
+              margin={isMobile ? 
+                { top: 20, right: 20, left: 20, bottom: 60 } : 
+                { top: 20, right: 40, left: 40, bottom: 60 }
+              }
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
               <XAxis 
                 dataKey="date" 
                 stroke="hsl(var(--muted-foreground))"
@@ -163,7 +153,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   return formatDate(date);
                 }}
                 height={60}
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: isMobile ? 10 : 12 }}
                 tickMargin={15}
                 label={{ 
                   value: 'Date', 
@@ -183,21 +173,22 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   value: 'Balance ($)', 
                   angle: -90, 
                   position: 'insideLeft',
-                  offset: -5,
+                  offset: isMobile ? -5 : -15,
                   style: { fill: 'hsl(var(--muted-foreground))' }
                 }}
                 tickFormatter={value => `$${value.toLocaleString()}`}
-                width={80}
+                width={isMobile ? 60 : 80}
                 tickMargin={8}
                 allowDataOverflow={useLogScale}
+                tick={{ fontSize: isMobile ? 10 : 12 }}
               />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div className="rounded-lg border bg-background p-3 shadow-lg">
-                        <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-lg border bg-background/95 backdrop-blur-sm p-3 shadow-xl">
+                        <div className="grid grid-cols-1 gap-2">
                           <div className="flex flex-col">
                             <span className="text-[0.70rem] uppercase text-muted-foreground">
                               Date
@@ -228,10 +219,19 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   return null;
                 }}
                 wrapperStyle={{ zIndex: 1000 }}
+                cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
               />
               <Legend 
-                iconType="circle" 
-                wrapperStyle={{ paddingTop: '10px' }}
+                verticalAlign="bottom"
+                height={36}
+                content={() => (
+                  <div className="flex justify-center items-center mt-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "hsl(var(--primary))" }}></div>
+                      <span className="text-xs text-muted-foreground">Equity</span>
+                    </div>
+                  </div>
+                )}
               />
               <Line
                 yAxisId="left"
@@ -239,18 +239,18 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 dataKey="equity"
                 name="Equity"
                 stroke="hsl(var(--primary))"
-                activeDot={{ r: 8 }}
+                activeDot={{ r: 6 }}
                 dot={false}
                 strokeWidth={2}
-                isAnimationActive={false}
+                animationDuration={1000}
               />
-              {/* Convert Date to string for reference dots */}
+              {/* Reference dots for first and last points */}
               {firstPoint.date instanceof Date && !isNaN(firstPoint.date.getTime()) && (
                 <ReferenceDot
                   x={getDateKey(firstPoint.date)}
                   y={firstPoint.equity}
                   yAxisId="left"
-                  r={6}
+                  r={5}
                   fill="hsl(var(--primary))"
                   stroke="hsl(var(--background))"
                   strokeWidth={2}
@@ -261,7 +261,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   x={getDateKey(lastPoint.date)}
                   y={lastPoint.equity}
                   yAxisId="left"
-                  r={6}
+                  r={5}
                   fill="hsl(var(--success))"
                   stroke="hsl(var(--background))"
                   strokeWidth={2}
