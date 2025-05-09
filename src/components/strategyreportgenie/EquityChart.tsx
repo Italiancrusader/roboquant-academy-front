@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   ResponsiveContainer,
@@ -8,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ReferenceDot,
 } from 'recharts';
 import { ChartContainer } from '@/components/ui/chart';
 import { StrategyTrade } from '@/types/strategyreportgenie';
@@ -27,17 +29,33 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     
     // Keep only relevant fields for chart
     const chartPoints = tradesWithBalance.map((trade) => {
-      const date = trade.openTime;
-      const equity = trade.balance || 0;
-      
       return {
-        date,
-        equity
+        date: trade.openTime,
+        equity: trade.balance || 0
       };
     });
     
     return chartPoints;
   }, [trades]);
+
+  // Calculate min and max equity values
+  const minEquity = React.useMemo(() => {
+    if (chartData.length === 0) return 0;
+    return Math.min(...chartData.map(d => d.equity));
+  }, [chartData]);
+  
+  const maxEquity = React.useMemo(() => {
+    if (chartData.length === 0) return 0;
+    return Math.max(...chartData.map(d => d.equity));
+  }, [chartData]);
+  
+  // Calculate padding to ensure all points are visible (10% padding)
+  const equityPadding = React.useMemo(() => {
+    return (maxEquity - minEquity) * 0.1;
+  }, [minEquity, maxEquity]);
+  
+  const yAxisMin = Math.max(0, minEquity - equityPadding);
+  const yAxisMax = maxEquity + equityPadding;
 
   if (chartData.length === 0) {
     return (
@@ -47,10 +65,22 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     );
   }
 
+  // Get first point for initial marker
+  const firstPoint = chartData[0];
+
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold mb-4">Equity Growth</h2>
-      <div className="h-[350px]">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Equity Growth</h2>
+        {chartData.length > 0 && (
+          <div className="text-sm text-muted-foreground">
+            Initial: ${firstPoint.equity.toLocaleString()}
+            <span className="mx-2">•</span>
+            Final: ${chartData[chartData.length - 1].equity.toLocaleString()}
+          </div>
+        )}
+      </div>
+      <div className="h-[350px] w-full">
         <ChartContainer config={{
           equity: { color: "hsl(var(--primary))" }
         }}>
@@ -58,21 +88,34 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
             <ComposedChart
               data={chartData}
               margin={{
-                top: 5,
+                top: 10,
                 right: 30,
                 left: 20,
-                bottom: 5,
+                bottom: 30,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="date" 
                 stroke="hsl(var(--muted-foreground))"
-                tickFormatter={(date) => date instanceof Date ? date.toLocaleDateString() : ''}
+                tickFormatter={(date) => {
+                  if (!(date instanceof Date)) return '';
+                  return `${date.getMonth()+1}/${date.getDate()}`;
+                }}
+                height={50}
+                tick={{ fontSize: 12 }}
+                tickMargin={10}
+                label={{ 
+                  value: 'Date', 
+                  position: 'insideBottom', 
+                  offset: -15,
+                  fill: 'hsl(var(--muted-foreground))' 
+                }}
               />
               <YAxis 
                 yAxisId="left" 
                 stroke="hsl(var(--muted-foreground))" 
+                domain={[yAxisMin, yAxisMax]}
                 label={{ 
                   value: 'Balance', 
                   angle: -90, 
@@ -86,7 +129,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div className="rounded-lg border bg-background p-2 shadow-sm">
+                      <div className="rounded-lg border bg-background p-3 shadow-lg">
                         <div className="grid grid-cols-2 gap-2">
                           <div className="flex flex-col">
                             <span className="text-[0.70rem] uppercase text-muted-foreground">
@@ -94,7 +137,11 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                             </span>
                             <span className="font-bold text-foreground">
                               {data.date instanceof Date
-                                ? data.date.toLocaleDateString()
+                                ? data.date.toLocaleDateString(undefined, {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })
                                 : ''}
                             </span>
                           </div>
@@ -103,7 +150,7 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                               Equity
                             </span>
                             <span className="font-bold text-foreground">
-                              ${data.equity.toFixed(2)}
+                              ${data.equity.toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -114,7 +161,10 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                   return null;
                 }}
               />
-              <Legend iconType="line" />
+              <Legend 
+                iconType="circle" 
+                wrapperStyle={{ paddingTop: '10px' }}
+              />
               <Line
                 yAxisId="left"
                 type="monotone"
@@ -123,6 +173,17 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
                 stroke="hsl(var(--primary))"
                 activeDot={{ r: 8 }}
                 dot={false}
+                strokeWidth={2}
+                isAnimationActive={false}
+              />
+              {/* Marker for first point */}
+              <ReferenceDot
+                x={firstPoint.date}
+                y={firstPoint.equity}
+                yAxisId="left"
+                r={6}
+                fill="hsl(var(--primary))"
+                stroke="hsl(var(--background))"
                 strokeWidth={2}
               />
             </ComposedChart>
