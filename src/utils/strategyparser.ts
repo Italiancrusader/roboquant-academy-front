@@ -193,7 +193,7 @@ const parseDate = (dateStr: string): Date => {
         const second = match[6] ? parseInt(match[6], 10) : 0;
         
         const parsedDate = new Date(year, month, day, hour, minute, second);
-        DEBUG.log('date', `Successfully parsed YYYY-MM-DD HH:MM[:SS] format: ${parsedDate}`);
+        DEBUG.log('date', `Successfully parsed YYYY-MM-DD HH:MM[:SS] format: ${parsedDate.toISOString()}`);
         return parsedDate;
       }
     }
@@ -215,11 +215,11 @@ const parseDate = (dateStr: string): Date => {
           Number(minutes) || 0, 
           Number(seconds) || 0
         );
-        DEBUG.log(`Successfully parsed YYYY.MM.DD HH:MM:SS format: ${parsedDate}`);
+        DEBUG.log('date', `Successfully parsed YYYY.MM.DD HH:MM:SS format: ${parsedDate.toISOString()}`);
         return parsedDate;
       } else {
         const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-        DEBUG.log(`Successfully parsed YYYY.MM.DD format: ${parsedDate}`);
+        DEBUG.log('date', `Successfully parsed YYYY.MM.DD format: ${parsedDate.toISOString()}`);
         return parsedDate;
       }
     }
@@ -240,11 +240,11 @@ const parseDate = (dateStr: string): Date => {
           Number(minutes) || 0, 
           Number(seconds) || 0
         );
-        DEBUG.log(`Successfully parsed MM/DD/YYYY HH:MM:SS format: ${parsedDate}`);
+        DEBUG.log('date', `Successfully parsed MM/DD/YYYY HH:MM:SS format: ${parsedDate.toISOString()}`);
         return parsedDate;
       } else {
         const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-        DEBUG.log(`Successfully parsed MM/DD/YYYY format: ${parsedDate}`);
+        DEBUG.log('date', `Successfully parsed MM/DD/YYYY format: ${parsedDate.toISOString()}`);
         return parsedDate;
       }
     }
