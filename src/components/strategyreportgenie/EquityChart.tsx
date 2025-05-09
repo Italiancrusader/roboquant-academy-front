@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   ResponsiveContainer,
@@ -65,7 +66,10 @@ const EquityChart: React.FC<EquityChartProps> = ({ trades }) => {
     <div className="space-y-4">
       <h2 className="text-xl font-semibold mb-4">Equity Growth</h2>
       <div className="h-[350px]">
-        <ChartContainer>
+        <ChartContainer config={{
+          equity: { color: "hsl(var(--primary))" },
+          drawdown: { color: "hsl(var(--destructive))" }
+        }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={chartData}
