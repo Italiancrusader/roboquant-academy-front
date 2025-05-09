@@ -99,7 +99,8 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
     // Calculate win rate for each hour
     hourDistribution.forEach(hour => {
       hour.winRate = hour.totalTrades > 0 ? (hour.winningTrades / hour.totalTrades) * 100 : 0;
-      hour.hour = `${hour.hour}:00`;
+      hour.hour = hour.hour; // Keep the numeric value
+      hour.hourFormatted = `${hour.hour}:00`; // Add a string representation
     });
     
     // Keep only hours with trades
@@ -238,7 +239,10 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="hour" />
+                <XAxis 
+                  dataKey="hourFormatted" 
+                  name="Hour"
+                />
                 <YAxis 
                   yAxisId="left" 
                   orientation="left"
