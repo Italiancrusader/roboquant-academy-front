@@ -255,11 +255,18 @@ const DrawdownView: React.FC<DrawdownViewProps> = ({ trades }) => {
                 x1={equityCurve[maxDrawdownPeriod.start]?.date}
                 x2={equityCurve[maxDrawdownPeriod.end]?.date}
                 fill="rgba(255, 0, 0, 0.1)"
-                label={{ value: "Maximum Drawdown Period", position: "center", fill: "hsl(var(--muted-foreground))" }}
+                // Fix: Change the label prop type to match what ReferenceArea expects
+                label={{
+                  content: "Maximum Drawdown Period",
+                  position: "center",
+                  fill: "hsl(var(--muted-foreground))",
+                }}
               />
             )}
             <ReferenceLine y={drawdownStats.maxDrawdownPct} stroke="hsl(var(--destructive))" strokeDasharray="3 3">
-              <label position="right" value={`Max ${formatPercent(drawdownStats.maxDrawdownPct)}`} fill="hsl(var(--destructive))" />
+              <label position="right" fill="hsl(var(--destructive))">
+                Max {formatPercent(drawdownStats.maxDrawdownPct)}
+              </label>
             </ReferenceLine>
             <Area
               type="monotone"

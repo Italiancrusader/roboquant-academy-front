@@ -127,7 +127,10 @@ const EquityChartView: React.FC<EquityChartViewProps> = ({ trades }) => {
 
   if (equityData.length === 0) {
     return (
-      <ChartWrapper title="Equity Curve" emptyState={<p>No equity data available</p>} />
+      <ChartWrapper title="Equity Curve" emptyState={<p>No equity data available</p>}>
+        {/* Fix: Add a null children prop to satisfy the required children property */}
+        {null}
+      </ChartWrapper>
     );
   }
 
