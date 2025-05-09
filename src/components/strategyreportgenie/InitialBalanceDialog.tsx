@@ -39,8 +39,15 @@ const InitialBalanceDialog: React.FC<InitialBalanceDialogProps> = ({
     onConfirm(parsedValue);
   };
 
+  const handleInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleConfirm();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={() => onClose()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -69,7 +76,9 @@ const InitialBalanceDialog: React.FC<InitialBalanceDialogProps> = ({
                     setBalanceValue(e.target.value);
                     setError(null);
                   }}
+                  onKeyDown={handleInputKeyDown}
                   placeholder="10000.00"
+                  autoFocus
                 />
               </div>
               {error && (

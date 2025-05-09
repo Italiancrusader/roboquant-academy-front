@@ -122,6 +122,54 @@ const cleanNumeric = (value: string): number => {
 };
 
 /**
+ * Detect if a file is likely a TradingView export
+ */
+const detectTradingViewFile = async (file: File): Promise<boolean> => {
+  try {
+    const buffer = await file.arrayBuffer();
+    const workbook = read(buffer, { type: 'array' });
+    
+    // Check for common TradingView sheet names
+    if (workbook.SheetNames.some(name => 
+      name === "List of trades" || 
+      name.toLowerCase().includes('tradingview') ||
+      name.toLowerCase().includes('trading view')
+    )) {
+      return true;
+    }
+    
+    // Check first sheet for TradingView header patterns
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = utils.sheet_to_json<any>(worksheet, { header: 1 });
+    
+    // Look for TradingView specific headers
+    if (rows.length > 0) {
+      const headerRow = rows[0];
+      const headerStr = headerRow.join(' ').toLowerCase();
+      
+      if (headerStr.includes('trade #') || 
+          headerStr.includes('signal') || 
+          headerStr.includes('price usd') || 
+          headerStr.includes('cumulative profit')) {
+        return true;
+      }
+    }
+    
+    // Check filename
+    if (file.name.toLowerCase().includes('tradingview') || 
+        file.name.toLowerCase().includes('trading view') || 
+        file.name.toLowerCase().includes('tv ')) {
+      return true;
+    }
+    
+    return false;
+  } catch (e) {
+    console.error('Error detecting TradingView file', e);
+    return false;
+  }
+};
+
+/**
  * Parse TradingView Excel report file
  */
 const parseTradingViewExcel = async (file: File, initialBalance?: number): Promise<ParsedStrategyReport> => {
@@ -306,8 +354,8 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
   const workbook = read(buffer, { type: 'array' });
   
   // Check if this might be a TradingView export
-  const hasTradingViewSheet = workbook.SheetNames.some(name => name === "List of trades");
-  if (hasTradingViewSheet) {
+  const isTradingView = await detectTradingViewFile(file);
+  if (isTradingView) {
     console.log("Detected TradingView export format");
     return parseTradingViewExcel(file, initialBalance);
   }

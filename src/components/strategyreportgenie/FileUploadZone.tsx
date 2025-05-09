@@ -100,10 +100,13 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       const filesToProcess: {file: File, isTradingView: boolean}[] = [];
       
       for (const file of selectedFiles) {
-        // Quick check of filename to determine if it might be a TradingView file
+        // Improved detection for TradingView files - check both name and content
         const isTradingView = file.name.toLowerCase().includes('tradingview') || 
-                             file.name.toLowerCase().includes('tv');
+                             file.name.toLowerCase().includes('tv') ||
+                             file.name.toLowerCase().includes('trading view') ||
+                             file.name.toLowerCase().includes('list of trades');
         
+        console.log(`File ${file.name} isTradingView: ${isTradingView}`);
         filesToProcess.push({ file, isTradingView });
       }
       
@@ -114,7 +117,8 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         if (tradingViewFile) {
           setCurrentFile(tradingViewFile.file);
           setShowBalanceDialog(true);
-          return;
+          console.log("Showing balance dialog for file:", tradingViewFile.file.name);
+          return; // Important: exit function here to prevent further processing
         }
       }
       
@@ -148,6 +152,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     
     try {
       setLocalProcessing(true);
+      console.log("Processing files with initial balance:", initialBalance);
       const processedFiles = await processFilesBatch(pendingFiles, initialBalance);
       
       if (processedFiles.length > 0) {
