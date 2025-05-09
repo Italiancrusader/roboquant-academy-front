@@ -61,7 +61,8 @@ export const useTickets = () => {
             .eq('is_admin', false)
             .is('read_at', null);
           
-          const userProfile = profilesMap[ticket.user_id] || null;
+          // Get profile from map or set to null if not found
+          const userProfile = ticket.user_id ? (profilesMap[ticket.user_id] || null) : null;
           
           return {
             ...ticket,
@@ -144,12 +145,12 @@ export const useTickets = () => {
           return false;
         }
         
-        // Now we can safely access profile properties using optional chaining and nullish coalescing
-        const email = ticket.profile?.email ?? '';
-        const firstName = ticket.profile?.first_name ?? '';
-        const lastName = ticket.profile?.last_name ?? '';
+        // Now we can safely access profile properties
+        const email = ticket.profile.email || '';
+        const firstName = ticket.profile.first_name || '';
+        const lastName = ticket.profile.last_name || '';
         
-        // Now we can safely check these strings
+        // Check these strings for matches
         return email.toLowerCase().includes(term) || 
                firstName.toLowerCase().includes(term) || 
                lastName.toLowerCase().includes(term);
