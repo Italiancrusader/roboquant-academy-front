@@ -12,7 +12,7 @@ import {
   Legend,
   Cell,
 } from 'recharts';
-import { ChartContainer } from '@/components/ui/chart';
+import { ChartContainer, ChartConfig } from '@/components/ui/chart';
 import { MT5Trade } from '@/types/mt5reportgenie';
 
 interface CalendarViewProps {
@@ -64,6 +64,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades }) => {
   const profitableMonths = monthlyData.filter(month => month.profit > 0).length;
   const winRate = monthlyData.length > 0 ? (profitableMonths / monthlyData.length) * 100 : 0;
 
+  // Define chart configuration for ChartContainer
+  const chartConfig: ChartConfig = {
+    profit: {
+      label: "Monthly P&L",
+      color: "hsl(var(--success))"
+    },
+    loss: {
+      label: "Loss",
+      color: "hsl(var(--destructive))"
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row justify-between items-start">
@@ -82,7 +94,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades }) => {
 
       <Card className="pt-4">
         <div className="h-[350px] w-full p-4">
-          <ChartContainer>
+          <ChartContainer config={chartConfig}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={monthlyData}
