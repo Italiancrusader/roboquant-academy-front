@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MT5Trade } from '@/types/mt5reportgenie';
 import {
@@ -255,18 +254,19 @@ const DrawdownView: React.FC<DrawdownViewProps> = ({ trades }) => {
                 x1={equityCurve[maxDrawdownPeriod.start]?.date}
                 x2={equityCurve[maxDrawdownPeriod.end]?.date}
                 fill="rgba(255, 0, 0, 0.1)"
-                // Fix: Change the label prop type to match what ReferenceArea expects
+                // Fix: Use a function to return the content element (React component) instead of a string
                 label={{
-                  content: "Maximum Drawdown Period",
+                  value: "Maximum Drawdown Period",
                   position: "center",
-                  fill: "hsl(var(--muted-foreground))",
+                  fill: "hsl(var(--muted-foreground))"
                 }}
               />
             )}
             <ReferenceLine y={drawdownStats.maxDrawdownPct} stroke="hsl(var(--destructive))" strokeDasharray="3 3">
-              <label position="right" fill="hsl(var(--destructive))">
+              {/* Fix: Instead of using position attribute directly on label, render label text as children */}
+              <text x="100%" y={drawdownStats.maxDrawdownPct} textAnchor="end" fill="hsl(var(--destructive))" dy={-5}>
                 Max {formatPercent(drawdownStats.maxDrawdownPct)}
-              </label>
+              </text>
             </ReferenceLine>
             <Area
               type="monotone"
