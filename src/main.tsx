@@ -1,6 +1,6 @@
 
 // Use the singleton React instance to prevent multiple React instances
-import { React, ReactDOMClient, Suspense } from './utils/react-singleton';
+import { React, ReactDOMClient, Suspense, jsx, jsxs, Fragment } from './utils/react-singleton';
 import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
