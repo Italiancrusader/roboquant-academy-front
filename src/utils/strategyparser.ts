@@ -665,7 +665,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       // Determine trade direction and state
       const isEntry = type.toLowerCase().includes('entry');
       const isExit = type.toLowerCase().includes('exit');
-      let direction: "in" | "out" = isEntry ? "in" : (isExit ? "out" : "in");
+      let direction: string = isEntry ? "in" : (isExit ? "out" : "in");
       
       DEBUG.log('row', `Trade ${i} direction: ${direction} (isEntry: ${isEntry}, isExit: ${isExit})`);
       
@@ -882,7 +882,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
       const isBalanceEntry = typeValue === 'balance' || typeValue === '';
       
       // Make sure direction is a valid value
-      let direction: "in" | "out";
+      let direction: string;
       if (directionValue === "in" || directionValue === "out") {
         direction = directionValue;
       } else {
@@ -1058,7 +1058,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
 
         // Determine side and state
         let side: 'long' | 'short' = 'long'; // Default
-        let direction: "in" | "out" = "in"; // Default
+        let direction: string = "in"; // Default
         
         // Parse row[3] to determine if it's buy/sell and transform to long/short
         if (row[3] === 'buy') {
