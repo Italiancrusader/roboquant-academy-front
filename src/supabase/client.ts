@@ -1,10 +1,13 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Using hardcoded values from src/integrations/supabase/client.ts
-// This ensures consistency across the application
-const supabaseUrl = "https://gqnzsnzolqvsalyzbhmq.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxbnpzbnpvbHF2c2FseXpiaG1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU2NDM1NDAsImV4cCI6MjA2MTIxOTU0MH0.p2zZF0qAeMtXerm8f68E38ZGj2OYZ9t4Sqyu_oqyjMM";
+// Use environment variables with fallback to hardcoded values
+// This ensures the app works in both production and development
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://gqnzsnzolqvsalyzbhmq.supabase.co";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxbnpzbnpvbHF2c2FseXpiaG1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU2NDM1NDAsImV4cCI6MjA2MTIxOTU0MH0.p2zZF0qAeMtXerm8f68E38ZGj2OYZ9t4Sqyu_oqyjMM";
+
+// Log the URL being used (without exposing the key)
+console.log(`Using Supabase URL: ${supabaseUrl}`);
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
