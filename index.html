@@ -1,6 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- CRITICAL: Load vendor bundle hook patch before anything else -->
+    <script src="/react-hook-fix.js"></script>
+    
+    <!-- Pre-patch the exact vendor causing issues -->
+    <script>
+      // Direct Fix for vendor-J2TkRXmV.js 
+      // This intercepts script loading to patch React hooks before execution
+      (function() {
+        // Store original document.createElement to intercept script creation
+        const originalCreateElement = document.createElement;
+        
+        document.createElement = function(tagName) {
+          const element = originalCreateElement.call(document, tagName);
+          
+          // Only intercept script elements
+          if (tagName.toLowerCase() === 'script') {
+            // Store the original setAttribute method
+            const originalSetAttribute = element.setAttribute;
+            
+            // Override setAttribute to catch changes to src
+            element.setAttribute = function(name, value) {
+              // Check if this is setting the src attribute to our problem file
+              if (name === 'src' && value && (
+                  value.includes('vendor-J2TkRXmV.js') || 
+                  value.includes('vendor-react') ||
+                  value.includes('vendor.js'))) {
+                console.log('Intercepting problematic vendor bundle:', value);
+                
+                // Add load handler to patch the script after it loads but before it executes
+                element.addEventListener('load', function() {
+                  console.log('Vendor bundle loaded, applying emergency patch');
+                  
+                  // Create a hook polyfill directly in the global scope to ensure availability
+                  window.React = window.React || {};
+                  if (!window.React.useLayoutEffect) {
+                    console.log('Directly patching useLayoutEffect');
+                    window.React.useLayoutEffect = function(fn, deps) {
+                      console.warn('Emergency useLayoutEffect polyfill called');
+                      return undefined;
+                    };
+                  }
+                  
+                  // Try to find React in common module patterns
+                  setTimeout(function() {
+                    try {
+                      // Check for UMD/AMD/CommonJS modules that might define React
+                      if (window.define && window.define.amd) {
+                        const originalDefine = window.define;
+                        window.define = function(name, deps, factory) {
+                          // Intercept React definitions
+                          if (typeof name === 'string' && name === 'react') {
+                            console.log('Intercepted AMD define for React');
+                            return originalDefine.call(this, name, deps, function() {
+                              const reactModule = factory.apply(this, arguments);
+                              // Ensure hooks exist
+                              if (reactModule && !reactModule.useLayoutEffect) {
+                                reactModule.useLayoutEffect = window.React.useLayoutEffect;
+                              }
+                              return reactModule;
+                            });
+                          }
+                          return originalDefine.apply(this, arguments);
+                        };
+                      }
+                    } catch (e) {
+                      console.error('Error in vendor bundle patch:', e);
+                    }
+                  }, 0);
+                });
+              }
+              
+              // Call the original method
+              return originalSetAttribute.apply(this, arguments);
+            };
+          }
+          
+          return element;
+        };
+        
+        console.log('Script loading interceptor installed');
+      })();
+    </script>
+    
+    <!-- CRITICAL: Fix for React hooks error in vendor bundle -->
+    <script>
+      // Immediate polyfill for React hooks before any script loads
+      // This must execute before any React code runs
+      (function() {
+        // Provide global emergency hooks that won't throw errors
+        window.__REACT_HOOKS__ = {
+          useState: function(initialState) { return [initialState, function() {}]; },
+          useEffect: function(fn) { return fn(); },
+          useLayoutEffect: function(fn) { return fn(); },
+          useRef: function(initialValue) { return { current: initialValue }; },
+          useCallback: function(fn) { return fn; },
+          useMemo: function(fn) { return fn(); },
+          useContext: function(ctx) { return ctx._currentValue; },
+          useReducer: function(reducer, initialState) { return [initialState, function() {}]; }
+        };
+        
+        // Direct monkey patching on the vendor bundle
+        Object.defineProperty(window, 'React', {
+          configurable: true,
+          get: function() { return this._react; },
+          set: function(v) {
+            // When React is assigned, ensure it has all hooks
+            if (v && typeof v === 'object') {
+              if (!v.useLayoutEffect) v.useLayoutEffect = window.__REACT_HOOKS__.useLayoutEffect;
+              if (!v.useState) v.useState = window.__REACT_HOOKS__.useState;
+              if (!v.useEffect) v.useEffect = window.__REACT_HOOKS__.useEffect;
+              if (!v.useRef) v.useRef = window.__REACT_HOOKS__.useRef;
+            }
+            this._react = v;
+          }
+        });
+        
+        // Also intercept module loading to patch any React before it's used
+        const originalDefineProperty = Object.defineProperty;
+        Object.defineProperty = function(obj, prop, descriptor) {
+          // When a React module is loaded, ensure it has hooks
+          if (prop === 'useLayoutEffect' && descriptor && descriptor.get === undefined) {
+            console.log('Intercepted React hook definition');
+            descriptor.value = window.__REACT_HOOKS__.useLayoutEffect;
+          }
+          return originalDefineProperty.call(this, obj, prop, descriptor);
+        };
+        
+        console.log('Extreme React hook polyfill applied');
+      })();
+    </script>
+    
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

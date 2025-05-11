@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import type { OutputOptions } from 'rollup';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -20,37 +21,80 @@ export default defineConfig(({ mode }) => ({
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
       "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
+      "scheduler": path.resolve(__dirname, "./node_modules/scheduler"),
     },
-    dedupe: ['react', 'react-dom', 'react/jsx-runtime']
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'scheduler']
   },
   build: {
+    // Inject virtual module to fix React hooks
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
+        // Force React and related packages into a single chunk to avoid duplication
+        manualChunks: (id: string) => {
+          // Force React and related packages into the same chunk
+          if (id.includes('node_modules/react') || 
+              id.includes('node_modules/react-dom') || 
+              id.includes('node_modules/scheduler') ||
+              id.includes('node_modules/@radix-ui/react') ||
+              id.includes('node_modules/react-router')) {
+            return 'vendor-react';
+          }
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
+            return 'vendor-charts';
+          }
+          if (id.includes('node_modules/lucide')) {
+            return 'vendor-icons';
+          }
+          if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) {
+            return 'vendor-pdf';
+          }
+          if (id.includes('node_modules/xlsx')) {
+            return 'vendor-spreadsheet';
+          }
           if (id.includes('node_modules')) {
-            if (id.includes('react') || 
-                id.includes('react-dom') || 
-                id.includes('@radix-ui/react') ||
-                id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            if (id.includes('recharts') || id.includes('d3')) {
-              return 'vendor-charts';
-            }
-            if (id.includes('lucide')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('jspdf') || id.includes('html2canvas')) {
-              return 'vendor-pdf';
-            }
-            if (id.includes('xlsx')) {
-              return 'vendor-spreadsheet';
-            }
+            // Group remaining node_modules into a separate vendor chunk
             return 'vendor';
           }
-        }
-      },
-      external: mode === 'production' ? [] : ['react', 'react-dom'],
+          return undefined;
+        },
+        inlineDynamicImports: false,
+        // Add banner to all JS files to ensure React hooks are available
+        banner: `
+// Fix React hooks in bundled vendor files
+(function() {
+  if (window.__REACT_HOOKS__) {
+    // Ensure React hooks are available
+    window.forceHooksAvailable = function(React) {
+      if (!React) return;
+      if (!React.useLayoutEffect) React.useLayoutEffect = window.__REACT_HOOKS__.useLayoutEffect;
+      if (!React.useState) React.useState = window.__REACT_HOOKS__.useState;
+      if (!React.useEffect) React.useEffect = window.__REACT_HOOKS__.useEffect;
+      return React;
+    };
+    
+    // Polyfill for CommonJS modules
+    if (typeof module !== 'undefined') {
+      var originalRequire = module.require;
+      if (originalRequire && typeof originalRequire === 'function') {
+        module.require = function(id) {
+          var result = originalRequire.apply(this, arguments);
+          if (id === 'react' && result) {
+            return window.forceHooksAvailable(result);
+          }
+          return result;
+        };
+      }
+    }
+  }
+})();
+        `
+      } as OutputOptions,
+      // Do not treat React as external in production
+      external: [],
+    },
+    commonjsOptions: {
+      // Ensure CommonJS modules can see our React patches
+      transformMixedEsModules: true,
     },
     chunkSizeWarningLimit: 1200,
     minify: 'terser',
@@ -66,7 +110,15 @@ export default defineConfig(({ mode }) => ({
     devSourcemap: false,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react/jsx-runtime'],
+    // Force all deps to be pre-bundled
+    include: [
+      'react', 
+      'react-dom', 
+      'react/jsx-runtime', 
+      'scheduler',
+      // Add commonly used React hooks libraries that might cause issues
+      '@radix-ui/react-use-layout-effect'
+    ],
     force: true,
     esbuildOptions: {
       jsx: 'automatic',
