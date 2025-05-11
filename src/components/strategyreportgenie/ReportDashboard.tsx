@@ -1,5 +1,4 @@
-import * as React from 'react';
-const { useState, useEffect, useMemo } = React;
+import { React, useState, useEffect, useMemo, forwardRef } from '@/utils/react-singleton';
 import { FileType } from '@/types/strategyreportgenie';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -73,7 +72,7 @@ interface ReportDashboardProps {
   onOptimizeStrategy: () => void;
 }
 
-const ReportDashboard = React.forwardRef<HTMLDivElement, ReportDashboardProps>(({ 
+const ReportDashboard = forwardRef<HTMLDivElement, ReportDashboardProps>(({ 
   files, 
   onClearFiles, 
   onGeneratePDF, 

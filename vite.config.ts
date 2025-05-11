@@ -17,15 +17,20 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "react": path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
+    dedupe: ['react', 'react-dom']
   },
   build: {
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Create separate chunks for large dependencies
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
+            if (id.includes('react') || 
+                id.includes('react-dom') || 
+                id.includes('@radix-ui/react') ||
+                id.includes('react-router')) {
               return 'vendor-react';
             }
             if (id.includes('recharts') || id.includes('d3')) {
@@ -34,16 +39,13 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('lucide')) {
               return 'vendor-icons';
             }
-            if (id.includes('radix')) {
-              return 'vendor-ui';
-            }
             if (id.includes('jspdf') || id.includes('html2canvas')) {
               return 'vendor-pdf';
             }
             if (id.includes('xlsx')) {
               return 'vendor-spreadsheet';
             }
-            return 'vendor'; // all other node_modules
+            return 'vendor';
           }
         }
       },
@@ -56,9 +58,15 @@ export default defineConfig(({ mode }) => ({
         drop_debugger: mode === 'production',
       },
     },
-    sourcemap: false,
+    sourcemap: mode !== 'production',
   },
   css: {
     devSourcemap: false,
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+    esbuildOptions: {
+      jsx: 'automatic',
+    }
+  }
 }));

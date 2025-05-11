@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { React, forwardRef } from '@/utils/react-singleton';
 import { FileType } from '@/types/strategyreportgenie';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,7 +26,7 @@ interface DashboardHeaderProps {
   onOptimizeStrategy: () => void;
 }
 
-const DashboardHeader = React.forwardRef<HTMLDivElement, DashboardHeaderProps>(({
+const DashboardHeader = forwardRef<HTMLDivElement, DashboardHeaderProps>(({
   files,
   activeFileId,
   initialCapital,
