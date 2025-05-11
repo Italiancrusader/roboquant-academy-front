@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   ResponsiveContainer,
@@ -8,14 +7,14 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartConfig } from '@/components/ui/chart';
 import { StrategyTrade } from '@/types/strategyreportgenie';
-import { CalendarArrowUp, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Separator } from '@/components/ui/separator';
 
 interface MonthlyReturnsProps {
   trades: StrategyTrade[];
@@ -122,14 +121,14 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
         </div>
       </div>
       
-      <div className="h-[350px] md:h-[450px] w-full">
+      <div className="h-[350px] md:h-[400px] w-full">
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
               margin={isMobile ? 
-                { top: 20, right: 10, left: 0, bottom: 60 } : 
-                { top: 20, right: 20, left: 0, bottom: 70 }
+                { top: 20, right: 10, left: 0, bottom: 65 } : 
+                { top: 20, right: 20, left: 0, bottom: 75 }
               }
               barGap={0}
               maxBarSize={isMobile ? 30 : 50}
@@ -138,9 +137,9 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
               <XAxis 
                 dataKey="month"
                 stroke="hsl(var(--muted-foreground))"
-                height={60}
+                height={70}
                 tick={{ fontSize: isMobile ? 10 : 12 }}
-                tickMargin={15}
+                tickMargin={25}
                 angle={-45}
                 textAnchor="end"
                 interval={isMobile ? 'preserveStartEnd' : 0}
@@ -196,22 +195,6 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 wrapperStyle={{ zIndex: 100 }}
                 cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
               />
-              <Legend 
-                verticalAlign="bottom"
-                height={36}
-                content={() => (
-                  <div className="flex justify-center items-center mt-2 pt-7">
-                    <div className="flex items-center gap-2 mr-4">
-                      <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "#9b87f5", opacity: 0.85 }}></div>
-                      <span className="text-xs text-muted-foreground">Profit</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "#ea384c", opacity: 0.85 }}></div>
-                      <span className="text-xs text-muted-foreground">Loss</span>
-                    </div>
-                  </div>
-                )}
-              />
               <Bar
                 dataKey="profit"
                 name=""
@@ -230,8 +213,25 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
           </ResponsiveContainer>
         </ChartContainer>
       </div>
+      
+      {/* Legend rendered as standalone element */}
+      <div className="flex justify-center items-center gap-8 pb-10 pt-2 border-b border-border/30">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "#9b87f5", opacity: 0.85 }}></div>
+          <span className="text-xs text-muted-foreground">Profit</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "#ea384c", opacity: 0.85 }}></div>
+          <span className="text-xs text-muted-foreground">Loss</span>
+        </div>
+      </div>
 
-      <Card>
+      {/* Additional spacing elements */}
+      <div className="h-20"></div>
+      <Separator className="my-8 opacity-30" />
+      <div className="h-20"></div>
+
+      <Card className="mt-20 bg-card/60 border-border/40">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Monthly Statistics

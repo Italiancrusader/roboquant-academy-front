@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,23 +87,56 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
   const volumeBySymbol = React.useMemo(() => {
     if (!symbolData.length) return [];
     
-    return symbolData.map(item => ({
+    // Take top 8 symbols and group the rest as "Others"
+    const topSymbols = symbolData.slice(0, 8);
+    const otherSymbols = symbolData.slice(8);
+    
+    const result = topSymbols.map(item => ({
       name: item.symbol,
       value: item.totalTrades,
     }));
+    
+    if (otherSymbols.length > 0) {
+      const otherTrades = otherSymbols.reduce((sum, item) => sum + item.totalTrades, 0);
+      if (otherTrades > 0) {
+        result.push({ name: 'Others', value: otherTrades });
+      }
+    }
+    
+    return result;
   }, [symbolData]);
   
   const profitBySymbol = React.useMemo(() => {
     if (!symbolData.length) return [];
     
-    return symbolData.map(item => ({
+    // Take top 8 symbols and group the rest as "Others"
+    const topSymbols = symbolData.slice(0, 8);
+    const otherSymbols = symbolData.slice(8);
+    
+    const result = topSymbols.map(item => ({
       name: item.symbol,
       value: item.totalProfit,
+    }));
+    
+    if (otherSymbols.length > 0) {
+      const otherProfit = otherSymbols.reduce((sum, item) => sum + item.totalProfit, 0);
+      result.push({ name: 'Others', value: otherProfit });
+    }
+    
+    return result;
+  }, [symbolData]);
+  
+  // Get top symbols for the bar chart - limit to 10 for better visibility
+  const topSymbols = React.useMemo(() => {
+    return symbolData.slice(0, 10).map(item => ({
+      symbol: item.symbol,
+      profit: item.totalProfit,
+      winRate: item.winRate
     }));
   }, [symbolData]);
   
   // COLORS for the pie charts
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  const COLORS = ['#9b87f5', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#ea384c'];
   
   if (!symbolData.length) {
     return (
@@ -115,18 +147,18 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       <h2 className="text-xl font-semibold mb-4">Symbol Performance</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Trades by Symbol Pie Chart */}
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <Globe className="h-5 w-5" /> Trades by Symbol
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[300px] pb-4">
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -138,13 +170,14 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
                     outerRadius={100}
                     fill="#8884d8"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    isAnimationActive={false}
                   >
                     {volumeBySymbol.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`${value} trades`, 'Volume']} />
-                  <Legend />
+                  <Legend layout="horizontal" verticalAlign="bottom" align="center" />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -152,13 +185,13 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
         </Card>
         
         {/* Profit by Symbol Pie Chart */}
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <CircleDollarSign className="h-5 w-5" /> Profit by Symbol
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[300px] pb-4">
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -169,17 +202,18 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
                     cy="50%"
                     outerRadius={100}
                     fill="#8884d8"
-                    label={({ name }) => name}
+                    label={({ name, percent }) => `${name}`}
+                    isAnimationActive={false}
                   >
                     {profitBySymbol.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={entry.value >= 0 ? COLORS[index % COLORS.length] : '#ff0000'} 
+                        fill={entry.value >= 0 ? COLORS[index % COLORS.length] : '#ea384c'} 
                       />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Profit/Loss']} />
-                  <Legend />
+                  <Legend layout="horizontal" verticalAlign="bottom" align="center" />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -188,59 +222,99 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
       </div>
       
       {/* Performance by Symbol Bar Chart */}
-      <Card className="mb-6">
+      <Card className="mb-6 overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <Layers className="h-5 w-5" /> Symbol Performance Comparison
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[350px]">
-          <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
+        <CardContent className="h-[450px] pt-4 pb-12">
+          <ChartContainer config={{ profit: { color: "#9b87f5" } }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
-                data={symbolData.map(item => ({
-                  symbol: item.symbol,
-                  profit: item.totalProfit,
-                  winRate: item.winRate
-                }))}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                data={topSymbols}
+                margin={{ top: 20, right: 50, left: 40, bottom: 100 }}
+                barGap={20}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="symbol" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.4} />
+                <XAxis 
+                  dataKey="symbol" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={80}
+                  tick={{ fontSize: 12 }}
+                  tickMargin={20}
+                  stroke="hsl(var(--muted-foreground))"
+                />
                 <YAxis 
                   yAxisId="left" 
+                  orientation="left"
+                  width={60}
                   label={{ 
-                    value: 'Profit/Loss', 
+                    value: 'Profit/Loss ($)', 
                     angle: -90, 
                     position: 'insideLeft',
+                    offset: -10,
+                    dx: -20,
                     style: { fill: 'hsl(var(--muted-foreground))' }
                   }} 
                   tickFormatter={(value) => `$${value}`}
+                  stroke="hsl(var(--muted-foreground))"
                 />
                 <YAxis 
                   yAxisId="right" 
-                  orientation="right" 
+                  orientation="right"
+                  width={60}
                   domain={[0, 100]} 
                   label={{ 
-                    value: 'Win Rate %', 
+                    value: 'Win Rate (%)', 
                     angle: -90, 
                     position: 'insideRight',
+                    dx: 20,
                     style: { fill: 'hsl(var(--muted-foreground))' }
                   }} 
                   tickFormatter={(value) => `${value}%`}
+                  stroke="hsl(var(--muted-foreground))"
                 />
-                <Tooltip />
-                <Legend />
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const profitValue = typeof payload[0].value === 'number' ? payload[0].value : 0;
+                      const winRateValue = typeof payload[1].value === 'number' ? payload[1].value : 0;
+                      
+                      return (
+                        <div className="rounded-lg border bg-background p-3 shadow-lg">
+                          <p className="font-bold">{payload[0].payload.symbol}</p>
+                          <p className="text-sm">P&L: <span className={profitValue >= 0 ? 'text-green-500' : 'text-red-500'}>
+                            ${profitValue.toFixed(2)}
+                          </span></p>
+                          <p className="text-sm">Win Rate: {winRateValue.toFixed(1)}%</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                  wrapperStyle={{ zIndex: 100 }}
+                />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={40}
+                  wrapperStyle={{ paddingTop: 20, bottom: 0 }}
+                />
                 <Bar 
                   yAxisId="left" 
                   dataKey="profit" 
                   name="P&L" 
-                  fill="hsl(var(--primary))" 
+                  fill="#9b87f5" 
+                  maxBarSize={40}
+                  isAnimationActive={false}
+                  radius={[4, 4, 0, 0]}
                 >
-                  {symbolData.map((_, index) => (
+                  {topSymbols.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={symbolData[index].totalProfit >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} 
+                      fill={entry.profit >= 0 ? '#9b87f5' : '#ea384c'}
+                      fillOpacity={0.85}
                     />
                   ))}
                 </Bar>
@@ -248,7 +322,10 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
                   yAxisId="right" 
                   dataKey="winRate" 
                   name="Win Rate" 
-                  fill="hsl(var(--accent))" 
+                  fill="#82ca9d"
+                  maxBarSize={40}
+                  isAnimationActive={false}
+                  radius={[4, 4, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -256,8 +333,8 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
         </CardContent>
       </Card>
       
-      {/* Detailed Symbol Metrics Table */}
-      <Card>
+      {/* Symbol Metrics Table */}
+      <Card className="overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">Symbol Metrics Details</CardTitle>
         </CardHeader>

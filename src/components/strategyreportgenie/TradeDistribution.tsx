@@ -13,7 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer } from '@/components/ui/chart';
 import { StrategyTrade } from '@/types/strategyreportgenie';
-import { Calendar } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import { ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
 interface TradeDistributionProps {
@@ -36,20 +36,21 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
     if (validTrades.length === 0) return [];
 
     const hourlyMap = new Map();
+    
+    // Initialize all 24 hours
+    for (let hour = 0; hour < 24; hour++) {
+      hourlyMap.set(hour, {
+        hour: hour,
+        profit: 0,
+        trades: 0,
+        wins: 0,
+        losses: 0,
+      });
+    }
 
     validTrades.forEach(trade => {
       const date = trade.openTime;
       const hour = date.getHours();
-
-      if (!hourlyMap.has(hour)) {
-        hourlyMap.set(hour, {
-          hour: hour,
-          profit: 0,
-          trades: 0,
-          wins: 0,
-          losses: 0,
-        });
-      }
 
       const hourData = hourlyMap.get(hour);
       hourData.profit += trade.profit || 0;
@@ -58,7 +59,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
       if (trade.profit !== undefined) {
         if (trade.profit > 0) {
           hourData.wins++;
-        } else {
+        } else if (trade.profit < 0) {
           hourData.losses++;
         }
       }
@@ -76,6 +77,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
     return hourlyData.map(hourData => ({
       ...hourData,
       winRate: hourData.trades > 0 ? (hourData.wins / hourData.trades) * 100 : 0,
+      hourFormatted: `${hourData.hour}:00`,
     }));
   }, [hourlyData]);
 
@@ -84,21 +86,23 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
     if (validTrades.length === 0) return [];
 
     const weekdayMap = new Map();
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    // Initialize all days of the week
+    for (let day = 0; day < 7; day++) {
+      weekdayMap.set(day, {
+        day: days[day],
+        dayIndex: day,
+        profit: 0,
+        trades: 0,
+        wins: 0,
+        losses: 0,
+      });
+    }
 
     validTrades.forEach(trade => {
       const date = trade.openTime;
       const day = date.getDay(); // 0 (Sunday) to 6 (Saturday)
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-
-      if (!weekdayMap.has(day)) {
-        weekdayMap.set(day, {
-          day: dayName,
-          profit: 0,
-          trades: 0,
-          wins: 0,
-          losses: 0,
-        });
-      }
 
       const dayData = weekdayMap.get(day);
       dayData.profit += trade.profit || 0;
@@ -107,7 +111,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
       if (trade.profit !== undefined) {
         if (trade.profit > 0) {
           dayData.wins++;
-        } else {
+        } else if (trade.profit < 0) {
           dayData.losses++;
         }
       }
@@ -115,10 +119,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
 
     // Convert to array and sort by day
     const weekdayArray = Array.from(weekdayMap.values());
-    weekdayArray.sort((a, b) => {
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      return days.indexOf(a.day) - days.indexOf(b.day);
-    });
+    weekdayArray.sort((a, b) => a.dayIndex - b.dayIndex);
 
     return weekdayArray;
   }, [validTrades]);
@@ -139,50 +140,42 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
     );
   }
 
-  // Calculate appropriate margin based on data length
-  const calculateMargin = (dataLength: number) => {
-    const baseMargin = { top: 20, right: 30, left: 30, bottom: 40 };
-    if (dataLength > 15) {
-      return { ...baseMargin, bottom: 60 }; // More space for x-axis labels
-    }
-    return baseMargin;
-  };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Trade Distribution</h2>
+        <h2 className="text-xl font-semibold">Trade Distribution Analysis</h2>
       </div>
 
-      <Card className="overflow-visible">
+      {/* Hourly Distribution */}
+      <Card className="overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <Calendar className="h-4 w-4" /> Hourly Distribution
+            <Clock className="h-4 w-4" /> Hourly Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-[350px] min-h-[300px] max-h-[450px]">
+        <CardContent className="pt-4 pb-8">
+          <div className="h-[400px]">
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={hourlyWinRateData}
-                  margin={calculateMargin(hourlyWinRateData.length)}
+                  margin={{ top: 20, right: 30, left: 50, bottom: 60 }}
                   barGap={0}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis
-                    dataKey="hour"
+                    dataKey="hourFormatted"
                     stroke="hsl(var(--muted-foreground))"
-                    height={60}
-                    tick={{ fontSize: 12 }}
-                    tickMargin={15}
+                    height={70}
+                    tick={{ fontSize: 11 }}
+                    tickMargin={20}
                     label={{
-                      value: 'Hour',
+                      value: 'Hour of Day (24h)',
                       position: 'insideBottom',
                       offset: -15,
                       fill: 'hsl(var(--muted-foreground))'
                     }}
-                    interval={hourlyWinRateData.length > 12 ? 'preserveStartEnd' : 0}
+                    interval={1}
                   />
                   <YAxis
                     stroke="hsl(var(--muted-foreground))"
@@ -197,9 +190,10 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                       value: 'Win Rate (%)',
                       angle: -90,
                       position: 'insideLeft',
-                      style: { fill: 'hsl(var(--muted-foreground))' }
+                      style: { fill: 'hsl(var(--muted-foreground))' },
+                      dy: 20
                     }}
-                    domain={[0, 'dataMax']}
+                    domain={[0, Math.max(100, Math.ceil(Math.max(...hourlyWinRateData.map(d => d.winRate)) / 10) * 10)]}
                     padding={{ top: 20, bottom: 0 }}
                   />
                   <Tooltip
@@ -214,7 +208,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                                   Hour
                                 </span>
                                 <span className="font-bold text-foreground">
-                                  {data.hour}
+                                  {data.hourFormatted}
                                 </span>
                               </div>
                               <div className="flex flex-col">
@@ -241,20 +235,23 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                     }}
                     wrapperStyle={{ zIndex: 100 }}
                   />
-                  <Legend />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={50}
+                    wrapperStyle={{ paddingTop: 20, bottom: 0 }}
+                  />
                   <Bar
                     dataKey="winRate"
                     name="Hourly Win Rate"
                     isAnimationActive={false}
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0}
-                    stroke="none"
-                    barSize={hourlyWinRateData.length > 12 ? 15 : 25} // Adjust bar size based on data length
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={40}
                   >
                     {hourlyWinRateData.map((entry, index) => (
-                      <Cell
+                      <Cell 
                         key={`cell-${index}`}
-                        fill={entry.winRate >= 50 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'}
+                        fill={entry.winRate > 50 ? '#9b87f5' : '#ea384c'} // Purple for >50%, Red for <50%
+                        fillOpacity={0.85}
                       />
                     ))}
                   </Bar>
@@ -265,34 +262,36 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
         </CardContent>
       </Card>
 
-      <Card className="overflow-visible">
+      {/* Weekday Distribution */}
+      <Card className="overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Weekday Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-[350px] min-h-[300px] max-h-[450px]">
+        <CardContent className="pt-4 pb-8">
+          <div className="h-[400px]">
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={weekdayWinRateData}
-                  margin={calculateMargin(weekdayWinRateData.length)}
+                  margin={{ top: 20, right: 30, left: 50, bottom: 60 }}
                   barGap={0}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis
                     dataKey="day"
                     stroke="hsl(var(--muted-foreground))"
-                    height={60}
+                    height={70}
                     tick={{ fontSize: 12 }}
-                    tickMargin={15}
+                    tickMargin={20}
                     label={{
                       value: 'Day of Week',
                       position: 'insideBottom',
                       offset: -15,
                       fill: 'hsl(var(--muted-foreground))'
                     }}
+                    interval={0}
                   />
                   <YAxis
                     stroke="hsl(var(--muted-foreground))"
@@ -307,9 +306,10 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                       value: 'Win Rate (%)',
                       angle: -90,
                       position: 'insideLeft',
-                      style: { fill: 'hsl(var(--muted-foreground))' }
+                      style: { fill: 'hsl(var(--muted-foreground))' },
+                      dy: 20
                     }}
-                    domain={[0, 'dataMax']}
+                    domain={[0, Math.max(100, Math.ceil(Math.max(...weekdayWinRateData.map(d => d.winRate)) / 10) * 10)]}
                     padding={{ top: 20, bottom: 0 }}
                   />
                   <Tooltip
@@ -351,20 +351,23 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                     }}
                     wrapperStyle={{ zIndex: 100 }}
                   />
-                  <Legend />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={50}
+                    wrapperStyle={{ paddingTop: 20, bottom: 0 }}
+                  />
                   <Bar
                     dataKey="winRate"
                     name="Weekday Win Rate"
                     isAnimationActive={false}
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0}
-                    stroke="none"
-                    barSize={25}
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={60}
                   >
                     {weekdayWinRateData.map((entry, index) => (
-                      <Cell
+                      <Cell 
                         key={`cell-${index}`}
-                        fill={entry.winRate >= 50 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'}
+                        fill={entry.winRate > 50 ? '#9b87f5' : '#ea384c'} // Purple for >50%, Red for <50%
+                        fillOpacity={0.85}
                       />
                     ))}
                   </Bar>

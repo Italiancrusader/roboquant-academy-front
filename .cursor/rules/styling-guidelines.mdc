@@ -1,0 +1,47 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Styling Guidelines
+
+This document outlines the styling approach for the RoboQuant Academy website.
+
+## CSS Framework
+
+The website uses Tailwind CSS as its primary styling approach:
+- [tailwind.config.ts](mdc:tailwind.config.ts) - Main Tailwind configuration
+- [src/index.css](mdc:src/index.css) - Global CSS and Tailwind imports
+
+## Component Styling
+
+- Components use Tailwind CSS classes for styling
+- ShadCN UI components are used for consistent UI elements
+- Configuration for ShadCN UI is in [components.json](mdc:components.json)
+
+## Custom Design Elements
+
+- `gradient-text` class is used for gradient text effects
+- Custom animations are defined with specific animation-* classes
+- Custom color variables are defined in the theme configuration
+
+## Dark Theme
+
+- The site uses a dark theme by default
+- Custom colors are defined in the tailwind config using the `secondary` prefix
+
+## Responsive Design
+
+- Mobile-first approach using Tailwind's responsive prefixes:
+  - `sm:` for small screens (640px+)
+  - `md:` for medium screens (768px+)
+  - `lg:` for large screens (1024px+)
+  - `xl:` for extra large screens (1280px+)
+
+## Utility Classes
+
+Common utility patterns:
+- Cards use `bg-card` background
+- Most sections use `section-padding` for consistent spacing
+- Containers typically use `container mx-auto`
+

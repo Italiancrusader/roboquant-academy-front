@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -152,46 +151,65 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
       <h2 className="text-xl font-semibold mb-4">Drawdown Analysis</h2>
       
       {/* Drawdown Visualization */}
-      <Card className="mb-6">
+      <Card className="mb-32">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <TrendingDown className="h-5 w-5" /> Drawdown Visualization
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[450px] pb-48">
           <ChartContainer config={{ 
             drawdown: { color: "hsl(var(--destructive))" }
           }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={equityCurve}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 10, right: 60, left: 40, bottom: 140 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="date" 
-                  tickFormatter={(date) => date instanceof Date ? date.toLocaleDateString() : ''}
+                  tickFormatter={(date) => date instanceof Date ? 
+                    new Date(date).toLocaleDateString(undefined, { month: 'short', year: '2-digit' }) : ''}
+                  height={60}
+                  tick={{ fontSize: 10 }}
+                  tickMargin={30}
+                  angle={-45}
+                  textAnchor="end"
+                  interval="preserveStartEnd" 
+                  minTickGap={40}
                 />
                 <YAxis 
                   tickFormatter={(value) => `${value.toFixed(1)}%`}
+                  width={65}
                   label={{ 
                     value: 'Drawdown %', 
                     angle: -90, 
                     position: 'insideLeft',
+                    dy: 20,
                     style: { fill: 'hsl(var(--muted-foreground))' }
                   }}
                 />
                 <Tooltip 
                   formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Drawdown']}
-                  labelFormatter={(label) => label instanceof Date ? label.toLocaleDateString() : ''}
+                  labelFormatter={(label) => label instanceof Date ? 
+                    label.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
+                  wrapperStyle={{ zIndex: 1000 }}
                 />
-                <Legend />
+                <Legend 
+                  verticalAlign="top"
+                  align="right"
+                  iconType="circle"
+                  layout="vertical"
+                  wrapperStyle={{ top: 10, right: 10 }}
+                />
                 <Area 
                   type="monotone" 
                   dataKey="drawdownPct" 
-                  name="Drawdown %" 
+                  name="Drawdown" 
                   stroke="hsl(var(--destructive))" 
                   fill="hsl(var(--destructive)/0.2)" 
+                  isAnimationActive={false}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -207,7 +225,7 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
               <AlertCircle className="h-5 w-5" /> Maximum Drawdown Analysis
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 bg-muted/30 rounded-lg border border-border">
                 <h3 className="text-sm font-medium text-muted-foreground">Max Drawdown</h3>

@@ -1,0 +1,40 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Data Management
+
+This document outlines how data is managed in the RoboQuant Academy website.
+
+## Backend Integration
+
+The application uses Supabase as its backend:
+- [src/supabase/client.ts](mdc:src/supabase/client.ts) - Supabase client configuration
+- [supabase/migrations](mdc:supabase/migrations) - Database migrations
+
+## Authentication
+
+- Authentication is managed through Supabase Auth
+- [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx) - Authentication context provider
+- [src/pages/Auth.tsx](mdc:src/pages/Auth.tsx) - Authentication UI
+
+## State Management
+
+- Local component state with React useState
+- Global state with React Context API
+- [src/contexts/CartContext.tsx](mdc:src/contexts/CartContext.tsx) - Shopping cart context
+- React Query is used for server state management
+
+## API Calls
+
+- API calls are handled through services
+- [src/services](mdc:src/services) - Service functions for API calls
+- `useQuery` and `useMutation` hooks from React Query are used for data fetching
+
+## Error Handling
+
+- Error handling is implemented using try/catch blocks
+- Toast notifications are used to display errors to users
+- React Query error handling for API calls
+

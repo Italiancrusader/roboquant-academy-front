@@ -1,4 +1,3 @@
-
 export interface FileType {
   id: string;
   name: string;
@@ -8,6 +7,8 @@ export interface FileType {
   dateUploaded: Date;
   parsedData?: ParsedStrategyReport;
   source: 'MT4' | 'MT5' | 'TradingView';
+  content: string;
+  data?: any;
 }
 
 export interface TradeType {
@@ -108,26 +109,26 @@ export interface StrategyReport {
 export interface StrategyTrade {
   openTime: Date;
   order: number;
-  dealId?: string;
+  dealId: string;
   symbol: string;
-  type?: string;      // Added type field (buy, sell, balance)
-  direction?: string; // Added direction field (in, out)
-  side?: 'buy' | 'sell' | 'long' | 'short'; // Keep for backward compatibility
+  type: string;
+  direction: string;
+  side: 'long' | 'short';
   volumeLots: number;
   priceOpen: number;
   stopLoss: number | null;
   takeProfit: number | null;
   timeFlag: Date;
-  state: string;
+  state: 'in' | 'out';
   comment: string;
-  profit?: number;
+  profit: number;
+  commission: number;
+  swap: number;
   balance?: number;
-  commission?: number; // Added commission field
-  swap?: number;       // Added swap field
 }
 
 export interface StrategySummary {
-  [key: string]: number | string;
+  [key: string]: string;
 }
 
 export interface ParsedStrategyReport {
