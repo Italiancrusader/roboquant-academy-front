@@ -1,3 +1,4 @@
+
 import { read, utils, write } from 'xlsx';
 import { MT5Trade, MT5Summary, ParsedMT5Report } from '@/types/mt5reportgenie';
 
@@ -167,14 +168,15 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
       // Determine if this is a balance entry
       const isBalanceEntry = typeValue === 'balance' || typeValue === '';
       
-      // Parse trade data
+      // Parse trade data with type safety for direction
       const trade: MT5Trade = {
         openTime,
         order: parseInt(orderValue) || 0,
         dealId: dealValue,
         symbol: symbolValue,
         type: typeValue,
-        direction: directionValue,
+        // Ensure direction is either "in" or "out" or undefined
+        direction: directionValue === "in" || directionValue === "out" ? directionValue : undefined,
         volumeLots: cleanNumeric(volumeValue),
         priceOpen: cleanNumeric(priceValue),
         stopLoss: null,
@@ -332,6 +334,14 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
         } else {
           state = row[4] || ''; // Usually 'out'
         }
+        
+        // Determine direction within allowed values
+        let tradeDirection: "in" | "out" | undefined = undefined;
+        if (state === 'in') {
+          tradeDirection = "in";
+        } else if (state === 'out') {
+          tradeDirection = "out";
+        }
 
         // Parse trade data
         const trade: MT5Trade = {
@@ -340,6 +350,7 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
           dealId: dealId, // Store the original deal ID string
           symbol: String(row[2]),
           side,
+          direction: tradeDirection,
           volumeLots: Number(String(row[5]).replace(',', '.')),
           priceOpen: Number(String(row[6]).replace(',', '.')),
           stopLoss: null,
