@@ -8,9 +8,10 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as ReactDOMClient from 'react-dom/client';
+import * as ReactJSXRuntime from 'react/jsx-runtime';
 
 // Export jsx runtime functions explicitly
-export const { jsx, jsxs, Fragment } = React;
+export const { jsx, jsxs, Fragment } = ReactJSXRuntime;
 
 // Re-export to make these the canonical versions used in the app
 export { React, ReactDOM, ReactDOMClient };
