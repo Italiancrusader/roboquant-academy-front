@@ -1,10 +1,6 @@
-// First, ensure React is a singleton
-import './utils/ensure-react';
-// Apply emergency React hook patch
-import './utils/react-hook-patch';
 
-// Use the singleton React instance to prevent multiple React instances
-import { React, ReactDOMClient, Suspense, jsx, jsxs } from './utils/react-singleton';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
@@ -24,10 +20,10 @@ if (typeof window !== 'undefined') {
 }
 
 // Mount app with Suspense boundary
-ReactDOMClient.createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Suspense fallback={<LoadingAnimation />}>
+    <React.Suspense fallback={<LoadingAnimation />}>
       <App />
-    </Suspense>
+    </React.Suspense>
   </React.StrictMode>
 );

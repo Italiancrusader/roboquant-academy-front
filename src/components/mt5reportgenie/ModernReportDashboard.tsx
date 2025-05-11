@@ -1,8 +1,8 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileType } from '@/types/mt5reportgenie';
-import { toast } from '@/components/ui/use-toast';
 import { 
   CircleDollarSign, 
   BarChart2, 
@@ -12,8 +12,7 @@ import {
   FileText, 
   Trash2, 
   Download, 
-  Circle,
-  FileDigit
+  Circle
 } from 'lucide-react';
 
 import TabView from '@/components/ui/tab-view';
@@ -23,7 +22,6 @@ import SymbolsAnalysisView from './SymbolsAnalysisView';
 import DrawdownView from './DrawdownView';
 import TimeAnalysisView from './TimeAnalysisView';
 import CsvViewer from './CsvViewer';
-import { generateHtmlReport, downloadHtmlReport } from '@/utils/htmlReportGenerator';
 
 interface ModernReportDashboardProps {
   files: FileType[];
@@ -44,38 +42,6 @@ const ModernReportDashboard: React.FC<ModernReportDashboardProps> = ({
   
   const activeFile = files.find(file => file.id === activeFileId);
   const trades = activeFile?.parsedData?.trades || [];
-
-  // Handle HTML report export
-  const handleHtmlExport = () => {
-    if (!activeFile || !activeFile.parsedData) {
-      toast({
-        title: "Export Failed",
-        description: "No strategy data available to export.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const strategyName = activeFile.name.replace(/\.[^/.]+$/, "") || 'Strategy';
-    const reportTitle = `${strategyName} Trading Strategy Analysis`;
-    
-    try {
-      const htmlContent = generateHtmlReport(activeFile.parsedData, reportTitle);
-      downloadHtmlReport(htmlContent, `${strategyName}-Report`);
-      
-      toast({
-        title: "HTML Report Generated",
-        description: "Your interactive strategy report has been downloaded as an HTML file.",
-      });
-    } catch (error) {
-      console.error("Error generating HTML report:", error);
-      toast({
-        title: "Report Generation Failed",
-        description: "There was a problem creating the HTML report. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   // Define tabs for the dashboard
   const dashboardTabs = [
@@ -160,9 +126,17 @@ const ModernReportDashboard: React.FC<ModernReportDashboardProps> = ({
       
       {/* Action buttons */}
       <div className="flex flex-wrap gap-3 justify-end pt-4 mt-8 border-t">
-        <Button variant="outline" onClick={handleHtmlExport} className="flex items-center">
-          <FileDigit className="h-4 w-4 mr-2" />
-          Download Report
+        <Button variant="outline" onClick={onGeneratePDF} className="flex items-center">
+          <Download className="h-4 w-4 mr-2" />
+          Export PDF
+        </Button>
+        <Button variant="outline" onClick={onMonteCarloSimulation} className="flex items-center">
+          <BarChart2 className="h-4 w-4 mr-2" />
+          Monte Carlo
+        </Button>
+        <Button onClick={onOptimizeStrategy} className="flex items-center">
+          <CircleDollarSign className="h-4 w-4 mr-2" />
+          Optimize
         </Button>
       </div>
     </div>

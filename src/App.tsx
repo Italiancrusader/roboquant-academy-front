@@ -1,5 +1,4 @@
 
-import { React } from './utils/react-singleton';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SimpleLanding from './pages/SimpleLanding';
 import Index from './pages/Index';
@@ -23,7 +22,6 @@ import VSL from './pages/VSL';
 import Checkout from './pages/Checkout';
 import ThankYou from './pages/ThankYou';
 import SurveyFunnel from './pages/SurveyFunnel';
-import SupabaseTest from './pages/SupabaseTest';
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -103,9 +101,6 @@ function App() {
                 <Route path="/vsl" element={<VSL />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/thank-you" element={<ThankYou />} />
-                
-                {/* Test Routes */}
-                <Route path="/supabase-test" element={<SupabaseTest />} />
                 
                 {/* Admin routes */}
                 <Route path="/admin" element={<AdminCheck><AdminDashboard /></AdminCheck>} />

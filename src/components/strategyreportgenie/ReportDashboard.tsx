@@ -1,53 +1,29 @@
-import { React, useState, useEffect, useMemo, forwardRef } from '@/utils/react-singleton';
-import { FileType } from '@/types/strategyreportgenie';
+import React, { useState, useEffect } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from '@/components/ui/use-toast';
-import { Separator } from '@/components/ui/separator';
+import { FileType } from '@/types/strategyreportgenie';
 import { 
-  BarChart, 
-  TrendingUp, 
-  TrendingDown, 
-  BarChart2, 
-  ArrowDownUp, 
-  ArrowUpDown, 
-  LineChart, 
   CircleDollarSign, 
-  PieChart, 
-  Activity, 
-  AlertTriangle, 
-  Calendar,
-  Clock, 
-  History, 
-  FileText, 
-  ChevronRight, 
-  ChevronDown, 
-  Download, 
-  Trash2, 
-  SlidersHorizontal, 
-  Target, 
+  BarChart2, 
+  TrendingDown, 
   Layers, 
-  Percent, 
-  Circle, 
-  CircleOff, 
-  Scale, 
-  DollarSign, 
-  BarChart3,
-  FilterX,
-  Filter,
-  RefreshCw,
-  ChevronsUpDown,
+  Calendar, 
+  FileText, 
+  Trash2, 
+  Download, 
+  Circle,
+  ChartBar,
+  Target,
   Calculator,
-  Landmark,
-  Globe
+  Globe,
+  RefreshCw
 } from 'lucide-react';
 
-// Import components
-import DashboardHeader from './DashboardHeader';
+// These components will need to be moved/copied from mt5reportgenie to strategyreportgenie folder
 import KpiCards from './KpiCards';
 import EquityChart from './EquityChart';
 import RiskMetrics from './RiskMetrics';
@@ -58,11 +34,7 @@ import TradeDistribution from './TradeDistribution';
 import PerformanceHeatmap from './PerformanceHeatmap';
 import DrawdownAnalysis from './DrawdownAnalysis';
 import CorrelationAnalysis from './CorrelationAnalysis';
-import MonteCarloSimulation from './MonteCarloSimulation';
-import { exportToPdf } from '@/utils/pdfExport';
-import CSVReportButton from './CSVReportButton';
-import { generateHtmlReport, downloadHtmlReport } from '@/utils/htmlReportGenerator';
-import { calculateMetrics } from '@/utils/metricsCalculator';
+import { toast } from '@/components/ui/use-toast';
 
 interface ReportDashboardProps {
   files: FileType[];
@@ -72,49 +44,43 @@ interface ReportDashboardProps {
   onOptimizeStrategy: () => void;
 }
 
-const ReportDashboard = forwardRef<HTMLDivElement, ReportDashboardProps>(({ 
+const ReportDashboard: React.FC<ReportDashboardProps> = ({ 
   files, 
   onClearFiles, 
   onGeneratePDF, 
   onMonteCarloSimulation, 
   onOptimizeStrategy 
-}, ref) => {
+}) => {
   const [activeFileId, setActiveFileId] = useState<string>(files[0]?.id);
-  const [initialCapital, setInitialCapital] = useState<string>("10000.00");
+  const [initialBalance, setInitialBalance] = useState<string>("10000.00");
   const [calculatedTrades, setCalculatedTrades] = useState<any[]>([]);
-  const [isMonteCarloOpen, setIsMonteCarloOpen] = useState(false);
   
   const activeFile = files.find(file => file.id === activeFileId);
   const trades = calculatedTrades.length > 0 ? calculatedTrades : (activeFile?.parsedData?.trades || []);
   
-  // Function to get source badge for the file
+  // Get file source for display
   const getSourceBadge = (source: 'MT4' | 'MT5' | 'TradingView' | undefined) => {
     switch(source) {
       case 'MT4':
-        return <Badge variant="outline" className="ml-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-blue-500/20">MT4</Badge>;
+        return <Badge variant="secondary" className="ml-2">MT4</Badge>;
       case 'MT5':
-        return <Badge variant="outline" className="ml-2 bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20">MT5</Badge>;
+        return <Badge variant="secondary" className="ml-2">MT5</Badge>;
       case 'TradingView':
-        return <Badge variant="outline" className="ml-2 bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 border-orange-500/20">TradingView</Badge>;
+        return <Badge variant="secondary" className="ml-2">TradingView</Badge>;
       default:
         return null;
     }
   };
   
-  // Reset calculated trades when active file changes
-  useEffect(() => {
-    setCalculatedTrades([]);
-  }, [activeFileId]);
-  
   // Function to recalculate trades with new initial balance
   const recalculateTrades = () => {
     if (!activeFile || !activeFile.parsedData?.trades.length) return;
     
-    const parsedCapital = parseFloat(initialCapital.replace(/,/g, ''));
-    if (isNaN(parsedCapital) || parsedCapital <= 0) {
+    const parsedBalance = parseFloat(initialBalance.replace(/,/g, ''));
+    if (isNaN(parsedBalance) || parsedBalance <= 0) {
       toast({
-        title: "Invalid capital amount",
-        description: "Please enter a valid positive number for initial capital.",
+        title: "Invalid balance",
+        description: "Please enter a valid positive number for initial balance.",
         variant: "destructive"
       });
       return;
@@ -129,9 +95,9 @@ const ReportDashboard = forwardRef<HTMLDivElement, ReportDashboardProps>(({
       let firstBalanceIndex = newTrades.findIndex(t => t.balance !== undefined);
       if (firstBalanceIndex === -1) return;
       
-      // Calculate the difference between the current first balance and the new initial capital
+      // Calculate the difference between the current first balance and the new initial balance
       const oldInitialBalance = newTrades[firstBalanceIndex].balance || 0;
-      const balanceDiff = parsedCapital - oldInitialBalance;
+      const balanceDiff = parsedBalance - oldInitialBalance;
       
       // Adjust all balances by the difference
       for (let i = 0; i < newTrades.length; i++) {
@@ -143,347 +109,310 @@ const ReportDashboard = forwardRef<HTMLDivElement, ReportDashboardProps>(({
       setCalculatedTrades(newTrades);
       
       toast({
-        title: "Capital updated",
-        description: `Recalculated metrics with initial capital: $${parsedCapital.toLocaleString()}`,
+        title: "Balance updated",
+        description: `Recalculated metrics with initial balance: $${parsedBalance.toLocaleString()}`,
       });
     } catch (error) {
-      console.error("Error recalculating with new capital:", error);
+      console.error("Error recalculating with new balance:", error);
       toast({
         title: "Calculation error",
-        description: "There was an error recalculating metrics with the new capital.",
+        description: "There was an error recalculating metrics with the new balance.",
         variant: "destructive"
       });
     }
   };
   
-  // Calculate metrics based on trades using the extracted utility
-  const metrics = useMemo(() => {
-    return calculateMetrics(trades);
+  // Reset calculated trades when active file changes
+  useEffect(() => {
+    setCalculatedTrades([]);
+  }, [activeFileId]);
+  
+  const metrics = React.useMemo(() => {
+    
+    if (!trades.length) {
+      return {
+        totalNetProfit: 0,
+        grossProfit: 0,
+        grossLoss: 0,
+        profitFactor: 0,
+        expectedPayoff: 0,
+        absoluteDrawdown: 0,
+        maxDrawdown: 0,
+        relativeDrawdown: 0,
+        sharpeRatio: 0,
+        tradesTotal: 0,
+        winRate: 0,
+        avgTradeProfit: 0,
+        recoveryFactor: 0,
+        tradeDuration: "0h 0m",
+        initialBalance: 0,
+        finalBalance: 0,
+      };
+    }
+    
+    let initialBalance = 0;
+    let finalBalance = 0;
+    
+    for (let i = 0; i < trades.length; i++) {
+      if (trades[i].balance !== undefined) {
+        initialBalance = trades[i].balance;
+        break;
+      }
+    }
+    
+    for (let i = trades.length - 1; i >= 0; i--) {
+      if (trades[i].balance !== undefined) {
+        finalBalance = trades[i].balance;
+        break;
+      }
+    }
+    
+    const totalNetProfit = finalBalance - initialBalance;
+    
+    const filteredTrades = trades.filter(trade => !(trade.type === 'balance' || trade.type === ''));
+    
+    const completedTrades = filteredTrades.filter(t => t.profit !== undefined && t.direction === 'out');
+    
+    const profitableTrades = completedTrades.filter(t => t.profit && t.profit > 0);
+    const lossTrades = completedTrades.filter(t => t.profit && t.profit < 0);
+    
+    const grossProfit = profitableTrades.reduce((sum, t) => sum + (t.profit || 0), 0);
+    const grossLoss = Math.abs(lossTrades.reduce((sum, t) => sum + (t.profit || 0), 0));
+    
+    const winRate = completedTrades.length ? (profitableTrades.length / completedTrades.length) * 100 : 0;
+    const profitFactor = grossLoss ? grossProfit / grossLoss : 0;
+    const avgTradeProfit = completedTrades.length ? completedTrades.reduce((sum, t) => sum + (t.profit || 0), 0) / completedTrades.length : 0;
+    
+    let peak = initialBalance;
+    let maxDrawdown = 0;
+    let currentDrawdown = 0;
+    let balance = initialBalance;
+    
+    trades.forEach(trade => {
+      if (trade.balance !== undefined) {
+        balance = trade.balance;
+        if (balance > peak) {
+          peak = balance;
+          currentDrawdown = 0;
+        } else {
+          currentDrawdown = peak - balance;
+          if (currentDrawdown > maxDrawdown) {
+            maxDrawdown = currentDrawdown;
+          }
+        }
+      }
+    });
+    
+    const relativeDrawdown = peak ? (maxDrawdown / peak) * 100 : 0;
+    const recoveryFactor = maxDrawdown > 0 ? totalNetProfit / maxDrawdown : 0;
+    
+    const returns = [];
+    let prevBalance = null;
+    
+    trades.forEach(trade => {
+      if (trade.balance && prevBalance !== null && trade.type !== 'balance' && trade.type !== '') {
+        returns.push((trade.balance - prevBalance) / prevBalance);
+        prevBalance = trade.balance;
+      } else if (trade.balance) {
+        prevBalance = trade.balance;
+      }
+    });
+    
+    const returnsMean = returns.reduce((sum, r) => sum + r, 0) / (returns.length || 1);
+    const returnsStdDev = Math.sqrt(
+      returns.reduce((sum, r) => sum + Math.pow(r - returnsMean, 2), 0) / (returns.length || 1)
+    );
+    
+    const sharpeRatio = returnsStdDev > 0 ? returnsMean / returnsStdDev * Math.sqrt(252) : 0;
+    
+    return {
+      totalNetProfit,
+      grossProfit,
+      grossLoss,
+      profitFactor,
+      expectedPayoff: avgTradeProfit,
+      absoluteDrawdown: maxDrawdown,
+      maxDrawdown,
+      relativeDrawdown,
+      sharpeRatio,
+      tradesTotal: completedTrades.length,
+      winRate,
+      avgTradeProfit,
+      recoveryFactor,
+      tradeDuration: "N/A",
+      initialBalance,
+      finalBalance,
+    };
   }, [trades]);
-  
-  // Generate HTML report for export
-  const handleHtmlExport = () => {
-    if (!activeFile || !trades.length) {
-      toast({
-        title: "No data to export",
-        description: "Please upload trading data before trying to export a report.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      const reportTitle = activeFile.name;
-      const reportHtml = generateHtmlReport(activeFile.parsedData, reportTitle);
-      const fileName = `${activeFile.name.replace(/\.[^/.]+$/, "")}_report.html`;
-      downloadHtmlReport(reportHtml, fileName);
-      
-      toast({
-        title: "Report exported",
-        description: "HTML report has been generated and downloaded successfully."
-      });
-    } catch (error) {
-      console.error("Error generating HTML report:", error);
-      toast({
-        title: "Export error",
-        description: "There was an error generating the HTML report.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Generate PDF report
-  const handleGeneratePDF = async () => {
-    if (!activeFile) return;
-    
-    try {
-      await exportToPdf("strategy-report-container", `${activeFile.name.replace(/\.[^/.]+$/, "")}_report.pdf`, activeFile.name);
-      
-      toast({
-        title: "PDF export started",
-        description: "Your PDF is being generated and will download shortly."
-      });
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "PDF generation failed",
-        description: "There was an error generating the PDF report.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Open Monte Carlo simulation
-  const handleMonteCarloSimulation = () => {
-    setIsMonteCarloOpen(true);
-    if (onMonteCarloSimulation) onMonteCarloSimulation();
-  };
-  
-  if (!files.length) return null;
-  
+
   return (
-    <div id="strategy-report-container" className="flex flex-col space-y-4 pb-20" ref={ref}>
-      {/* File selection and controls - extracted to DashboardHeader component */}
-      <DashboardHeader 
-        files={files}
-        activeFileId={activeFileId}
-        initialCapital={initialCapital}
-        onFileChange={setActiveFileId}
-        onCapitalChange={setInitialCapital}
-        onRecalculate={recalculateTrades}
-        onClearFiles={onClearFiles}
-        onGeneratePDF={handleGeneratePDF}
-        onHtmlExport={handleHtmlExport}
-        onOptimizeStrategy={onOptimizeStrategy}
-      />
-    
-      {/* Key Performance Indicators */}
-      <div>
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-xl font-semibold flex items-center">
-            <Activity className="h-5 w-5 mr-2 text-primary" />
-            Key Performance Metrics
-          </h2>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleMonteCarloSimulation}
-            className="flex items-center"
-          >
-            <Calculator className="h-4 w-4 mr-2" />
-            Monte Carlo Simulation
-          </Button>
+    <div className="space-y-6 pb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start">
+        <div className="space-y-2 mb-4 md:mb-0">
+          <h2 className="text-2xl font-bold">Strategy Analysis</h2>
+          <div className="flex flex-wrap gap-2">
+            {files.map((file) => (
+              <Badge 
+                key={file.id}
+                variant={file.id === activeFileId ? "default" : "outline"} 
+                className="cursor-pointer py-1.5 px-3 flex items-center"
+                onClick={() => setActiveFileId(file.id)}
+              >
+                <Circle className={`h-2 w-2 mr-1 ${file.id === activeFileId ? "text-primary-foreground" : "text-muted-foreground"}`} />
+                {file.name}
+                {getSourceBadge(file.source)}
+              </Badge>
+            ))}
+          </div>
         </div>
-        <KpiCards metrics={metrics} />
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={onClearFiles}
+          className="flex items-center"
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          Clear All
+        </Button>
       </div>
       
-      {/* Main dashboard content */}
-      <Tabs defaultValue="overview" className="mt-2">
-        <div className="flex justify-between items-center mb-1">
-          <TabsList className="grid w-full sm:w-auto grid-cols-2 sm:grid-cols-4 md:flex">
-            <TabsTrigger value="overview" className="flex items-center gap-1 px-3 py-2">
-              <BarChart2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="performance" className="flex items-center gap-1 px-3 py-2">
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Performance</span>
-            </TabsTrigger>
-            <TabsTrigger value="risk" className="flex items-center gap-1 px-3 py-2">
-              <AlertTriangle className="h-4 w-4" />
-              <span className="hidden sm:inline">Risk Analysis</span>
-            </TabsTrigger>
-            <TabsTrigger value="distribution" className="flex items-center gap-1 px-3 py-2">
-              <PieChart className="h-4 w-4" />
-              <span className="hidden sm:inline">Distribution</span>
-            </TabsTrigger>
-            <TabsTrigger value="instruments" className="flex items-center gap-1 px-3 py-2">
-              <Globe className="h-4 w-4" />
-              <span className="hidden sm:inline">Instruments</span>
-            </TabsTrigger>
-            <TabsTrigger value="timing" className="flex items-center gap-1 px-3 py-2">
-              <Clock className="h-4 w-4" />
-              <span className="hidden sm:inline">Timing</span>
-            </TabsTrigger>
-            <TabsTrigger value="correlation" className="flex items-center gap-1 px-3 py-2">
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">Correlation</span>
-            </TabsTrigger>
-            <TabsTrigger value="data" className="flex items-center gap-1 px-3 py-2">
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Raw Data</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* Initial Balance Input */}
+      <Card className="p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex items-center">
+            <CircleDollarSign className="h-5 w-5 text-primary mr-2" />
+            <Label htmlFor="initialBalance" className="font-medium">Initial Balance:</Label>
+          </div>
+          <div className="flex gap-2 flex-1 max-w-xs">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+              <Input
+                id="initialBalance"
+                className="pl-7"
+                value={initialBalance}
+                onChange={(e) => setInitialBalance(e.target.value)}
+                placeholder="10000.00"
+              />
+            </div>
+            <Button 
+              variant="secondary" 
+              className="flex items-center" 
+              onClick={recalculateTrades}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Recalculate
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1 sm:mt-0 sm:ml-2">
+            Update balance to recalculate all performance metrics
+          </p>
         </div>
+      </Card>
+      
+      <KpiCards metrics={metrics} />
+      
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 max-w-full overflow-x-auto">
+          <TabsTrigger value="overview" className="flex items-center">
+            <BarChart2 className="h-4 w-4 mr-2" /> Overview
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center">
+            <ChartBar className="h-4 w-4 mr-2" /> Performance
+          </TabsTrigger>
+          <TabsTrigger value="risk" className="flex items-center">
+            <TrendingDown className="h-4 w-4 mr-2" /> Risk
+          </TabsTrigger>
+          <TabsTrigger value="instruments" className="flex items-center">
+            <Globe className="h-4 w-4 mr-2" /> Instruments
+          </TabsTrigger>
+          <TabsTrigger value="distribution" className="flex items-center">
+            <Layers className="h-4 w-4 mr-2" /> Distribution
+          </TabsTrigger>
+          <TabsTrigger value="correlation" className="flex items-center">
+            <Target className="h-4 w-4 mr-2" /> Correlation
+          </TabsTrigger>
+          <TabsTrigger value="calendar" className="flex items-center">
+            <Calendar className="h-4 w-4 mr-2" /> Calendar
+          </TabsTrigger>
+          <TabsTrigger value="data" className="flex items-center">
+            <FileText className="h-4 w-4 mr-2" /> Raw Data
+          </TabsTrigger>
+        </TabsList>
         
-        <div className="mt-4 border rounded-lg bg-card/90 backdrop-blur-sm border-border/60 p-1">
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="mt-0 p-3">
-            <div className="flex flex-col gap-6">
-              {/* Equity Chart */}
-              <Card className="border-0 bg-background/50 shadow-sm overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center text-lg">
-                    <LineChart className="h-5 w-5 mr-2 text-primary" />
-                    Equity Growth
-                  </CardTitle>
-                  <CardDescription>
-                    Cumulative equity curve showing account balance over time
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-8">
-                  <div className="w-full overflow-x-auto overflow-y-hidden">
-                    <div className="min-w-[600px] w-full">
-                      <EquityChart trades={trades} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Monthly Performance - Now full width */}
-              <Card className="border-0 bg-background/50 shadow-sm overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center text-lg">
-                    <BarChart className="h-5 w-5 mr-2 text-primary" />
-                    Monthly Performance
-                  </CardTitle>
-                  <CardDescription>
-                    Return breakdown by month showing performance consistency
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-8 px-4">
-                  <div className="w-full overflow-x-auto">
-                    <div className="min-w-[900px] w-full pt-2">
-                      <MonthlyReturns trades={trades} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Risk Exposure - Now full width */}
-              <Card className="border-0 bg-background/50 shadow-sm overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center text-lg">
-                    <ArrowUpDown className="h-5 w-5 mr-2 text-primary" />
-                    Risk Exposure
-                  </CardTitle>
-                  <CardDescription>
-                    Key risk metrics and drawdown analysis
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-6">
-                  <div className="w-full overflow-x-auto">
-                    <div className="min-w-[800px] w-full">
-                      <RiskMetrics trades={trades} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+        <div className="space-y-4">
+          <TabsContent value="overview" className="my-2">
+            <Card className="p-6">
+              <EquityChart trades={trades} />
+            </Card>
           </TabsContent>
           
-          {/* Performance Tab */}
-          <TabsContent value="performance" className="mt-0 p-3">
-            <div className="flex flex-col gap-6">
-              <Card className="border-0 bg-background/50 shadow-sm overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center text-lg">
-                    <TrendingUp className="h-5 w-5 mr-2 text-primary" />
-                    Performance Metrics
-                  </CardTitle>
-                  <CardDescription>
-                    Detailed analysis of trading performance over time
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <div className="bg-background/70 rounded-lg p-4 border border-border/40">
-                      <div className="text-sm text-muted-foreground">Net Profit</div>
-                      <div className="text-2xl font-semibold text-foreground">${metrics.totalNetProfit.toFixed(2)}</div>
-                      <div className="text-xs text-muted-foreground mt-1">Total return</div>
-                    </div>
-                    
-                    <div className="bg-background/70 rounded-lg p-4 border border-border/40">
-                      <div className="text-sm text-muted-foreground">CAGR</div>
-                      <div className="text-2xl font-semibold text-foreground">12.4%</div>
-                      <div className="text-xs text-muted-foreground mt-1">Annualized return</div>
-                    </div>
-                    
-                    <div className="bg-background/70 rounded-lg p-4 border border-border/40">
-                      <div className="text-sm text-muted-foreground">Sharpe Ratio</div>
-                      <div className="text-2xl font-semibold text-foreground">{metrics.sharpeRatio.toFixed(2)}</div>
-                      <div className="text-xs text-muted-foreground mt-1">Risk-adjusted return</div>
-                    </div>
-                    
-                    <div className="bg-background/70 rounded-lg p-4 border border-border/40">
-                      <div className="text-sm text-muted-foreground">Profit Factor</div>
-                      <div className="text-2xl font-semibold text-foreground">{metrics.profitFactor.toFixed(2)}</div>
-                      <div className="text-xs text-muted-foreground mt-1">Gross profit/loss ratio</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
+          <TabsContent value="performance" className="my-2">
+            <Card className="p-6">
               <MonthlyReturns trades={trades} />
-            </div>
+            </Card>
           </TabsContent>
           
-          {/* Risk Analysis Tab */}
-          <TabsContent value="risk" className="mt-0 p-3">
-            <div className="flex flex-col gap-6">
-              <DrawdownAnalysis trades={trades} />
-              <RiskMetrics trades={trades} />
-            </div>
-          </TabsContent>
-          
-          {/* Distribution Tab */}
-          <TabsContent value="distribution" className="mt-0 p-3">
-            <div className="flex flex-col gap-6">
-              <TradeDistribution trades={trades} />
-            </div>
-          </TabsContent>
-          
-          {/* Instruments Tab */}
-          <TabsContent value="instruments" className="mt-0 p-3">
-            <div className="flex flex-col gap-6">
-              <SymbolMetrics trades={trades} />
-            </div>
-          </TabsContent>
-          
-          {/* Timing Tab */}
-          <TabsContent value="timing" className="mt-0 p-3">
-            <div className="flex flex-col gap-6">
-              <PerformanceHeatmap trades={trades} />
-            </div>
-          </TabsContent>
-          
-          {/* Correlation Tab */}
-          <TabsContent value="correlation" className="mt-0 p-3">
-            <div className="flex flex-col gap-6">
-              <CorrelationAnalysis trades={trades} />
-            </div>
-          </TabsContent>
-          
-          {/* Raw Data Tab */}
-          <TabsContent value="data" className="mt-0 p-3">
-            <div className="flex flex-col gap-6">
-              <Card className="border-0 bg-background/50 shadow-sm overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center text-lg">
-                    <FileText className="h-5 w-5 mr-2 text-primary" />
-                    Trade Data
-                  </CardTitle>
-                  <CardDescription>
-                    Raw transaction data and trade history
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-6">
-                  <div className="w-full overflow-x-auto">
-                    <CsvViewer 
-                      csvUrl={activeFile?.parsedData?.csvUrl || null}
-                      fileName={activeFile?.name || 'report'}
-                      parsedData={activeFile?.parsedData}
-                    />
-                  </div>
-                </CardContent>
+          <TabsContent value="risk" className="my-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card className="p-6">
+                <RiskMetrics trades={trades} />
+              </Card>
+              <Card className="p-6">
+                <DrawdownAnalysis trades={trades} />
               </Card>
             </div>
+          </TabsContent>
+          
+          <TabsContent value="instruments" className="my-2">
+            <Card className="p-6">
+              <SymbolMetrics trades={trades} />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="distribution" className="my-2">
+            <Card className="p-6 overflow-visible">
+              <TradeDistribution trades={trades} />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="correlation" className="my-2">
+            <Card className="p-6 overflow-visible">
+              <CorrelationAnalysis trades={trades} />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="calendar" className="my-2">
+            <Card className="p-6 overflow-visible">
+              <PerformanceHeatmap trades={trades} />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="data" className="my-2">
+            <CsvViewer 
+              csvUrl={activeFile?.parsedData?.csvUrl || null}
+              fileName={activeFile?.name || 'report'}
+              parsedData={activeFile?.parsedData}
+            />
           </TabsContent>
         </div>
       </Tabs>
       
-      {/* Monte Carlo Simulation Modal - conditionally rendered when open */}
-      {isMonteCarloOpen && (
-        <MonteCarloSimulation 
-          trades={trades} 
-          isOpen={isMonteCarloOpen} 
-          onClose={() => setIsMonteCarloOpen(false)} 
-          initialCapital={parseFloat(initialCapital.replace(/,/g, ''))}
-        />
-      )}
+      <div className="flex justify-end space-x-3 pt-4 mt-6">
+        <Button variant="outline" onClick={onGeneratePDF}>
+          <Download className="h-4 w-4 mr-2" />
+          Export PDF Report
+        </Button>
+        <Button variant="outline" onClick={onMonteCarloSimulation}>
+          <Calculator className="h-4 w-4 mr-2" />
+          Monte Carlo Simulation
+        </Button>
+        <Button onClick={onOptimizeStrategy}>
+          <CircleDollarSign className="h-4 w-4 mr-2" />
+          Optimize Strategy
+        </Button>
+      </div>
     </div>
   );
-});
+};
 
-export default ReportDashboard; 
+export default ReportDashboard;

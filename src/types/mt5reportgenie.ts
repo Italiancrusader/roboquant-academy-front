@@ -1,3 +1,4 @@
+
 export interface FileType {
   id: string;
   name: string;
@@ -109,7 +110,7 @@ export interface MT5Trade {
   dealId?: string;
   symbol: string;
   type?: string;      // Added type field (buy, sell, balance)
-  direction?: string; // Changed from "in" | "out" to string to be more permissive
+  direction?: string; // Added direction field (in, out)
   side?: 'buy' | 'sell'; // Keep for backward compatibility
   volumeLots: number;
   priceOpen: number;

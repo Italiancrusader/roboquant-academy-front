@@ -1,3 +1,4 @@
+
 export const mainNavItems = [
   {
     title: 'Home',
@@ -20,7 +21,7 @@ export const mainNavItems = [
     href: '/support',
   },
   {
-    title: 'Strategy Report Genie',
+    title: 'MT5 Report Genie',
     href: '/mt5-report-genie',
   },
 ];
