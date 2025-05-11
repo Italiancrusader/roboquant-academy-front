@@ -7,9 +7,10 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as ReactDOMClient from 'react-dom/client';
+import * as ReactJSXRuntime from 'react/jsx-runtime';
 
 // Re-export to make these the canonical versions used in the app
-export { React, ReactDOM, ReactDOMClient };
+export { React, ReactDOM, ReactDOMClient, ReactJSXRuntime };
 
 // Export all React hooks and utilities to make them accessible through this single entry point
 export const {
@@ -33,6 +34,9 @@ export const {
   createRef,
   Children
 } = React;
+
+// Export JSX runtime elements
+export const { jsx, jsxs, Fragment: JSXFragment } = ReactJSXRuntime;
 
 // Default export for backward compatibility
 export default React; 

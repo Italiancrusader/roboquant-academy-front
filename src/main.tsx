@@ -1,3 +1,6 @@
+// First, ensure React is a singleton
+import './utils/ensure-react';
+
 // Use the singleton React instance to prevent multiple React instances
 import { React, ReactDOMClient } from './utils/react-singleton';
 import App from './App';
