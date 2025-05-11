@@ -110,7 +110,7 @@ export interface MT5Trade {
   dealId?: string;
   symbol: string;
   type?: string;      // Added type field (buy, sell, balance)
-  direction?: string; // Added direction field (in, out)
+  direction?: "in" | "out"; // Ensuring consistent type with StrategyTrade
   side?: 'buy' | 'sell'; // Keep for backward compatibility
   volumeLots: number;
   priceOpen: number;
