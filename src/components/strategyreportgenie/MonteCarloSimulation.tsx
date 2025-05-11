@@ -1,33 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
-import { StrategyTrade } from '@/types/strategyreportgenie';
+import React, { useState, useMemo } from 'react';
 import {
-  ResponsiveContainer,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   LineChart,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend
+  ResponsiveContainer,
+  Legend,
+  ReferenceLine,
 } from 'recharts';
-import { ChartContainer } from '@/components/ui/chart';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Slider } from '@/components/ui/slider';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { X, AlignLeft, TrendingUp, BellRing, Loader2 } from 'lucide-react';
+import { StrategyTrade } from '@/types/strategyreportgenie';
 
-interface MonteCarloSimulationProps {
-  isOpen: boolean;
-  onClose: () => void;
+export interface MonteCarloSimulationProps {
   trades: StrategyTrade[];
+  isOpen: boolean;
   initialCapital: number;
+  onClose: () => void;
 }
 
-const MonteCarloSimulation: React.FC<MonteCarloSimulationProps> = ({
-  isOpen,
-  onClose,
-  trades,
-  initialCapital
+const MonteCarloSimulation: React.FC<MonteCarloSimulationProps> = ({ 
+  trades, 
+  isOpen, 
+  initialCapital = 10000,
+  onClose 
 }) => {
   const [simulations, setSimulations] = useState<Array<{ equity: number[] }>>([]);
   const [simulationData, setSimulationData] = useState<any[]>([]);
@@ -198,8 +214,8 @@ const MonteCarloSimulation: React.FC<MonteCarloSimulationProps> = ({
   };
   
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-auto">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl h-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold mb-1">Monte Carlo Simulation</DialogTitle>
           <DialogDescription>

@@ -138,7 +138,9 @@ const StrategyReportGenie = () => {
       {/* Monte Carlo Simulation Dialog */}
       {activeDialog === 'monteCarlo' && (
         <MonteCarloSimulation 
-          trades={files.find(f => f.id === files[0]?.id)?.parsedData?.trades || []} 
+          trades={files.find(f => f.id === files[0]?.id)?.parsedData?.trades || []}
+          isOpen={activeDialog === 'monteCarlo'}
+          initialCapital={10000} // Default value for initial capital
           onClose={closeDialog}
         />
       )}

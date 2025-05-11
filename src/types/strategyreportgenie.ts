@@ -1,3 +1,4 @@
+
 export interface FileType {
   id: string;
   name: string;
@@ -112,14 +113,14 @@ export interface StrategyTrade {
   dealId: string;
   symbol: string;
   type: string;
-  direction: string;
+  direction: "in" | "out";
   side: 'long' | 'short';
   volumeLots: number;
   priceOpen: number;
   stopLoss: number | null;
   takeProfit: number | null;
   timeFlag: Date;
-  state: 'in' | 'out';
+  state: string;
   comment: string;
   profit: number;
   commission: number;

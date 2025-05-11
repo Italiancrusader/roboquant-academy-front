@@ -74,6 +74,9 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
           const parsedData = await parseMT5Excel(file, initialBalance);
           console.log("Parsed data:", parsedData);
           
+          // Get the file content as text to satisfy the FileType interface
+          const fileContent = await file.text();
+          
           processedFiles.push({
             id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             name: file.name,
@@ -82,7 +85,8 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
             file: file,
             dateUploaded: new Date(),
             parsedData,
-            source: parsedData.source // Add the source property from parsedData
+            source: parsedData.source, // Add the source property from parsedData
+            content: fileContent // Add the required content property
           });
           
           // Debug info for first few trades to help with date troubleshooting

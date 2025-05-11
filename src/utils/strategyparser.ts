@@ -665,12 +665,12 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       // Determine trade direction and state
       const isEntry = type.toLowerCase().includes('entry');
       const isExit = type.toLowerCase().includes('exit');
-      const direction = isEntry ? 'in' : (isExit ? 'out' : '');
+      let direction: "in" | "out" = isEntry ? "in" : (isExit ? "out" : "in");
       
       DEBUG.log('row', `Trade ${i} direction: ${direction} (isEntry: ${isEntry}, isExit: ${isExit})`);
       
       // Determine trade side
-      let side: 'long' | 'short' | undefined;
+      let side: 'long' | 'short';
       if (signal && signal.toLowerCase().includes('long')) {
         side = 'long';
       } else if (signal && signal.toLowerCase().includes('short')) {
@@ -679,6 +679,9 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
         side = 'long';
       } else if (type.toLowerCase().includes('short')) {
         side = 'short';
+      } else {
+        // Default to long if we can't determine
+        side = 'long';
       }
       
       // Update running balance
@@ -732,14 +735,14 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
     const totalProfit = trades.filter(t => t.direction === 'out').reduce((sum, t) => sum + (t.profit || 0), 0);
     const winRate = (totalTrades > 0) ? (profitableTrades / totalTrades * 100).toFixed(2) : '0';
     
-    summary['Total Trades'] = totalTrades;
-    summary['Profitable Trades'] = profitableTrades;
-    summary['Loss Trades'] = lossTrades;
+    summary['Total Trades'] = String(totalTrades);
+    summary['Profitable Trades'] = String(profitableTrades);
+    summary['Loss Trades'] = String(lossTrades);
     summary['Win Rate'] = `${winRate}%`;
-    summary['Total Net Profit'] = totalProfit;
-    summary['Initial Balance'] = startingBalance;
-    summary['Final Balance'] = runningBalance;
-    summary['Max Drawdown'] = maxDrawdown;
+    summary['Total Net Profit'] = String(totalProfit);
+    summary['Initial Balance'] = String(startingBalance);
+    summary['Final Balance'] = String(runningBalance);
+    summary['Max Drawdown'] = String(maxDrawdown);
     
     DEBUG.log('parser', 'Summary generated:', summary);
     DEBUG.log('parser', `Total trades processed: ${trades.length}`);
@@ -878,26 +881,43 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
       // Determine if this is a balance entry
       const isBalanceEntry = typeValue === 'balance' || typeValue === '';
       
-      // Parse trade data
+      // Make sure direction is a valid value
+      let direction: "in" | "out";
+      if (directionValue === "in" || directionValue === "out") {
+        direction = directionValue;
+      } else {
+        // Default direction based on other fields
+        direction = typeValue.toLowerCase().includes('entry') ? "in" : "out";
+      }
+      
+      // Create trade entry
       const trade: StrategyTrade = {
         openTime,
         order: parseInt(orderValue) || 0,
         dealId: dealValue,
         symbol: symbolValue,
         type: typeValue,
-        direction: directionValue,
+        direction: direction,
+        side: 'long', // Default to long if not specified
         volumeLots: cleanNumeric(volumeValue),
         priceOpen: cleanNumeric(priceValue),
         stopLoss: null,
         takeProfit: null,
         timeFlag: openTime,
-        state: directionValue || '',
+        state: direction,
         comment: commentValue,
         commission: cleanNumeric(commissionValue),
         swap: cleanNumeric(swapValue),
         profit: cleanNumeric(profitValue),
         balance: cleanNumeric(balanceValue),
       };
+      
+      // Determine side based on type
+      if (typeValue.toLowerCase().includes('buy') || typeValue.toLowerCase().includes('long')) {
+        trade.side = 'long';
+      } else if (typeValue.toLowerCase().includes('sell') || typeValue.toLowerCase().includes('short')) {
+        trade.side = 'short';
+      }
       
       // Parse stop loss and take profit from comment if available
       if (commentValue) {
@@ -916,7 +936,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
       
       // Update initial balance from the first balance entry
       if (isBalanceEntry && !summary['Initial Balance']) {
-        summary['Initial Balance'] = trade.balance;
+        summary['Initial Balance'] = String(trade.balance || 0);
       }
     }
   } else {
@@ -990,7 +1010,7 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
         if (row[2] === '' || row[2] === 'balance') {
           const balanceValue = Number(String(row[11] || row[10]).replace(',', '.'));
           if (!isNaN(balanceValue)) {
-            summary['Initial Balance'] = balanceValue;
+            summary['Initial Balance'] = String(balanceValue);
           }
           
           // Still create a trade entry for balance rows
@@ -1003,15 +1023,19 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
             order: Number(dealId) || 0,
             dealId: dealId, // Store the original deal ID string
             symbol: 'undefined',
-            volumeLots: NaN,
-            priceOpen: NaN,
+            volumeLots: 0,
+            priceOpen: 0,
             stopLoss: null,
             takeProfit: null,
             timeFlag: openTime,
             state: '',
             comment: row[12] || '',
             balance: balanceValue,
-            profit: 0
+            profit: 0,
+            direction: "in", // Default direction for balance entries
+            side: "long",
+            commission: 0,
+            swap: 0
           });
           
           continue;
@@ -1032,14 +1056,21 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
         }
 
         // Determine side and state
-        let side: 'buy' | 'sell' | undefined;
-        let state: string = '';
+        let side: 'long' | 'short' = 'long'; // Default
+        let direction: "in" | "out" = "in"; // Default
         
-        if (row[3] === 'buy' || row[3] === 'sell') {
-          side = row[3] as 'buy' | 'sell';
-          state = row[4] || ''; // Usually 'in'
-        } else {
-          state = row[4] || ''; // Usually 'out'
+        // Parse row[3] to determine if it's buy/sell and transform to long/short
+        if (row[3] === 'buy') {
+          side = 'long';
+        } else if (row[3] === 'sell') {
+          side = 'short';
+        }
+        
+        // Determine direction based on row[4]
+        if (row[4] === 'in') {
+          direction = 'in';
+        } else if (row[4] === 'out') {
+          direction = 'out';
         }
         
         // Create trade entry
@@ -1049,19 +1080,19 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
           dealId: dealId,
           symbol: row[2] || '',
           type: row[3] || '',
-          direction: state,
-          side,
-          volumeLots: Number(row[5]?.replace(',', '.')) || 0,
-          priceOpen: Number(row[6]?.replace(',', '.')) || 0,
+          direction: direction,
+          side: side,
+          volumeLots: Number(String(row[5] || '0').replace(',', '.')),
+          priceOpen: Number(String(row[6] || '0').replace(',', '.')),
           stopLoss: null,
           takeProfit: null,
           timeFlag: openTime,
-          state,
+          state: row[4] || '',
           comment: row[12] || '',
-          commission: Number(row[8]?.replace(',', '.')) || 0,
-          swap: Number(row[9]?.replace(',', '.')) || 0,
-          profit: Number(row[10]?.replace(',', '.')) || 0,
-          balance: Number(row[11]?.replace(',', '.')) || 0
+          commission: Number(String(row[8] || '0').replace(',', '.')),
+          swap: Number(String(row[9] || '0').replace(',', '.')),
+          profit: Number(String(row[10] || '0').replace(',', '.')),
+          balance: Number(String(row[11] || '0').replace(',', '.'))
         };
         
         trades.push(trade);
