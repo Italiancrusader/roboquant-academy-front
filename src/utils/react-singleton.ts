@@ -1,3 +1,4 @@
+
 /**
  * This file ensures all imports of React and ReactDOM use the same instance throughout the application.
  * This helps prevent the "Cannot read properties of undefined (reading 'useLayoutEffect')" error
@@ -23,6 +24,7 @@ export const {
   useReducer,
   useImperativeHandle,
   useDebugValue,
+  useId, // Add useId hook
   forwardRef,
   createContext,
   memo,
@@ -31,8 +33,19 @@ export const {
   createElement,
   cloneElement,
   createRef,
-  Children
+  Children,
+  lazy,
+  Suspense, // Add Suspense
+  startTransition, // Add startTransition
+  createFactory,
+  Component,
+  PureComponent
 } = React;
 
+// JSX namespace exports for Typescript
+export const jsx = React.createElement;
+export const jsxs = React.createElement;
+export const jsxDEV = React.createElement;
+
 // Default export for backward compatibility
-export default React; 
+export default React;

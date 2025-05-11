@@ -141,4 +141,4 @@ const DashboardHeader = forwardRef<HTMLDivElement, DashboardHeaderProps>(({
   );
 });
 
-export default DashboardHeader; 
+export default DashboardHeader;

@@ -1,5 +1,6 @@
+
 // Use the singleton React instance to prevent multiple React instances
-import { React, ReactDOMClient } from './utils/react-singleton';
+import { React, ReactDOMClient, Suspense } from './utils/react-singleton';
 import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
@@ -21,8 +22,8 @@ if (typeof window !== 'undefined') {
 // Mount app with Suspense boundary
 ReactDOMClient.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <React.Suspense fallback={<LoadingAnimation />}>
+    <Suspense fallback={<LoadingAnimation />}>
       <App />
-    </React.Suspense>
+    </Suspense>
   </React.StrictMode>
 );
