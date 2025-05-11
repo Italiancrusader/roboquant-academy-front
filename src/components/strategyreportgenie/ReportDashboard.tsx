@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import * as React from 'react';
+const { useState, useEffect, useMemo } = React;
 import { FileType } from '@/types/strategyreportgenie';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -72,13 +73,13 @@ interface ReportDashboardProps {
   onOptimizeStrategy: () => void;
 }
 
-const ReportDashboard: React.FC<ReportDashboardProps> = ({ 
+const ReportDashboard = React.forwardRef<HTMLDivElement, ReportDashboardProps>(({ 
   files, 
   onClearFiles, 
   onGeneratePDF, 
   onMonteCarloSimulation, 
   onOptimizeStrategy 
-}) => {
+}, ref) => {
   const [activeFileId, setActiveFileId] = useState<string>(files[0]?.id);
   const [initialCapital, setInitialCapital] = useState<string>("10000.00");
   const [calculatedTrades, setCalculatedTrades] = useState<any[]>([]);
@@ -222,7 +223,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
   if (!files.length) return null;
   
   return (
-    <div id="strategy-report-container" className="flex flex-col space-y-4 pb-20">
+    <div id="strategy-report-container" className="flex flex-col space-y-4 pb-20" ref={ref}>
       {/* File selection and controls - extracted to DashboardHeader component */}
       <DashboardHeader 
         files={files}
@@ -484,6 +485,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default ReportDashboard; 

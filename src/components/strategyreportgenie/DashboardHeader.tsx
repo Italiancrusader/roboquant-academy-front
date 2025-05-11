@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { FileType } from '@/types/strategyreportgenie';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,7 +26,7 @@ interface DashboardHeaderProps {
   onOptimizeStrategy: () => void;
 }
 
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({
+const DashboardHeader = React.forwardRef<HTMLDivElement, DashboardHeaderProps>(({
   files,
   activeFileId,
   initialCapital,
@@ -37,7 +37,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onGeneratePDF,
   onHtmlExport,
   onOptimizeStrategy
-}) => {
+}, ref) => {
   // Function to get source badge for the file
   const getSourceBadge = (source: 'MT4' | 'MT5' | 'TradingView' | undefined) => {
     switch(source) {
@@ -53,7 +53,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   return (
-    <Card className="mb-4 border-border/40 shadow-sm">
+    <Card className="mb-4 border-border/40 shadow-sm" ref={ref}>
       <CardContent className="pt-6">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between w-full">
           <div className="flex-1">
@@ -139,6 +139,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </CardContent>
     </Card>
   );
-};
+});
 
 export default DashboardHeader; 
