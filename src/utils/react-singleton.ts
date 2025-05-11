@@ -24,7 +24,7 @@ export const {
   useReducer,
   useImperativeHandle,
   useDebugValue,
-  useId, // Add useId hook
+  useId,
   forwardRef,
   createContext,
   memo,
@@ -35,17 +35,12 @@ export const {
   createRef,
   Children,
   lazy,
-  Suspense, // Add Suspense
-  startTransition, // Add startTransition
+  Suspense,
+  startTransition,
   createFactory,
   Component,
   PureComponent
 } = React;
-
-// JSX namespace exports for Typescript
-export const jsx = React.createElement;
-export const jsxs = React.createElement;
-export const jsxDEV = React.createElement;
 
 // Default export for backward compatibility
 export default React;
