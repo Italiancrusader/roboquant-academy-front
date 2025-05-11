@@ -1032,10 +1032,11 @@ export const parseMT5Excel = async (file: File, initialBalance?: number): Promis
             comment: row[12] || '',
             balance: balanceValue,
             profit: 0,
-            direction: "in", // Default direction for balance entries
+            direction: "in" as "in", // Default direction for balance entries
             side: "long",
             commission: 0,
-            swap: 0
+            swap: 0,
+            type: 'balance' // Add the missing type property
           });
           
           continue;
