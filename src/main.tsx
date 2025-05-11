@@ -1,5 +1,7 @@
 // First, ensure React is a singleton
 import './utils/ensure-react';
+// Apply emergency React hook patch
+import './utils/react-hook-patch';
 
 // Use the singleton React instance to prevent multiple React instances
 import { React, ReactDOMClient, Suspense, jsx, jsxs } from './utils/react-singleton';
