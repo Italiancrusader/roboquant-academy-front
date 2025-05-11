@@ -5,10 +5,10 @@ import { StrategyTrade, StrategySummary, ParsedStrategyReport } from '@/types/st
  * Debug utility for the strategy parser
  */
 const DEBUG = {
-  enabled: true,
-  dateProcessing: true,
-  rowProcessing: false,
-  columnMapping: true,
+  enabled: process.env.NODE_ENV !== 'production',
+  dateProcessing: process.env.NODE_ENV !== 'production' && true,
+  rowProcessing: process.env.NODE_ENV !== 'production' && false,
+  columnMapping: process.env.NODE_ENV !== 'production' && true,
   
   log: (category: string, message: string, data?: any) => {
     if (!DEBUG.enabled) return;

@@ -50,6 +50,23 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
+## Environment Variables and Deployment
+
+This project requires the following environment variables to be set in your deployment platform (Vercel):
+
+### Supabase Configuration
+- `VITE_SUPABASE_URL`: Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY`: Anonymous key for Supabase client-side operations
+- `SUPABASE_URL`: Same as VITE_SUPABASE_URL (used by server functions)
+- `SUPABASE_SERVICE_ROLE_KEY`: Service role key for Supabase admin operations
+
+### Stripe Configuration
+- `VITE_STRIPE_PUBLISHABLE_KEY`: Stripe publishable key for client-side
+- `STRIPE_SECRET_KEY`: Stripe secret key for server-side operations
+- `STRIPE_WEBHOOK_SECRET`: Secret for validating Stripe webhook events
+
+**IMPORTANT: Never commit these sensitive keys to version control. Set them directly in your deployment environment.**
+
 ## What technologies are used for this project?
 
 This project is built with:
@@ -63,6 +80,11 @@ This project is built with:
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/18fe4a63-1fa5-41ca-b3c0-2ca423fcde0e) and click on Share -> Publish.
+
+For Vercel deployment:
+1. Connect your GitHub repository to Vercel
+2. Set up the required environment variables in Vercel project settings
+3. Use the `vercel deploy` command or connect your GitHub repository for automatic deployments
 
 ## Can I connect a custom domain to my Lovable project?
 
