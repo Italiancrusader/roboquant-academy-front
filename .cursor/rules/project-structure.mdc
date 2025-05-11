@@ -5,30 +5,30 @@ alwaysApply: false
 ---
 # Project Structure
 
-This document outlines the high-level structure of the RoboQuant Academy website.
+This is a React application built with Vite, TypeScript and shadcn/ui components.
 
-## Main Entry Points
+## Main Directories
+- `src/` - Contains all source code
+  - `src/components/` - Reusable UI components
+  - `src/pages/` - Page components corresponding to routes
+  - `src/types/` - TypeScript type definitions
+  - `src/utils/` - Utility functions
+- `public/` - Static assets
+- `supabase/` - Supabase backend functions and configurations
 
-- [index.html](mdc:index.html) - HTML entry point
-- [src/main.tsx](mdc:src/main.tsx) - Main React entry point
-- [src/App.tsx](mdc:src/App.tsx) - Root component with routes
-
-## Key Directories
-
-- `src/components` - Reusable UI components
-- `src/pages` - Page components corresponding to routes
-- `src/contexts` - React context providers
-- `src/hooks` - Custom React hooks
-- `src/utils` - Utility functions
-- `src/services` - Service-related functions (API calls, etc.)
-- `src/types` - TypeScript type definitions
-- `src/supabase` - Supabase related code
-- `public` - Static assets
-
-## Important Configuration Files
-
-- [package.json](mdc:package.json) - NPM dependencies and scripts
+## Key Files
+- [src/App.tsx](mdc:src/App.tsx) - Main application component with routing
+- [src/main.tsx](mdc:src/main.tsx) - Application entry point
 - [vite.config.ts](mdc:vite.config.ts) - Vite configuration
 - [tailwind.config.ts](mdc:tailwind.config.ts) - Tailwind CSS configuration
-- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+
+## Build Process
+The application uses Vite for development and building. The build process is configured in [vite.config.ts](mdc:vite.config.ts) and is optimized for deployment on Vercel.
+
+## Environment Variables
+The following environment variables are required:
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key
+
+These should be set in `.env` for local development and in Vercel environment variables for deployment.
 

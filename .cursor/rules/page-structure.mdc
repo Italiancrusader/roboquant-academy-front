@@ -3,6 +3,49 @@ description:
 globs: 
 alwaysApply: false
 ---
+# Page Structure and Routing
+
+This project uses React Router for client-side routing and navigation.
+
+## Routing Setup
+
+- Routes are defined in [src/App.tsx](mdc:src/App.tsx)
+- The app uses the latest React Router v6 with browser router
+- Route guards check authentication state for protected routes
+
+## Main Routes
+
+- `/` - Home page
+- `/strategy-report-genie` - Strategy Report Genie tool (main app feature)
+- `/mt5-report-genie` - Legacy route redirecting to Strategy Report Genie
+- `/courses` - Course listings
+- `/pricing` - Pricing information
+- `/contact` - Contact page
+- `/privacy-policy` - Privacy policy
+- `/terms-of-service` - Terms of service
+
+## Page Components
+
+Pages are organized in the `src/pages` directory:
+- Each page is a React component that represents a complete view
+- Pages compose smaller components to build complex UIs
+- Example: [src/pages/StrategyReportGenie.tsx](mdc:src/pages/StrategyReportGenie.tsx)
+
+## Navigation
+
+- Primary navigation is handled by the [src/components/Navbar.tsx](mdc:src/components/Navbar.tsx) component
+- Footer navigation is in [src/components/Footer.tsx](mdc:src/components/Footer.tsx)
+- Both use React Router's `Link` component for client-side navigation
+
+## Layout Structure
+
+Most pages follow this layout structure:
+1. Navbar at the top
+2. Main content area
+3. Footer at the bottom
+
+The layout applies consistent spacing, styling, and responsive behavior across all pages.
+
 # Page Structure
 
 This document outlines the page structure and routing in the RoboQuant Academy website.

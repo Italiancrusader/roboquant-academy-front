@@ -5,19 +5,51 @@ alwaysApply: false
 ---
 # Styling Guidelines
 
-This document outlines the styling approach for the RoboQuant Academy website.
+This project uses Tailwind CSS for styling with shadcn/ui components.
+
+## Core Principles
+
+- Use Tailwind utility classes directly in components
+- Follow a mobile-first approach with responsive design
+- Use CSS variables for theme colors and values
+- Avoid inline styles and traditional CSS files when possible
+
+## Theme Configuration
+
+The theme is configured in [tailwind.config.ts](mdc:tailwind.config.ts) with:
+- Custom colors
+- Extended spacing, sizing, and other utility scales
+- Dark mode support via the `class` strategy
+
+## Component Styling Patterns
+
+### UI Components
+- UI components from shadcn/ui use the `cn()` utility to combine classes
+- Variant styles are defined using the `cva()` function
+- Example: [src/components/ui/button.tsx](mdc:src/components/ui/button.tsx)
+
+### Layout Components
+- Use Flexbox and Grid for layouts
+- Common patterns:
+  - `flex flex-col md:flex-row` for responsive column-to-row layouts
+  - `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3` for responsive grids
+  - `space-y-4` and `gap-4` for consistent spacing
+
+### Responsive Design
+- Use breakpoints consistently: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
+- Hide/show elements with `hidden` and `block`/`flex` utility combinations
+- Adjust text sizes with responsive utility classes
+
+## Custom Classes
+
+- Use the `@layer` directive when creating custom utility classes
+- Keep custom classes to a minimum, favoring composition of existing utilities
 
 ## CSS Framework
 
 The website uses Tailwind CSS as its primary styling approach:
 - [tailwind.config.ts](mdc:tailwind.config.ts) - Main Tailwind configuration
 - [src/index.css](mdc:src/index.css) - Global CSS and Tailwind imports
-
-## Component Styling
-
-- Components use Tailwind CSS classes for styling
-- ShadCN UI components are used for consistent UI elements
-- Configuration for ShadCN UI is in [components.json](mdc:components.json)
 
 ## Custom Design Elements
 
@@ -29,14 +61,6 @@ The website uses Tailwind CSS as its primary styling approach:
 
 - The site uses a dark theme by default
 - Custom colors are defined in the tailwind config using the `secondary` prefix
-
-## Responsive Design
-
-- Mobile-first approach using Tailwind's responsive prefixes:
-  - `sm:` for small screens (640px+)
-  - `md:` for medium screens (768px+)
-  - `lg:` for large screens (1024px+)
-  - `xl:` for extra large screens (1280px+)
 
 ## Utility Classes
 

@@ -5,7 +5,39 @@ alwaysApply: false
 ---
 # Component Organization
 
-This document outlines how components are organized in the RoboQuant Academy website.
+The project uses a component-based architecture with React and shadcn/ui components.
+
+## Component Structure
+
+- UI components are located in `src/components/ui/`
+- Feature-specific components are organized by feature in `src/components/`
+- Strategy report components are in `src/components/strategyreportgenie/`
+
+## Component Patterns
+
+### UI Components
+Base UI components from shadcn/ui are used as building blocks. These follow a consistent pattern:
+- Each component is in its own directory with its variants
+- Components use tailwind classes for styling
+- Example: [src/components/ui/button.tsx](mdc:src/components/ui/button.tsx)
+
+### Feature Components
+Feature-specific components combine UI components to create more complex functionality:
+- Components are grouped by feature or domain
+- Each component follows a consistent naming pattern
+- Example: [src/components/strategyreportgenie/ReportDashboard.tsx](mdc:src/components/strategyreportgenie/ReportDashboard.tsx)
+
+### Pages
+Page components represent complete views and are located in `src/pages/`:
+- Pages use feature components to compose complete views
+- Each page corresponds to a route in the application
+- Example: [src/pages/StrategyReportGenie.tsx](mdc:src/pages/StrategyReportGenie.tsx)
+
+## Component Naming
+
+- Use PascalCase for component names
+- Use descriptive names that indicate the component's purpose
+- Suffixes like `Card`, `Panel`, `View`, or `Dashboard` help indicate the component's role
 
 ## UI Components
 
