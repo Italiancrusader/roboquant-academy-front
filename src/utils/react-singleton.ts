@@ -9,6 +9,9 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as ReactDOMClient from 'react-dom/client';
 
+// Export jsx runtime functions explicitly
+export const { jsx, jsxs, Fragment } = React;
+
 // Re-export to make these the canonical versions used in the app
 export { React, ReactDOM, ReactDOMClient };
 
@@ -28,7 +31,6 @@ export const {
   forwardRef,
   createContext,
   memo,
-  Fragment,
   isValidElement,
   createElement,
   cloneElement,
