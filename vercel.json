@@ -29,5 +29,12 @@
     "STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret",
     "SUPABASE_URL": "@supabase_url",
     "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key"
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "github": {
+    "silent": true
   }
 } 
