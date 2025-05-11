@@ -9,6 +9,31 @@
       // Direct Fix for vendor-J2TkRXmV.js 
       // This intercepts script loading to patch React hooks before execution
       (function() {
+        console.log('[DEBUGGER] Starting script intercept patching');
+        
+        // Store tracked script elements for debugging
+        window.__TRACKED_SCRIPTS__ = [];
+        
+        // Fix for the vendor-charts issue - we need to avoid running code before initialization
+        window.__SAFE_BUNDLE_PATCH__ = function(bundleName) {
+          console.log('[DEBUGGER] Using safe patching for bundle:', bundleName);
+          // For charts bundles, we'll create a minimal patcher that won't reference variables before init
+          if (bundleName && bundleName.includes('charts')) {
+            console.log('[DEBUGGER] Special handling for charts bundle');
+            return function(React) {
+              // Only patch if it's actually React and only if hook is missing
+              if (React && typeof React === 'object' && React.createElement && !React.useLayoutEffect) {
+                console.log('[DEBUGGER] Safe patching of useLayoutEffect in charts bundle');
+                React.useLayoutEffect = React.useEffect || function() {};
+              }
+              return React;
+            };
+          }
+          
+          // For other bundles, use the standard patching approach
+          return window.__PATCH_REACT_HOOKS__ || function(r) { return r; };
+        };
+        
         // Store original document.createElement to intercept script creation
         const originalCreateElement = document.createElement;
         
@@ -17,59 +42,81 @@
           
           // Only intercept script elements
           if (tagName.toLowerCase() === 'script') {
+            console.log('[DEBUGGER] Script element created');
+            
             // Store the original setAttribute method
             const originalSetAttribute = element.setAttribute;
             
             // Override setAttribute to catch changes to src
             element.setAttribute = function(name, value) {
               // Check if this is setting the src attribute to our problem file
-              if (name === 'src' && value && (
-                  value.includes('vendor-J2TkRXmV.js') || 
-                  value.includes('vendor-react') ||
-                  value.includes('vendor.js'))) {
-                console.log('Intercepting problematic vendor bundle:', value);
-                
-                // Add load handler to patch the script after it loads but before it executes
-                element.addEventListener('load', function() {
-                  console.log('Vendor bundle loaded, applying emergency patch');
-                  
-                  // Create a hook polyfill directly in the global scope to ensure availability
-                  window.React = window.React || {};
-                  if (!window.React.useLayoutEffect) {
-                    console.log('Directly patching useLayoutEffect');
-                    window.React.useLayoutEffect = function(fn, deps) {
-                      console.warn('Emergency useLayoutEffect polyfill called');
-                      return undefined;
-                    };
-                  }
-                  
-                  // Try to find React in common module patterns
-                  setTimeout(function() {
-                    try {
-                      // Check for UMD/AMD/CommonJS modules that might define React
-                      if (window.define && window.define.amd) {
-                        const originalDefine = window.define;
-                        window.define = function(name, deps, factory) {
-                          // Intercept React definitions
-                          if (typeof name === 'string' && name === 'react') {
-                            console.log('Intercepted AMD define for React');
-                            return originalDefine.call(this, name, deps, function() {
-                              const reactModule = factory.apply(this, arguments);
-                              // Ensure hooks exist
-                              if (reactModule && !reactModule.useLayoutEffect) {
-                                reactModule.useLayoutEffect = window.React.useLayoutEffect;
-                              }
-                              return reactModule;
-                            });
-                          }
-                          return originalDefine.apply(this, arguments);
-                        };
-                      }
-                    } catch (e) {
-                      console.error('Error in vendor bundle patch:', e);
-                    }
-                  }, 0);
+              if (name === 'src' && value) {
+                // Keep track of scripts for debugging
+                window.__TRACKED_SCRIPTS__.push({
+                  element: element, 
+                  src: value,
+                  time: new Date().toISOString()
                 });
+                
+                console.log('[DEBUGGER] Script src attribute set:', value);
+                
+                // Identify the script type for special handling
+                const isVendorJs = value.includes('vendor-');
+                const isVendorReactJs = value.includes('vendor-react-');
+                const isVendorChartsJs = value.includes('vendor-charts-');
+                const isProblematicVendor = value.includes('vendor-J2TkRXmV.js');
+                
+                if (isVendorJs) {
+                  console.log('[DEBUGGER] Vendor bundle detected:', value);
+                  
+                  // We need different handling for charts bundle vs. regular bundles
+                  const bundleName = 
+                    isVendorChartsJs ? 'charts' : 
+                    isVendorReactJs ? 'react' : 
+                    isProblematicVendor ? 'problematic' : 'other';
+                  
+                  // Add load handler with appropriate patching strategy
+                  element.addEventListener('load', function() {
+                    console.log('[DEBUGGER] Bundle loaded:', value);
+                    
+                    try {
+                      // Get the appropriate patching strategy for this bundle type
+                      const patcher = window.__SAFE_BUNDLE_PATCH__(bundleName);
+                      
+                      // Apply patching differently depending on the bundle
+                      if (window.React && !window.__PATCHED_REACT__) {
+                        console.log('[DEBUGGER] Patching window.React');
+                        window.React = patcher(window.React);
+                        window.__PATCHED_REACT__ = true;
+                      }
+                      
+                      // For the charts bundle, we need to be extra careful
+                      if (isVendorChartsJs) {
+                        console.log('[DEBUGGER] Avoiding early access to charts bundle to prevent initialization errors');
+                        // Don't attempt to access bundle variables, just register React hooks in global scope
+                        if (!window.React) {
+                          console.log('[DEBUGGER] Creating emergency React for charts bundle');
+                          window.React = {
+                            createElement: function() { return {}; },
+                            useLayoutEffect: function() {}
+                          };
+                        }
+                      }
+                      
+                      console.log('[DEBUGGER] Bundle patching completed for', value);
+                    } catch (e) {
+                      console.error('[DEBUGGER] Error patching bundle:', e);
+                    }
+                  });
+                  
+                  // For problematic vendor, also track errors
+                  if (isProblematicVendor) {
+                    console.log('[DEBUGGER] Setting up error monitoring for problematic vendor');
+                    element.addEventListener('error', function(e) {
+                      console.error('[DEBUGGER] Error loading problematic vendor:', e);
+                    });
+                  }
+                }
               }
               
               // Call the original method
@@ -80,7 +127,7 @@
           return element;
         };
         
-        console.log('Script loading interceptor installed');
+        console.log('[DEBUGGER] Script loading intercept installed');
       })();
     </script>
     

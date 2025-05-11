@@ -59,10 +59,23 @@ export default defineConfig(({ mode }) => ({
         },
         inlineDynamicImports: false,
         // Add banner to all JS files to ensure React hooks are available
-        banner: `
+        // Use a different approach for the charts bundle
+        banner: (chunk) => {
+          // Special treatment for charts bundle to avoid initialization issues
+          if (chunk.fileName.includes('vendor-charts')) {
+            return `
+// Charts bundle - avoiding React hooks patching to prevent initialization errors
+console.log('[VITE-BANNER] Charts bundle detected, deferring React hooks patching');
+`;
+          }
+          
+          // Standard React hook patching for other bundles
+          return `
 // Fix React hooks in bundled vendor files
 (function() {
   if (window.__REACT_HOOKS__) {
+    console.log('[VITE-BANNER] Patching bundle: ${chunk.fileName}');
+    
     // Ensure React hooks are available
     window.forceHooksAvailable = function(React) {
       if (!React) return;
@@ -71,23 +84,10 @@ export default defineConfig(({ mode }) => ({
       if (!React.useEffect) React.useEffect = window.__REACT_HOOKS__.useEffect;
       return React;
     };
-    
-    // Polyfill for CommonJS modules
-    if (typeof module !== 'undefined') {
-      var originalRequire = module.require;
-      if (originalRequire && typeof originalRequire === 'function') {
-        module.require = function(id) {
-          var result = originalRequire.apply(this, arguments);
-          if (id === 'react' && result) {
-            return window.forceHooksAvailable(result);
-          }
-          return result;
-        };
-      }
-    }
   }
 })();
-        `
+        `;
+        }
       } as OutputOptions,
       // Do not treat React as external in production
       external: [],
