@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { React, useEffect } from '@/utils/react-singleton';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import WhyRoboQuant from '../components/WhyRoboQuant';

@@ -9,6 +9,9 @@ import * as ReactDOM from 'react-dom';
 import * as ReactDOMClient from 'react-dom/client';
 import * as ReactJSXRuntime from 'react/jsx-runtime';
 
+// Export jsx runtime functions explicitly
+export const { jsx, jsxs, Fragment } = ReactJSXRuntime;
+
 // Re-export to make these the canonical versions used in the app
 export { React, ReactDOM, ReactDOMClient, ReactJSXRuntime };
 
@@ -24,19 +27,22 @@ export const {
   useReducer,
   useImperativeHandle,
   useDebugValue,
+  useId,
   forwardRef,
   createContext,
   memo,
-  Fragment,
   isValidElement,
   createElement,
   cloneElement,
   createRef,
-  Children
+  Children,
+  lazy,
+  Suspense,
+  startTransition,
+  createFactory,
+  Component,
+  PureComponent
 } = React;
 
-// Export JSX runtime elements
-export const { jsx, jsxs, Fragment: JSXFragment } = ReactJSXRuntime;
-
 // Default export for backward compatibility
-export default React; 
+export default React;
