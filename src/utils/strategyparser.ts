@@ -708,7 +708,7 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
         order: Number(tradeNum) || i,
         dealId: `TV-${tradeNum || i}`,
         symbol: '', 
-        type: type,
+        type: type || 'trade', // Ensure type is always set
         direction: direction,
         side: side,
         volumeLots: contracts,

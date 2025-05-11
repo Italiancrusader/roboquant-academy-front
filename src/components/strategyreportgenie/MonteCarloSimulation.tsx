@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -29,8 +29,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { X, AlignLeft, TrendingUp, BellRing, Loader2 } from 'lucide-react';
+import { X, AlignLeft, TrendingUp, BellRing, Loader2, AlertCircle } from 'lucide-react';
 import { StrategyTrade } from '@/types/strategyreportgenie';
+import { ChartContainer } from '@/components/ui/chart';
 
 export interface MonteCarloSimulationProps {
   trades: StrategyTrade[];

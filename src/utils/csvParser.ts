@@ -72,8 +72,8 @@ const parseMT5Format = (headers: string[], data: string[][]): StrategyTrade[] =>
     const direction = directionIndex >= 0 ? row[directionIndex].toLowerCase() : '';
     const type = typeIndex >= 0 ? row[typeIndex].toLowerCase() : '';
     
-    let tradeDirection = 'long';
-    let tradeState = 'in';
+    let tradeDirection: 'long' | 'short' = 'long';
+    let tradeState: "in" | "out" = "in";
     
     // Determine long/short and in/out from direction and type
     if (direction.includes('in') || direction === 'buy') {
@@ -104,15 +104,15 @@ const parseMT5Format = (headers: string[], data: string[][]): StrategyTrade[] =>
       order: orderIndex >= 0 ? parseInt(row[orderIndex]) || 0 : 0,
       dealId: dealIndex >= 0 ? row[dealIndex] : '',
       symbol: symbolIndex >= 0 ? row[symbolIndex] : '',
-      type: typeIndex >= 0 ? row[typeIndex] : '',
-      direction,
-      side: tradeDirection as 'long' | 'short',
+      type: typeIndex >= 0 ? row[typeIndex] : 'trade',
+      direction: tradeState,
+      side: tradeDirection,
       volumeLots: volume,
       priceOpen: price,
       stopLoss: null,
       takeProfit: null,
       timeFlag: openTime,
-      state: tradeState as 'in' | 'out',
+      state: tradeState,
       comment: commentIndex >= 0 ? row[commentIndex] : '',
       profit,
       commission,
@@ -210,8 +210,8 @@ const parseGeneralFormat = (headers: string[], data: string[][]): StrategyTrade[
       order: orderIndex >= 0 ? parseInt(row[orderIndex]) || 0 : 0,
       dealId: (orderIndex >= 0 ? row[orderIndex] : '').toString(),
       symbol: symbolIndex >= 0 ? row[symbolIndex] : '',
-      type: typeIndex >= 0 ? row[typeIndex] : '',
-      direction: directionIndex >= 0 ? row[directionIndex] : state,
+      type: typeIndex >= 0 ? row[typeIndex] : 'trade',
+      direction: state,
       side,
       volumeLots: volume,
       priceOpen: price,
@@ -429,4 +429,4 @@ const calculateEquityCurve = (trades: StrategyTrade[], startBalance: number = 10
   }
   
   return result;
-}; 
+};
