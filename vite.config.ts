@@ -64,8 +64,8 @@ export default defineConfig(({ mode }) => ({
           // Special treatment for charts bundle to avoid initialization issues
           if (chunk.fileName.includes('vendor-charts')) {
             return `
-// Charts bundle - avoiding React hooks patching to prevent initialization errors
-console.log('[VITE-BANNER] Charts bundle detected, deferring React hooks patching');
+// Charts bundle - avoiding ANY patching to prevent initialization errors
+// Instead we rely on the global charts-bundle-fix.js script to handle this bundle
 `;
           }
           

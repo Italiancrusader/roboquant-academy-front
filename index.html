@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- CRITICAL: Direct fix for D3 "Cannot access 'D' before initialization" error -->
+    <script src="/vendor-charts-patch.js"></script>
+    
     <!-- CRITICAL: Load vendor bundle hook patch before anything else -->
     <script src="/react-hook-fix.js"></script>
+    
+    <!-- CRITICAL: Special fix for D3/charts bundle initialization -->
+    <script src="/charts-bundle-fix.js"></script>
     
     <!-- Pre-patch the exact vendor causing issues -->
     <script>
