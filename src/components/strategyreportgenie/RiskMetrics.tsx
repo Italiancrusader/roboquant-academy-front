@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import {
@@ -131,7 +130,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
     <div>
       <h2 className="text-xl font-semibold mb-4">Risk & Performance Metrics</h2>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 mb-6">
         {/* Risk Reward Stats */}
         <Card>
           <CardHeader className="pb-2">
@@ -215,19 +214,21 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
               Distribution of trade results
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-0 h-[300px]">
-            <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={riskMetrics.profitBuckets}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="range" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" name="Trades" fill="hsl(var(--primary))" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+          <CardContent className="pt-0">
+            <div className="h-[350px]">
+              <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={riskMetrics.profitBuckets}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="range" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="count" name="Trades" fill="hsl(var(--primary))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
           </CardContent>
         </Card>
       </div>

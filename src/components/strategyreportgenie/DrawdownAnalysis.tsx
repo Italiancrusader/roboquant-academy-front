@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -158,7 +157,7 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
             <TrendingDown className="h-5 w-5" /> Drawdown Visualization
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[400px]">
           <ChartContainer config={{ 
             drawdown: { color: "hsl(var(--destructive))" }
           }}>
