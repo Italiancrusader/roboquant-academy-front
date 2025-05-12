@@ -49,6 +49,12 @@ export const useLesson = (
         return;
       }
       
+      // Check for admin role in user metadata first (faster)
+      if (user?.app_metadata?.role === 'admin') {
+        setIsAdmin(true);
+        return;
+      }
+      
       try {
         const { data, error } = await supabase.rpc('has_role', {
           _user_id: user.id,

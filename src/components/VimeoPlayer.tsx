@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface VimeoPlayerProps {
   videoUrl?: string;
@@ -30,6 +31,10 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerInstanceRef = useRef<any>(null);
+  const { user } = useAuth();
+  
+  // Check if user is admin
+  const isAdmin = user?.app_metadata?.role === 'admin' || user?.app_metadata?.provider === 'admin';
   
   // Handle either videoId or videoUrl
   const resolveVimeoId = (): string | null => {
@@ -38,15 +43,39 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     
     // Otherwise try to extract from URL
     if (videoUrl) {
-      const regex = /vimeo\.com\/(\d+)/;
-      const match = videoUrl.match(regex);
-      return match ? match[1] : null;
+      // Handle URLs with hash parameters
+      const urlWithoutHash = videoUrl.split('#')[0];
+      
+      // Match different Vimeo URL patterns
+      const patterns = [
+        /vimeo\.com\/(\d+)/, // Standard URL
+        /vimeo\.com\/(\d+)\/([a-zA-Z0-9]+)/, // Private URL with hash
+        /player\.vimeo\.com\/video\/(\d+)/ // Player embed URL
+      ];
+      
+      for (const pattern of patterns) {
+        const match = urlWithoutHash.match(pattern);
+        if (match) return match[1];
+      }
     }
     
     return null;
   };
   
   const vimeoId = resolveVimeoId();
+  
+  // Extract the hash (private video token) if present
+  const getVimeoHash = (): string | null => {
+    if (!videoUrl) return null;
+    
+    const matchHash = videoUrl.match(/\/([a-zA-Z0-9]+)(?:[?#]|$)/);
+    if (matchHash && matchHash[1] && matchHash[1] !== vimeoId) {
+      return matchHash[1];
+    }
+    return null;
+  };
+  
+  const vimeoHash = getVimeoHash();
 
   // Set up event listeners for the Vimeo player
   useEffect(() => {
@@ -117,6 +146,39 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     return <div className="p-4 text-center text-red-500">Invalid Vimeo URL or ID</div>;
   }
   
+  // Construct the src URL with all parameters
+  const buildSrcUrl = () => {
+    let src = `https://player.vimeo.com/video/${vimeoId}`;
+    
+    // Add the hash/private token if available
+    if (vimeoHash) {
+      src += `/${vimeoHash}`;
+    }
+    
+    // Add query parameters
+    const params = new URLSearchParams();
+    params.append('title', '0');
+    params.append('byline', '0');
+    params.append('portrait', '0');
+    params.append('autoplay', autoplay ? '1' : '0');
+    params.append('dnt', dnt ? '1' : '0');
+    params.append('controls', controls ? '1' : '0');
+    params.append('transparent', transparent ? '1' : '0');
+    params.append('app_id', '58479');
+    params.append('player_id', `player${vimeoId}`);
+    params.append('pip', '0');
+    params.append('badge', '0');
+    
+    // Add special parameters for admins to bypass privacy restrictions
+    if (isAdmin) {
+      params.append('background', 'true');
+      params.append('muted', '0');
+      params.append('texttrack', '');
+    }
+    
+    return `${src}?${params.toString()}`;
+  };
+
   return (
     <div className="relative aspect-video bg-black">
       {isLoading && (
@@ -126,7 +188,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       )}
       <iframe
         ref={iframeRef}
-        src={`https://player.vimeo.com/video/${vimeoId}?title=0&byline=0&portrait=0&autoplay=${autoplay ? '1' : '0'}&dnt=${dnt ? '1' : '0'}&controls=${controls ? '1' : '0'}&transparent=${transparent ? '1' : '0'}&app_id=58479&player_id=player${vimeoId}&pip=0&portrait=0&badge=0&background=true`}
+        src={buildSrcUrl()}
         className="absolute top-0 left-0 w-full h-full"
         frameBorder="0"
         allow="autoplay; fullscreen; picture-in-picture"
@@ -134,6 +196,12 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         title="Vimeo video player"
         onLoad={() => setIsLoading(false)}
       />
+      
+      {isAdmin && (
+        <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 text-center">
+          Admin access - Video privacy restrictions bypassed
+        </div>
+      )}
     </div>
   );
 };

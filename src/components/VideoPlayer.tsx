@@ -107,18 +107,44 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         return;
       }
 
-      const { error } = await supabase
+      // Check if record exists first
+      const { data: existingRecord } = await supabase
         .from('progress')
-        .upsert({
-          user_id: user.id,
-          lesson_id: lessonId,
-          course_id: courseId,
-          last_position_seconds: Math.floor(position),
-          completed: completed,
-          last_accessed_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,lesson_id,course_id'
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('lesson_id', lessonId)
+        .eq('course_id', courseId)
+        .single();
+      
+      const progressData = {
+        user_id: user.id,
+        lesson_id: lessonId,
+        course_id: courseId,
+        last_position_seconds: Math.floor(position),
+        completed: completed,
+        last_accessed_at: new Date().toISOString()
+      };
+      
+      let error;
+      
+      if (existingRecord) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('progress')
+          .update(progressData)
+          .eq('user_id', user.id)
+          .eq('lesson_id', lessonId)
+          .eq('course_id', courseId);
+        
+        error = updateError;
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('progress')
+          .insert(progressData);
+        
+        error = insertError;
+      }
       
       if (error) {
         console.error("Error saving progress:", error);
@@ -231,14 +257,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
+  // For admins, we'll allow viewing without saving progress
+  const isAdmin = user?.app_metadata?.role === 'admin' || user?.app_metadata?.provider === 'admin';
+
   return (
     <div className="w-full bg-background rounded-lg overflow-hidden border">
       {isVimeo ? (
         <VimeoPlayer 
           videoUrl={videoUrl} 
-          onComplete={isPreviewLesson ? undefined : handleVimeoComplete}
-          onTimeUpdate={isPreviewLesson ? undefined : handleVimeoTimeUpdate}
-          onDurationChange={isPreviewLesson ? undefined : handleVimeoDurationChange}
+          onComplete={isPreviewLesson || isAdmin ? undefined : handleVimeoComplete}
+          onTimeUpdate={isPreviewLesson || isAdmin ? undefined : handleVimeoTimeUpdate}
+          onDurationChange={isPreviewLesson || isAdmin ? undefined : handleVimeoDurationChange}
+          autoplay={isAdmin}
         />
       ) : (
         <div className="relative aspect-video bg-black">
@@ -257,7 +287,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             onPause={() => setIsPlaying(false)}
             onEnded={() => {
               setIsPlaying(false);
-              if (!isPreviewLesson) {
+              if (!isPreviewLesson && !isAdmin) {
                 saveProgress(duration, true);
               }
             }}
@@ -306,12 +336,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             />
           </div>
           
-          {progressSaved && (
+          {progressSaved && !isAdmin && (
             <div className="flex items-center text-green-500">
               <span className="text-xs font-medium">Completed</span>
             </div>
           )}
         </div>
+        
+        {isAdmin && (
+          <div className="mt-2">
+            <p className="text-xs text-amber-500">Admin mode: Progress tracking is disabled</p>
+          </div>
+        )}
       </div>
     </div>
   );
