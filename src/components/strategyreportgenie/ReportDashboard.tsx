@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileType } from '@/types/strategyreportgenie';
+import { FileType, TradeType, StrategyTrade } from '@/types/strategyreportgenie';
 import { 
   CircleDollarSign, 
   BarChart2, 
@@ -23,6 +23,7 @@ import CsvViewer from './CsvViewer';
 import RiskMetrics from '../strategyreportgenie/RiskMetrics';
 import TradeDistributionAnalysis from './TradeDistributionAnalysis';
 import ExecutiveSummary from './ExecutiveSummary';
+import { calculateMetrics } from '@/utils/metricsCalculator';
 
 interface ReportDashboardProps {
   files: FileType[];
@@ -44,7 +45,10 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
   const activeFile = files.find(file => file.id === activeFileId);
   const trades = activeFile?.parsedData?.trades || [];
   
-  // Calculate metrics for components that need them
+  // Calculate metrics using the metricsCalculator utility
+  const metrics = calculateMetrics(trades);
+  
+  // Calculate start and end dates from trades
   const calculateStartAndEndDates = () => {
     if (!trades || trades.length === 0) return { startDate: new Date(), endDate: new Date() };
     
@@ -60,6 +64,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
     };
   };
   
+  // Generate equity curve data from trades
   const generateEquityCurveData = () => {
     if (!trades || trades.length === 0) return [];
     
@@ -88,94 +93,30 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
   const { startDate, endDate } = calculateStartAndEndDates();
   const equityCurve = generateEquityCurveData();
   
-  // Simplified metrics calculation for components
-  const getBasicMetrics = () => {
-    if (!trades || trades.length === 0) {
+  // Convert StrategyTrade[] to TradeType[] for components expecting TradeType[]
+  const convertToTradeType = (strategyTrades: StrategyTrade[]): TradeType[] => {
+    return strategyTrades.map(trade => {
       return {
-        totalNetProfit: 0,
-        grossProfit: 0,
-        grossLoss: 0,
-        profitFactor: 0,
-        expectedPayoff: 0,
-        absoluteDrawdown: 0,
-        maxDrawdown: 0,
-        relativeDrawdown: 0,
-        sharpeRatio: 0,
-        sortinoRatio: 0,
-        calmarRatio: 0,
-        tradesTotal: 0,
-        tradesShort: 0,
-        tradesLong: 0,
-        winRate: 0,
-        avgTradeProfit: 0,
-        avgWinning: 0,
-        avgLosing: 0,
-        largestWin: 0,
-        largestLoss: 0,
-        recoveryFactor: 0,
-        tradeDuration: '0d 0h',
-        commissionTotal: 0,
-        swapTotal: 0,
-        returnMean: 0,
-        returnMedian: 0,
-        returnSkew: 0,
-        returnKurtosis: 0,
-        tailRatio: 0,
-        mcDrawdownExpected95: 0,
-        mcProfitablePct: 0,
-        mcRuinProbability: 0,
-        initialBalance: 10000, // Default value
-        expectancy: 0
+        openTime: trade.openTime,
+        order: trade.order || 0,
+        symbol: trade.symbol,
+        type: trade.type || '',
+        volume: trade.volumeLots || 0,
+        price: trade.priceOpen || 0,
+        stopLoss: trade.stopLoss,
+        takeProfit: trade.takeProfit,
+        closeTime: trade.timeFlag || new Date(),
+        state: trade.state || '',
+        comment: trade.comment || '',
+        profit: trade.profit || 0,
+        swap: trade.swap || 0,
+        commission: trade.commission || 0,
+        duration: ''  // Calculate or provide a default value
       };
-    }
-    
-    const completedTrades = trades.filter(t => t.profit !== undefined);
-    const profitableTrades = completedTrades.filter(t => (t.profit || 0) > 0);
-    const lossTrades = completedTrades.filter(t => (t.profit || 0) < 0);
-    
-    const totalProfit = completedTrades.reduce((sum, t) => sum + (t.profit || 0), 0);
-    const grossProfit = profitableTrades.reduce((sum, t) => sum + (t.profit || 0), 0);
-    const grossLoss = Math.abs(lossTrades.reduce((sum, t) => sum + (t.profit || 0), 0));
-    
-    return {
-      totalNetProfit: totalProfit,
-      grossProfit: grossProfit,
-      grossLoss: grossLoss,
-      profitFactor: grossLoss > 0 ? grossProfit / grossLoss : 0,
-      expectedPayoff: completedTrades.length > 0 ? totalProfit / completedTrades.length : 0,
-      absoluteDrawdown: 0, // Simplified
-      maxDrawdown: 0, // Simplified
-      relativeDrawdown: 0, // Simplified
-      sharpeRatio: 0, // Simplified
-      sortinoRatio: 0, // Simplified
-      calmarRatio: 0, // Simplified
-      tradesTotal: completedTrades.length,
-      tradesShort: 0, // Simplified
-      tradesLong: 0, // Simplified
-      winRate: completedTrades.length > 0 ? (profitableTrades.length / completedTrades.length) * 100 : 0,
-      avgTradeProfit: completedTrades.length > 0 ? totalProfit / completedTrades.length : 0,
-      avgWinning: profitableTrades.length > 0 ? grossProfit / profitableTrades.length : 0,
-      avgLosing: lossTrades.length > 0 ? -grossLoss / lossTrades.length : 0,
-      largestWin: profitableTrades.length > 0 ? Math.max(...profitableTrades.map(t => t.profit || 0)) : 0,
-      largestLoss: lossTrades.length > 0 ? Math.min(...lossTrades.map(t => t.profit || 0)) : 0,
-      recoveryFactor: 0, // Simplified
-      tradeDuration: '0d 0h', // Simplified
-      commissionTotal: 0, // Simplified
-      swapTotal: 0, // Simplified
-      returnMean: 0, // Simplified
-      returnMedian: 0, // Simplified
-      returnSkew: 0, // Simplified
-      returnKurtosis: 0, // Simplified
-      tailRatio: 0, // Simplified
-      mcDrawdownExpected95: 0, // Simplified
-      mcProfitablePct: 0, // Simplified
-      mcRuinProbability: 0, // Simplified
-      initialBalance: 10000, // Default value
-      expectancy: 0 // Simplified
-    };
+    });
   };
-  
-  const metrics = getBasicMetrics();
+
+  const tradeTypesArray = convertToTradeType(trades);
 
   // Define tabs for the dashboard
   const dashboardTabs = [
@@ -201,7 +142,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
       id: 'risk',
       label: 'Risk',
       icon: <TrendingDown className="h-4 w-4" />,
-      content: <RiskMetrics trades={trades} />
+      content: <RiskMetrics trades={tradeTypesArray} />
     },
     {
       id: 'distribution',
