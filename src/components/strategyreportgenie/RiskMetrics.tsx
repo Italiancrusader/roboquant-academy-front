@@ -214,16 +214,19 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
               Distribution of trade results
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 pb-6">
             <div className="h-[350px]">
               <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={riskMetrics.profitBuckets}>
+                  <BarChart 
+                    data={riskMetrics.profitBuckets}
+                    margin={{ top: 10, right: 10, left: 10, bottom: 30 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="range" />
+                    <XAxis dataKey="range" tick={{ fontSize: 11 }} height={50} />
                     <YAxis />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 10 }} />
                     <Bar dataKey="count" name="Trades" fill="hsl(var(--primary))" />
                   </BarChart>
                 </ResponsiveContainer>

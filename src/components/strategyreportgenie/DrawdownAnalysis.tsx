@@ -157,19 +157,21 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
             <TrendingDown className="h-5 w-5" /> Drawdown Visualization
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[400px]">
+        <CardContent className="h-[400px] pb-6">
           <ChartContainer config={{ 
             drawdown: { color: "hsl(var(--destructive))" }
           }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={equityCurve}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 10, right: 30, left: 20, bottom: 30 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="date" 
                   tickFormatter={(date) => date instanceof Date ? date.toLocaleDateString() : ''}
+                  tick={{ fontSize: 11 }}
+                  height={50}
                 />
                 <YAxis 
                   tickFormatter={(value) => `${value.toFixed(1)}%`}
@@ -184,7 +186,7 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
                   formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Drawdown']}
                   labelFormatter={(label) => label instanceof Date ? label.toLocaleDateString() : ''}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ paddingTop: 10 }} />
                 <Area 
                   type="monotone" 
                   dataKey="drawdownPct" 
