@@ -1,4 +1,3 @@
-
 export interface FileType {
   id: string;
   name: string;
@@ -65,6 +64,19 @@ export interface StrategyMetrics {
   mcDrawdownExpected95: number;
   mcProfitablePct: number;
   mcRuinProbability: number;
+  
+  cagr?: number;
+  annualizedReturn?: number;
+  var95?: number;
+  winLossRatio?: number;
+  expectancy?: number;
+  maxConsecutiveWins?: number;
+  maxConsecutiveLosses?: number;
+  avgConsecutiveWins?: number;
+  avgConsecutiveLosses?: number;
+  maxWinStreak?: { count: number; amount: number };
+  maxLossStreak?: { count: number; amount: number };
+  autocorrelation?: number;
 }
 
 export interface TimeAggregation {
@@ -78,6 +90,9 @@ export interface MonthlyReturn {
   year: number;
   month: number;
   return: number;
+  profit?: number;
+  startBalance?: number;
+  endBalance?: number;
 }
 
 export interface WeekdayPerformance {

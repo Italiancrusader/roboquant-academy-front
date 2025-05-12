@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -43,11 +44,17 @@ import { toast } from '@/components/ui/use-toast';
 interface ReportDashboardProps {
   files: FileType[];
   onClearFiles: () => void;
+  onGeneratePDF?: () => void;
+  onMonteCarloSimulation?: () => void;
+  onOptimizeStrategy?: () => void;
 }
 
 const ReportDashboard: React.FC<ReportDashboardProps> = ({ 
   files, 
-  onClearFiles 
+  onClearFiles,
+  onGeneratePDF,
+  onMonteCarloSimulation,
+  onOptimizeStrategy
 }) => {
   const [activeFileId, setActiveFileId] = useState<string>(files[0]?.id);
   const [initialBalance, setInitialBalance] = useState<string>("10000.00");
@@ -302,7 +309,11 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
 
   // Function to handle Monte Carlo simulation button click
   const handleMonteCarloClick = () => {
-    setShowMonteCarloSimulation(true);
+    if (onMonteCarloSimulation) {
+      onMonteCarloSimulation();
+    } else {
+      setShowMonteCarloSimulation(true);
+    }
   };
 
   // Function to close Monte Carlo simulation modal

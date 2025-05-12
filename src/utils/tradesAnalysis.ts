@@ -76,10 +76,10 @@ export function generateMonthlyReturns(trades: StrategyTrade[]): MonthlyReturn[]
     results.push({
       year,
       month,
+      return: percentReturn,
       profit: value.profit,
       startBalance: value.startBalance,
-      endBalance: value.endBalance,
-      return: percentReturn
+      endBalance: value.endBalance
     });
   }
   
@@ -312,4 +312,4 @@ export function calculateMonthDistribution(trades: StrategyTrade[]): Array<{
       avgProfit: stats.totalTrades ? stats.totalProfit / stats.totalTrades : 0
     };
   });
-} 
+}
