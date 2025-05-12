@@ -6,9 +6,12 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Legend
+  Legend,
+  ReferenceLine
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ArrowUpRight, ArrowDownRight, TrendingUp } from 'lucide-react';
 
 interface EnhancedEquityChartProps {
   equityCurve: Array<{ date: Date | number | string; equity: number; drawdown: number }>;
@@ -19,7 +22,6 @@ const EnhancedEquityChart: React.FC<EnhancedEquityChartProps> = ({
   equityCurve,
   currency = '$'
 }) => {
-  // Generate a unique ID for this component instance
   const chartId = useId();
   
   // Process data for charting
@@ -29,20 +31,35 @@ const EnhancedEquityChart: React.FC<EnhancedEquityChartProps> = ({
     id: `${chartId}-dp-${index}`
   }));
   
-  // Find min and max equity values for better domain calculation
-  const minEquity = Math.min(...chartData.map(d => d.equity));
+  // Calculate key metrics
+  const initialEquity = chartData[0]?.equity || 0;
+  const currentEquity = chartData[chartData.length - 1]?.equity || 0;
+  const absoluteReturn = currentEquity - initialEquity;
+  const percentageReturn = ((currentEquity - initialEquity) / initialEquity) * 100;
   const maxEquity = Math.max(...chartData.map(d => d.equity));
+  const minEquity = Math.min(...chartData.map(d => d.equity));
   const equityPadding = (maxEquity - minEquity) * 0.1;
+  
+  // Calculate average daily return and volatility
+  const dailyReturns = chartData.slice(1).map((point, i) => {
+    const prevEquity = chartData[i].equity;
+    return ((point.equity - prevEquity) / prevEquity) * 100;
+  });
+  
+  const avgDailyReturn = dailyReturns.reduce((sum, ret) => sum + ret, 0) / dailyReturns.length;
+  const volatility = Math.sqrt(
+    dailyReturns.reduce((sum, ret) => sum + Math.pow(ret - avgDailyReturn, 2), 0) / dailyReturns.length
+  );
   
   // Find min and max dates for custom tick generation
   const minDate = Math.min(...chartData.map(d => d.date));
   const maxDate = Math.max(...chartData.map(d => d.date));
   
-  // Generate exactly 5 evenly spaced ticks for the time range
+  // Generate exactly 5 evenly spaced ticks
   const generateTicks = () => {
     const ticks = [];
     const timeRange = maxDate - minDate;
-    const step = timeRange / 4; // 4 steps for 5 points (including min and max)
+    const step = timeRange / 4;
     
     for (let i = 0; i < 5; i++) {
       ticks.push(minDate + step * i);
@@ -51,37 +68,26 @@ const EnhancedEquityChart: React.FC<EnhancedEquityChartProps> = ({
     return ticks;
   };
   
-  // Format date for tooltip and axis - with month and year only to prevent clutter
   const formatDate = (dateInput: Date | number | string) => {
     const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
-    return date.toLocaleDateString(undefined, { month: 'short', year: '2-digit' });
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' });
   };
   
-  // Format currency for tooltip and axis - shorter format
   const formatCurrency = (value: number) => {
-    // For large numbers, abbreviate with K, M, B
-    if (value >= 1000000000) {
-      return `${currency}${(value / 1000000000).toFixed(1)}B`;
-    } else if (value >= 1000000) {
-      return `${currency}${(value / 1000000).toFixed(1)}M`;
-    } else if (value >= 1000) {
-      return `${currency}${(value / 1000).toFixed(1)}K`;
-    }
+    if (value >= 1000000000) return `${currency}${(value / 1000000000).toFixed(1)}B`;
+    if (value >= 1000000) return `${currency}${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${currency}${(value / 1000).toFixed(1)}K`;
     return `${currency}${value.toFixed(0)}`;
   };
   
-  // Detailed currency format for tooltip
   const formatCurrencyDetailed = (value: number) => {
     return `${currency}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
   
-  // Custom axis tick component
   const CustomAxisTick = (props: any) => {
     const { x, y, payload, index } = props;
-    const tickId = `${chartId}-tick-${index}`;
-    
     return (
-      <g transform={`translate(${x},${y})`} key={tickId}>
+      <g transform={`translate(${x},${y})`} key={`${chartId}-tick-${index}`}>
         <text
           x={0}
           y={0}
@@ -96,22 +102,30 @@ const EnhancedEquityChart: React.FC<EnhancedEquityChartProps> = ({
     );
   };
   
-  // Custom tooltip component with more detailed information
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const date = new Date(label);
+      const currentValue = payload[0]?.value || 0;
+      const initialValue = chartData[0]?.equity || 0;
+      const returnSinceStart = ((currentValue - initialValue) / initialValue) * 100;
+      
       return (
         <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 p-3 border rounded-lg shadow-xl">
-          <p className="mb-1 font-semibold text-sm">
+          <p className="mb-2 font-semibold text-sm">
             {date.toLocaleDateString(undefined, { 
               month: 'short', 
               day: 'numeric',
               year: 'numeric'
             })}
           </p>
-          <p className="text-sm text-primary">
-            Equity: {formatCurrencyDetailed(payload[0]?.value || 0)}
-          </p>
+          <div className="space-y-1">
+            <p className="text-sm text-primary">
+              Equity: {formatCurrencyDetailed(currentValue)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Return: {returnSinceStart.toFixed(2)}%
+            </p>
+          </div>
         </div>
       );
     }
@@ -120,10 +134,40 @@ const EnhancedEquityChart: React.FC<EnhancedEquityChartProps> = ({
   
   return (
     <Card className="shadow-md w-full">
-      <CardHeader className="pb-3">
-        <CardTitle>Equity Growth</CardTitle>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Equity Growth</CardTitle>
+            <CardDescription>Strategy performance over time</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant={percentageReturn >= 0 ? "default" : "destructive"} className="h-6">
+              {percentageReturn >= 0 ? <ArrowUpRight className="w-3 h-3 mr-1" /> : <ArrowDownRight className="w-3 h-3 mr-1" />}
+              {percentageReturn.toFixed(2)}%
+            </Badge>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Initial Balance</p>
+            <p className="text-lg font-semibold">{formatCurrencyDetailed(initialEquity)}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Current Balance</p>
+            <p className="text-lg font-semibold">{formatCurrencyDetailed(currentEquity)}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Absolute Return</p>
+            <p className="text-lg font-semibold">{formatCurrencyDetailed(absoluteReturn)}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Daily Volatility</p>
+            <p className="text-lg font-semibold">{volatility.toFixed(2)}%</p>
+          </div>
+        </div>
+        
         {chartData.length === 0 ? (
           <div className="text-center py-10 text-muted-foreground">No data available</div>
         ) : (
@@ -157,18 +201,7 @@ const EnhancedEquityChart: React.FC<EnhancedEquityChartProps> = ({
                   stroke="hsl(var(--muted-foreground))"
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  verticalAlign="bottom"
-                  height={36}
-                  content={() => (
-                    <div className="flex justify-center items-center mt-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-sm bg-primary"></div>
-                        <span className="text-xs text-muted-foreground">Equity</span>
-                      </div>
-                    </div>
-                  )}
-                />
+                <ReferenceLine y={initialEquity} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
                 <Area
                   type="monotone"
                   dataKey="equity"
