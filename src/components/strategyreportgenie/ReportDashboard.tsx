@@ -93,30 +93,28 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
   const { startDate, endDate } = calculateStartAndEndDates();
   const equityCurve = generateEquityCurveData();
   
-  // Convert StrategyTrade[] to TradeType[] for components expecting TradeType[]
-  const convertToTradeType = (strategyTrades: StrategyTrade[]): TradeType[] => {
-    return strategyTrades.map(trade => {
-      return {
-        openTime: trade.openTime,
-        order: trade.order || 0,
-        symbol: trade.symbol,
-        type: trade.type || '',
-        volume: trade.volumeLots || 0,
-        price: trade.priceOpen || 0,
-        stopLoss: trade.stopLoss,
-        takeProfit: trade.takeProfit,
-        closeTime: trade.timeFlag || new Date(),
-        state: trade.state || '',
-        comment: trade.comment || '',
-        profit: trade.profit || 0,
-        swap: trade.swap || 0,
-        commission: trade.commission || 0,
-        duration: ''  // Calculate or provide a default value
-      };
-    });
+  // Convert between trade type formats
+  const strategyTradeToTradeType = (strategyTrade: StrategyTrade): TradeType => {
+    return {
+      openTime: strategyTrade.openTime,
+      order: strategyTrade.order || 0,
+      symbol: strategyTrade.symbol,
+      type: strategyTrade.type || '',
+      volume: strategyTrade.volumeLots || 0,
+      price: strategyTrade.priceOpen || 0,
+      stopLoss: strategyTrade.stopLoss,
+      takeProfit: strategyTrade.takeProfit,
+      closeTime: strategyTrade.timeFlag || new Date(),
+      state: strategyTrade.state || '',
+      comment: strategyTrade.comment || '',
+      profit: strategyTrade.profit || 0,
+      swap: strategyTrade.swap || 0,
+      commission: strategyTrade.commission || 0,
+      duration: ''  // Calculate or provide a default value
+    };
   };
 
-  const tradeTypesArray = convertToTradeType(trades);
+  const tradeTypesArray = trades.map(strategyTradeToTradeType);
 
   // Define tabs for the dashboard
   const dashboardTabs = [
@@ -142,7 +140,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
       id: 'risk',
       label: 'Risk',
       icon: <TrendingDown className="h-4 w-4" />,
-      content: <RiskMetrics trades={tradeTypesArray} />
+      content: <RiskMetrics trades={trades} />
     },
     {
       id: 'distribution',
