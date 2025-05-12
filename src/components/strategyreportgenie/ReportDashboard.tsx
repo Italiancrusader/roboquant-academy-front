@@ -25,7 +25,7 @@ import {
 
 // These components will need to be moved/copied from mt5reportgenie to strategyreportgenie folder
 import KpiCards from './KpiCards';
-import EquityChart from './EquityChart';
+import EnhancedEquityChart from './EnhancedEquityChart';
 import RiskMetrics from './RiskMetrics';
 import MonthlyReturns from './MonthlyReturns';
 import SymbolMetrics from './SymbolMetrics';
@@ -342,7 +342,13 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
         <div className="space-y-4">
           <TabsContent value="overview" className="my-2">
             <Card className="p-6">
-              <EquityChart trades={trades} />
+              <EnhancedEquityChart 
+                equityCurve={trades.map(trade => ({
+                  date: trade.openTime,
+                  equity: trade.balance || 0,
+                  drawdown: trade.drawdown || 0
+                }))}
+              />
             </Card>
           </TabsContent>
           
