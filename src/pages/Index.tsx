@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
@@ -14,10 +13,8 @@ import CTA from '../components/CTA';
 import { Link, useNavigate } from "react-router-dom";
 import { Instagram, Send } from 'lucide-react';
 import { trackPageView } from '../utils/googleAnalytics';
-
 const Index = () => {
   const navigate = useNavigate();
-  
   useEffect(() => {
     // Track page view with both Google Analytics and gtag
     trackPageView(window.location.pathname, 'RoboQuant Academy Home');
@@ -28,9 +25,7 @@ const Index = () => {
       navigate('/quiz');
     }
   }, [navigate]);
-
-  return (
-    <div className="min-h-screen bg-background text-foreground font-neulis overflow-x-hidden">
+  return <div className="min-h-screen bg-background text-foreground font-neulis overflow-x-hidden">
       <Navbar />
       <Hero />
       <WhyRoboQuant />
@@ -53,7 +48,7 @@ const Index = () => {
               <p className="text-sm text-gray-400">Build Trading Bots Without Code</p>
             </div>
             <div className="flex flex-wrap gap-4 justify-center md:justify-end">
-              <Link to="/strategy-report-genie" className="text-sm text-gray-400 hover:text-blue-primary">Strategy Report Genie</Link>
+              
               <Link to="/privacy-policy" className="text-sm text-gray-400 hover:text-blue-primary">Privacy Policy</Link>
               <Link to="/terms-of-service" className="text-sm text-gray-400 hover:text-blue-primary">Terms of Service</Link>
               <Link to="/contact" className="text-sm text-gray-400 hover:text-blue-primary">Contact Us</Link>
@@ -64,43 +59,19 @@ const Index = () => {
               &copy; {new Date().getFullYear()} RoboQuant Academy. All rights reserved.
             </div>
             <div className="flex gap-4 mt-4 md:mt-0">
-              <a 
-                href="https://discord.gg/7sU4DmvmpW" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-400 hover:text-blue-primary" 
-                aria-label="Discord"
-              >
-                <img 
-                  src="/lovable-uploads/966ee0cf-2ede-4285-959d-bcf325b244bb.png" 
-                  alt="Discord" 
-                  className="w-5 h-5" 
-                />
+              <a href="https://discord.gg/7sU4DmvmpW" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-primary" aria-label="Discord">
+                <img src="/lovable-uploads/966ee0cf-2ede-4285-959d-bcf325b244bb.png" alt="Discord" className="w-5 h-5" />
               </a>
-              <a 
-                href="https://www.instagram.com/timhutter.official/" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-400 hover:text-blue-primary" 
-                aria-label="Instagram"
-              >
+              <a href="https://www.instagram.com/timhutter.official/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-primary" aria-label="Instagram">
                 <Instagram className="w-5 h-5" />
               </a>
-              <a 
-                href="https://t.me/tradepiloteabot" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-400 hover:text-blue-primary" 
-                aria-label="Telegram"
-              >
+              <a href="https://t.me/tradepiloteabot" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-primary" aria-label="Telegram">
                 <Send className="w-5 h-5" />
               </a>
             </div>
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
