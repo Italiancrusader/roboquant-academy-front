@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   ResponsiveContainer,
@@ -128,8 +127,8 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
             <BarChart
               data={monthlyData}
               margin={isMobile ? 
-                { top: 20, right: 10, left: 0, bottom: 60 } : 
-                { top: 20, right: 20, left: 0, bottom: 70 }
+                { top: 20, right: 10, left: 0, bottom: 100 } : 
+                { top: 20, right: 20, left: 0, bottom: 110 }
               }
               barGap={0}
               maxBarSize={isMobile ? 30 : 50}
@@ -198,9 +197,9 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
               />
               <Legend 
                 verticalAlign="bottom"
-                height={36}
+                height={60}
                 content={() => (
-                  <div className="flex justify-center items-center mt-2 pt-7">
+                  <div className="flex justify-center items-center mt-2 pt-12">
                     <div className="flex items-center gap-2 mr-4">
                       <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "#9b87f5", opacity: 0.85 }}></div>
                       <span className="text-xs text-muted-foreground">Profit</span>
