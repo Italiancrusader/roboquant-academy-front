@@ -74,14 +74,11 @@ const handler = async (req: Request): Promise<Response> => {
       }
     });
     
-    // Qualification logic (similar to what's in SurveyFunnel.tsx)
+    // Simplified qualification logic - only check for minimum capital
     const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(tradingCapital);
-    const hasMinimumExperience = !["I've never traded", "0–1 year"].includes(tradingExperience);
-    const hasClearGoal = tradingGoal && tradingGoal !== "";
-    const usesPropFirm = propFirmUsage === "Yes" || propFirmUsage === "No, but I plan to";
     
     // Main qualification gate
-    const qualifiesForCall = hasMinimumCapital && hasMinimumExperience && hasClearGoal;
+    const qualifiesForCall = hasMinimumCapital;
     
     // Save the submission data to Supabase
     const { data, error } = await supabase.from("quiz_submissions").insert([

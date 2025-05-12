@@ -54,16 +54,13 @@ const SurveyFunnel = () => {
     setStep(step + 1);
   };
 
-  // Logic to determine if user qualifies for a strategy call
+  // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
   const checkQualification = (data: Record<string, any>): boolean => {
-    // Qualification criteria based on survey answers
+    // Only check for minimum capital requirement of $5,000
     const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
-    const hasMinimumExperience = !["I've never traded", "0–1 year"].includes(data.tradingExperience);
-    const hasClearGoal = data.tradingGoal && data.tradingGoal !== "";
-    const usesPropFirm = data.propFirmUsage === "Yes" || data.propFirmUsage === "No, but I plan to";
     
-    // Main qualification gate
-    return hasMinimumCapital && hasMinimumExperience && hasClearGoal;
+    // Return true if minimum capital requirement is met
+    return hasMinimumCapital;
   };
 
   return (
