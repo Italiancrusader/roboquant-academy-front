@@ -1,14 +1,12 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Circle, CheckCircle2, FileText, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Lesson {
   id: string;
   title: string;
-  duration_minutes: number | null;
-  has_attachments?: boolean;
+  description: string | null;
 }
 
 interface CourseModuleProps {
@@ -16,65 +14,73 @@ interface CourseModuleProps {
   lessons: Lesson[];
   courseId: string;
   currentLessonId?: string;
-  completedLessons: Record<string, boolean>;
+  completedLessons?: Record<string, boolean>;
   durationMinutes?: number | null;
 }
 
-const CourseModule = ({
+const CourseModule: React.FC<CourseModuleProps> = ({
   title,
   lessons,
   courseId,
   currentLessonId,
-  completedLessons,
+  completedLessons = {},
   durationMinutes
-}: CourseModuleProps) => {
+}) => {
+  const [isExpanded, setIsExpanded] = useState(lessons.some(lesson => lesson.id === currentLessonId));
+  
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
+  
+  const totalLessons = lessons.length;
+  const completedCount = lessons.filter(lesson => completedLessons[lesson.id]).length;
+  
   return (
     <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <h3 className="font-semibold">{title}</h3>
-        {durationMinutes ? (
-          <div className="text-sm text-muted-foreground flex items-center">
-            <Clock className="mr-1 h-3 w-3" />
-            {durationMinutes} min
+      <div 
+        className="flex items-center justify-between cursor-pointer bg-secondary/30 rounded-md px-3 py-2 transition-colors hover:bg-secondary/50"
+        onClick={handleToggle}
+      >
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-sm truncate" title={title}>
+            {title}
+          </h3>
+          <div className="flex items-center text-xs text-muted-foreground">
+            <span>{completedCount}/{totalLessons} lessons</span>
+            {durationMinutes && (
+              <>
+                <span className="mx-1">•</span>
+                <span>{durationMinutes} min</span>
+              </>
+            )}
           </div>
-        ) : null}
+        </div>
+        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </div>
       
-      <nav className="space-y-1">
-        {lessons.map((lesson) => (
-          <Button
-            key={lesson.id}
-            variant="ghost"
-            className={cn(
-              "w-full justify-start px-2 py-1.5 h-auto text-sm",
-              currentLessonId === lesson.id && "bg-muted font-medium",
-              completedLessons[lesson.id] && "text-green-400"
-            )}
-            asChild
-          >
-            <a href={`/courses/${courseId}/lessons/${lesson.id}`}>
-              <div className="mr-2 p-1">
-                {completedLessons[lesson.id] ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-400" />
-                ) : (
-                  <Circle className="h-4 w-4" />
-                )}
+      {isExpanded && (
+        <div className="space-y-1 pl-3">
+          {lessons.map((lesson) => (
+            <Link
+              key={lesson.id}
+              to={`/courses/${courseId}/lessons/${lesson.id}`}
+              className={`
+                block py-1.5 px-3 text-sm rounded-md truncate
+                ${lesson.id === currentLessonId ? 'bg-secondary font-medium' : 'hover:bg-secondary/20'}
+              `}
+            >
+              <div className="flex items-center">
+                <div className="w-4 h-4 mr-2 flex-shrink-0">
+                  {completedLessons[lesson.id] && <CheckCircle className="h-4 w-4 text-green-500" />}
+                </div>
+                <span className="truncate" title={lesson.title}>
+                  {lesson.title}
+                </span>
               </div>
-              <div className="flex-grow text-left">
-                <div className="line-clamp-1">{lesson.title}</div>
-                {lesson.duration_minutes && (
-                  <div className="text-xs text-muted-foreground">
-                    {lesson.duration_minutes} min
-                  </div>
-                )}
-              </div>
-              {lesson.has_attachments && (
-                <FileText className="h-4 w-4 text-muted-foreground ml-2" />
-              )}
-            </a>
-          </Button>
-        ))}
-      </nav>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

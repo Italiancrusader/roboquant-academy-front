@@ -25,18 +25,27 @@ const LessonNavigation: React.FC<LessonNavigationProps> = ({
   return (
     <div className="flex justify-between mb-16 mt-8">
       {prevLesson ? (
-        <Button variant="outline" onClick={() => navigate(`/courses/${courseId}/lessons/${prevLesson.id}`)}>
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Previous: {prevLesson.title}
+        <Button 
+          variant="outline" 
+          onClick={() => navigate(`/courses/${courseId}/lessons/${prevLesson.id}`)}
+          className="flex items-center max-w-[45%]"
+          title={`Previous: ${prevLesson.title}`}
+        >
+          <ChevronLeft className="mr-2 h-4 w-4 flex-shrink-0" />
+          <span className="truncate">Previous: {prevLesson.title}</span>
         </Button>
       ) : (
         <div></div>
       )}
       
       {nextLesson ? (
-        <Button onClick={() => navigate(`/courses/${courseId}/lessons/${nextLesson.id}`)}>
-          Next: {nextLesson.title}
-          <ChevronRight className="ml-2 h-4 w-4" />
+        <Button 
+          onClick={() => navigate(`/courses/${courseId}/lessons/${nextLesson.id}`)}
+          className="flex items-center max-w-[45%]"
+          title={`Next: ${nextLesson.title}`}
+        >
+          <span className="truncate">Next: {nextLesson.title}</span>
+          <ChevronRight className="ml-2 h-4 w-4 flex-shrink-0" />
         </Button>
       ) : (
         <Button onClick={() => navigate(`/courses/${courseId}`)}>

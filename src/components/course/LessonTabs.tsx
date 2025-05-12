@@ -40,7 +40,9 @@ const LessonTabs: React.FC<LessonTabsProps> = ({
           {description ? (
             <div>
               <h2>Description</h2>
-              <p>{description}</p>
+              <div className="break-words">
+                <p>{description}</p>
+              </div>
               
               <QuickTip
                 title="Resource Available"

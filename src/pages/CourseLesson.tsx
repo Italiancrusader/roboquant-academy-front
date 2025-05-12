@@ -236,8 +236,8 @@ const CourseLesson = () => {
         <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-8 mt-6">
           {/* Sidebar with modules and lessons */}
           <div className="md:col-span-1">
-            <Card className="sticky top-24">
-              <CardContent className="p-4 space-y-6">
+            <Card className="sticky top-24 overflow-hidden">
+              <CardContent className="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-120px)]">
                 {/* Progress bar */}
                 <div className="space-y-2">
                   <p className="font-medium text-sm">Progress</p>
