@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   ArrowUpDown,
@@ -35,15 +34,15 @@ interface KpiCardsProps {
 const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <div className="bg-muted/30 rounded-lg p-4 border border-border">
+      <div className="bg-purple-600 rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">Net Profit</p>
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <p className="text-sm text-white">Net Profit</p>
+          <TrendingUp className="h-4 w-4 text-white" />
         </div>
-        <h3 className={`text-2xl font-semibold mt-2 ${metrics.totalNetProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+        <h3 className={`text-2xl font-semibold mt-2 text-white`}>
           ${metrics.totalNetProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </h3>
-        <div className="text-xs text-muted-foreground mt-1">
+        <div className="text-xs text-white/80 mt-1">
           Total result for all trades
         </div>
       </div>
