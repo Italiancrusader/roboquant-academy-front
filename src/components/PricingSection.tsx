@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Check, ArrowRight, Star, Trophy } from 'lucide-react';
+import { Check, ArrowRight, Star } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { useNavigate } from 'react-router-dom';
 import { trackEvent } from '@/utils/googleAnalytics';
@@ -29,56 +29,6 @@ const PricingSection: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  const pricingPlans = [
-    {
-      name: "Self-Paced",
-      price: "997",
-      originalPrice: "1,997",
-      description: "Perfect for independent traders who want to learn at their own pace.",
-      features: [
-        "Complete No-Code Bot Building Course",
-        "24/7 Access to Course Materials",
-        "Practice Exercises & Templates",
-        "6 Months Community Access",
-        "Basic Strategy Library",
-      ],
-      mostPopular: false,
-      buttonLabel: "Get Started",
-    },
-    {
-      name: "Premium",
-      price: "1,997",
-      originalPrice: "3,997",
-      description: "Our most popular option with personalized guidance and support.",
-      features: [
-        "Everything in Self-Paced",
-        "1-on-1 Strategy Session",
-        "Expert Code Reviews",
-        "Priority Support",
-        "Advanced Strategy Templates",
-        "Lifetime Community Access",
-      ],
-      mostPopular: true,
-      buttonLabel: "Apply Now",
-    },
-    {
-      name: "VIP Mentorship",
-      price: "4,997",
-      originalPrice: "9,997",
-      description: "For serious traders who want direct mentorship and fastest results.",
-      features: [
-        "Everything in Premium",
-        "Weekly 1-on-1 Coaching (3 months)",
-        "Custom Strategy Development",
-        "Direct Message Access to Instructor",
-        "Exclusive VIP Workshops",
-        "Commercial EA Distribution Rights",
-      ],
-      mostPopular: false,
-      buttonLabel: "Apply Now",
-    }
-  ];
   
   return (
     <section id="pricing" className="section-padding py-20 bg-gradient-to-b from-background to-secondary/50" ref={ref}>
@@ -88,75 +38,79 @@ const PricingSection: React.FC = () => {
             <span className="gradient-text">Investment Options</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Choose the plan that fits your trading goals and learning style
+            Get lifetime access to RoboQuant Academy and join our weekly Q&A calls
           </p>
         </div>
         
-        <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
-          {pricingPlans.map((plan, index) => (
-            <Card 
-              key={index} 
-              className={`relative overflow-hidden backdrop-blur-sm border transition-all duration-300 hover:translate-y-[-8px] ${
-                plan.mostPopular 
-                  ? 'bg-gradient-to-br from-blue-primary/20 to-teal-primary/20 border-blue-primary/40 shadow-lg shadow-blue-primary/10' 
-                  : 'bg-gradient-to-br from-card/90 to-secondary/70 border-white/5'
-              }`}
-            >
-              {plan.mostPopular && (
-                <div className="absolute top-0 right-0">
-                  <div className="bg-gradient-to-r from-blue-primary to-teal-primary text-white text-xs font-bold px-3 py-1 rounded-bl-lg flex items-center">
-                    <Trophy className="w-3 h-3 mr-1" /> Most Popular
-                  </div>
+        <div className={`max-w-lg mx-auto ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
+          <Card className="relative overflow-hidden backdrop-blur-sm border transition-all duration-300 hover:translate-y-[-8px] bg-gradient-to-br from-blue-primary/20 to-teal-primary/20 border-blue-primary/40 shadow-lg shadow-blue-primary/10">
+            <div className="absolute top-0 right-0">
+              <div className="bg-gradient-to-r from-blue-primary to-teal-primary text-white text-xs font-bold px-3 py-1 rounded-bl-lg flex items-center">
+                Lifetime Access
+              </div>
+            </div>
+            <CardHeader className="pb-0">
+              <CardTitle className="text-2xl font-bold">RoboQuant Academy</CardTitle>
+              <CardDescription className="text-sm text-gray-400 mt-2">
+                Complete trading bot building program with ongoing support
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="mb-6">
+                <div className="flex items-end">
+                  <span className="text-2xl font-medium text-gray-400">$</span>
+                  <span className="text-4xl font-bold gradient-text">1,497</span>
                 </div>
-              )}
-              <CardHeader className="pb-0">
-                <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                <CardDescription className="text-sm text-gray-400 mt-2">{plan.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="mb-6">
-                  <div className="flex items-end">
-                    <span className="text-2xl font-medium text-gray-400">$</span>
-                    <span className="text-4xl font-bold gradient-text">{plan.price}</span>
-                  </div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    <span className="line-through">${plan.originalPrice}</span>
-                    <span className="ml-2 text-teal-primary">Save 50%</span>
-                  </div>
+                <div className="text-sm text-gray-500 mt-1">
+                  <span className="text-teal-primary">One-time payment, lifetime access</span>
                 </div>
-                <ul className="space-y-3">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start">
-                      <Check className="h-5 w-5 text-teal-primary shrink-0 mt-0.5 mr-3" />
-                      <span className="text-sm text-gray-300">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter className="pt-6">
-                <Button 
-                  onClick={handleApply}
-                  disabled={isLoading}
-                  className={`w-full py-6 ${
-                    plan.mostPopular
-                      ? 'cta-button text-white'
-                      : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-                  }`}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center">
-                      <ArrowRight className="mr-2 h-5 w-5 animate-spin" />
-                      Processing...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center">
-                      {plan.buttonLabel} <ArrowRight className="ml-2 h-5 w-5" />
-                    </span>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-start">
+                  <Check className="h-5 w-5 text-teal-primary shrink-0 mt-0.5 mr-3" />
+                  <span className="text-sm text-gray-300">Complete No-Code Bot Building Course</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-5 w-5 text-teal-primary shrink-0 mt-0.5 mr-3" />
+                  <span className="text-sm text-gray-300">Weekly Live Q&A Calls</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-5 w-5 text-teal-primary shrink-0 mt-0.5 mr-3" />
+                  <span className="text-sm text-gray-300">Lifetime Community Access</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-5 w-5 text-teal-primary shrink-0 mt-0.5 mr-3" />
+                  <span className="text-sm text-gray-300">Advanced Strategy Templates</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-5 w-5 text-teal-primary shrink-0 mt-0.5 mr-3" />
+                  <span className="text-sm text-gray-300">24/7 Access to Course Materials</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-5 w-5 text-teal-primary shrink-0 mt-0.5 mr-3" />
+                  <span className="text-sm text-gray-300">Priority Support</span>
+                </li>
+              </ul>
+            </CardContent>
+            <CardFooter className="pt-6">
+              <Button 
+                onClick={handleApply}
+                disabled={isLoading}
+                className="w-full py-6 cta-button text-white"
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center">
+                    <ArrowRight className="mr-2 h-5 w-5 animate-spin" />
+                    Processing...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center">
+                    Apply Now <ArrowRight className="ml-2 h-5 w-5" />
+                  </span>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
         
         <div className="mt-16 text-center">
