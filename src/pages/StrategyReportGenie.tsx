@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import PDFReportGenerator from '@/components/strategyreportgenie/PDFReportGenerator';
 import MonteCarloSimulation from '@/components/strategyreportgenie/MonteCarloSimulation';
 import StrategyOptimizer from '@/components/strategyreportgenie/StrategyOptimizer';
+import Footer from '@/components/Footer';
 
 const StrategyReportGenie = () => {
   const [files, setFiles] = useState<FileType[]>([]);
@@ -91,7 +92,8 @@ const StrategyReportGenie = () => {
     setActiveDialog(null);
   };
 
-  return <div className="flex flex-col min-h-screen bg-background text-foreground font-neulis">
+  return (
+    <div className="flex flex-col min-h-screen bg-background text-foreground font-neulis">
       <Navbar />
       {isProcessing && <LoadingOverlay message={processingSteps} />}
       
@@ -102,9 +104,6 @@ const StrategyReportGenie = () => {
             <p className="text-muted-foreground mt-2">
               Upload MetaTrader 4/5 or TradingView strategy reports for professional-grade performance analysis
             </p>
-          </div>
-          <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            
           </div>
         </div>
         
@@ -151,29 +150,8 @@ const StrategyReportGenie = () => {
         />
       )}
       
-      <footer className="py-6 border-t border-border bg-secondary mt-auto">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} RoboQuant Academy
-            </p>
-            <div className="flex items-center space-x-6">
-              <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Home
-              </Link>
-              <Link to="/strategy-report-genie" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Strategy Report Genie
-              </Link>
-              <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Privacy Policy
-              </Link>
-              <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Terms of Service
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>;
+      <Footer />
+    </div>
+  );
 };
 export default StrategyReportGenie;
