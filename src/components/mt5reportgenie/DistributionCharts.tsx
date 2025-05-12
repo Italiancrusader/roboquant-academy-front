@@ -46,10 +46,10 @@ const DistributionCharts: React.FC<DistributionChartsProps> = ({ trades }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mb-10">
       <h2 className="text-xl font-semibold">Profit Distribution</h2>
-      <Card className="pt-4 pb-8">
-        <div className="w-full" style={{ minHeight: '300px' }}>
+      <Card className="pt-6 pb-12">
+        <div className="w-full" style={{ minHeight: '350px' }}>
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" aspect={16/9}>
               <BarChart 
