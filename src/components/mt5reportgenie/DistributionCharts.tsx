@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import {
@@ -48,7 +47,7 @@ const DistributionCharts: React.FC<DistributionChartsProps> = ({ trades }) => {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Profit Distribution</h2>
-      <Card className="pt-4">
+      <Card className="pt-4 pb-8">
         <div className="h-[350px] w-full">
           <ChartContainer config={config}>
             <ResponsiveContainer width="100%" height="100%">
