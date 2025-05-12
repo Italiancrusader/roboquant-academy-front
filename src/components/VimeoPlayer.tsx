@@ -102,6 +102,19 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     setError(null);
     setIsLoading(true);
     setRetryCount(prev => prev + 1);
+    
+    // Force reload the iframe with a new src URL (with timestamp to bust cache)
+    if (iframeRef.current) {
+      const currentSrc = iframeRef.current.src;
+      const timestamp = new Date().getTime();
+      const cacheBuster = `&_t=${timestamp}`;
+      
+      // Remove any existing timestamp parameter
+      const cleanSrc = currentSrc.replace(/&_t=\d+/, '');
+      
+      // Add new timestamp
+      iframeRef.current.src = `${cleanSrc}${cacheBuster}`;
+    }
   };
 
   // Set up event listeners for the Vimeo player
@@ -126,7 +139,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         setError("Video failed to load within the expected time");
         if (onError) onError("Video failed to load within the expected time");
       }
-    }, 10000); // 10 second timeout
+    }, 15000); // 15 second timeout - increased from 10 to give more time
     
     // Load Vimeo Player API script if it's not already loaded
     if (!window.Vimeo) {
@@ -182,11 +195,30 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
           setIsLoading(false);
         });
         
-        // Listen for "not found" errors
-        player.on('notFound', function() {
+        // Explicitly handle the notFound error that's shown in the screenshot
+        player.on('notfound', function() {
           clearTimeout(initTimeout);
           const errorMsg = "This video could not be found or is private";
           console.error(errorMsg);
+          setError(errorMsg);
+          if (onError) onError(errorMsg);
+          setIsLoading(false);
+        });
+        
+        // Listen for other initialization errors
+        player.ready().catch((err: any) => {
+          clearTimeout(initTimeout);
+          let errorMsg = "There was a problem loading this video";
+          
+          if (err && err.name) {
+            if (err.name === "PrivacyError") {
+              errorMsg = "This video is private and requires a valid access token";
+            } else if (err.name === "NotFoundError") {
+              errorMsg = "This video could not be found or has been removed";
+            }
+          }
+          
+          console.error("Player ready error:", err);
           setError(errorMsg);
           if (onError) onError(errorMsg);
           setIsLoading(false);
@@ -254,7 +286,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         try {
           playerInstanceRef.current.off('ended');
           playerInstanceRef.current.off('error');
-          playerInstanceRef.current.off('notFound');
+          playerInstanceRef.current.off('notfound');
           playerInstanceRef.current.off('play');
           playerInstanceRef.current = null;
         } catch (err) {
@@ -303,6 +335,11 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     params.append('player_id', `player${vimeoId}`);
     params.append('pip', '0');
     params.append('badge', '0');
+    
+    // Add timestamp to bust cache on retries
+    if (retryCount > 0) {
+      params.append('_t', Date.now().toString());
+    }
     
     // Add special parameters for admins to bypass privacy restrictions
     if (isAdmin) {
@@ -354,10 +391,6 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         allow="autoplay; fullscreen; picture-in-picture"
         allowFullScreen
         title="Vimeo video player"
-        onLoad={() => {
-          // Don't set loading to false here, wait for the player to be ready
-          // This prevents flashing of content
-        }}
         onError={handleIframeError}
       />
       
