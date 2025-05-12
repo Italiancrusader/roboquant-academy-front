@@ -1,11 +1,14 @@
+
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ShieldCheck, Check, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Check, ArrowRight, Loader2 } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { handleStripeCheckout } from '@/services/stripe';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Define interface for YouTube player
 interface YouTubePlayer {
@@ -30,8 +33,10 @@ declare global {
 const VSL = () => {
   const [watched, setWatched] = useState(false);
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Check if user is qualified from URL parameter, explicitly compare as string
   const isQualified = searchParams.get('qualified') === 'true';
@@ -99,13 +104,36 @@ const VSL = () => {
     }
   };
 
-  // Navigate to checkout page
-  const handleCheckout = () => {
-    trackEvent('vsl_direct_checkout', {
-      event_category: 'Conversion',
-      event_label: 'VSL Direct Checkout'
-    });
-    navigate('/checkout');
+  // Direct checkout with Stripe
+  const handleDirectCheckout = async () => {
+    setIsLoading(true);
+    
+    try {
+      trackEvent('vsl_direct_checkout', {
+        event_category: 'Conversion',
+        event_label: 'VSL Direct Checkout',
+        value: 1500
+      });
+      
+      // Process checkout with Stripe
+      const userId = user ? user.id : undefined;
+      const result = await handleStripeCheckout({
+        courseId: 'roboquant-academy',
+        courseTitle: 'RoboQuant Academy',
+        price: 1500,
+        userId: userId,
+        successUrl: window.location.origin + '/thank-you',
+        cancelUrl: window.location.origin + '/vsl',
+      });
+      
+      if (!result) {
+        throw new Error("Failed to initiate checkout");
+      }
+    } catch (error) {
+      console.error('Error during checkout:', error);
+      setIsLoading(false);
+      navigate('/checkout'); // Fallback to checkout page in case of errors
+    }
   };
   
   // FAQ items for the accordion
@@ -180,11 +208,21 @@ const VSL = () => {
                 
                 <div className="w-full max-w-md space-y-4">
                   <Button 
-                    onClick={handleCheckout}
+                    onClick={handleDirectCheckout}
+                    disabled={isLoading}
                     className="w-full py-6 bg-primary hover:bg-primary/90 text-primary-foreground text-lg"
                   >
-                    <ShieldCheck className="mr-2 h-5 w-5" /> 
-                    Get Instant Access — $1,500
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="mr-2 h-5 w-5" /> 
+                        Get Instant Access — $1,500
+                      </>
+                    )}
                   </Button>
                 </div>
                 
@@ -256,10 +294,20 @@ const VSL = () => {
             </p>
             <div className="flex justify-center">
               <Button 
-                onClick={handleCheckout}
+                onClick={handleDirectCheckout}
+                disabled={isLoading}
                 className="py-6 px-8 bg-primary hover:bg-primary/90 text-primary-foreground text-lg"
               >
-                Get Instant Access <ArrowRight className="ml-2 h-5 w-5" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Get Instant Access <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
               </Button>
             </div>
           </div>
