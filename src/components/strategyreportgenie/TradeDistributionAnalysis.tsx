@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { 
   BarChart, 
@@ -265,77 +266,85 @@ const TradeDistributionAnalysis: React.FC<TradeDistributionAnalysisProps> = ({
     switch (distributionType) {
       case 'profit':
         return (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart 
-              data={profitDistribution}
-              margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="range" 
-                tickFormatter={value => formatProfit(value)}
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="count" name="Number of Trades">
-                {profitDistribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.isPositive ? '#65B741' : '#ff4d4f'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="w-full aspect-[16/9]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={profitDistribution}
+                margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="range" 
+                  tickFormatter={value => formatProfit(value)}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar dataKey="count" name="Number of Trades">
+                  {profitDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.isPositive ? '#65B741' : '#ff4d4f'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         );
       case 'duration':
         return (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart 
-              data={durationDistribution}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="count" name="Number of Trades" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="w-full aspect-[16/9]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={durationDistribution}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar dataKey="count" name="Number of Trades" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         );
       case 'hour':
         return (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart 
-              data={hourDistribution}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="hour" tickFormatter={value => `${value}:00`} />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="count" name="Number of Trades" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="w-full aspect-[16/9]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={hourDistribution}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="hour" tickFormatter={value => `${value}:00`} />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar dataKey="count" name="Number of Trades" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         );
       case 'day':
         return (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart 
-              data={dayDistribution}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="count" name="Number of Trades" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="w-full aspect-[16/9]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={dayDistribution}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="day" />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar dataKey="count" name="Number of Trades" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         );
       default:
         return null;

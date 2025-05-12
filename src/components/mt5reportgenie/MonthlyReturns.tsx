@@ -213,7 +213,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 }}
               />
               <Legend content={() => (
-                <div className="flex justify-center items-center gap-6 mt-3">
+                <div className="flex justify-center items-center gap-8 mt-3">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-green-500 rounded-sm opacity-80"></div>
                     <span className="text-xs text-muted-foreground">Profit</span>

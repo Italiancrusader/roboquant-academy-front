@@ -193,11 +193,11 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 wrapperStyle={{ zIndex: 100 }}
                 cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
               />
-              {/* Custom legend - directly in the chart */}
+              {/* Custom legend - directly in the chart with increased spacing between items */}
               <text x="50%" y="15" textAnchor="middle" dominantBaseline="hanging">
                 <tspan x="50%" fill="hsl(var(--muted-foreground))" fontSize="12">
                   <tspan fill="#9b87f5" fontWeight="bold">■</tspan> Profit 
-                  <tspan x="52%" dx="10" fill="#ea384c" fontWeight="bold">■</tspan> Loss
+                  <tspan x="54%" dx="20" fill="#ea384c" fontWeight="bold">■</tspan> Loss
                 </tspan>
               </text>
               <Bar

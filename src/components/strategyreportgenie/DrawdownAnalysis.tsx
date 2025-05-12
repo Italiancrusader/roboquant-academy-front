@@ -1,318 +1,352 @@
+
 import React from 'react';
-import { StrategyTrade } from '@/types/strategyreportgenie';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
   ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend
+  LineChart,
+  Line,
+  Legend,
+  ReferenceLine
 } from 'recharts';
-import { ChartContainer } from '@/components/ui/chart';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrendingDown, AlertCircle, Calendar } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { StrategyTrade } from '@/types/strategyreportgenie';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DrawdownAnalysisProps {
   trades: StrategyTrade[];
+  initialBalance?: number;
 }
 
-interface DrawdownPeriod {
-  start: Date;
-  peak: number;
-  peakDate: Date;
-  bottom: number;
-  bottomDate: Date;
-  recovery: number | null;
-  recoveryDate: Date | null;
-  drawdownAmount: number;
-  drawdownPercent: number;
-  duration: number; // days
-  recoveryDuration: number | null; // days
-}
-
-const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
-  // Generate equity curve and drawdown data
-  const { equityCurve, drawdownPeriods } = React.useMemo(() => {
-    if (!trades.length) return { equityCurve: [], drawdownPeriods: [] };
-    
-    // Filter trades with balance info
-    const tradesWithBalance = trades
-      .filter(trade => trade.balance !== undefined)
+const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades, initialBalance = 10000 }) => {
+  const isMobile = useIsMobile();
+  
+  // Filter completed trades and sort by date
+  const validTrades = React.useMemo(() => {
+    return trades
+      .filter(trade => trade.openTime && !isNaN(trade.openTime.getTime()))
       .sort((a, b) => a.openTime.getTime() - b.openTime.getTime());
-    
-    if (tradesWithBalance.length === 0) return { equityCurve: [], drawdownPeriods: [] };
-    
-    const equity: { date: Date; equity: number; drawdownPct: number; drawdown: number }[] = [];
-    const periods: DrawdownPeriod[] = [];
-    
-    let peak = tradesWithBalance[0].balance || 0;
-    let peakDate = tradesWithBalance[0].openTime;
-    let inDrawdown = false;
-    let currentDrawdown: Partial<DrawdownPeriod> | null = null;
-    
-    tradesWithBalance.forEach(trade => {
-      const balance = trade.balance || 0;
-      const date = trade.openTime;
-      
-      // Calculate current drawdown
-      const drawdown = peak - balance;
-      const drawdownPct = peak > 0 ? (drawdown / peak) * 100 : 0;
-      
-      // Add point to equity curve
-      equity.push({ 
-        date,
-        equity: balance,
-        drawdownPct,
-        drawdown
-      });
-      
-      // Update drawdown tracking
-      if (balance > peak) {
-        // New peak reached
-        peak = balance;
-        peakDate = date;
-        
-        // If we were in a drawdown, it's now recovered
-        if (inDrawdown && currentDrawdown) {
-          currentDrawdown.recovery = balance;
-          currentDrawdown.recoveryDate = date;
-          currentDrawdown.recoveryDuration = Math.ceil(
-            (date.getTime() - currentDrawdown.bottomDate!.getTime()) / (1000 * 60 * 60 * 24)
-          );
-          
-          // Add to completed periods
-          periods.push(currentDrawdown as DrawdownPeriod);
-          
-          // Reset tracking
-          inDrawdown = false;
-          currentDrawdown = null;
-        }
-      } else if (balance < peak) {
-        // In drawdown
-        
-        if (!inDrawdown) {
-          // Start of new drawdown
-          inDrawdown = true;
-          currentDrawdown = {
-            start: peakDate,
-            peak,
-            peakDate,
-            bottom: balance,
-            bottomDate: date,
-            recovery: null,
-            recoveryDate: null,
-            drawdownAmount: peak - balance,
-            drawdownPercent: (peak - balance) / peak * 100,
-            duration: Math.ceil((date.getTime() - peakDate.getTime()) / (1000 * 60 * 60 * 24)),
-            recoveryDuration: null
-          };
-        } else if (currentDrawdown && balance < currentDrawdown.bottom!) {
-          // Deeper drawdown
-          currentDrawdown.bottom = balance;
-          currentDrawdown.bottomDate = date;
-          currentDrawdown.drawdownAmount = currentDrawdown.peak! - balance;
-          currentDrawdown.drawdownPercent = (currentDrawdown.peak! - balance) / currentDrawdown.peak! * 100;
-          currentDrawdown.duration = Math.ceil(
-            (date.getTime() - currentDrawdown.start!.getTime()) / (1000 * 60 * 60 * 24)
-          );
-        }
-      }
-    });
-    
-    // Add the current drawdown if still in one
-    if (inDrawdown && currentDrawdown) {
-      periods.push(currentDrawdown as DrawdownPeriod);
-    }
-    
-    // Sort by drawdown amount
-    const sortedPeriods = periods
-      .filter(p => p.drawdownPercent > 0.5) // Filter out tiny drawdowns
-      .sort((a, b) => b.drawdownAmount - a.drawdownAmount);
-    
-    return { equityCurve: equity, drawdownPeriods: sortedPeriods };
   }, [trades]);
   
-  if (!equityCurve.length) {
+  // Calculate equity curve and drawdowns
+  const { equityCurve, drawdowns, maxDrawdownData } = React.useMemo(() => {
+    if (validTrades.length === 0) return { equityCurve: [], drawdowns: [], maxDrawdownData: null };
+    
+    let balance = initialBalance;
+    let peak = initialBalance;
+    let currentDrawdown = 0;
+    let maxDrawdown = 0;
+    let maxDrawdownStart = null;
+    let maxDrawdownEnd = null;
+    let currentDrawdownStart = null;
+    let drawdownsArr = [];
+    
+    const equity = validTrades.map((trade, index) => {
+      const date = trade.openTime;
+      
+      // Update balance based on profit/loss
+      if (trade.profit !== undefined) {
+        balance += trade.profit;
+      } else if (trade.balance !== undefined) {
+        balance = trade.balance;
+      }
+      
+      // Update peak and calculate drawdown
+      if (balance > peak) {
+        // If we hit a new peak, the current drawdown ends
+        if (currentDrawdownStart && currentDrawdown > 0) {
+          drawdownsArr.push({
+            start: currentDrawdownStart,
+            end: date,
+            drawdown: currentDrawdown,
+            drawdownPct: (currentDrawdown / peak) * 100
+          });
+        }
+        
+        peak = balance;
+        currentDrawdown = 0;
+        currentDrawdownStart = null;
+      } else {
+        const dd = peak - balance;
+        if (dd > currentDrawdown) {
+          if (!currentDrawdownStart) {
+            currentDrawdownStart = date;
+          }
+          currentDrawdown = dd;
+          
+          if (currentDrawdown > maxDrawdown) {
+            maxDrawdown = currentDrawdown;
+            maxDrawdownStart = currentDrawdownStart;
+            maxDrawdownEnd = date;
+          }
+        }
+      }
+      
+      // Return data point
+      return {
+        date,
+        equity: balance,
+        drawdown: peak - balance,
+        drawdownPct: ((peak - balance) / peak) * 100,
+        peak
+      };
+    });
+    
+    // Add final drawdown if still ongoing
+    if (currentDrawdownStart && currentDrawdown > 0) {
+      drawdownsArr.push({
+        start: currentDrawdownStart,
+        end: validTrades[validTrades.length - 1].openTime,
+        drawdown: currentDrawdown,
+        drawdownPct: (currentDrawdown / peak) * 100
+      });
+    }
+    
+    // Extract max drawdown details
+    const maxDrawdownData = maxDrawdown > 0 ? {
+      amount: maxDrawdown,
+      percent: (maxDrawdown / peak) * 100,
+      start: maxDrawdownStart,
+      end: maxDrawdownEnd,
+      duration: maxDrawdownStart && maxDrawdownEnd ? 
+        Math.ceil((maxDrawdownEnd.getTime() - maxDrawdownStart.getTime()) / (1000 * 3600 * 24)) : null
+    } : null;
+    
+    // Sort drawdowns by size
+    drawdownsArr.sort((a, b) => b.drawdown - a.drawdown);
+    
+    return { equityCurve: equity, drawdowns: drawdownsArr, maxDrawdownData };
+  }, [validTrades, initialBalance]);
+  
+  // Calculate drawdown statistics
+  const drawdownStats = React.useMemo(() => {
+    if (drawdowns.length === 0) return { avg: 0, median: 0, max: 0 };
+    
+    const drawdownValues = drawdowns.map(d => d.drawdownPct);
+    const avg = drawdownValues.reduce((sum, val) => sum + val, 0) / drawdownValues.length;
+    
+    const sorted = [...drawdownValues].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? 
+      (sorted[mid - 1] + sorted[mid]) / 2 : 
+      sorted[mid];
+    
+    const max = Math.max(...drawdownValues);
+    
+    return { avg, median, max };
+  }, [drawdowns]);
+  
+  // Format date for display
+  const formatDate = (date: Date | null) => {
+    if (!date) return 'N/A';
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+  
+  // Format drawdown duration
+  const formatDuration = (days: number | null) => {
+    if (days === null) return 'N/A';
+    if (days < 1) return 'Less than a day';
+    if (days === 1) return '1 day';
+    return `${days} days`;
+  };
+  
+  if (validTrades.length === 0) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <p className="text-muted-foreground">No data available for drawdown analysis</p>
+      <div className="flex items-center justify-center bg-muted/30 rounded-lg p-8">
+        <p className="text-muted-foreground">No trade data available for drawdown analysis</p>
       </div>
     );
   }
-
-  // Find max drawdown
-  const maxDrawdown = drawdownPeriods.length ? drawdownPeriods[0] : null;
-
+  
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Drawdown Analysis</h2>
-      
-      {/* Drawdown Visualization */}
-      <Card className="mb-16">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <TrendingDown className="h-5 w-5" /> Drawdown Visualization
-          </CardTitle>
+    <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Drawdown Analysis</CardTitle>
+          <CardDescription>Visualize equity curve and analyze drawdowns</CardDescription>
         </CardHeader>
-        <CardContent className="h-[400px] pb-12 relative">
-          {/* Add inline legend at the top */}
-          <div className="absolute top-2 right-5 z-10 bg-background/80 py-1 px-3 rounded-md border border-border/40 shadow-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--destructive))" }}></div>
-              <span className="text-xs text-muted-foreground">Drawdown %</span>
-            </div>
-          </div>
-          
-          <ChartContainer config={{ 
-            drawdown: { color: "hsl(var(--destructive))" }
-          }}>
+        <CardContent>
+          <div className="w-full aspect-[16/9]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={equityCurve}
-                margin={{ top: 20, right: 30, left: 30, bottom: 30 }}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <CartesianGrid strokeDasharray="3 3" opacity={0.6} />
                 <XAxis 
-                  dataKey="date" 
-                  tickFormatter={(date) => date instanceof Date ? date.toLocaleDateString() : ''}
-                  tick={{ fontSize: 11 }}
-                  height={50}
+                  dataKey="date"
+                  tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
                 />
+                <YAxis yAxisId="left" tick={{ fontSize: isMobile ? 10 : 12 }} />
                 <YAxis 
-                  tickFormatter={(value) => `${value.toFixed(1)}%`}
-                  label={{ 
-                    value: 'Drawdown %', 
-                    angle: -90, 
-                    position: 'insideLeft',
-                    style: { fill: 'hsl(var(--muted-foreground))' }
+                  yAxisId="right" 
+                  orientation="right" 
+                  tickFormatter={(value) => `${value}%`} 
+                  domain={[0, 'dataMax + 5']}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
+                />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      const date = new Date(label);
+                      const formattedDate = date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      });
+                      
+                      return (
+                        <div className="bg-background border rounded p-3 shadow-lg">
+                          <p className="text-sm text-muted-foreground">{formattedDate}</p>
+                          <p className="font-semibold">
+                            <span className="text-blue-500">Equity:</span> ${payload[0].value?.toLocaleString()}
+                          </p>
+                          <p className="text-sm">
+                            <span className="text-red-500">Drawdown:</span> ${payload[1].value?.toLocaleString()} ({payload[2].value?.toFixed(2)}%)
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
                   }}
                 />
-                <Tooltip 
-                  formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Drawdown']}
-                  labelFormatter={(label) => label instanceof Date ? label.toLocaleDateString() : ''}
-                  wrapperStyle={{ zIndex: 1000 }}
-                  cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+                <Area
+                  type="monotone"
+                  dataKey="equity"
+                  name="Equity"
+                  stroke="#4096ff"
+                  fill="rgba(64, 150, 255, 0.1)"
+                  yAxisId="left"
+                  strokeWidth={2}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="drawdownPct" 
-                  name="Drawdown %" 
-                  stroke="hsl(var(--destructive))" 
-                  fill="hsl(var(--destructive)/0.2)" 
+                <Area
+                  type="monotone"
+                  dataKey="drawdown"
+                  name="Drawdown"
+                  stroke="#ff4d4f"
+                  fill="rgba(255, 77, 79, 0.1)"
+                  yAxisId="left"
+                  strokeWidth={1.5}
                 />
+                <Line
+                  type="monotone"
+                  dataKey="drawdownPct"
+                  name="Drawdown %"
+                  stroke="#ff7a45"
+                  dot={false}
+                  yAxisId="right"
+                  strokeWidth={1.5}
+                  strokeDasharray="5 5"
+                />
+                <Legend />
               </AreaChart>
             </ResponsiveContainer>
-          </ChartContainer>
+          </div>
         </CardContent>
       </Card>
       
-      {/* Maximum Drawdown Details - with extra spacing */}
-      <div className="mt-16">
-        {maxDrawdown && (
-          <Card className="mb-16">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <AlertCircle className="h-5 w-5" /> Maximum Drawdown Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-muted/30 rounded-lg border border-border">
-                  <h3 className="text-sm font-medium text-muted-foreground">Max Drawdown</h3>
-                  <div className="mt-2 text-2xl font-bold text-destructive">
-                    ${maxDrawdown.drawdownAmount.toFixed(2)}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Maximum Drawdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {maxDrawdownData ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-muted/30 p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                    <p className="text-xl font-semibold text-red-500">
+                      ${maxDrawdownData.amount.toLocaleString()}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {maxDrawdown.drawdownPercent.toFixed(2)}% of peak equity
-                  </p>
+                  <div className="bg-muted/30 p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Percentage</p>
+                    <p className="text-xl font-semibold text-red-500">
+                      {maxDrawdownData.percent.toFixed(2)}%
+                    </p>
+                  </div>
                 </div>
                 
-                <div className="p-4 bg-muted/30 rounded-lg border border-border">
-                  <h3 className="text-sm font-medium text-muted-foreground">Duration</h3>
-                  <div className="mt-2 text-2xl font-bold">
-                    {maxDrawdown.duration} days
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {maxDrawdown.start.toLocaleDateString()} to {maxDrawdown.bottomDate.toLocaleDateString()}
+                <div className="bg-muted/30 p-3 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Period</p>
+                  <p className="text-sm">
+                    {formatDate(maxDrawdownData.start)} to {formatDate(maxDrawdownData.end)}
                   </p>
-                </div>
-                
-                <div className="p-4 bg-muted/30 rounded-lg border border-border">
-                  <h3 className="text-sm font-medium text-muted-foreground">Recovery</h3>
-                  <div className="mt-2 text-2xl font-bold">
-                    {maxDrawdown.recoveryDuration ? `${maxDrawdown.recoveryDuration} days` : 'Not yet recovered'}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {maxDrawdown.recoveryDate ? `Recovered on ${maxDrawdown.recoveryDate.toLocaleDateString()}` : 'Still in drawdown'}
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Duration: {formatDuration(maxDrawdownData.duration)}
                   </p>
                 </div>
               </div>
-              
-              <div className="mt-6 p-4 bg-muted/30 rounded-lg border border-border">
-                <h3 className="text-sm font-medium mb-2">Risk Assessment</h3>
-                <p className="text-sm">
-                  {maxDrawdown.drawdownPercent > 30 ? (
-                    <span className="text-destructive">Severe drawdown exceeding 30% of equity indicates substantial risk. Consider revising risk management parameters and position sizing.</span>
-                  ) : maxDrawdown.drawdownPercent > 20 ? (
-                    <span className="text-amber-500">Significant drawdown between 20-30% suggests elevated risk levels. Review trading strategy and consider implementing tighter risk controls.</span>
-                  ) : maxDrawdown.drawdownPercent > 10 ? (
-                    <span className="text-amber-400">Moderate drawdown between 10-20% is within normal range for most strategies, but warrants monitoring.</span>
-                  ) : (
-                    <span className="text-green-500">Low drawdown under 10% indicates excellent risk management and capital preservation.</span>
-                  )}
+            ) : (
+              <p className="text-muted-foreground">No significant drawdown detected</p>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Drawdown Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-muted/30 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">Average</p>
+                <p className="text-lg font-semibold">
+                  {drawdownStats.avg.toFixed(2)}%
                 </p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <div className="bg-muted/30 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">Median</p>
+                <p className="text-lg font-semibold">
+                  {drawdownStats.median.toFixed(2)}%
+                </p>
+              </div>
+              <div className="bg-muted/30 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">Maximum</p>
+                <p className="text-lg font-semibold">
+                  {drawdownStats.max.toFixed(2)}%
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <p className="text-sm text-muted-foreground mb-2">Top Drawdowns</p>
+              <div className="max-h-[200px] overflow-y-auto border rounded-lg">
+                <table className="w-full">
+                  <thead className="bg-muted/30 sticky top-0">
+                    <tr>
+                      <th className="p-2 text-left text-xs">#</th>
+                      <th className="p-2 text-left text-xs">Amount</th>
+                      <th className="p-2 text-left text-xs">Percentage</th>
+                      <th className="p-2 text-left text-xs">Start</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {drawdowns.slice(0, 5).map((dd, idx) => (
+                      <tr key={idx} className="border-t">
+                        <td className="p-2 text-xs">{idx + 1}</td>
+                        <td className="p-2 text-xs font-semibold">${dd.drawdown.toLocaleString()}</td>
+                        <td className="p-2 text-xs">{dd.drawdownPct.toFixed(2)}%</td>
+                        <td className="p-2 text-xs">{formatDate(dd.start)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      
-      {/* Drawdown Periods Table */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="h-5 w-5" /> Drawdown History
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="max-h-[300px] overflow-y-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Start Date</TableHead>
-                <TableHead>Bottom Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Percent</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Recovery</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {drawdownPeriods.slice(0, 10).map((period, index) => (
-                <TableRow key={index}>
-                  <TableCell>{period.start.toLocaleDateString()}</TableCell>
-                  <TableCell>{period.bottomDate.toLocaleDateString()}</TableCell>
-                  <TableCell className="text-destructive">${period.drawdownAmount.toFixed(2)}</TableCell>
-                  <TableCell>{period.drawdownPercent.toFixed(2)}%</TableCell>
-                  <TableCell>{period.duration} days</TableCell>
-                  <TableCell>
-                    {period.recoveryDate ? 
-                      `${period.recoveryDuration} days` : 
-                      <span className="text-amber-500">Not recovered</span>}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {drawdownPeriods.length > 10 && (
-            <p className="text-muted-foreground text-xs mt-2">
-              Showing top 10 drawdown periods out of {drawdownPeriods.length} total.
-            </p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 };
