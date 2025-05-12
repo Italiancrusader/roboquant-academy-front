@@ -151,22 +151,30 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
       <h2 className="text-xl font-semibold mb-4">Drawdown Analysis</h2>
       
       {/* Drawdown Visualization */}
-      <Card className="mb-10">
+      <Card className="mb-16">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <TrendingDown className="h-5 w-5" /> Drawdown Visualization
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[400px] pb-10">
+        <CardContent className="h-[400px] pb-12 relative">
+          {/* Add inline legend at the top */}
+          <div className="absolute top-2 right-5 z-10 bg-background/80 py-1 px-3 rounded-md border border-border/40 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--destructive))" }}></div>
+              <span className="text-xs text-muted-foreground">Drawdown %</span>
+            </div>
+          </div>
+          
           <ChartContainer config={{ 
             drawdown: { color: "hsl(var(--destructive))" }
           }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={equityCurve}
-                margin={{ top: 10, right: 30, left: 20, bottom: 50 }}
+                margin={{ top: 20, right: 30, left: 30, bottom: 30 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                 <XAxis 
                   dataKey="date" 
                   tickFormatter={(date) => date instanceof Date ? date.toLocaleDateString() : ''}
@@ -188,11 +196,6 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
                   wrapperStyle={{ zIndex: 1000 }}
                   cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
                 />
-                <Legend 
-                  wrapperStyle={{ paddingTop: 20 }}
-                  verticalAlign="bottom"
-                  height={30}
-                />
                 <Area 
                   type="monotone" 
                   dataKey="drawdownPct" 
@@ -206,64 +209,66 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
         </CardContent>
       </Card>
       
-      {/* Max Drawdown Details */}
-      {maxDrawdown && (
-        <Card className="mb-10">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" /> Maximum Drawdown Analysis
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-muted/30 rounded-lg border border-border">
-                <h3 className="text-sm font-medium text-muted-foreground">Max Drawdown</h3>
-                <div className="mt-2 text-2xl font-bold text-destructive">
-                  ${maxDrawdown.drawdownAmount.toFixed(2)}
+      {/* Maximum Drawdown Details - with extra spacing */}
+      <div className="mt-16">
+        {maxDrawdown && (
+          <Card className="mb-16">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" /> Maximum Drawdown Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-muted/30 rounded-lg border border-border">
+                  <h3 className="text-sm font-medium text-muted-foreground">Max Drawdown</h3>
+                  <div className="mt-2 text-2xl font-bold text-destructive">
+                    ${maxDrawdown.drawdownAmount.toFixed(2)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {maxDrawdown.drawdownPercent.toFixed(2)}% of peak equity
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {maxDrawdown.drawdownPercent.toFixed(2)}% of peak equity
-                </p>
+                
+                <div className="p-4 bg-muted/30 rounded-lg border border-border">
+                  <h3 className="text-sm font-medium text-muted-foreground">Duration</h3>
+                  <div className="mt-2 text-2xl font-bold">
+                    {maxDrawdown.duration} days
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {maxDrawdown.start.toLocaleDateString()} to {maxDrawdown.bottomDate.toLocaleDateString()}
+                  </p>
+                </div>
+                
+                <div className="p-4 bg-muted/30 rounded-lg border border-border">
+                  <h3 className="text-sm font-medium text-muted-foreground">Recovery</h3>
+                  <div className="mt-2 text-2xl font-bold">
+                    {maxDrawdown.recoveryDuration ? `${maxDrawdown.recoveryDuration} days` : 'Not yet recovered'}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {maxDrawdown.recoveryDate ? `Recovered on ${maxDrawdown.recoveryDate.toLocaleDateString()}` : 'Still in drawdown'}
+                  </p>
+                </div>
               </div>
               
-              <div className="p-4 bg-muted/30 rounded-lg border border-border">
-                <h3 className="text-sm font-medium text-muted-foreground">Duration</h3>
-                <div className="mt-2 text-2xl font-bold">
-                  {maxDrawdown.duration} days
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {maxDrawdown.start.toLocaleDateString()} to {maxDrawdown.bottomDate.toLocaleDateString()}
+              <div className="mt-6 p-4 bg-muted/30 rounded-lg border border-border">
+                <h3 className="text-sm font-medium mb-2">Risk Assessment</h3>
+                <p className="text-sm">
+                  {maxDrawdown.drawdownPercent > 30 ? (
+                    <span className="text-destructive">Severe drawdown exceeding 30% of equity indicates substantial risk. Consider revising risk management parameters and position sizing.</span>
+                  ) : maxDrawdown.drawdownPercent > 20 ? (
+                    <span className="text-amber-500">Significant drawdown between 20-30% suggests elevated risk levels. Review trading strategy and consider implementing tighter risk controls.</span>
+                  ) : maxDrawdown.drawdownPercent > 10 ? (
+                    <span className="text-amber-400">Moderate drawdown between 10-20% is within normal range for most strategies, but warrants monitoring.</span>
+                  ) : (
+                    <span className="text-green-500">Low drawdown under 10% indicates excellent risk management and capital preservation.</span>
+                  )}
                 </p>
               </div>
-              
-              <div className="p-4 bg-muted/30 rounded-lg border border-border">
-                <h3 className="text-sm font-medium text-muted-foreground">Recovery</h3>
-                <div className="mt-2 text-2xl font-bold">
-                  {maxDrawdown.recoveryDuration ? `${maxDrawdown.recoveryDuration} days` : 'Not yet recovered'}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {maxDrawdown.recoveryDate ? `Recovered on ${maxDrawdown.recoveryDate.toLocaleDateString()}` : 'Still in drawdown'}
-                </p>
-              </div>
-            </div>
-            
-            <div className="mt-6 p-4 bg-muted/30 rounded-lg border border-border">
-              <h3 className="text-sm font-medium mb-2">Risk Assessment</h3>
-              <p className="text-sm">
-                {maxDrawdown.drawdownPercent > 30 ? (
-                  <span className="text-destructive">Severe drawdown exceeding 30% of equity indicates substantial risk. Consider revising risk management parameters and position sizing.</span>
-                ) : maxDrawdown.drawdownPercent > 20 ? (
-                  <span className="text-amber-500">Significant drawdown between 20-30% suggests elevated risk levels. Review trading strategy and consider implementing tighter risk controls.</span>
-                ) : maxDrawdown.drawdownPercent > 10 ? (
-                  <span className="text-amber-400">Moderate drawdown between 10-20% is within normal range for most strategies, but warrants monitoring.</span>
-                ) : (
-                  <span className="text-green-500">Low drawdown under 10% indicates excellent risk management and capital preservation.</span>
-                )}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
       
       {/* Drawdown Periods Table */}
       <Card>

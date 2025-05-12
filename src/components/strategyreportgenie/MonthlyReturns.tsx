@@ -121,15 +121,12 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
         </div>
       </div>
       
-      <div className="h-[350px] md:h-[450px] w-full mb-8">
+      <div className="h-[350px] md:h-[450px] w-full mb-12">
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
-              margin={isMobile ? 
-                { top: 20, right: 10, left: 0, bottom: 60 } : 
-                { top: 20, right: 20, left: 0, bottom: 70 }
-              }
+              margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
               barGap={0}
               maxBarSize={isMobile ? 30 : 50}
             >
@@ -195,28 +192,13 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
                 wrapperStyle={{ zIndex: 100 }}
                 cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
               />
-              <Legend 
-                verticalAlign="bottom"
-                height={36}
-                content={({ payload }) => (
-                  <div className="flex justify-center items-center" style={{ position: 'absolute', bottom: 0, width: '100%' }}>
-                    <div className="bg-background/95 px-4 py-2 rounded-md flex items-center gap-6 shadow-sm border border-border/40">
-                      {payload?.map((entry, index) => (
-                        <div key={`legend-${index}`} className="flex items-center gap-2">
-                          <div 
-                            className="w-4 h-4 rounded-sm" 
-                            style={{ 
-                              backgroundColor: entry.color, 
-                              opacity: 0.85 
-                            }}
-                          ></div>
-                          <span className="text-xs text-muted-foreground">{entry.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              />
+              {/* Custom legend - directly in the chart */}
+              <text x="50%" y="15" textAnchor="middle" dominantBaseline="hanging">
+                <tspan x="50%" fill="hsl(var(--muted-foreground))" fontSize="12">
+                  <tspan fill="#9b87f5" fontWeight="bold">■</tspan> Profit 
+                  <tspan x="52%" dx="10" fill="#ea384c" fontWeight="bold">■</tspan> Loss
+                </tspan>
+              </text>
               <Bar
                 dataKey="profit"
                 name=""
@@ -236,38 +218,40 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
         </ChartContainer>
       </div>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Calendar className="h-4 w-4" /> Monthly Statistics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-3 bg-muted/30 rounded-lg">
-              <div className="text-sm text-muted-foreground">Average Monthly P&L</div>
-              <div className="text-2xl font-semibold">
-                ${(monthlyData.reduce((sum, month) => sum + month.profit, 0) / monthlyData.length).toFixed(2)}
+      <div className="mt-12">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Calendar className="h-4 w-4" /> Monthly Statistics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <div className="text-sm text-muted-foreground">Average Monthly P&L</div>
+                <div className="text-2xl font-semibold">
+                  ${(monthlyData.reduce((sum, month) => sum + month.profit, 0) / monthlyData.length).toFixed(2)}
+                </div>
+              </div>
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <div className="text-sm text-muted-foreground">Profitable Months</div>
+                <div className="text-2xl font-semibold">
+                  {monthlyData.filter(m => m.profit > 0).length} / {monthlyData.length}
+                  <span className="text-sm text-muted-foreground ml-1">
+                    ({((monthlyData.filter(m => m.profit > 0).length / monthlyData.length) * 100).toFixed(0)}%)
+                  </span>
+                </div>
+              </div>
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <div className="text-sm text-muted-foreground">Highest Monthly Volume</div>
+                <div className="text-2xl font-semibold">
+                  {Math.max(...monthlyData.map(m => m.trades))} trades
+                </div>
               </div>
             </div>
-            <div className="p-3 bg-muted/30 rounded-lg">
-              <div className="text-sm text-muted-foreground">Profitable Months</div>
-              <div className="text-2xl font-semibold">
-                {monthlyData.filter(m => m.profit > 0).length} / {monthlyData.length}
-                <span className="text-sm text-muted-foreground ml-1">
-                  ({((monthlyData.filter(m => m.profit > 0).length / monthlyData.length) * 100).toFixed(0)}%)
-                </span>
-              </div>
-            </div>
-            <div className="p-3 bg-muted/30 rounded-lg">
-              <div className="text-sm text-muted-foreground">Highest Monthly Volume</div>
-              <div className="text-2xl font-semibold">
-                {Math.max(...monthlyData.map(m => m.trades))} trades
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

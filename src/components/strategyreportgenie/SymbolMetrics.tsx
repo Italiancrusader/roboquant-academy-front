@@ -187,22 +187,36 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
       </div>
       
       {/* Performance by Symbol Bar Chart */}
-      <Card className="mb-8">
+      <Card className="mb-16">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <Layers className="h-5 w-5" /> Symbol Performance Comparison
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[450px] pb-8">
+        <CardContent className="h-[450px] pb-12 relative">
+          {/* Custom legend at the top */}
+          <div className="absolute top-0 right-5 z-10 bg-background/80 py-2 px-4 rounded-md border border-border/40 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--success))" }}></div>
+                <span className="text-xs text-muted-foreground">P&L</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--accent))" }}></div>
+                <span className="text-xs text-muted-foreground">Win Rate</span>
+              </div>
+            </div>
+          </div>
+          
           <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
-                data={symbolData.slice(0, 10).map(item => ({
+                data={symbolData.slice(0, 8).map(item => ({
                   symbol: item.symbol,
                   profit: item.totalProfit,
                   winRate: item.winRate
                 }))}
-                margin={{ top: 20, right: 50, left: 50, bottom: 50 }}
+                margin={{ top: 30, right: 60, left: 60, bottom: 50 }}
                 barSize={40}
               >
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
@@ -246,18 +260,13 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
                   wrapperStyle={{ zIndex: 1000 }}
                   cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
                 />
-                <Legend 
-                  wrapperStyle={{ paddingTop: 20 }}
-                  verticalAlign="bottom"
-                  height={36}
-                />
                 <Bar 
                   yAxisId="left" 
                   dataKey="profit" 
                   name="P&L" 
                   fill="hsl(var(--primary))" 
                 >
-                  {symbolData.slice(0, 10).map((_, index) => (
+                  {symbolData.slice(0, 8).map((_, index) => (
                     <Cell 
                       key={`cell-${index}`} 
                       fill={symbolData[index].totalProfit >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} 

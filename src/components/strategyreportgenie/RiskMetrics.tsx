@@ -130,7 +130,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
     <div>
       <h2 className="text-xl font-semibold mb-4">Risk & Performance Metrics</h2>
       
-      <div className="grid grid-cols-1 gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-8 mb-10">
         {/* Risk Reward Stats */}
         <Card>
           <CardHeader className="pb-2">
@@ -205,7 +205,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
         </Card>
 
         {/* Profit Distribution Chart */}
-        <Card className="mb-8">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <BarChart2 className="h-5 w-5" /> Profit Distribution
@@ -214,31 +214,34 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
               Distribution of trade results
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-0 pb-8">
-            <div className="h-[350px]">
+          <CardContent className="pt-0 pb-10">
+            <div className="h-[380px] relative">
+              {/* Custom legend at the top */}
+              <div className="absolute top-2 right-5 z-10 bg-background/80 py-1 px-3 rounded-md border border-border/40 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm bg-primary"></div>
+                  <span className="text-xs text-muted-foreground">Trades</span>
+                </div>
+              </div>
+              
               <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={riskMetrics.profitBuckets}
-                    margin={{ top: 10, right: 10, left: 10, bottom: 50 }}
+                    margin={{ top: 20, right: 10, left: 10, bottom: 70 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                     <XAxis 
                       dataKey="range" 
                       tick={{ fontSize: 11 }} 
-                      height={60}
-                      angle={-30}
+                      height={70}
+                      angle={-40}
                       textAnchor="end"
                     />
                     <YAxis />
                     <Tooltip 
                       wrapperStyle={{ zIndex: 1000 }}
                       cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
-                    />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: 20 }}
-                      verticalAlign="bottom"
-                      height={36}
                     />
                     <Bar dataKey="count" name="Trades" fill="hsl(var(--primary))" />
                   </BarChart>
@@ -249,47 +252,50 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
         </Card>
       </div>
 
-      <Card className="mb-8">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" /> Risk Assessment
-          </CardTitle>
-          <CardDescription>
-            Trading system risk evaluation
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 text-sm">
-            <p>
-              <strong>Risk Reward Ratio: </strong> 
-              Your strategy {riskMetrics.riskRewardRatio >= 1.5 ? 
-                'has an excellent risk-reward profile' : 
-                riskMetrics.riskRewardRatio >= 1 ? 
-                  'has a good risk-reward balance' : 
-                  'needs improvement in its risk-reward profile'}. The ratio of {riskMetrics.riskRewardRatio.toFixed(2)} means 
-              {riskMetrics.riskRewardRatio >= 1 ? 
-                ' your average winner is larger than your average loser, which is positive.' : 
-                ' your average loser is larger than your average winner, which is concerning.'}
-            </p>
-            <p>
-              <strong>Win Rate Analysis: </strong>
-              With a {riskMetrics.winRate.toFixed(1)}% win rate across {riskMetrics.totalTrades} trades,
-              your strategy {riskMetrics.winRate >= 60 ? 
-                'shows excellent performance' : 
-                riskMetrics.winRate >= 50 ? 
-                  'is performing above average' : 
-                  'is underperforming and needs optimization'}.
-            </p>
-            <p>
-              <strong>Consecutive Losses: </strong>
-              The longest losing streak of {riskMetrics.maxConsecutiveLosses} trades 
-              {riskMetrics.maxConsecutiveLosses >= 6 ? 
-                ' indicates a significant drawdown risk. Consider adding stronger risk management rules.' : 
-                ' is within acceptable limits for most risk management frameworks.'}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Risk Assessment Card - completely separate with big margin */}
+      <div className="mt-12 mb-10">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" /> Risk Assessment
+            </CardTitle>
+            <CardDescription>
+              Trading system risk evaluation
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 text-sm">
+              <p>
+                <strong>Risk Reward Ratio: </strong> 
+                Your strategy {riskMetrics.riskRewardRatio >= 1.5 ? 
+                  'has an excellent risk-reward profile' : 
+                  riskMetrics.riskRewardRatio >= 1 ? 
+                    'has a good risk-reward balance' : 
+                    'needs improvement in its risk-reward profile'}. The ratio of {riskMetrics.riskRewardRatio.toFixed(2)} means 
+                {riskMetrics.riskRewardRatio >= 1 ? 
+                  ' your average winner is larger than your average loser, which is positive.' : 
+                  ' your average loser is larger than your average winner, which is concerning.'}
+              </p>
+              <p>
+                <strong>Win Rate Analysis: </strong>
+                With a {riskMetrics.winRate.toFixed(1)}% win rate across {riskMetrics.totalTrades} trades,
+                your strategy {riskMetrics.winRate >= 60 ? 
+                  'shows excellent performance' : 
+                  riskMetrics.winRate >= 50 ? 
+                    'is performing above average' : 
+                    'is underperforming and needs optimization'}.
+              </p>
+              <p>
+                <strong>Consecutive Losses: </strong>
+                The longest losing streak of {riskMetrics.maxConsecutiveLosses} trades 
+                {riskMetrics.maxConsecutiveLosses >= 6 ? 
+                  ' indicates a significant drawdown risk. Consider adding stronger risk management rules.' : 
+                  ' is within acceptable limits for most risk management frameworks.'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

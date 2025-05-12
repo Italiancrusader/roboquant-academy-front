@@ -149,24 +149,35 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-20">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Trade Distribution</h2>
       </div>
 
-      <Card className="overflow-visible mb-10">
+      <Card className="overflow-visible mb-20">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Hourly Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent className="pb-8">
+        <CardContent className="pb-10 relative">
           <div className="h-[450px]">
+            {/* Custom legend at the top */}
+            <div className="absolute top-0 right-5 z-10 bg-background/80 py-2 px-4 rounded-md border border-border/40 shadow-sm">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-sm" 
+                  style={{ backgroundColor: 'hsl(var(--success))' }}
+                ></div>
+                <span className="text-xs text-muted-foreground">Hourly Win Rate</span>
+              </div>
+            </div>
+            
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={hourlyWinRateData}
-                  margin={calculateMargin(hourlyWinRateData.length)}
+                  margin={{ top: 30, right: 30, left: 30, bottom: 40 }}
                   barGap={0}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
@@ -241,7 +252,6 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                     }}
                     wrapperStyle={{ zIndex: 100 }}
                   />
-                  <Legend />
                   <Bar
                     dataKey="winRate"
                     name="Hourly Win Rate"
@@ -265,19 +275,30 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
         </CardContent>
       </Card>
 
-      <Card className="overflow-visible mb-10">
+      <Card className="overflow-visible mb-20">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Weekday Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent className="pb-8">
+        <CardContent className="pb-10 relative">
           <div className="h-[450px]">
+            {/* Custom legend at the top */}
+            <div className="absolute top-0 right-5 z-10 bg-background/80 py-2 px-4 rounded-md border border-border/40 shadow-sm">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-sm" 
+                  style={{ backgroundColor: 'hsl(var(--success))' }}
+                ></div>
+                <span className="text-xs text-muted-foreground">Weekday Win Rate</span>
+              </div>
+            </div>
+            
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={weekdayWinRateData}
-                  margin={calculateMargin(weekdayWinRateData.length)}
+                  margin={{ top: 30, right: 30, left: 30, bottom: 40 }}
                   barGap={0}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
@@ -351,7 +372,6 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                     }}
                     wrapperStyle={{ zIndex: 100 }}
                   />
-                  <Legend />
                   <Bar
                     dataKey="winRate"
                     name="Weekday Win Rate"
