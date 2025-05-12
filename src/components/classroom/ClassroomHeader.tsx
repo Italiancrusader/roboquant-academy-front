@@ -16,11 +16,6 @@ const ClassroomHeader: React.FC<ClassroomHeaderProps> = ({
 }) => {
   const tabs = [
     { id: 'classroom', label: 'Classroom' },
-    { id: 'community', label: 'Community' },
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'members', label: 'Members' },
-    { id: 'leaderboards', label: 'Leaderboards' },
-    { id: 'about', label: 'About' },
   ];
 
   return (
