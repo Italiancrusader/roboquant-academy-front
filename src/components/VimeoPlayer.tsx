@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader, AlertCircle } from 'lucide-react';
+import { Loader, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 interface VimeoPlayerProps {
   videoUrl?: string;
@@ -33,6 +34,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerInstanceRef = useRef<any>(null);
   const { user } = useAuth();
@@ -73,6 +75,12 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
   const getVimeoHash = (): string | null => {
     if (!videoUrl) return null;
     
+    // Try to extract hash from URLs like vimeo.com/123456789/abcdefgh
+    const privateHashMatch = videoUrl.match(/\/(\d+)\/([a-zA-Z0-9]+)/);
+    if (privateHashMatch && privateHashMatch[2]) {
+      return privateHashMatch[2];
+    }
+    
     // Try to match the hash pattern in the URL
     const matchHash = videoUrl.match(/\/([a-zA-Z0-9]+)(?:[?#]|$)/);
     if (matchHash && matchHash[1] && matchHash[1] !== vimeoId) {
@@ -89,6 +97,12 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
   };
   
   const vimeoHash = getVimeoHash();
+
+  const handleRetry = () => {
+    setError(null);
+    setIsLoading(true);
+    setRetryCount(prev => prev + 1);
+  };
 
   // Set up event listeners for the Vimeo player
   useEffect(() => {
@@ -135,6 +149,18 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     
     function initializePlayer() {
       try {
+        if (!iframeRef.current) return;
+
+        // Clean up previous player instance if it exists
+        if (playerInstanceRef.current) {
+          try {
+            playerInstanceRef.current.destroy();
+          } catch (err) {
+            console.log("Error destroying previous player:", err);
+          }
+          playerInstanceRef.current = null;
+        }
+
         // @ts-ignore - Vimeo is loaded via script
         const player = new window.Vimeo.Player(iframeRef.current);
         playerInstanceRef.current = player;
@@ -174,9 +200,10 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
           }
           setIsLoading(false);
         }).catch((err: any) => {
+          clearTimeout(initTimeout);
+          
           // If we can't get duration, still mark as loaded but log the error
           console.error("Error getting video duration:", err);
-          setIsLoading(false);
           
           // For private videos or videos that don't exist, show an error
           if (err && (err.name === "NotFoundError" || err.name === "PrivacyError")) {
@@ -184,6 +211,8 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
             setError(errorMsg);
             if (onError) onError(errorMsg);
           }
+          
+          setIsLoading(false);
         });
         
         // Set up time update polling if needed
@@ -233,7 +262,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         }
       }
     };
-  }, [vimeoId, onComplete, onTimeUpdate, onDurationChange, onError, isLoading, error]);
+  }, [vimeoId, onComplete, onTimeUpdate, onDurationChange, onError, isLoading, error, retryCount]);
   
   // Handle iframe load error
   const handleIframeError = () => {
@@ -290,12 +319,22 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       {error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white p-4 z-10">
           <AlertCircle className="h-10 w-10 text-red-400 mb-2" />
-          <p className="text-center">Unable to load video</p>
-          <p className="text-sm text-gray-400 mt-1">{error}</p>
-          {isAdmin && (
-            <div className="mt-4 text-xs bg-amber-800/50 p-2 rounded max-w-md">
-              Admin note: This may be due to privacy restrictions or an invalid video URL. 
-              Try checking the video URL in the Vimeo dashboard.
+          <p className="text-center font-medium text-lg">Unable to load video</p>
+          <p className="text-sm text-gray-400 mt-1 max-w-md text-center">{error}</p>
+          
+          <Button 
+            variant="secondary" 
+            className="mt-4 flex items-center gap-2" 
+            onClick={handleRetry}
+          >
+            <RefreshCw className="h-4 w-4" />
+            Try again
+          </Button>
+          
+          {isAdmin && vimeoId && (
+            <div className="mt-4 text-xs bg-amber-800/50 p-3 rounded max-w-md">
+              <strong>Admin note:</strong> This may be due to privacy restrictions or an invalid video URL. 
+              Video ID: {vimeoId}{vimeoHash ? `/${vimeoHash}` : ''}
             </div>
           )}
         </div>

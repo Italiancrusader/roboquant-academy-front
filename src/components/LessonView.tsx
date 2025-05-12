@@ -6,13 +6,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Book, AlertCircle } from 'lucide-react';
+import { Book, AlertCircle, RefreshCw } from 'lucide-react';
 import { useLesson } from '@/hooks/useLesson';
 import LessonContent from '@/components/course/LessonContent';
 import LessonNavigation from '@/components/course/LessonNavigation';
 import LessonTabs from '@/components/course/LessonTabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { toast } from '@/components/ui/use-toast';
 
 interface Lesson {
   id: string;
@@ -33,6 +34,12 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
   const [videoError, setVideoError] = useState<string | null>(null);
   
   const handleLessonComplete = () => {
+    // Show completion toast
+    toast({
+      title: "Lesson completed!",
+      description: "Moving to the next lesson...",
+    });
+    
     // Navigate to next lesson if available
     if (nextLesson) {
       window.location.href = `/courses/${courseId}/lessons/${nextLesson.id}`;
@@ -41,6 +48,10 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
   
   const handleVideoError = (error: string) => {
     setVideoError(error);
+  };
+
+  const handleRefreshPage = () => {
+    window.location.reload();
   };
 
   if (isLoading) {
@@ -74,6 +85,7 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
         title={lesson.title} 
         description={lesson.description}
         videoUrl={lesson.video_url} 
+        isCompleted={false}
       />
 
       {lesson.video_url ? (
@@ -84,8 +96,9 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
           onComplete={isAdmin ? undefined : handleLessonComplete}
         />
       ) : (
-        <Alert variant="warning">
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant="warning" className="mb-4">
+          <AlertCircle className="h-4 w-4 mr-2" />
+          <AlertTitle>No Video Available</AlertTitle>
           <AlertDescription>
             This lesson doesn't include a video.
           </AlertDescription>
@@ -94,10 +107,26 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
       
       {videoError && (
         <Alert variant="destructive" className="mt-2">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {videoError}
-          </AlertDescription>
+          <div className="flex justify-between items-start w-full">
+            <div className="flex-1">
+              <AlertTitle className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                Video Error
+              </AlertTitle>
+              <AlertDescription>
+                {videoError}
+              </AlertDescription>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefreshPage} 
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className="h-3 w-3" />
+              Refresh
+            </Button>
+          </div>
         </Alert>
       )}
       
