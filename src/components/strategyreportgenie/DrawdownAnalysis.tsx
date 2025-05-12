@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   AreaChart, 
@@ -211,7 +210,7 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades, initialBala
                             <span className="text-blue-500">Equity:</span> ${payload[0].value?.toLocaleString()}
                           </p>
                           <p className="text-sm">
-                            <span className="text-red-500">Drawdown:</span> ${payload[1].value?.toLocaleString()} ({payload[2].value?.toFixed(2)}%)
+                            <span className="text-red-500">Drawdown:</span> ${payload[1].value?.toLocaleString()} ({typeof payload[2].value === 'number' ? payload[2].value.toFixed(2) : '0.00'}%)
                           </p>
                         </div>
                       );
@@ -321,7 +320,7 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades, initialBala
             
             <div className="mt-4">
               <p className="text-sm text-muted-foreground mb-2">Top Drawdowns</p>
-              <div className="max-h-[200px] overflow-y-auto border rounded-lg">
+              <div className="border rounded-lg">
                 <table className="w-full">
                   <thead className="bg-muted/30 sticky top-0">
                     <tr>
