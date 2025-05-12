@@ -22,6 +22,10 @@ const SurveyFunnel = () => {
       // Determine if the user qualifies for a call based on the survey answers
       const qualifiesForCall = checkQualification(combinedData);
       
+      console.log("Survey data:", combinedData);
+      console.log("Qualifies for call:", qualifiesForCall);
+      console.log("Trading capital:", combinedData.tradingCapital);
+      
       // Submit lead data regardless of qualification
       await submitLead({
         name: combinedData.fullName,
@@ -56,8 +60,10 @@ const SurveyFunnel = () => {
 
   // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
   const checkQualification = (data: Record<string, any>): boolean => {
+    console.log("Checking qualification with trading capital:", data.tradingCapital);
     // Only check for minimum capital requirement of $5,000
     const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
+    console.log("Has minimum capital:", hasMinimumCapital);
     
     // Return true if minimum capital requirement is met
     return hasMinimumCapital;

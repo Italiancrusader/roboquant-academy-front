@@ -35,6 +35,10 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
       // Determine if the user qualifies for a call based on the survey answers
       const qualifiesForCall = checkQualification(combinedData);
       
+      console.log("Survey dialog data:", combinedData);
+      console.log("Dialog qualifies for call:", qualifiesForCall);
+      console.log("Dialog trading capital:", combinedData.tradingCapital);
+      
       // Submit lead data regardless of qualification
       await submitLead({
         name: combinedData.fullName,
@@ -72,8 +76,10 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
 
   // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
   const checkQualification = (data: Record<string, any>): boolean => {
+    console.log("Dialog checking qualification with trading capital:", data.tradingCapital);
     // Only check for minimum capital requirement of $5,000
     const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
+    console.log("Dialog has minimum capital:", hasMinimumCapital);
     
     // Return true if minimum capital requirement is met
     return hasMinimumCapital;

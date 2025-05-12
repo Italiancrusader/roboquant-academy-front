@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -34,8 +33,10 @@ const VSL = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  // Check if user is qualified from URL parameter
+  // Check if user is qualified from URL parameter, explicitly compare as string
   const isQualified = searchParams.get('qualified') === 'true';
+  console.log("VSL Page - Qualified parameter:", searchParams.get('qualified'));
+  console.log("VSL Page - isQualified:", isQualified);
   
   // If user is qualified, show them as having "watched" the video
   useEffect(() => {
