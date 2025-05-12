@@ -151,20 +151,20 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
       <h2 className="text-xl font-semibold mb-4">Drawdown Analysis</h2>
       
       {/* Drawdown Visualization */}
-      <Card className="mb-6">
+      <Card className="mb-10">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <TrendingDown className="h-5 w-5" /> Drawdown Visualization
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[400px] pb-6">
+        <CardContent className="h-[400px] pb-10">
           <ChartContainer config={{ 
             drawdown: { color: "hsl(var(--destructive))" }
           }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={equityCurve}
-                margin={{ top: 10, right: 30, left: 20, bottom: 30 }}
+                margin={{ top: 10, right: 30, left: 20, bottom: 50 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
@@ -185,8 +185,14 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
                 <Tooltip 
                   formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Drawdown']}
                   labelFormatter={(label) => label instanceof Date ? label.toLocaleDateString() : ''}
+                  wrapperStyle={{ zIndex: 1000 }}
+                  cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
                 />
-                <Legend wrapperStyle={{ paddingTop: 10 }} />
+                <Legend 
+                  wrapperStyle={{ paddingTop: 20 }}
+                  verticalAlign="bottom"
+                  height={30}
+                />
                 <Area 
                   type="monotone" 
                   dataKey="drawdownPct" 
@@ -202,7 +208,7 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
       
       {/* Max Drawdown Details */}
       {maxDrawdown && (
-        <Card className="mb-6">
+        <Card className="mb-10">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <AlertCircle className="h-5 w-5" /> Maximum Drawdown Analysis

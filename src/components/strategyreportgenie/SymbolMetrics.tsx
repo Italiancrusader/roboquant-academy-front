@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -188,34 +187,42 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
       </div>
       
       {/* Performance by Symbol Bar Chart */}
-      <Card className="mb-6">
+      <Card className="mb-8">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <Layers className="h-5 w-5" /> Symbol Performance Comparison
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[350px]">
+        <CardContent className="h-[450px] pb-8">
           <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
-                data={symbolData.map(item => ({
+                data={symbolData.slice(0, 10).map(item => ({
                   symbol: item.symbol,
                   profit: item.totalProfit,
                   winRate: item.winRate
                 }))}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 20, right: 50, left: 50, bottom: 50 }}
+                barSize={40}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="symbol" />
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis 
+                  dataKey="symbol" 
+                  height={60}
+                  tick={{ fontSize: 12 }}
+                  interval={0}
+                />
                 <YAxis 
                   yAxisId="left" 
                   label={{ 
                     value: 'Profit/Loss', 
                     angle: -90, 
                     position: 'insideLeft',
+                    offset: 10,
                     style: { fill: 'hsl(var(--muted-foreground))' }
                   }} 
                   tickFormatter={(value) => `$${value}`}
+                  width={80}
                 />
                 <YAxis 
                   yAxisId="right" 
@@ -225,19 +232,32 @@ const SymbolMetrics: React.FC<SymbolMetricsProps> = ({ trades }) => {
                     value: 'Win Rate %', 
                     angle: -90, 
                     position: 'insideRight',
+                    offset: 10,
                     style: { fill: 'hsl(var(--muted-foreground))' }
                   }} 
                   tickFormatter={(value) => `${value}%`}
+                  width={80}
                 />
-                <Tooltip />
-                <Legend />
+                <Tooltip 
+                  formatter={(value, name) => [
+                    name === "P&L" ? `$${Number(value).toFixed(2)}` : `${Number(value).toFixed(1)}%`, 
+                    name
+                  ]}
+                  wrapperStyle={{ zIndex: 1000 }}
+                  cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+                />
+                <Legend 
+                  wrapperStyle={{ paddingTop: 20 }}
+                  verticalAlign="bottom"
+                  height={36}
+                />
                 <Bar 
                   yAxisId="left" 
                   dataKey="profit" 
                   name="P&L" 
                   fill="hsl(var(--primary))" 
                 >
-                  {symbolData.map((_, index) => (
+                  {symbolData.slice(0, 10).map((_, index) => (
                     <Cell 
                       key={`cell-${index}`} 
                       fill={symbolData[index].totalProfit >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} 

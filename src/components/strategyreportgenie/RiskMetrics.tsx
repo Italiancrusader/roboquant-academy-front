@@ -205,7 +205,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
         </Card>
 
         {/* Profit Distribution Chart */}
-        <Card>
+        <Card className="mb-8">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <BarChart2 className="h-5 w-5" /> Profit Distribution
@@ -214,19 +214,32 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
               Distribution of trade results
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-0 pb-6">
+          <CardContent className="pt-0 pb-8">
             <div className="h-[350px]">
               <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={riskMetrics.profitBuckets}
-                    margin={{ top: 10, right: 10, left: 10, bottom: 30 }}
+                    margin={{ top: 10, right: 10, left: 10, bottom: 50 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="range" tick={{ fontSize: 11 }} height={50} />
+                    <XAxis 
+                      dataKey="range" 
+                      tick={{ fontSize: 11 }} 
+                      height={60}
+                      angle={-30}
+                      textAnchor="end"
+                    />
                     <YAxis />
-                    <Tooltip />
-                    <Legend wrapperStyle={{ paddingTop: 10 }} />
+                    <Tooltip 
+                      wrapperStyle={{ zIndex: 1000 }}
+                      cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+                    />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: 20 }}
+                      verticalAlign="bottom"
+                      height={36}
+                    />
                     <Bar dataKey="count" name="Trades" fill="hsl(var(--primary))" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -236,7 +249,7 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
         </Card>
       </div>
 
-      <Card className="mb-4">
+      <Card className="mb-8">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" /> Risk Assessment

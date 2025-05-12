@@ -121,14 +121,14 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
         </div>
       </div>
       
-      <div className="h-[350px] md:h-[450px] w-full">
+      <div className="h-[350px] md:h-[450px] w-full mb-8">
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyData}
               margin={isMobile ? 
-                { top: 20, right: 10, left: 0, bottom: 120 } : 
-                { top: 20, right: 20, left: 0, bottom: 130 }
+                { top: 20, right: 10, left: 0, bottom: 60 } : 
+                { top: 20, right: 20, left: 0, bottom: 70 }
               }
               barGap={0}
               maxBarSize={isMobile ? 30 : 50}
@@ -197,16 +197,22 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
               />
               <Legend 
                 verticalAlign="bottom"
-                height={60}
-                content={() => (
-                  <div className="flex justify-center items-center mt-0 pt-10">
-                    <div className="flex items-center gap-2 mr-4">
-                      <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "#9b87f5", opacity: 0.85 }}></div>
-                      <span className="text-xs text-muted-foreground">Profit</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "#ea384c", opacity: 0.85 }}></div>
-                      <span className="text-xs text-muted-foreground">Loss</span>
+                height={36}
+                content={({ payload }) => (
+                  <div className="flex justify-center items-center" style={{ position: 'absolute', bottom: 0, width: '100%' }}>
+                    <div className="bg-background/95 px-4 py-2 rounded-md flex items-center gap-6 shadow-sm border border-border/40">
+                      {payload?.map((entry, index) => (
+                        <div key={`legend-${index}`} className="flex items-center gap-2">
+                          <div 
+                            className="w-4 h-4 rounded-sm" 
+                            style={{ 
+                              backgroundColor: entry.color, 
+                              opacity: 0.85 
+                            }}
+                          ></div>
+                          <span className="text-xs text-muted-foreground">{entry.value}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

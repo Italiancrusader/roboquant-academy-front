@@ -141,27 +141,27 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
 
   // Calculate appropriate margin based on data length
   const calculateMargin = (dataLength: number) => {
-    const baseMargin = { top: 20, right: 30, left: 30, bottom: 40 };
+    const baseMargin = { top: 20, right: 30, left: 30, bottom: 60 };
     if (dataLength > 15) {
-      return { ...baseMargin, bottom: 60 }; // More space for x-axis labels
+      return { ...baseMargin, bottom: 80 }; // More space for x-axis labels
     }
     return baseMargin;
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Trade Distribution</h2>
       </div>
 
-      <Card className="overflow-visible">
+      <Card className="overflow-visible mb-10">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Hourly Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-[350px] min-h-[300px] max-h-[450px]">
+        <CardContent className="pb-8">
+          <div className="h-[450px]">
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -169,7 +169,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                   margin={calculateMargin(hourlyWinRateData.length)}
                   barGap={0}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis
                     dataKey="hour"
                     stroke="hsl(var(--muted-foreground))"
@@ -265,14 +265,14 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
         </CardContent>
       </Card>
 
-      <Card className="overflow-visible">
+      <Card className="overflow-visible mb-10">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Weekday Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-[350px] min-h-[300px] max-h-[450px]">
+        <CardContent className="pb-8">
+          <div className="h-[450px]">
             <ChartContainer config={{}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -280,7 +280,7 @@ const TradeDistribution: React.FC<TradeDistributionProps> = ({ trades }) => {
                   margin={calculateMargin(weekdayWinRateData.length)}
                   barGap={0}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis
                     dataKey="day"
                     stroke="hsl(var(--muted-foreground))"
