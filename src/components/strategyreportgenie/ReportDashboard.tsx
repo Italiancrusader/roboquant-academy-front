@@ -20,7 +20,12 @@ import {
   Target,
   Calculator,
   Globe,
-  RefreshCw
+  RefreshCw,
+  Activity,
+  ShieldAlert,
+  TrendingUp,
+  Timer,
+  Percent
 } from 'lucide-react';
 
 // These components will need to be moved/copied from mt5reportgenie to strategyreportgenie folder
@@ -30,30 +35,25 @@ import RiskMetrics from './RiskMetrics';
 import MonthlyReturns from './MonthlyReturns';
 import SymbolMetrics from './SymbolMetrics';
 import CsvViewer from './CsvViewer';
-import TradeDistribution from './TradeDistribution';
 import PerformanceHeatmap from './PerformanceHeatmap';
 import DrawdownAnalysis from './DrawdownAnalysis';
-import CorrelationAnalysis from './CorrelationAnalysis';
+import MonteCarloSimulation from './MonteCarloSimulation';
 import { toast } from '@/components/ui/use-toast';
+
 
 interface ReportDashboardProps {
   files: FileType[];
   onClearFiles: () => void;
-  onGeneratePDF: () => void;
-  onMonteCarloSimulation: () => void;
-  onOptimizeStrategy: () => void;
 }
 
 const ReportDashboard: React.FC<ReportDashboardProps> = ({ 
   files, 
-  onClearFiles, 
-  onGeneratePDF, 
-  onMonteCarloSimulation, 
-  onOptimizeStrategy 
+  onClearFiles 
 }) => {
   const [activeFileId, setActiveFileId] = useState<string>(files[0]?.id);
   const [initialBalance, setInitialBalance] = useState<string>("10000.00");
   const [calculatedTrades, setCalculatedTrades] = useState<any[]>([]);
+  const [showMonteCarloSimulation, setShowMonteCarloSimulation] = useState<boolean>(false);
   
   const activeFile = files.find(file => file.id === activeFileId);
   const trades = calculatedTrades.length > 0 ? calculatedTrades : (activeFile?.parsedData?.trades || []);
@@ -245,6 +245,236 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
     };
   }, [trades]);
 
+  // Add this function to calculate key metrics from trades
+  const calculateOverviewMetrics = (trades) => {
+    // Filter valid completed trades
+    const completedTrades = trades.filter(t => 
+      t.profit !== undefined && 
+      t.direction === 'out' && 
+      t.type !== 'balance' && 
+      t.type !== ''
+    );
+    
+    // Calculate key metrics
+    const profitableTrades = completedTrades.filter(t => t.profit > 0);
+    const lossTrades = completedTrades.filter(t => t.profit < 0);
+    
+    const totalProfit = profitableTrades.reduce((sum, t) => sum + (t.profit || 0), 0);
+    const totalLoss = Math.abs(lossTrades.reduce((sum, t) => sum + (t.profit || 0), 0));
+    
+    // Find the first and last trade dates
+    const tradeDates = completedTrades
+      .filter(t => t.openTime instanceof Date)
+      .map(t => t.openTime.getTime());
+    
+    const firstTradeDate = tradeDates.length ? new Date(Math.min(...tradeDates)) : new Date();
+    const lastTradeDate = tradeDates.length ? new Date(Math.max(...tradeDates)) : new Date();
+    
+    // Calculate trading days
+    const tradingDays = Math.ceil((lastTradeDate.getTime() - firstTradeDate.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+    
+    return {
+      totalTrades: completedTrades.length,
+      winRate: completedTrades.length ? (profitableTrades.length / completedTrades.length) * 100 : 0,
+      profitFactor: totalLoss > 0 ? totalProfit / totalLoss : totalProfit > 0 ? Infinity : 0,
+      totalNetProfit: totalProfit - totalLoss,
+      avgTradeProfit: completedTrades.length ? (totalProfit - totalLoss) / completedTrades.length : 0,
+      tradesPerDay: tradingDays > 0 ? completedTrades.length / tradingDays : 0,
+      avgWin: profitableTrades.length ? totalProfit / profitableTrades.length : 0,
+      avgLoss: lossTrades.length ? totalLoss / lossTrades.length : 0,
+      tradingDays,
+      firstTradeDate,
+      lastTradeDate
+    };
+  };
+
+  // Calculate overview metrics
+  const overviewMetrics = calculateOverviewMetrics(trades);
+  
+  // Format currency
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  // Function to handle Monte Carlo simulation button click
+  const handleMonteCarloClick = () => {
+    setShowMonteCarloSimulation(true);
+  };
+
+  // Function to close Monte Carlo simulation modal
+  const handleCloseMonteCarloSimulation = () => {
+    setShowMonteCarloSimulation(false);
+  };
+
+  // Function to handle download report button click
+  const handleDownloadReport = () => {
+    try {
+      // Get active file name for the report title
+      const strategyName = activeFile?.name || 'Trading Strategy';
+      
+      // Extract equityCurve data
+      const equityCurve = trades
+        .filter(trade => trade.balance !== undefined && trade.openTime instanceof Date)
+        .sort((a, b) => {
+          // Ensure both dates are valid before comparing
+          if (!(a.openTime instanceof Date)) return -1;
+          if (!(b.openTime instanceof Date)) return 1;
+          return a.openTime.getTime() - b.openTime.getTime();
+        })
+        .map(trade => ({
+          date: trade.openTime,
+          equity: trade.balance || 0,
+          drawdown: trade.drawdown || 0
+        }));
+      
+      // Extract monthly returns data
+      // Group trades by month and calculate returns
+      const tradesByMonth = {};
+      
+      trades.forEach(trade => {
+        if (!trade.openTime || !(trade.openTime instanceof Date) || trade.balance === undefined) return;
+        
+        const date = new Date(trade.openTime);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1; // JavaScript months are 0-indexed
+        
+        const key = `${year}-${month}`;
+        
+        if (!tradesByMonth[key]) {
+          tradesByMonth[key] = {
+            year,
+            month,
+            trades: [],
+            initialBalance: null,
+            finalBalance: null
+          };
+        }
+        
+        tradesByMonth[key].trades.push(trade);
+      });
+      
+      // Calculate returns for each month
+      const monthlyReturns = [];
+      
+      Object.values(tradesByMonth).forEach((monthData: any) => {
+        if (!monthData.trades || monthData.trades.length === 0) return;
+        
+        const sortedTrades = [...monthData.trades].sort(
+          (a, b) => {
+            if (!(a.openTime instanceof Date)) return -1;
+            if (!(b.openTime instanceof Date)) return 1;
+            return a.openTime.getTime() - b.openTime.getTime();
+          }
+        );
+        
+        if (sortedTrades.length > 0) {
+          // Find first and last balance
+          let firstBalance = null;
+          let lastBalance = null;
+          
+          for (const trade of sortedTrades) {
+            if (trade.balance !== undefined) {
+              if (firstBalance === null) firstBalance = trade.balance;
+              lastBalance = trade.balance;
+            }
+          }
+          
+          if (firstBalance !== null && lastBalance !== null && firstBalance > 0) {
+            const monthlyReturn = ((lastBalance - firstBalance) / firstBalance) * 100;
+            
+            monthlyReturns.push({
+              year: monthData.year,
+              month: monthData.month,
+              return: monthlyReturn
+            });
+          }
+        }
+      });
+      
+      // Extract symbol performance data
+      const symbolsMap = {};
+      
+      trades.forEach(trade => {
+        if (!trade.symbol || trade.type === 'balance' || trade.type === '') return;
+        
+        if (!symbolsMap[trade.symbol]) {
+          symbolsMap[trade.symbol] = {
+            symbol: trade.symbol,
+            trades: 0,
+            wins: 0,
+            losses: 0,
+            netProfit: 0,
+            grossProfit: 0,
+            grossLoss: 0
+          };
+        }
+        
+        if (trade.profit !== undefined && trade.direction === 'out') {
+          symbolsMap[trade.symbol].trades++;
+          
+          if (trade.profit > 0) {
+            symbolsMap[trade.symbol].wins++;
+            symbolsMap[trade.symbol].grossProfit += trade.profit;
+          } else if (trade.profit < 0) {
+            symbolsMap[trade.symbol].losses++;
+            symbolsMap[trade.symbol].grossLoss += Math.abs(trade.profit);
+          }
+          
+          symbolsMap[trade.symbol].netProfit += trade.profit;
+        }
+      });
+      
+      const symbolPerformance = Object.values(symbolsMap);
+      
+      // Extract drawdowns data
+      const drawdowns = equityCurve.map(point => ({
+        date: point.date,
+        value: point.drawdown || 0
+      }));
+      
+      // Safeguard against empty data
+      if (equityCurve.length === 0) {
+        toast({
+          title: "No Data Available",
+          description: "There isn't enough trade data to generate a report.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Generate the HTML report
+      const html = generateStrategyReport(
+        strategyName,
+        trades,
+        metrics,
+        equityCurve,
+        monthlyReturns,
+        symbolPerformance,
+        drawdowns
+      );
+      
+      // Download the report
+      downloadHtmlReport(html, `${strategyName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.html`);
+      
+      toast({
+        title: "Report Generated",
+        description: "Your HTML report has been successfully downloaded.",
+      });
+    } catch (error) {
+      console.error("Error generating report:", error);
+      toast({
+        title: "Error Generating Report",
+        description: "There was an error generating your report. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col md:flex-row justify-between items-start">
@@ -312,7 +542,7 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
       <KpiCards metrics={metrics} />
       
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 max-w-full overflow-x-auto">
+        <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 max-w-full overflow-x-auto">
           <TabsTrigger value="overview" className="flex items-center">
             <BarChart2 className="h-4 w-4 mr-2" /> Overview
           </TabsTrigger>
@@ -324,12 +554,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
           </TabsTrigger>
           <TabsTrigger value="instruments" className="flex items-center">
             <Globe className="h-4 w-4 mr-2" /> Instruments
-          </TabsTrigger>
-          <TabsTrigger value="distribution" className="flex items-center">
-            <Layers className="h-4 w-4 mr-2" /> Distribution
-          </TabsTrigger>
-          <TabsTrigger value="correlation" className="flex items-center">
-            <Target className="h-4 w-4 mr-2" /> Correlation
           </TabsTrigger>
           <TabsTrigger value="calendar" className="flex items-center">
             <Calendar className="h-4 w-4 mr-2" /> Calendar
@@ -378,18 +602,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
             </Card>
           </TabsContent>
           
-          <TabsContent value="distribution" className="my-2">
-            <Card className="p-6 overflow-visible">
-              <TradeDistribution trades={trades} />
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="correlation" className="my-2">
-            <Card className="p-6 overflow-visible">
-              <CorrelationAnalysis trades={trades} />
-            </Card>
-          </TabsContent>
-          
           <TabsContent value="calendar" className="my-2">
             <Card className="p-6 overflow-visible">
               <PerformanceHeatmap trades={trades} />
@@ -407,19 +619,23 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
       </Tabs>
       
       <div className="flex justify-end space-x-3 pt-4 mt-6">
-        <Button variant="outline" onClick={onGeneratePDF}>
+        <Button variant="outline" onClick={handleDownloadReport}>
           <Download className="h-4 w-4 mr-2" />
-          Export PDF Report
+          Download Report
         </Button>
-        <Button variant="outline" onClick={onMonteCarloSimulation}>
+        <Button onClick={handleMonteCarloClick}>
           <Calculator className="h-4 w-4 mr-2" />
           Monte Carlo Simulation
         </Button>
-        <Button onClick={onOptimizeStrategy}>
-          <CircleDollarSign className="h-4 w-4 mr-2" />
-          Optimize Strategy
-        </Button>
       </div>
+
+      {/* Monte Carlo Simulation modal */}
+      {showMonteCarloSimulation && (
+        <MonteCarloSimulation 
+          trades={trades} 
+          onClose={handleCloseMonteCarloSimulation} 
+        />
+      )}
     </div>
   );
 };
