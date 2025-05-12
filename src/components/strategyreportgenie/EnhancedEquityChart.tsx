@@ -27,9 +27,9 @@ const EnhancedEquityChart: React.FC<EnhancedEquityChartProps> = ({
   // Process data for charting
   const chartData = equityCurve.map((point, index) => ({
     date: point.date instanceof Date ? point.date.getTime() : new Date(point.date).getTime(),
-    equity: point.equity || 0,
+    equity: point.equity,
     id: `${chartId}-dp-${index}`
-  })).filter(point => point.equity > 0);
+  }));
   
   // Calculate key metrics
   const initialEquity = chartData[0]?.equity || 0;

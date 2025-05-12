@@ -1,3 +1,4 @@
+
 export interface FileType {
   id: string;
   name: string;
@@ -105,16 +106,24 @@ export interface StrategyReport {
 }
 
 export interface StrategyTrade {
-  id: string;
-  timeFlag: Date;
   openTime: Date;
-  type?: string;
-  side?: 'long' | 'short';
-  contracts?: number;
-  price?: number;
+  order: number;
+  dealId?: string;
+  symbol: string;
+  type?: string;      // Added type field (buy, sell, balance)
+  direction?: string; // Added direction field (in, out)
+  side?: 'buy' | 'sell' | 'long' | 'short'; // Keep for backward compatibility
+  volumeLots: number;
+  priceOpen: number;
+  stopLoss: number | null;
+  takeProfit: number | null;
+  timeFlag: Date;
+  state: string;
+  comment: string;
   profit?: number;
   balance?: number;
-  signal?: string;
+  commission?: number; // Added commission field
+  swap?: number;       // Added swap field
 }
 
 export interface StrategySummary {

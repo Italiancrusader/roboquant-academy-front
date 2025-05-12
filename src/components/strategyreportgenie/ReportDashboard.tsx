@@ -343,11 +343,14 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
           <TabsContent value="overview" className="my-2">
             <Card className="p-6">
               <EnhancedEquityChart 
-                equityCurve={trades.map(trade => ({
-                  date: trade.openTime,
-                  equity: trade.balance || 0,
-                  drawdown: trade.drawdown || 0
-                }))}
+                equityCurve={trades
+                  .filter(trade => trade.balance !== undefined)
+                  .sort((a, b) => a.openTime.getTime() - b.openTime.getTime())
+                  .map(trade => ({
+                    date: trade.openTime,
+                    equity: trade.balance || 0,
+                    drawdown: trade.drawdown || 0
+                  }))}
               />
             </Card>
           </TabsContent>
