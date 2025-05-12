@@ -14,7 +14,6 @@ import {
   Calendar, 
   FileText, 
   Trash2, 
-  Download, 
   Circle,
   ChartBar,
   Target,
@@ -311,170 +310,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
     setShowMonteCarloSimulation(false);
   };
 
-  // Function to handle download report button click
-  const handleDownloadReport = () => {
-    try {
-      // Get active file name for the report title
-      const strategyName = activeFile?.name || 'Trading Strategy';
-      
-      // Extract equityCurve data
-      const equityCurve = trades
-        .filter(trade => trade.balance !== undefined && trade.openTime instanceof Date)
-        .sort((a, b) => {
-          // Ensure both dates are valid before comparing
-          if (!(a.openTime instanceof Date)) return -1;
-          if (!(b.openTime instanceof Date)) return 1;
-          return a.openTime.getTime() - b.openTime.getTime();
-        })
-        .map(trade => ({
-          date: trade.openTime,
-          equity: trade.balance || 0,
-          drawdown: trade.drawdown || 0
-        }));
-      
-      // Extract monthly returns data
-      // Group trades by month and calculate returns
-      const tradesByMonth = {};
-      
-      trades.forEach(trade => {
-        if (!trade.openTime || !(trade.openTime instanceof Date) || trade.balance === undefined) return;
-        
-        const date = new Date(trade.openTime);
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1; // JavaScript months are 0-indexed
-        
-        const key = `${year}-${month}`;
-        
-        if (!tradesByMonth[key]) {
-          tradesByMonth[key] = {
-            year,
-            month,
-            trades: [],
-            initialBalance: null,
-            finalBalance: null
-          };
-        }
-        
-        tradesByMonth[key].trades.push(trade);
-      });
-      
-      // Calculate returns for each month
-      const monthlyReturns = [];
-      
-      Object.values(tradesByMonth).forEach((monthData: any) => {
-        if (!monthData.trades || monthData.trades.length === 0) return;
-        
-        const sortedTrades = [...monthData.trades].sort(
-          (a, b) => {
-            if (!(a.openTime instanceof Date)) return -1;
-            if (!(b.openTime instanceof Date)) return 1;
-            return a.openTime.getTime() - b.openTime.getTime();
-          }
-        );
-        
-        if (sortedTrades.length > 0) {
-          // Find first and last balance
-          let firstBalance = null;
-          let lastBalance = null;
-          
-          for (const trade of sortedTrades) {
-            if (trade.balance !== undefined) {
-              if (firstBalance === null) firstBalance = trade.balance;
-              lastBalance = trade.balance;
-            }
-          }
-          
-          if (firstBalance !== null && lastBalance !== null && firstBalance > 0) {
-            const monthlyReturn = ((lastBalance - firstBalance) / firstBalance) * 100;
-            
-            monthlyReturns.push({
-              year: monthData.year,
-              month: monthData.month,
-              return: monthlyReturn
-            });
-          }
-        }
-      });
-      
-      // Extract symbol performance data
-      const symbolsMap = {};
-      
-      trades.forEach(trade => {
-        if (!trade.symbol || trade.type === 'balance' || trade.type === '') return;
-        
-        if (!symbolsMap[trade.symbol]) {
-          symbolsMap[trade.symbol] = {
-            symbol: trade.symbol,
-            trades: 0,
-            wins: 0,
-            losses: 0,
-            netProfit: 0,
-            grossProfit: 0,
-            grossLoss: 0
-          };
-        }
-        
-        if (trade.profit !== undefined && trade.direction === 'out') {
-          symbolsMap[trade.symbol].trades++;
-          
-          if (trade.profit > 0) {
-            symbolsMap[trade.symbol].wins++;
-            symbolsMap[trade.symbol].grossProfit += trade.profit;
-          } else if (trade.profit < 0) {
-            symbolsMap[trade.symbol].losses++;
-            symbolsMap[trade.symbol].grossLoss += Math.abs(trade.profit);
-          }
-          
-          symbolsMap[trade.symbol].netProfit += trade.profit;
-        }
-      });
-      
-      const symbolPerformance = Object.values(symbolsMap);
-      
-      // Extract drawdowns data
-      const drawdowns = equityCurve.map(point => ({
-        date: point.date,
-        value: point.drawdown || 0
-      }));
-      
-      // Safeguard against empty data
-      if (equityCurve.length === 0) {
-        toast({
-          title: "No Data Available",
-          description: "There isn't enough trade data to generate a report.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Generate the HTML report
-      const html = generateStrategyReport(
-        strategyName,
-        trades,
-        metrics,
-        equityCurve,
-        monthlyReturns,
-        symbolPerformance,
-        drawdowns
-      );
-      
-      // Download the report
-      downloadHtmlReport(html, `${strategyName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.html`);
-      
-      toast({
-        title: "Report Generated",
-        description: "Your HTML report has been successfully downloaded.",
-      });
-    } catch (error) {
-      console.error("Error generating report:", error);
-      toast({
-        title: "Error Generating Report",
-        description: "There was an error generating your report. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col md:flex-row justify-between items-start">
@@ -619,10 +454,6 @@ const ReportDashboard: React.FC<ReportDashboardProps> = ({
       </Tabs>
       
       <div className="flex justify-end space-x-3 pt-4 mt-6">
-        <Button variant="outline" onClick={handleDownloadReport}>
-          <Download className="h-4 w-4 mr-2" />
-          Download Report
-        </Button>
         <Button onClick={handleMonteCarloClick}>
           <Calculator className="h-4 w-4 mr-2" />
           Monte Carlo Simulation
