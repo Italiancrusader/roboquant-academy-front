@@ -688,39 +688,32 @@ const parseTradingViewExcel = async (file: File, initialBalance?: number): Promi
       } else if (direction === 'out') {
         // For exit trades, add profit to balance
         runningBalance += profitUsd;
-        
-        if (runningBalance > peakBalance) {
-          peakBalance = runningBalance;
-        }
-        
-        const currentDrawdown = peakBalance - runningBalance;
-        if (currentDrawdown > maxDrawdown) {
-          maxDrawdown = currentDrawdown;
-        }
+      }
+
+      // Update peak balance and drawdown after any balance change
+      if (runningBalance > peakBalance) {
+        peakBalance = runningBalance;
       }
       
-      // Create trade object with the parsed timestamp
+      const currentDrawdown = peakBalance - runningBalance;
+      if (currentDrawdown > maxDrawdown) {
+        maxDrawdown = currentDrawdown;
+      }
+
+      // Create trade object with current balance
       const trade: StrategyTrade = {
-        openTime,
-        order: Number(tradeNum) || i,
-        dealId: `TV-${tradeNum || i}`,
-        symbol: '', 
-        type: type,
-        direction: direction,
-        side: side,
-        volumeLots: contracts,
-        priceOpen: price,
-        stopLoss: null,
-        takeProfit: null,
+        id: String(tradeNum || i),
         timeFlag: openTime,
-        state: signal || '',
-        comment: signal || '',
+        openTime,
+        type: direction,
+        side,
+        contracts,
+        price,
         profit: profitUsd,
-        balance: direction === 'out' ? runningBalance : undefined,
-        commission: 0,
-        swap: 0,
+        balance: runningBalance, // Add current balance to each trade
+        signal: signal || undefined
       };
-      
+
       trades.push(trade);
       DEBUG.log('row', `Added trade ${i} with timestamp ${trade.openTime.toISOString()}`);
     }
