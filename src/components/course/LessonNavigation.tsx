@@ -23,7 +23,7 @@ const LessonNavigation: React.FC<LessonNavigationProps> = ({
   const navigate = useNavigate();
   
   return (
-    <div className="flex justify-between mb-16 mt-8">
+    <div className="flex justify-between mt-8 border-t pt-6">
       {prevLesson ? (
         <Button 
           variant="outline" 

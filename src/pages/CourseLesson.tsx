@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +12,7 @@ import CourseModule from '@/components/course/CourseModule';
 import ClassroomHeader from '@/components/classroom/ClassroomHeader';
 import ClassroomNavigation from '@/components/classroom/ClassroomNavigation';
 import Footer from '@/components/Footer';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Module {
   id: string;
@@ -224,33 +224,30 @@ const CourseLesson = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <div className="container mx-auto px-4 pt-16 flex-grow">
-        {course && (
-          <ClassroomHeader 
-            title={course.title} 
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
-        )}
+      <div className="container mx-auto px-4 pt-16 pb-20 flex-grow">
+        <ClassroomNavigation courseName={course?.title || 'Course'} />
         
-        <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-8 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar with modules and lessons */}
-          <div className="md:col-span-1">
-            <Card className="sticky top-24 overflow-hidden">
-              <CardContent className="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-120px)]">
-                {/* Progress bar */}
-                <div className="space-y-2">
-                  <p className="font-medium text-sm">Progress</p>
-                  <Progress value={progressPercentage} className="h-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {progressPercentage}% complete
-                  </p>
-                </div>
-
-                <Separator />
-                
-                {/* Modules and lessons */}
-                <div className="space-y-6">
+          <div className="lg:col-span-1">
+            <div className="sticky top-24">
+              <div className="mb-4">
+                {course && (
+                  <div className="mb-6">
+                    <h2 className="text-lg font-semibold mb-1">{course.title}</h2>
+                    {/* Progress bar */}
+                    <div className="flex items-center gap-2">
+                      <Progress value={progressPercentage} className="h-2 flex-grow" />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {progressPercentage}%
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <ScrollArea className="h-[calc(100vh-220px)] pr-4">
+                <div className="space-y-4 pb-16">
                   {modules.map((module) => (
                     <CourseModule 
                       key={module.id}
@@ -263,18 +260,25 @@ const CourseLesson = () => {
                     />
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </ScrollArea>
+            </div>
           </div>
           
           {/* Main content */}
-          <div className="md:col-span-2 lg:col-span-3">
+          <div className="lg:col-span-3">
+            {course && (
+              <ClassroomHeader 
+                title={currentLesson?.title || 'Lesson'} 
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+              />
+            )}
+            
             <LessonView currentLesson={currentLesson} />
-            <div className="pb-16"></div> {/* Add padding at the bottom */}
           </div>
         </div>
       </div>
-      <Footer /> {/* Add the footer component */}
+      <Footer />
     </div>
   );
 };

@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -142,11 +141,11 @@ const ClassroomOverview = () => {
                 {[1, 2, 3].map((i) => (
                   <Card key={i} className="animate-pulse">
                     <div className="aspect-video bg-muted"></div>
-                    <CardContent className="p-4">
+                    <div className="p-4">
                       <div className="h-6 bg-muted rounded mb-2 w-3/4"></div>
                       <div className="h-4 bg-muted rounded w-1/2 mb-4"></div>
                       <div className="h-2 bg-muted rounded w-full mb-2"></div>
-                    </CardContent>
+                    </div>
                   </Card>
                 ))}
               </div>
@@ -220,7 +219,7 @@ const ClassroomOverview = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <div className="container mx-auto px-4 pt-16 flex-grow">
+      <div className="container mx-auto px-4 pt-16 pb-20 flex-grow">
         <ClassroomNavigation courseName="My Courses" />
         <ClassroomHeader 
           title="My Courses" 
@@ -228,7 +227,35 @@ const ClassroomOverview = () => {
           onTabChange={handleTabChange}
         />
         
-        {renderTabContent()}
+        <div className="py-4">
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="animate-pulse">
+                  <div className="aspect-video bg-muted"></div>
+                  <div className="p-4">
+                    <div className="h-6 bg-muted rounded mb-2 w-3/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/2 mb-4"></div>
+                    <div className="h-2 bg-muted rounded w-full mb-2"></div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : courses.length > 0 ? (
+            <CourseGrid courses={courses} />
+          ) : (
+            <div className="text-center py-16">
+              <h3 className="text-xl font-medium mb-2">You are not enrolled in any courses</h3>
+              <p className="text-muted-foreground">Browse our course catalog to find something you're interested in.</p>
+              <Link 
+                to="/courses" 
+                className="mt-4 inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md"
+              >
+                Browse Courses
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
       <Footer />
     </div>
