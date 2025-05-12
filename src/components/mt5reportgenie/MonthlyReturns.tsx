@@ -147,7 +147,7 @@ const MonthlyReturns: React.FC<MonthlyReturnsProps> = ({ trades }) => {
         </div>
       </div>
       
-      <div className="h-[500px] w-full">
+      <div className="w-full aspect-[16/9]">
         <ChartContainer config={config}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
