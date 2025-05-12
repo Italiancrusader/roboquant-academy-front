@@ -88,17 +88,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         // Mark as completed if watched more than 90%
         const isCompleted = completionPercentage >= 90;
         
-        // First try to update existing record
+        const progressData = {
+          user_id: user.id,
+          lesson_id: lessonId,
+          course_id: courseId,
+          last_position_seconds: Math.floor(currentTime),
+          completed: isCompleted,
+          last_accessed_at: new Date().toISOString()
+        };
+        
+        // Using upsert with the unique constraint
         const { error } = await supabase
           .from('progress')
-          .upsert({
-            user_id: user.id,
-            lesson_id: lessonId,
-            course_id: courseId,
-            last_position_seconds: Math.floor(currentTime),
-            completed: isCompleted,
-            last_accessed_at: new Date().toISOString()
-          }, {
+          .upsert(progressData, { 
             onConflict: 'user_id,lesson_id,course_id'
           });
 

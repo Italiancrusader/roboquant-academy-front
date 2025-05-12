@@ -97,6 +97,8 @@ export const handleLessonCompleted = async (userId: string, courseId: string, le
         lesson_id: lessonId,
         completed: true,
         last_accessed_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,lesson_id,course_id'
       });
     
     if (updateError) throw updateError;
