@@ -2,7 +2,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SimpleLanding from './pages/SimpleLanding';
 import Index from './pages/Index';
-import StrategyReportGenie from './pages/StrategyReportGenie';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
@@ -22,6 +21,7 @@ import VSL from './pages/VSL';
 import Checkout from './pages/Checkout';
 import ThankYou from './pages/ThankYou';
 import SurveyFunnel from './pages/SurveyFunnel';
+import StrategyReportGeniePage from './pages/StrategyReportGenie';
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -79,7 +79,6 @@ function App() {
                 
                 {/* Keep all other routes for development */}
                 <Route path="/full" element={<Index />} />
-                <Route path="/strategy-report-genie" element={<StrategyReportGenie />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -118,8 +117,9 @@ function App() {
                 <Route path="/admin/notifications" element={<AdminCheck><AdminNotifications /></AdminCheck>} />
                 <Route path="/admin/email-testing" element={<AdminCheck><AdminEmailTesting /></AdminCheck>} />
 
-                {/* Legacy MT5 URL redirection */}
-                <Route path="/mt5-report-genie" element={<StrategyReportGenie />} />
+                {/* Handle Strategy Report Genie routes with the feature removed page */}
+                <Route path="/mt5-report-genie" element={<StrategyReportGeniePage />} />
+                <Route path="/strategy-report-genie" element={<StrategyReportGeniePage />} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>

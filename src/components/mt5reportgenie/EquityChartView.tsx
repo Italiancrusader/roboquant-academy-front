@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { StrategyTrade } from '@/types/strategyreportgenie';
+import { MT5Trade } from '@/types/mt5reportgenie';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -12,10 +12,10 @@ import {
   Tooltip,
   Legend
 } from 'recharts';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 interface EquityChartViewProps {
-  trades: StrategyTrade[];
+  trades: MT5Trade[];
 }
 
 const EquityChartView: React.FC<EquityChartViewProps> = ({ trades }) => {
