@@ -1,26 +1,15 @@
+
 import React from 'react';
 import { StrategyTrade } from '@/types/strategyreportgenie';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from 'recharts';
-import { ChartContainer } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, BarChart2, LineChart, AlertTriangle } from "lucide-react";
+import { Shield, AlertTriangle } from "lucide-react";
 
 interface RiskMetricsProps {
   trades: StrategyTrade[];
@@ -75,35 +64,6 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
       }
     });
     
-    // Group trades by profit size to create histogram data
-    const profitBuckets = [
-      { range: "< -500", count: 0 },
-      { range: "-500 to -200", count: 0 },
-      { range: "-200 to -100", count: 0 },
-      { range: "-100 to -50", count: 0 },
-      { range: "-50 to 0", count: 0 },
-      { range: "0 to 50", count: 0 },
-      { range: "50 to 100", count: 0 },
-      { range: "100 to 200", count: 0 },
-      { range: "200 to 500", count: 0 },
-      { range: "> 500", count: 0 },
-    ];
-    
-    completedTrades.forEach(trade => {
-      const profit = trade.profit || 0;
-      
-      if (profit < -500) profitBuckets[0].count++;
-      else if (profit < -200) profitBuckets[1].count++;
-      else if (profit < -100) profitBuckets[2].count++;
-      else if (profit < -50) profitBuckets[3].count++;
-      else if (profit < 0) profitBuckets[4].count++;
-      else if (profit < 50) profitBuckets[5].count++;
-      else if (profit < 100) profitBuckets[6].count++;
-      else if (profit < 200) profitBuckets[7].count++;
-      else if (profit < 500) profitBuckets[8].count++;
-      else profitBuckets[9].count++;
-    });
-    
     return {
       winRate,
       avgWin,
@@ -111,7 +71,6 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
       riskRewardRatio,
       maxConsecutiveWins,
       maxConsecutiveLosses,
-      profitBuckets,
       totalTrades: completedTrades.length,
       profitableTrades: profitableTrades.length,
       lossTrades: lossTrades.length
@@ -203,56 +162,9 @@ const RiskMetrics: React.FC<RiskMetricsProps> = ({ trades }) => {
             </Table>
           </CardContent>
         </Card>
-
-        {/* Profit Distribution Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <BarChart2 className="h-5 w-5" /> Profit Distribution
-            </CardTitle>
-            <CardDescription>
-              Distribution of trade results
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0 pb-10">
-            <div className="h-[380px] relative">
-              {/* Custom legend at the top */}
-              <div className="absolute top-2 right-5 z-10 bg-background/80 py-1 px-3 rounded-md border border-border/40 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-primary"></div>
-                  <span className="text-xs text-muted-foreground">Trades</span>
-                </div>
-              </div>
-              
-              <ChartContainer config={{ profit: { color: "hsl(var(--primary))" } }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={riskMetrics.profitBuckets}
-                    margin={{ top: 20, right: 10, left: 10, bottom: 70 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis 
-                      dataKey="range" 
-                      tick={{ fontSize: 11 }} 
-                      height={70}
-                      angle={-40}
-                      textAnchor="end"
-                    />
-                    <YAxis />
-                    <Tooltip 
-                      wrapperStyle={{ zIndex: 1000 }}
-                      cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
-                    />
-                    <Bar dataKey="count" name="Trades" fill="hsl(var(--primary))" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Risk Assessment Card - completely separate with big margin */}
+      {/* Risk Assessment Card */}
       <div className="mt-12 mb-10">
         <Card>
           <CardHeader className="pb-2">
