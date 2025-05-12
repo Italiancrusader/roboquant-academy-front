@@ -24,7 +24,7 @@ const ClassroomNavigation: React.FC<ClassroomNavigationProps> = ({ courseName })
   
   return (
     <div className="flex items-center justify-between py-2 px-4 border-b">
-      <div className="flex items-center space-x-4">
+      <div className="hidden">
         <Link to="/courses" className="flex items-center">
           <span className="font-semibold">{courseName}</span>
         </Link>
