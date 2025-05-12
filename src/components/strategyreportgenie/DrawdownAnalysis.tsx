@@ -297,7 +297,7 @@ const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades, initialBala
           <CardHeader>
             <CardTitle className="text-lg">Drawdown Statistics</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-8">
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-muted/30 p-3 rounded-lg">
                 <p className="text-xs text-muted-foreground mb-1">Average</p>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import FileUploadZone from '@/components/strategyreportgenie/FileUploadZone';
@@ -6,7 +5,6 @@ import ReportDashboard from '@/components/strategyreportgenie/ReportDashboard';
 import LoadingOverlay from '@/components/strategyreportgenie/LoadingOverlay';
 import { toast } from '@/components/ui/use-toast';
 import { FileType } from '@/types/strategyreportgenie';
-import { Link } from 'react-router-dom';
 import PDFReportGenerator from '@/components/strategyreportgenie/PDFReportGenerator';
 import MonteCarloSimulation from '@/components/strategyreportgenie/MonteCarloSimulation';
 import StrategyOptimizer from '@/components/strategyreportgenie/StrategyOptimizer';
