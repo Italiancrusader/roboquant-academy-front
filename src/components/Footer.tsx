@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Send } from 'lucide-react';
@@ -13,7 +12,9 @@ const Footer = () => {
             <p className="text-sm text-gray-400">Build Trading Bots Without Code</p>
           </div>
           <div className="flex flex-wrap gap-4 justify-center md:justify-end">
-            <Link to="/mt5-report-genie" className="text-sm text-gray-400 hover:text-blue-primary">MT5 Report Genie</Link>
+            <Link to="/strategy-report-genie" className="text-sm text-gray-400 hover:text-blue-primary">
+              Strategy Report Genie
+            </Link>
             <Link to="/community" className="text-sm text-gray-400 hover:text-blue-primary">Community</Link>
             <Link to="/privacy-policy" className="text-sm text-gray-400 hover:text-blue-primary">Privacy Policy</Link>
             <Link to="/terms-of-service" className="text-sm text-gray-400 hover:text-blue-primary">Terms of Service</Link>
@@ -38,20 +39,20 @@ const Footer = () => {
                 className="w-5 h-5" 
               />
             </a>
-            <a 
-              href="https://www.instagram.com/timhutter.official/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-gray-400 hover:text-blue-primary" 
+            <a
+              href="https://www.instagram.com/timhutter.official/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-blue-primary"
               aria-label="Instagram"
             >
               <Instagram className="w-5 h-5" />
             </a>
-            <a 
-              href="https://t.me/tradepiloteabot" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-gray-400 hover:text-blue-primary" 
+            <a
+              href="https://t.me/tradepiloteabot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-blue-primary"
               aria-label="Telegram"
             >
               <Send className="w-5 h-5" />
