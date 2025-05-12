@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
@@ -18,6 +17,9 @@ if (typeof window !== 'undefined') {
     window.fbq('init', '1234567890'); // Replace with your actual Pixel ID
   }
 }
+
+// Cache busting timestamp: This forces browsers to reload the bundle when it changes
+console.log(`App version: ${import.meta.env.VITE_BUILD_TIME || new Date().getTime()}`);
 
 // Mount app with Suspense boundary
 createRoot(document.getElementById("root")!).render(

@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -27,6 +26,9 @@ export default defineConfig(({ mode }) => ({
           vendor: ['react', 'react-dom', 'react-router-dom'],
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-tooltip', 'lucide-react'],
         },
+        entryFileNames: `assets/[name]-[hash]-${new Date().getTime()}.js`,
+        chunkFileNames: `assets/[name]-[hash]-${new Date().getTime()}.js`,
+        assetFileNames: `assets/[name]-[hash]-${new Date().getTime()}.[ext]`
       },
     },
     chunkSizeWarningLimit: 1000,
