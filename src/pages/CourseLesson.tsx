@@ -234,7 +234,6 @@ const CourseLesson = () => {
               <div className="mb-4">
                 {course && (
                   <div className="mb-6">
-                    <h2 className="text-lg font-semibold mb-1">{course.title}</h2>
                     {/* Progress bar */}
                     <div className="flex items-center gap-2">
                       <Progress value={progressPercentage} className="h-2 flex-grow" />
@@ -266,9 +265,9 @@ const CourseLesson = () => {
           
           {/* Main content */}
           <div className="lg:col-span-3">
-            {course && (
+            {course && currentLesson && (
               <ClassroomHeader 
-                title={currentLesson?.title || 'Lesson'} 
+                title={currentLesson.title || 'Lesson'} 
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
               />
