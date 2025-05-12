@@ -119,7 +119,7 @@ const PricingSection: React.FC = () => {
               <Star className="text-yellow-400 fill-yellow-400 w-5 h-5" />
               <span className="mx-2 text-gray-400">100% Satisfaction Guarantee</span>
               <span className="text-teal-primary">|</span>
-              <span className="mx-2 text-gray-400">14-Day Money-Back Guarantee</span>
+              <span className="mx-2 text-gray-400">30-Day Money-Back Guarantee</span>
             </div>
           </div>
         </div>
