@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
@@ -6,9 +7,11 @@ import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { useNavigate } from 'react-router-dom';
+
 const Pricing = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  
   const handleApply = async () => {
     setIsLoading(true);
     try {
@@ -31,6 +34,8 @@ const Pricing = () => {
       setIsLoading(false);
     }
   };
+  
   return;
 };
+
 export default Pricing;

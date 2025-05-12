@@ -1,3 +1,4 @@
+
 export const mainNavItems = [
   {
     title: 'Home',
@@ -6,10 +7,6 @@ export const mainNavItems = [
   {
     title: 'Courses',
     href: '/courses',
-  },
-  {
-    title: 'Pricing',
-    href: '/pricing',
   },
   {
     title: 'About',

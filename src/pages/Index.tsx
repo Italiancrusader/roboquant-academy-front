@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
@@ -6,15 +7,16 @@ import CourseOutcomes from '../components/CourseOutcomes';
 import Curriculum from '../components/Curriculum';
 import CostCalculator from '../components/CostCalculator';
 import Testimonials from '../components/Testimonials';
-import Pricing from '../components/Pricing';
 import FAQ from '../components/FAQ';
 import AboutInstructor from '../components/AboutInstructor';
 import CTA from '../components/CTA';
 import { Link, useNavigate } from "react-router-dom";
 import { Instagram, Send } from 'lucide-react';
 import { trackPageView } from '../utils/googleAnalytics';
+
 const Index = () => {
   const navigate = useNavigate();
+  
   useEffect(() => {
     // Track page view with both Google Analytics and gtag
     trackPageView(window.location.pathname, 'RoboQuant Academy Home');
@@ -25,6 +27,7 @@ const Index = () => {
       navigate('/quiz');
     }
   }, [navigate]);
+  
   return <div className="min-h-screen bg-background text-foreground font-neulis overflow-x-hidden">
       <Navbar />
       <Hero />
@@ -33,9 +36,6 @@ const Index = () => {
       <Curriculum />
       <CostCalculator />
       <Testimonials />
-      <section id="pricing">
-        <Pricing />
-      </section>
       <FAQ />
       <AboutInstructor />
       <CTA />
@@ -74,4 +74,5 @@ const Index = () => {
       </footer>
     </div>;
 };
+
 export default Index;
