@@ -5,9 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
-import { Play, Pause, RotateCcw, Loader } from 'lucide-react';
+import { Play, Pause, RotateCcw, Loader, AlertCircle } from 'lucide-react';
 import VimeoPlayer from './VimeoPlayer';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface VideoPlayerProps {
   lessonId: string;
@@ -39,6 +40,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [progressSaved, setProgressSaved] = useState(false);
   const { user } = useAuth();
   
@@ -51,9 +53,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Calculate progress percentage
   const progressPercentage = duration > 0 ? Math.round((currentTime / duration) * 100) : 0;
   
+  // Check if user is admin
+  const isAdmin = user?.app_metadata?.role === 'admin' || user?.app_metadata?.provider === 'admin';
+  
   // Load saved progress on component mount
   useEffect(() => {
-    if (!user || !lessonId || isPreviewLesson) return;
+    if (!user || !lessonId || isPreviewLesson || isAdmin) return;
     
     const fetchProgress = async () => {
       try {
@@ -78,23 +83,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }
       } catch (error: any) {
         console.error("Error loading progress:", error.message);
-        // Don't show toast for preview lessons or common errors
-        if (!isPreviewLesson) {
-          toast({
-            title: "Error loading progress",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
       }
     };
     
     fetchProgress();
-  }, [user, lessonId, courseId, isVimeo, isPreviewLesson]);
+  }, [user, lessonId, courseId, isVimeo, isPreviewLesson, isAdmin]);
   
   // Update progress in Supabase
   const saveProgress = async (position: number, completed: boolean = false) => {
-    if (!user || !lessonId || !courseId || isPreviewLesson) return;
+    if (!user || !lessonId || !courseId || isPreviewLesson || isAdmin) return;
     
     try {
       // Validate all fields to prevent 400 errors
@@ -107,14 +104,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         return;
       }
 
-      // Check if record exists first
-      const { data: existingRecord } = await supabase
+      // First check if record exists
+      const { data: existingRecords } = await supabase
         .from('progress')
         .select('id')
         .eq('user_id', user.id)
         .eq('lesson_id', lessonId)
-        .eq('course_id', courseId)
-        .single();
+        .eq('course_id', courseId);
       
       const progressData = {
         user_id: user.id,
@@ -125,30 +121,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         last_accessed_at: new Date().toISOString()
       };
       
-      let error;
-      
-      if (existingRecord) {
+      if (existingRecords && existingRecords.length > 0) {
         // Update existing record
-        const { error: updateError } = await supabase
+        await supabase
           .from('progress')
           .update(progressData)
           .eq('user_id', user.id)
           .eq('lesson_id', lessonId)
           .eq('course_id', courseId);
-        
-        error = updateError;
       } else {
         // Insert new record
-        const { error: insertError } = await supabase
+        await supabase
           .from('progress')
           .insert(progressData);
-        
-        error = insertError;
-      }
-      
-      if (error) {
-        console.error("Error saving progress:", error);
-        return;
       }
       
       if (completed && !progressSaved) {
@@ -170,8 +155,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const currentVideoTime = videoRef.current.currentTime;
       setCurrentTime(currentVideoTime);
       
-      // Only save progress for non-preview lessons
-      if (!isPreviewLesson) {
+      // Only save progress for non-preview lessons and non-admin users
+      if (!isPreviewLesson && !isAdmin) {
         // Save progress every 10 seconds
         if (Math.round(currentVideoTime) % 10 === 0) {
           saveProgress(currentVideoTime);
@@ -190,8 +175,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const handleVimeoTimeUpdate = (currentVideoTime: number) => {
     setCurrentTime(currentVideoTime);
     
-    // Only save progress for non-preview lessons
-    if (!isPreviewLesson) {
+    // Only save progress for non-preview lessons and non-admin users
+    if (!isPreviewLesson && !isAdmin) {
       // Save progress every 10 seconds
       if (Math.round(currentVideoTime) % 10 === 0) {
         saveProgress(currentVideoTime);
@@ -207,7 +192,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   
   // Handle video complete for Vimeo
   const handleVimeoComplete = () => {
-    if (!isPreviewLesson) {
+    if (!isPreviewLesson && !isAdmin) {
       saveProgress(duration, true);
     }
   };
@@ -256,9 +241,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
-
-  // For admins, we'll allow viewing without saving progress
-  const isAdmin = user?.app_metadata?.role === 'admin' || user?.app_metadata?.provider === 'admin';
+  
+  // Handle video errors
+  const handleVideoError = () => {
+    setError("Unable to load video. The video might be private or unavailable.");
+    setLoading(false);
+  };
 
   return (
     <div className="w-full bg-background rounded-lg overflow-hidden border">
@@ -267,7 +255,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           videoUrl={videoUrl} 
           onComplete={isPreviewLesson || isAdmin ? undefined : handleVimeoComplete}
           onTimeUpdate={isPreviewLesson || isAdmin ? undefined : handleVimeoTimeUpdate}
-          onDurationChange={isPreviewLesson || isAdmin ? undefined : handleVimeoDurationChange}
+          onDurationChange={handleVimeoDurationChange}
           autoplay={isAdmin}
         />
       ) : (
@@ -277,6 +265,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <Loader className="h-10 w-10 text-primary animate-spin" />
             </div>
           )}
+          
+          {error && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white">
+              <AlertCircle className="h-10 w-10 text-red-400 mb-2" />
+              <p>{error}</p>
+            </div>
+          )}
+          
           <video
             ref={videoRef}
             src={videoUrl}
@@ -285,6 +281,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             onLoadedMetadata={handleMetadataLoaded}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
+            onError={handleVideoError}
             onEnded={() => {
               setIsPlaying(false);
               if (!isPreviewLesson && !isAdmin) {
@@ -303,7 +300,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 variant="outline" 
                 size="icon" 
                 onClick={togglePlay}
-                disabled={loading}
+                disabled={loading || !!error}
                 className="h-8 w-8"
               >
                 {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -313,7 +310,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 variant="outline" 
                 size="icon" 
                 onClick={restartVideo}
-                disabled={loading}
+                disabled={loading || !!error}
                 className="h-8 w-8"
               >
                 <RotateCcw className="h-4 w-4" />

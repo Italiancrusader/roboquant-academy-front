@@ -117,14 +117,38 @@ export const useLesson = (
 
         // Record that the user accessed this lesson (skip for admins if not enrolled)
         if (user && (!isAdmin || (isAdmin && await checkIfEnrolled()))) {
-          await supabase.from('progress').upsert({
-            user_id: user.id,
-            lesson_id: lessonId,
-            course_id: courseId,
-            last_accessed_at: new Date().toISOString(),
-          }, {
-            onConflict: 'user_id,lesson_id,course_id'
-          });
+          try {
+            // First check if a record exists
+            const { data: existingProgress } = await supabase
+              .from('progress')
+              .select('id')
+              .eq('user_id', user.id)
+              .eq('lesson_id', lessonId)
+              .eq('course_id', courseId);
+            
+            const progressData = {
+              user_id: user.id,
+              lesson_id: lessonId,
+              course_id: courseId,
+              last_accessed_at: new Date().toISOString()
+            };
+            
+            if (!existingProgress || existingProgress.length === 0) {
+              // Insert new record if none exists
+              await supabase.from('progress').insert(progressData);
+            } else {
+              // Update existing record
+              await supabase
+                .from('progress')
+                .update({ last_accessed_at: new Date().toISOString() })
+                .eq('user_id', user.id)
+                .eq('lesson_id', lessonId)
+                .eq('course_id', courseId);
+            }
+          } catch (progressError) {
+            // Only log the error without showing a toast
+            console.error('Error updating progress:', progressError);
+          }
         }
 
         // Fetch next and previous lessons

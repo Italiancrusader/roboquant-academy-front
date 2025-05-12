@@ -1,17 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import VideoPlayer from '@/components/VideoPlayer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Book } from 'lucide-react';
+import { Book, AlertCircle } from 'lucide-react';
 import { useLesson } from '@/hooks/useLesson';
 import LessonContent from '@/components/course/LessonContent';
 import LessonNavigation from '@/components/course/LessonNavigation';
 import LessonTabs from '@/components/course/LessonTabs';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Lesson {
   id: string;
@@ -29,6 +30,7 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
   const { user } = useAuth();
   const { lesson, nextLesson, prevLesson, attachments, isLoading, isAdmin } = useLesson(courseId, lessonId, currentLesson);
+  const [videoError, setVideoError] = useState<string | null>(null);
   
   const handleLessonComplete = () => {
     // Navigate to next lesson if available
@@ -70,13 +72,20 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
         videoUrl={lesson.video_url} 
       />
 
-      {lesson.video_url && (
+      {lesson.video_url ? (
         <VideoPlayer 
           lessonId={lesson.id} 
           courseId={courseId || ''} 
           videoUrl={lesson.video_url} 
           onComplete={isAdmin ? undefined : handleLessonComplete}
         />
+      ) : (
+        <Alert variant="warning">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            This lesson doesn't include a video.
+          </AlertDescription>
+        </Alert>
       )}
       
       <LessonTabs 

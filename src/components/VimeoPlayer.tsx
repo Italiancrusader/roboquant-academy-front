@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader } from 'lucide-react';
+import { Loader, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface VimeoPlayerProps {
   videoUrl?: string;
@@ -29,6 +30,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
   onDurationChange
 }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerInstanceRef = useRef<any>(null);
   const { user } = useAuth();
@@ -68,10 +70,18 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
   const getVimeoHash = (): string | null => {
     if (!videoUrl) return null;
     
+    // Try to match the hash pattern in the URL
     const matchHash = videoUrl.match(/\/([a-zA-Z0-9]+)(?:[?#]|$)/);
     if (matchHash && matchHash[1] && matchHash[1] !== vimeoId) {
       return matchHash[1];
     }
+    
+    // If there's a direct hash in the URL
+    const hashMatch = videoUrl.match(/\/video\/\d+\/([a-zA-Z0-9]+)/);
+    if (hashMatch && hashMatch[1]) {
+      return hashMatch[1];
+    }
+    
     return null;
   };
   
@@ -104,11 +114,21 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         const player = new window.Vimeo.Player(iframeRef.current);
         playerInstanceRef.current = player;
         
+        // Listen for errors
+        player.on('error', function(error: any) {
+          setError(`Video player error: ${error.message || 'Unknown error'}`);
+          setIsLoading(false);
+        });
+        
         // Get video duration once it's ready
         player.getDuration().then((duration: number) => {
           if (onDurationChange) {
             onDurationChange(duration);
           }
+          setIsLoading(false);
+        }).catch(() => {
+          // If we can't get duration, still stop loading
+          setIsLoading(false);
         });
         
         // Set up time update polling if needed
@@ -116,6 +136,8 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
           timeUpdateInterval = window.setInterval(() => {
             player.getCurrentTime().then((time: number) => {
               onTimeUpdate(time);
+            }).catch(() => {
+              // Silently fail for time updates
             });
           }, 1000) as unknown as number;
         }
@@ -126,6 +148,8 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         }
       } catch (err) {
         console.error('Error initializing Vimeo player:', err);
+        setError('Failed to initialize video player');
+        setIsLoading(false);
       }
     }
     
@@ -141,6 +165,12 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       }
     };
   }, [vimeoId, onComplete, onTimeUpdate, onDurationChange]);
+  
+  // Handle iframe load error
+  const handleIframeError = () => {
+    setError('Failed to load video');
+    setIsLoading(false);
+  };
   
   if (!vimeoId) {
     return <div className="p-4 text-center text-red-500">Invalid Vimeo URL or ID</div>;
@@ -171,9 +201,9 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     
     // Add special parameters for admins to bypass privacy restrictions
     if (isAdmin) {
-      params.append('background', 'true');
+      // Force remove background restriction for admins
+      params.append('background', '1'); 
       params.append('muted', '0');
-      params.append('texttrack', '');
     }
     
     return `${src}?${params.toString()}`;
@@ -181,11 +211,26 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
 
   return (
     <div className="relative aspect-video bg-black">
-      {isLoading && (
+      {error && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white p-4">
+          <AlertCircle className="h-10 w-10 text-red-400 mb-2" />
+          <p className="text-center">Unable to load video</p>
+          <p className="text-sm text-gray-400 mt-1">{error}</p>
+          {isAdmin && (
+            <div className="mt-4 text-xs bg-amber-800/50 p-2 rounded max-w-md">
+              Admin note: This may be due to privacy restrictions or an invalid video URL. 
+              Try checking the video URL in the Vimeo dashboard.
+            </div>
+          )}
+        </div>
+      )}
+      
+      {isLoading && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
           <Loader className="h-10 w-10 text-primary animate-spin" />
         </div>
       )}
+      
       <iframe
         ref={iframeRef}
         src={buildSrcUrl()}
@@ -195,6 +240,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         allowFullScreen
         title="Vimeo video player"
         onLoad={() => setIsLoading(false)}
+        onError={handleIframeError}
       />
       
       {isAdmin && (
