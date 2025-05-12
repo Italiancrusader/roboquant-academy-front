@@ -15,7 +15,7 @@ interface EnhancedEquityChartProps {
   currency?: string;
 }
 
-const SimpleEquityChart: React.FC<EnhancedEquityChartProps> = ({
+const EnhancedEquityChart: React.FC<EnhancedEquityChartProps> = ({
   equityCurve,
   currency = '$'
 }) => {
@@ -87,7 +87,7 @@ const SimpleEquityChart: React.FC<EnhancedEquityChartProps> = ({
           y={0}
           dy={16}
           textAnchor="middle"
-          fill="#666"
+          fill="hsl(var(--muted-foreground))"
           fontSize={11}
         >
           {formatDate(payload.value)}
@@ -101,15 +101,15 @@ const SimpleEquityChart: React.FC<EnhancedEquityChartProps> = ({
     if (active && payload && payload.length) {
       const date = new Date(label);
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded shadow-lg">
-          <p className="mb-1 font-semibold">
+        <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 p-3 border rounded-lg shadow-xl">
+          <p className="mb-1 font-semibold text-sm">
             {date.toLocaleDateString(undefined, { 
               month: 'short', 
               day: 'numeric',
               year: 'numeric'
             })}
           </p>
-          <p className="text-green-600">
+          <p className="text-sm text-primary">
             Equity: {formatCurrencyDetailed(payload[0]?.value || 0)}
           </p>
         </div>
@@ -121,11 +121,11 @@ const SimpleEquityChart: React.FC<EnhancedEquityChartProps> = ({
   return (
     <Card className="shadow-md w-full">
       <CardHeader className="pb-3">
-        <CardTitle>Equity Curve</CardTitle>
+        <CardTitle>Equity Growth</CardTitle>
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <div className="text-center py-10">No data available</div>
+          <div className="text-center py-10 text-muted-foreground">No data available</div>
         ) : (
           <div className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -135,8 +135,8 @@ const SimpleEquityChart: React.FC<EnhancedEquityChartProps> = ({
               >
                 <defs>
                   <linearGradient id={`equityGradient-${chartId}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#65B741" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#65B741" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis
@@ -148,25 +148,38 @@ const SimpleEquityChart: React.FC<EnhancedEquityChartProps> = ({
                   tick={<CustomAxisTick />}
                   padding={{ left: 10, right: 10 }}
                   height={50}
+                  stroke="hsl(var(--muted-foreground))"
                 />
                 <YAxis
                   domain={[Math.max(0, minEquity - equityPadding), maxEquity + equityPadding]}
                   tickFormatter={formatCurrency}
                   width={50}
+                  stroke="hsl(var(--muted-foreground))"
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                
+                <Legend 
+                  verticalAlign="bottom"
+                  height={36}
+                  content={() => (
+                    <div className="flex justify-center items-center mt-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-sm bg-primary"></div>
+                        <span className="text-xs text-muted-foreground">Equity</span>
+                      </div>
+                    </div>
+                  )}
+                />
                 <Area
                   type="monotone"
                   dataKey="equity"
                   name="Equity"
-                  stroke="#65B741"
+                  stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   fill={`url(#equityGradient-${chartId})`}
                   dot={false}
-                  activeDot={{ r: 6 }}
-                  isAnimationActive={false}
+                  activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
+                  isAnimationActive={true}
+                  animationDuration={1000}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -177,4 +190,4 @@ const SimpleEquityChart: React.FC<EnhancedEquityChartProps> = ({
   );
 };
 
-export default SimpleEquityChart; 
+export default EnhancedEquityChart; 

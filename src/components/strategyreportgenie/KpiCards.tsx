@@ -34,25 +34,25 @@ interface KpiCardsProps {
 const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <div className="bg-purple-600 rounded-lg p-4 border border-border">
+      <div className="bg-primary rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-white">Net Profit</p>
-          <TrendingUp className="h-4 w-4 text-white" />
+          <p className="text-sm text-primary-foreground">Net Profit</p>
+          <TrendingUp className="h-4 w-4 text-primary-foreground" />
         </div>
-        <h3 className={`text-2xl font-semibold mt-2 text-white`}>
+        <h3 className={`text-2xl font-semibold mt-2 text-primary-foreground`}>
           ${metrics.totalNetProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </h3>
-        <div className="text-xs text-white/80 mt-1">
+        <div className="text-xs text-primary-foreground/80 mt-1">
           Total result for all trades
         </div>
       </div>
 
-      <div className="bg-muted/30 rounded-lg p-4 border border-border">
+      <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Max Drawdown</p>
-          <TrendingDown className="h-4 w-4 text-muted-foreground" />
+          <TrendingDown className="h-4 w-4 text-destructive" />
         </div>
-        <h3 className="text-2xl font-semibold mt-2 text-amber-500">
+        <h3 className="text-2xl font-semibold mt-2 text-destructive">
           ${metrics.maxDrawdown.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </h3>
         <div className="text-xs text-muted-foreground mt-1">
@@ -60,12 +60,12 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
         </div>
       </div>
 
-      <div className="bg-muted/30 rounded-lg p-4 border border-border">
+      <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Profit Factor</p>
-          <Scale className="h-4 w-4 text-muted-foreground" />
+          <Scale className="h-4 w-4 text-primary" />
         </div>
-        <h3 className="text-2xl font-semibold mt-2">
+        <h3 className="text-2xl font-semibold mt-2 text-card-foreground">
           {metrics.profitFactor.toFixed(2)}
         </h3>
         <div className="text-xs text-muted-foreground mt-1">
@@ -73,12 +73,12 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
         </div>
       </div>
 
-      <div className="bg-muted/30 rounded-lg p-4 border border-border">
+      <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Win Rate</p>
-          <Award className="h-4 w-4 text-muted-foreground" />
+          <Award className="h-4 w-4 text-primary" />
         </div>
-        <h3 className="text-2xl font-semibold mt-2">
+        <h3 className="text-2xl font-semibold mt-2 text-card-foreground">
           {metrics.winRate.toFixed(2)}%
         </h3>
         <div className="text-xs text-muted-foreground mt-1">
@@ -86,13 +86,12 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
         </div>
       </div>
 
-      {/* Added additional metrics */}
-      <div className="bg-muted/30 rounded-lg p-4 border border-border">
+      <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Avg Profit</p>
-          <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
+          <CircleDollarSign className="h-4 w-4 text-primary" />
         </div>
-        <h3 className="text-2xl font-semibold mt-2">
+        <h3 className="text-2xl font-semibold mt-2 text-card-foreground">
           ${metrics.avgTradeProfit.toFixed(2)}
         </h3>
         <div className="text-xs text-muted-foreground mt-1">
@@ -100,12 +99,12 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
         </div>
       </div>
 
-      <div className="bg-muted/30 rounded-lg p-4 border border-border">
+      <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Recovery Factor</p>
-          <LineChart className="h-4 w-4 text-muted-foreground" />
+          <LineChart className="h-4 w-4 text-primary" />
         </div>
-        <h3 className="text-2xl font-semibold mt-2">
+        <h3 className="text-2xl font-semibold mt-2 text-card-foreground">
           {metrics.recoveryFactor.toFixed(2)}
         </h3>
         <div className="text-xs text-muted-foreground mt-1">
@@ -113,12 +112,12 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
         </div>
       </div>
 
-      <div className="bg-muted/30 rounded-lg p-4 border border-border">
+      <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Sharpe Ratio</p>
-          <BarChart2 className="h-4 w-4 text-muted-foreground" />
+          <BarChart2 className="h-4 w-4 text-primary" />
         </div>
-        <h3 className="text-2xl font-semibold mt-2">
+        <h3 className="text-2xl font-semibold mt-2 text-card-foreground">
           {metrics.sharpeRatio.toFixed(2)}
         </h3>
         <div className="text-xs text-muted-foreground mt-1">
@@ -126,12 +125,12 @@ const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
         </div>
       </div>
 
-      <div className="bg-muted/30 rounded-lg p-4 border border-border">
+      <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Expected Payoff</p>
-          <Percent className="h-4 w-4 text-muted-foreground" />
+          <Percent className="h-4 w-4 text-primary" />
         </div>
-        <h3 className="text-2xl font-semibold mt-2">
+        <h3 className="text-2xl font-semibold mt-2 text-card-foreground">
           ${metrics.expectedPayoff.toFixed(2)}
         </h3>
         <div className="text-xs text-muted-foreground mt-1">
