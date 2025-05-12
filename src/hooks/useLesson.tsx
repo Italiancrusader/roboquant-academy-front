@@ -126,18 +126,23 @@ export const useLesson = (
               .eq('lesson_id', lessonId)
               .eq('course_id', courseId);
             
+            // Fix: Add explicit values for all required fields
             const progressData = {
               user_id: user.id,
               lesson_id: lessonId,
               course_id: courseId,
-              last_accessed_at: new Date().toISOString()
+              last_accessed_at: new Date().toISOString(),
+              last_position_seconds: 0, // Add default value
+              completed: false // Add default value
             };
             
             if (!existingProgress || existingProgress.length === 0) {
-              // Insert new record if none exists
-              await supabase.from('progress').insert(progressData);
+              // Insert new record
+              await supabase
+                .from('progress')
+                .insert(progressData);
             } else {
-              // Update existing record
+              // Update existing record - only update the timestamp
               await supabase
                 .from('progress')
                 .update({ last_accessed_at: new Date().toISOString() })
@@ -167,11 +172,15 @@ export const useLesson = (
           if (currentIndex > 0) {
             // Get previous lesson
             setPrevLesson(allLessons[currentIndex - 1]);
+          } else {
+            setPrevLesson(null);
           }
 
           if (currentIndex < allLessons.length - 1) {
             // Get next lesson
             setNextLesson(allLessons[currentIndex + 1]);
+          } else {
+            setNextLesson(null);
           }
         }
         
@@ -186,8 +195,11 @@ export const useLesson = (
         // Make sure we're setting the correct type for attachments
         if (attachmentsData) {
           setAttachments(attachmentsData as Attachment[]);
+        } else {
+          setAttachments([]);
         }
       } catch (error: any) {
+        console.error('Error loading lesson:', error);
         toast({
           title: "Error loading lesson",
           description: error.message,

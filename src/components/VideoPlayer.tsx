@@ -54,7 +54,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const progressPercentage = duration > 0 ? Math.round((currentTime / duration) * 100) : 0;
   
   // Check if user is admin
-  const isAdmin = user?.app_metadata?.role === 'admin' || user?.app_metadata?.provider === 'admin';
+  const isAdmin = user?.app_metadata?.role === 'admin';
   
   // Load saved progress on component mount
   useEffect(() => {
@@ -105,12 +105,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
 
       // First check if record exists
-      const { data: existingRecords } = await supabase
+      const { data: existingRecords, error: checkError } = await supabase
         .from('progress')
         .select('id')
         .eq('user_id', user.id)
         .eq('lesson_id', lessonId)
         .eq('course_id', courseId);
+      
+      if (checkError) {
+        console.error("Error checking existing records:", checkError);
+        return;
+      }
       
       const progressData = {
         user_id: user.id,
@@ -122,18 +127,28 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       };
       
       if (existingRecords && existingRecords.length > 0) {
-        // Update existing record
-        await supabase
+        // Update existing record - don't use on_conflict parameter
+        const { error: updateError } = await supabase
           .from('progress')
           .update(progressData)
           .eq('user_id', user.id)
           .eq('lesson_id', lessonId)
           .eq('course_id', courseId);
+        
+        if (updateError) {
+          console.error("Error updating progress:", updateError);
+          return;
+        }
       } else {
-        // Insert new record
-        await supabase
+        // Insert new record - don't use on_conflict parameter
+        const { error: insertError } = await supabase
           .from('progress')
           .insert(progressData);
+        
+        if (insertError) {
+          console.error("Error inserting progress:", insertError);
+          return;
+        }
       }
       
       if (completed && !progressSaved) {
@@ -248,6 +263,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setLoading(false);
   };
 
+  // Handle Vimeo error
+  const handleVimeoError = (errorMessage: string) => {
+    setError(errorMessage);
+    setLoading(false);
+  };
+
   return (
     <div className="w-full bg-background rounded-lg overflow-hidden border">
       {isVimeo ? (
@@ -256,6 +277,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onComplete={isPreviewLesson || isAdmin ? undefined : handleVimeoComplete}
           onTimeUpdate={isPreviewLesson || isAdmin ? undefined : handleVimeoTimeUpdate}
           onDurationChange={handleVimeoDurationChange}
+          onError={handleVimeoError}
           autoplay={isAdmin}
         />
       ) : (
