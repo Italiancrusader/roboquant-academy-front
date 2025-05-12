@@ -103,6 +103,16 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     }
 
     let timeUpdateInterval: number | undefined;
+    let initTimeout: NodeJS.Timeout;
+    
+    // Set a timeout to ensure we don't hang on loading indefinitely
+    initTimeout = setTimeout(() => {
+      if (isLoading) {
+        setIsLoading(false);
+        setError("Video failed to load within the expected time");
+        if (onError) onError("Video failed to load within the expected time");
+      }
+    }, 10000); // 10 second timeout
     
     // Load Vimeo Player API script if it's not already loaded
     if (!window.Vimeo) {
@@ -113,6 +123,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       document.body.appendChild(script);
       
       script.onerror = () => {
+        clearTimeout(initTimeout);
         const errorMsg = "Failed to load Vimeo player script";
         setError(errorMsg);
         if (onError) onError(errorMsg);
@@ -128,8 +139,16 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         const player = new window.Vimeo.Player(iframeRef.current);
         playerInstanceRef.current = player;
         
+        // Listen for play event to confirm the player is working
+        player.on('play', function() {
+          clearTimeout(initTimeout);
+          setIsLoading(false);
+          setError(null);
+        });
+        
         // Listen for errors
         player.on('error', function(err: any) {
+          clearTimeout(initTimeout);
           const errorMsg = `Video player error: ${err?.message || 'Unknown error'}`;
           console.error(errorMsg, err);
           setError(errorMsg);
@@ -137,9 +156,10 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
           setIsLoading(false);
         });
         
-        // Listen for private video errors
+        // Listen for "not found" errors
         player.on('notFound', function() {
-          const errorMsg = "This video could not be found";
+          clearTimeout(initTimeout);
+          const errorMsg = "This video could not be found or is private";
           console.error(errorMsg);
           setError(errorMsg);
           if (onError) onError(errorMsg);
@@ -148,22 +168,28 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         
         // Get video duration once it's ready
         player.getDuration().then((duration: number) => {
+          clearTimeout(initTimeout);
           if (onDurationChange) {
             onDurationChange(duration);
           }
           setIsLoading(false);
         }).catch((err: any) => {
-          // If we can't get duration, still stop loading
+          // If we can't get duration, still mark as loaded but log the error
           console.error("Error getting video duration:", err);
-          if (!error) {
-            setIsLoading(false);
+          setIsLoading(false);
+          
+          // For private videos or videos that don't exist, show an error
+          if (err && (err.name === "NotFoundError" || err.name === "PrivacyError")) {
+            const errorMsg = "This video is either private or doesn't exist";
+            setError(errorMsg);
+            if (onError) onError(errorMsg);
           }
         });
         
         // Set up time update polling if needed
         if (onTimeUpdate) {
           timeUpdateInterval = window.setInterval(() => {
-            if (playerInstanceRef.current) {
+            if (playerInstanceRef.current && !error) {
               playerInstanceRef.current.getCurrentTime().then((time: number) => {
                 onTimeUpdate(time);
               }).catch(() => {
@@ -177,13 +203,8 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         if (onComplete) {
           player.on('ended', onComplete);
         }
-        
-        // Detect when the video is actually playing
-        player.on('play', function() {
-          setIsLoading(false);
-          setError(null);
-        });
       } catch (err: any) {
+        clearTimeout(initTimeout);
         console.error('Error initializing Vimeo player:', err);
         const errorMsg = 'Failed to initialize video player';
         setError(errorMsg);
@@ -194,6 +215,8 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     
     // Clean up
     return () => {
+      clearTimeout(initTimeout);
+      
       if (timeUpdateInterval) {
         clearInterval(timeUpdateInterval);
       }
@@ -210,7 +233,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         }
       }
     };
-  }, [vimeoId, onComplete, onTimeUpdate, onDurationChange, onError, error]);
+  }, [vimeoId, onComplete, onTimeUpdate, onDurationChange, onError, isLoading, error]);
   
   // Handle iframe load error
   const handleIframeError = () => {

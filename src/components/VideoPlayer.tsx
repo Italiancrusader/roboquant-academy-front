@@ -112,10 +112,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         .eq('lesson_id', lessonId)
         .eq('course_id', courseId);
       
-      if (checkError) {
-        console.error("Error checking existing records:", checkError);
-        return;
-      }
+      if (checkError) throw checkError;
       
       const progressData = {
         user_id: user.id,
@@ -127,7 +124,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       };
       
       if (existingRecords && existingRecords.length > 0) {
-        // Update existing record - don't use on_conflict parameter
+        // Update existing record
         const { error: updateError } = await supabase
           .from('progress')
           .update(progressData)
@@ -135,20 +132,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           .eq('lesson_id', lessonId)
           .eq('course_id', courseId);
         
-        if (updateError) {
-          console.error("Error updating progress:", updateError);
-          return;
-        }
+        if (updateError) throw updateError;
       } else {
-        // Insert new record - don't use on_conflict parameter
+        // Insert new record
         const { error: insertError } = await supabase
           .from('progress')
           .insert(progressData);
         
-        if (insertError) {
-          console.error("Error inserting progress:", insertError);
-          return;
-        }
+        if (insertError) throw insertError;
       }
       
       if (completed && !progressSaved) {

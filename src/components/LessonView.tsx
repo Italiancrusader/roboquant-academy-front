@@ -38,6 +38,10 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
       window.location.href = `/courses/${courseId}/lessons/${nextLesson.id}`;
     }
   };
+  
+  const handleVideoError = (error: string) => {
+    setVideoError(error);
+  };
 
   if (isLoading) {
     return (
@@ -84,6 +88,15 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             This lesson doesn't include a video.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {videoError && (
+        <Alert variant="destructive" className="mt-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {videoError}
           </AlertDescription>
         </Alert>
       )}

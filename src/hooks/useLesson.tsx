@@ -126,21 +126,18 @@ export const useLesson = (
               .eq('lesson_id', lessonId)
               .eq('course_id', courseId);
             
-            // Fix: Add explicit values for all required fields
-            const progressData = {
-              user_id: user.id,
-              lesson_id: lessonId,
-              course_id: courseId,
-              last_accessed_at: new Date().toISOString(),
-              last_position_seconds: 0, // Add default value
-              completed: false // Add default value
-            };
-            
             if (!existingProgress || existingProgress.length === 0) {
-              // Insert new record
+              // Insert new record with all required fields
               await supabase
                 .from('progress')
-                .insert(progressData);
+                .insert({
+                  user_id: user.id,
+                  lesson_id: lessonId,
+                  course_id: courseId,
+                  last_accessed_at: new Date().toISOString(),
+                  last_position_seconds: 0,
+                  completed: false
+                });
             } else {
               // Update existing record - only update the timestamp
               await supabase
