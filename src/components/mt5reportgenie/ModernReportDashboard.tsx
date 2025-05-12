@@ -8,7 +8,6 @@ import {
   BarChart2, 
   TrendingDown, 
   Clock, 
-  Globe,
   FileText, 
   Trash2, 
   Download, 
@@ -18,7 +17,6 @@ import {
 import TabView from '@/components/ui/tab-view';
 import EquityChartView from './EquityChartView';
 import PerformanceStatsView from './PerformanceStatsView';
-import SymbolsAnalysisView from './SymbolsAnalysisView';
 import DrawdownView from './DrawdownView';
 import TimeAnalysisView from './TimeAnalysisView';
 import CsvViewer from './CsvViewer';
@@ -56,12 +54,6 @@ const ModernReportDashboard: React.FC<ModernReportDashboardProps> = ({
       label: 'Performance',
       icon: <CircleDollarSign className="h-4 w-4" />,
       content: <PerformanceStatsView trades={trades} />
-    },
-    {
-      id: 'symbols',
-      label: 'Instruments',
-      icon: <Globe className="h-4 w-4" />,
-      content: <SymbolsAnalysisView trades={trades} />
     },
     {
       id: 'time',
