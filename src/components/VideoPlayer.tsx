@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import VimeoPlayer from './VimeoPlayer';
 import { toast } from '@/components/ui/use-toast';
+import { VideoErrorDialog } from '@/components/classroom';
 
 interface VideoPlayerProps {
   videoUrl: string | null;
