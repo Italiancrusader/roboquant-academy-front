@@ -22,6 +22,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [duration, setDuration] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const { user } = useAuth();
   
   // Check if user is admin
@@ -142,12 +143,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     console.error("Video player error:", message);
     setVideoError(message);
     
-    // Show a toast for the error
-    toast({
-      title: "Video Error",
-      description: message,
-      variant: "destructive",
-    });
+    // Only show toast for non-notfound errors
+    if (!message.includes('notfound')) {
+      toast({
+        title: "Video Error",
+        description: message,
+        variant: "destructive",
+      });
+    }
   };
   
   const handleTimeUpdate = (time: number) => {
@@ -164,8 +167,31 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
   
+  const handleRetry = () => {
+    setVideoError(null);
+    setRetryCount(prev => prev + 1);
+  };
+  
+  // If there's an error, show the error dialog from VideoErrorDialog
+  if (videoError) {
+    return (
+      <div className="aspect-video bg-black">
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full">
+            <VideoErrorDialog 
+              error={videoError}
+              onRetry={handleRetry}
+              videoId={videoUrl.split('/').pop()?.split('?')[0]}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <VimeoPlayer 
+      key={`vimeo-player-${retryCount}`}
       videoUrl={videoUrl} 
       controls={true}
       onComplete={handleComplete}

@@ -6,14 +6,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Book, AlertCircle, RefreshCw } from 'lucide-react';
+import { Book } from 'lucide-react';
 import { useLesson } from '@/hooks/useLesson';
 import LessonContent from '@/components/course/LessonContent';
 import LessonNavigation from '@/components/course/LessonNavigation';
 import LessonTabs from '@/components/course/LessonTabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { toast } from '@/components/ui/use-toast';
+import { AlertCircle } from 'lucide-react';
 
 interface Lesson {
   id: string;
@@ -31,29 +31,14 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
   const { user } = useAuth();
   const { lesson, nextLesson, prevLesson, attachments, isLoading, isAdmin } = useLesson(courseId, lessonId, currentLesson);
-  const [videoError, setVideoError] = useState<string | null>(null);
   
   const handleLessonComplete = () => {
-    // Show completion toast
-    toast({
-      title: "Lesson completed!",
-      description: "Moving to the next lesson...",
-    });
-    
     // Navigate to next lesson if available
     if (nextLesson) {
       window.location.href = `/courses/${courseId}/lessons/${nextLesson.id}`;
     }
   };
   
-  const handleVideoError = (error: string) => {
-    setVideoError(error);
-  };
-
-  const handleRefreshPage = () => {
-    window.location.reload();
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-4 p-4">
@@ -102,31 +87,6 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
           <AlertDescription>
             This lesson doesn't include a video.
           </AlertDescription>
-        </Alert>
-      )}
-      
-      {videoError && (
-        <Alert variant="destructive" className="mt-2">
-          <div className="flex justify-between items-start w-full">
-            <div className="flex-1">
-              <AlertTitle className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" />
-                Video Error
-              </AlertTitle>
-              <AlertDescription>
-                {videoError}
-              </AlertDescription>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRefreshPage} 
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className="h-3 w-3" />
-              Refresh
-            </Button>
-          </div>
         </Alert>
       )}
       
