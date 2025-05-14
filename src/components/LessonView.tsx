@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import VideoPlayer from '@/components/VideoPlayer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
@@ -72,23 +71,6 @@ const LessonView = ({ currentLesson }: LessonViewProps) => {
         videoUrl={lesson.video_url} 
         isCompleted={false}
       />
-
-      {lesson.video_url ? (
-        <VideoPlayer 
-          lessonId={lesson.id} 
-          courseId={courseId || ''} 
-          videoUrl={lesson.video_url} 
-          onComplete={isAdmin ? undefined : handleLessonComplete}
-        />
-      ) : (
-        <Alert variant="warning" className="mb-4">
-          <AlertCircle className="h-4 w-4 mr-2" />
-          <AlertTitle>No Video Available</AlertTitle>
-          <AlertDescription>
-            This lesson doesn't include a video.
-          </AlertDescription>
-        </Alert>
-      )}
       
       <LessonTabs 
         description={lesson.description}

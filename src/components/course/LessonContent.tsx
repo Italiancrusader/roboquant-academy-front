@@ -3,7 +3,8 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Book, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import VimeoPlayer from '@/components/vimeo/VimeoPlayer';
+import { VimeoPlayer } from '@/components/vimeo';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface LessonContentProps {
   title: string;
@@ -35,7 +36,13 @@ const LessonContent: React.FC<LessonContentProps> = ({
         )}
       </div>
 
-      {!videoUrl && (
+      {videoUrl ? (
+        <div className="mt-6">
+          <AspectRatio ratio={16/9}>
+            <VimeoPlayer videoUrl={videoUrl} />
+          </AspectRatio>
+        </div>
+      ) : (
         <Card className="p-8 text-center mt-6">
           <div className="flex flex-col items-center space-y-4">
             <Book className="h-12 w-12 text-muted-foreground" />
