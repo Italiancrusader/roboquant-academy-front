@@ -6,7 +6,6 @@ import VimeoError from './VimeoError';
 import VimeoLoading from './VimeoLoading';
 import { useVimeoPlayer } from './useVimeoPlayer';
 import { resolveVimeoId, getVimeoHash, buildVimeoSrcUrl } from './VimeoUrlUtils';
-import { toast } from '@/components/ui/use-toast';
 
 interface VimeoPlayerProps {
   videoUrl?: string;
@@ -76,10 +75,6 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       </div>
     );
   }
-
-  // Log the video ID and hash for debugging
-  console.log('Vimeo Video ID:', vimeoId);
-  console.log('Vimeo Hash:', vimeoHash);
   
   // Build the source URL for the iframe
   const srcUrl = buildVimeoSrcUrl({
@@ -92,8 +87,6 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     retryCount,
     isAdmin
   });
-  
-  console.log('Built Vimeo URL:', srcUrl);
 
   return (
     <div className="relative aspect-video bg-black">
