@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import SurveyForm from '@/components/EnrollmentSurvey/SurveyForm';
 import { submitLead } from '@/services/leadService';
 import { toast } from '@/components/ui/use-toast';
+import { checkQualification } from '@/components/EnrollmentSurvey';
 
 const SurveyFunnel = () => {
   const [step, setStep] = useState(1);
@@ -52,7 +53,7 @@ const SurveyFunnel = () => {
           navigate("/book-call");
         } else {
           // Redirect to pricing/checkout page
-          navigate("/pricing");
+          navigate("/vsl?qualified=false");
         }
       }, 1000);
     } catch (error) {
@@ -73,17 +74,6 @@ const SurveyFunnel = () => {
     
     // Move to next step
     setStep(step + 1);
-  };
-
-  // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
-  const checkQualification = (data: Record<string, any>): boolean => {
-    console.log("Checking qualification with trading capital:", data.tradingCapital);
-    // Only check for minimum capital requirement of $5,000
-    const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
-    console.log("Has minimum capital:", hasMinimumCapital);
-    
-    // Return true if minimum capital requirement is met
-    return hasMinimumCapital;
   };
 
   return (

@@ -100,13 +100,13 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error saving submission:", error);
     }
     
-    // Return the qualification status
+    // Return the qualification status with the correct qualified value in the URL
     return new Response(
       JSON.stringify({ 
         success: true, 
         qualifiesForCall,
         tradingCapital,
-        redirectUrl: qualifiesForCall ? "/book-call" : "/pricing"
+        redirectUrl: qualifiesForCall ? "/book-call" : "/vsl?qualified=false"
       }),
       {
         status: 200,
@@ -122,7 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: false, 
         error: error.message,
-        redirectUrl: "/pricing" // Default redirect on error
+        redirectUrl: "/vsl?qualified=false" // Default redirect on error
       }),
       {
         status: 500,

@@ -11,6 +11,7 @@ import SurveyForm from "./SurveyForm";
 import { useNavigate } from "react-router-dom";
 import { submitLead } from "@/services/leadService";
 import { toast } from "@/components/ui/use-toast";
+import { checkQualification } from "./index";
 
 interface SurveyDialogProps {
   isOpen: boolean;
@@ -67,8 +68,8 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
           // Redirect to calendar booking page
           navigate("/book-call");
         } else {
-          // Redirect to pricing/checkout page
-          navigate("/pricing");
+          // Redirect to pricing/checkout page with qualified parameter
+          navigate("/vsl?qualified=false");
         }
       }, 1000);
     } catch (error) {
@@ -89,17 +90,6 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
     
     // Move to next step
     setStep(step + 1);
-  };
-
-  // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
-  const checkQualification = (data: Record<string, any>): boolean => {
-    console.log("Dialog checking qualification with trading capital:", data.tradingCapital);
-    // Only check for minimum capital requirement of $5,000
-    const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
-    console.log("Dialog has minimum capital:", hasMinimumCapital);
-    
-    // Return true if minimum capital requirement is met
-    return hasMinimumCapital;
   };
 
   return (
