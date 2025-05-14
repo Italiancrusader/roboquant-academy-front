@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SurveyForm from './SurveyForm';
@@ -36,13 +37,31 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
       console.log("[SurveyFormWrapper] Trading capital type:", typeof combinedData.tradingCapital);
       console.log("[SurveyFormWrapper] Is included in approved list:", ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(combinedData.tradingCapital));
       
+      // Hard-coded mapping for Typeform responses to our internal format
+      // This is a fallback in case the webhook fails
+      if (combinedData.tradingCapital === "< $1k") {
+        combinedData.tradingCapital = "Under $1,000";
+      } else if (combinedData.tradingCapital === "$1k-$5k") {
+        combinedData.tradingCapital = "$1,000 – $5,000";
+      } else if (combinedData.tradingCapital === "$5k-$10k") {
+        combinedData.tradingCapital = "$5,000 – $10,000";
+      } else if (combinedData.tradingCapital === "$10k-$250k") {
+        combinedData.tradingCapital = "$10,000 – $250,000";
+      } else if (combinedData.tradingCapital === "> $250k") {
+        combinedData.tradingCapital = "Over $250,000";
+      }
+      
+      // Recalculate qualification after potential mapping
+      const finalQualification = checkQualification(combinedData);
+      console.log("[SurveyFormWrapper] Final qualification after mapping:", finalQualification);
+      
       // Submit lead data regardless of qualification
       await submitLead({
         name: combinedData.fullName,
         email: combinedData.email,
         phone: combinedData.phone || "",
         source: "enrollment_survey",
-        leadMagnet: qualifiesForCall ? "strategy_call" : "course_enrollment"
+        leadMagnet: finalQualification ? "strategy_call" : "course_enrollment"
       });
       
       // Call onComplete callback if provided
@@ -52,18 +71,18 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
       
       // Show success toast
       toast({
-        title: qualifiesForCall ? "You qualify for a strategy call!" : "Thank you for your application",
-        description: qualifiesForCall 
+        title: finalQualification ? "You qualify for a strategy call!" : "Thank you for your application",
+        description: finalQualification 
           ? "Redirecting you to book your strategy call." 
           : "Redirecting you to our pricing page.",
         duration: 3000,
       });
       
-      console.log("[SurveyFormWrapper] About to redirect to:", qualifiesForCall ? "/book-call" : "/vsl?qualified=false");
+      console.log("[SurveyFormWrapper] About to redirect to:", finalQualification ? "/book-call" : "/vsl?qualified=false");
       
       // Route based on qualification with slight delay for toast
       setTimeout(() => {
-        if (qualifiesForCall) {
+        if (finalQualification) {
           // Redirect to calendar booking page
           console.log("[SurveyFormWrapper] Redirecting to /book-call");
           navigate("/book-call");

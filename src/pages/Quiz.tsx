@@ -111,41 +111,88 @@ const Quiz = () => {
       });
       
       // Determine if user qualifies based on submitted responses
-      // Use data from Typeform if available, otherwise default to not qualified
       let isQualified = false;
       
-      if (data) {
-        try {
+      try {
+        // Process the Typeform submission data
+        console.log("[Quiz] Processing typeform submission data:", JSON.stringify(data));
+        
+        if (data) {
           // Check if the data includes qualification status
           if (typeof data.qualifiesForCall === 'boolean') {
             isQualified = data.qualifiesForCall;
+            console.log("[Quiz] Using direct qualifiesForCall value:", isQualified);
           } else if (data.answers) {
             // Process answers to determine qualification
-            const tradingCapital = getAnswerByFieldName(data.answers, 'trading_capital');
-            const tradingExperience = getAnswerByFieldName(data.answers, 'trading_experience');
+            console.log("[Quiz] Checking answers:", JSON.stringify(data.answers));
             
-            // Basic qualification rules - higher capital and some experience
-            isQualified = !(
-              ['Under $1,000', '$1,000 – $5,000'].includes(tradingCapital) ||
-              ["I've never traded", "0–1 year"].includes(tradingExperience)
-            );
+            // Find trading capital answer
+            const tradingCapitalAnswer = getAnswerByFieldName(data.answers, 'trading_capital');
+            console.log("[Quiz] Trading capital from answers:", tradingCapitalAnswer);
+            
+            // Map Typeform value format to our application format
+            let mappedTradingCapital = tradingCapitalAnswer;
+            
+            if (tradingCapitalAnswer === "< $1k") {
+              mappedTradingCapital = "Under $1,000";
+            } else if (tradingCapitalAnswer === "$1k-$5k") {
+              mappedTradingCapital = "$1,000 – $5,000";
+            } else if (tradingCapitalAnswer === "$5k-$10k") {
+              mappedTradingCapital = "$5,000 – $10,000";
+            } else if (tradingCapitalAnswer === "$10k-$250k") {
+              mappedTradingCapital = "$10,000 – $250,000";
+            } else if (tradingCapitalAnswer === "> $250k") {
+              mappedTradingCapital = "Over $250,000";
+            }
+            
+            console.log("[Quiz] Mapped trading capital:", mappedTradingCapital);
+            
+            // Apply qualification logic directly - same as checkQualification function
+            isQualified = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(mappedTradingCapital);
+            console.log("[Quiz] Final qualification status:", isQualified);
           }
-        } catch (error) {
-          console.error('Error processing qualification data:', error);
-          isQualified = false; // Default to not qualified on error
         }
+      } catch (error) {
+        console.error('[Quiz] Error processing qualification data:', error);
+        console.log('[Quiz] Falling back to default qualification: false');
+        isQualified = false;
+      }
+      
+      // If we encounter issues with the regular qualification flow, 
+      // check URL parameters directly as a last resort
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlQualified = urlParams.get('qualified');
+      
+      if (urlQualified === 'true') {
+        console.log("[Quiz] Using URL parameter qualification override: true");
+        isQualified = true;
       }
       
       setQualificationResult(isQualified);
       
-      // Redirect to the appropriate page based on qualification
-      setTimeout(() => {
-        if (isQualified) {
-          navigate('/book-call');
-        } else {
-          navigate('/vsl?qualified=false');
-        }
-      }, 1500);
+      // Add error handling for the redirect
+      try {
+        // Redirect to the appropriate page based on qualification
+        setTimeout(() => {
+          try {
+            if (isQualified) {
+              console.log("[Quiz] Redirecting to /book-call");
+              navigate('/book-call');
+            } else {
+              console.log("[Quiz] Redirecting to /vsl?qualified=false");
+              navigate('/vsl?qualified=false');
+            }
+          } catch (redirectError) {
+            console.error("[Quiz] Error during redirect:", redirectError);
+            // Emergency direct window location change as last resort
+            window.location.href = isQualified ? '/book-call' : '/vsl?qualified=false';
+          }
+        }, 1500);
+      } catch (redirectSetupError) {
+        console.error("[Quiz] Error setting up redirect:", redirectSetupError);
+        // Immediate emergency fallback
+        window.location.href = isQualified ? '/book-call' : '/vsl?qualified=false';
+      }
     }
   };
   

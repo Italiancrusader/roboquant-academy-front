@@ -87,6 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Map answers to their respective fields
     answers.forEach((answer: any) => {
       const questionId = answer.field.id;
+      const questionRef = answer.field.ref;
       let value = "";
       
       // Extract the value based on the answer type
@@ -102,15 +103,31 @@ const handler = async (req: Request): Promise<Response> => {
       processedAnswers[questionId] = value;
       
       // Map specific questions to our qualification criteria
-      // Note: You'll need to replace these IDs with the actual question IDs from your Typeform
-      if (questionId.includes("trading_capital")) {
+      // Look for trading_capital in both ID and ref fields for robustness
+      if (questionId.includes("trading_capital") || 
+          (questionRef && questionRef.includes("trading_capital")) ||
+          questionId === "Po4vFV7bfrWA" || // Specific ID for trading capital question
+          (answer.field.title && answer.field.title.toLowerCase().includes("capital"))) {
         tradingCapital = value;
-      } else if (questionId.includes("trading_experience")) {
+        console.log("Found trading capital question:", { id: questionId, ref: questionRef, value });
+      } else if (questionId.includes("trading_experience") || 
+                (questionRef && questionRef.includes("trading_experience")) ||
+                questionId === "aUPi2xOQ3bgw" || // Specific ID for experience question
+                (answer.field.title && answer.field.title.toLowerCase().includes("been trading"))) {
         tradingExperience = value;
-      } else if (questionId.includes("trading_goal")) {
+        console.log("Found trading experience question:", { id: questionId, ref: questionRef, value });
+      } else if (questionId.includes("trading_goal") || 
+                (questionRef && questionRef.includes("goal")) ||
+                questionId === "PKKTmblAkQtJ" || 
+                (answer.field.title && answer.field.title.toLowerCase().includes("goal"))) {
         tradingGoal = value;
-      } else if (questionId.includes("prop_firm")) {
+        console.log("Found trading goal question:", { id: questionId, ref: questionRef, value });
+      } else if (questionId.includes("prop_firm") || 
+                (questionRef && questionRef.includes("prop_firm")) ||
+                questionId === "BQ1g9TyuA6G6" ||
+                (answer.field.title && answer.field.title.toLowerCase().includes("prop-firm"))) {
         propFirmUsage = value;
+        console.log("Found prop firm question:", { id: questionId, ref: questionRef, value });
       }
     });
     
@@ -124,16 +141,31 @@ const handler = async (req: Request): Promise<Response> => {
       }))
     ));
     
+    // Map Typeform values to our application format for consistency
+    let mappedTradingCapital = tradingCapital;
+    
+    if (tradingCapital === "< $1k") {
+      mappedTradingCapital = "Under $1,000";
+    } else if (tradingCapital === "$1k-$5k") {
+      mappedTradingCapital = "$1,000 – $5,000";
+    } else if (tradingCapital === "$5k-$10k") {
+      mappedTradingCapital = "$5,000 – $10,000";
+    } else if (tradingCapital === "$10k-$250k") {
+      mappedTradingCapital = "$10,000 – $250,000";
+    } else if (tradingCapital === "> $250k") {
+      mappedTradingCapital = "Over $250,000";
+    }
+    
     // Simplified qualification logic - only check for minimum capital
     const approvedCapitalValues = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"];
-    const hasMinimumCapital = approvedCapitalValues.includes(tradingCapital);
+    const hasMinimumCapital = approvedCapitalValues.includes(mappedTradingCapital);
     
     console.log("DEBUG TYPEFORM WEBHOOK - All processed answers:", JSON.stringify(processedAnswers));
-    console.log("DEBUG TYPEFORM WEBHOOK - Trading capital from typeform:", tradingCapital);
-    console.log("DEBUG TYPEFORM WEBHOOK - Trading capital type:", typeof tradingCapital);
+    console.log("DEBUG TYPEFORM WEBHOOK - Original trading capital:", tradingCapital);
+    console.log("DEBUG TYPEFORM WEBHOOK - Mapped trading capital:", mappedTradingCapital);
     console.log("DEBUG TYPEFORM WEBHOOK - Approved capital values:", JSON.stringify(approvedCapitalValues));
     console.log("DEBUG TYPEFORM WEBHOOK - Has minimum capital?", hasMinimumCapital);
-    console.log("DEBUG TYPEFORM WEBHOOK - includes() result:", approvedCapitalValues.includes(tradingCapital));
+    console.log("DEBUG TYPEFORM WEBHOOK - includes() result:", approvedCapitalValues.includes(mappedTradingCapital));
     
     // Main qualification gate
     const qualifiesForCall = hasMinimumCapital;
@@ -151,11 +183,13 @@ const handler = async (req: Request): Promise<Response> => {
           qualifies_for_call: qualifiesForCall,
           submission_date: new Date().toISOString(),
           debug_info: {
-            trading_capital: tradingCapital,
+            original_trading_capital: tradingCapital,
+            mapped_trading_capital: mappedTradingCapital,
             has_minimum_capital: hasMinimumCapital,
             qualifies_for_call: qualifiesForCall,
             approved_values: approvedCapitalValues,
-            raw_answers: answers
+            raw_answers: answers,
+            raw_payload: payload
           }
         }
       ]);
@@ -178,7 +212,7 @@ const handler = async (req: Request): Promise<Response> => {
     const responseBody = {
       success: true, 
       qualifiesForCall,
-      tradingCapital,
+      tradingCapital: mappedTradingCapital,
       redirectUrl
     };
     
