@@ -1,13 +1,19 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import SurveyForm from '@/components/EnrollmentSurvey/SurveyForm';
+import SurveyForm from './SurveyForm';
 import { submitLead } from '@/services/leadService';
 import { toast } from '@/components/ui/use-toast';
 
-const SurveyFunnel = () => {
+interface SurveyFormWrapperProps {
+  onComplete?: () => void;
+  className?: string;
+}
+
+const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({ 
+  onComplete,
+  className
+}) => {
   const [step, setStep] = useState(1);
   const [surveyData, setSurveyData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,9 +29,9 @@ const SurveyFunnel = () => {
       // Determine if the user qualifies for a call based on the survey answers
       const qualifiesForCall = checkQualification(combinedData);
       
-      console.log("Survey data:", combinedData);
-      console.log("Qualifies for call:", qualifiesForCall);
-      console.log("Trading capital:", combinedData.tradingCapital);
+      console.log("Survey wrapper data:", combinedData);
+      console.log("Wrapper qualifies for call:", qualifiesForCall);
+      console.log("Wrapper trading capital:", combinedData.tradingCapital);
       
       // Submit lead data regardless of qualification
       await submitLead({
@@ -35,6 +41,11 @@ const SurveyFunnel = () => {
         source: "enrollment_survey",
         leadMagnet: qualifiesForCall ? "strategy_call" : "course_enrollment"
       });
+      
+      // Call onComplete callback if provided
+      if (onComplete) {
+        onComplete();
+      }
       
       // Show success toast
       toast({
@@ -77,41 +88,26 @@ const SurveyFunnel = () => {
 
   // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
   const checkQualification = (data: Record<string, any>): boolean => {
-    console.log("Checking qualification with trading capital:", data.tradingCapital);
+    console.log("Wrapper checking qualification with trading capital:", data.tradingCapital);
     // Only check for minimum capital requirement of $5,000
     const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
-    console.log("Has minimum capital:", hasMinimumCapital);
+    console.log("Wrapper has minimum capital:", hasMinimumCapital);
     
     // Return true if minimum capital requirement is met
     return hasMinimumCapital;
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 pt-32 pb-20">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-card rounded-lg shadow-lg p-8">
-            <h1 className="text-2xl font-bold mb-4">
-              Let's See If You're a Good Fit
-            </h1>
-            <p className="text-muted-foreground mb-8">
-              Complete this short survey to find out if you qualify for a strategy call with our team.
-            </p>
-            
-            <SurveyForm 
-              step={step}
-              onStepSubmit={handleStepSubmit}
-              onComplete={handleSurveyComplete}
-              isSubmitting={isSubmitting}
-              initialData={surveyData}
-            />
-          </div>
-        </div>
-      </div>
-      <Footer />
+    <div className={className}>
+      <SurveyForm 
+        step={step}
+        onStepSubmit={handleStepSubmit}
+        onComplete={handleSurveyComplete}
+        isSubmitting={isSubmitting}
+        initialData={surveyData}
+      />
     </div>
   );
 };
 
-export default SurveyFunnel;
+export default SurveyFormWrapper;

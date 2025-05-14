@@ -77,6 +77,9 @@ const handler = async (req: Request): Promise<Response> => {
     // Simplified qualification logic - only check for minimum capital
     const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(tradingCapital);
     
+    console.log("Trading capital from typeform:", tradingCapital);
+    console.log("Has minimum capital from typeform:", hasMinimumCapital);
+    
     // Main qualification gate
     const qualifiesForCall = hasMinimumCapital;
     
@@ -102,7 +105,8 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         qualifiesForCall,
-        redirectUrl: qualifiesForCall ? "/vsl?qualified=true" : "/checkout"
+        tradingCapital,
+        redirectUrl: qualifiesForCall ? "/book-call" : "/pricing"
       }),
       {
         status: 200,
@@ -118,7 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: false, 
         error: error.message,
-        redirectUrl: "/checkout" // Default redirect on error
+        redirectUrl: "/pricing" // Default redirect on error
       }),
       {
         status: 500,

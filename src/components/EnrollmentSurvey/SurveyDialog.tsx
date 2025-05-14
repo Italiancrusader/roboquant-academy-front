@@ -10,6 +10,7 @@ import {
 import SurveyForm from "./SurveyForm";
 import { useNavigate } from "react-router-dom";
 import { submitLead } from "@/services/leadService";
+import { toast } from "@/components/ui/use-toast";
 
 interface SurveyDialogProps {
   isOpen: boolean;
@@ -51,16 +52,32 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
       // Close the dialog
       onOpenChange(false);
       
-      // Route based on qualification
-      if (qualifiesForCall) {
-        // Redirect to calendar booking page
-        navigate("/book-call");
-      } else {
-        // Redirect to pricing/checkout page
-        navigate("/pricing");
-      }
+      // Show toast notification
+      toast({
+        title: qualifiesForCall ? "You qualify for a strategy call!" : "Thank you for your application",
+        description: qualifiesForCall 
+          ? "Redirecting you to book your strategy call." 
+          : "Redirecting you to our pricing page.",
+        duration: 3000,
+      });
+      
+      // Route based on qualification with a slight delay for the toast to be visible
+      setTimeout(() => {
+        if (qualifiesForCall) {
+          // Redirect to calendar booking page
+          navigate("/book-call");
+        } else {
+          // Redirect to pricing/checkout page
+          navigate("/pricing");
+        }
+      }, 1000);
     } catch (error) {
       console.error("Error submitting survey:", error);
+      toast({
+        title: "Error",
+        description: "There was an error processing your survey. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
