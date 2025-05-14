@@ -47,7 +47,7 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
         combinedData.tradingCapital = "$5,000 – $10,000";
       } else if (combinedData.tradingCapital === "$10k-$250k") {
         combinedData.tradingCapital = "$10,000 – $250,000";
-      } else if (combinedData.tradingCapital === "> $250k") {
+      } else if (combinedData.tradingCapital === "> $250k" || combinedData.tradingCapital === "> $25k") {
         combinedData.tradingCapital = "Over $250,000";
       }
       

@@ -152,7 +152,7 @@ const handler = async (req: Request): Promise<Response> => {
       mappedTradingCapital = "$5,000 – $10,000";
     } else if (tradingCapital === "$10k-$250k") {
       mappedTradingCapital = "$10,000 – $250,000";
-    } else if (tradingCapital === "> $250k") {
+    } else if (tradingCapital === "> $250k" || tradingCapital === "> $25k") {
       mappedTradingCapital = "Over $250,000";
     }
     
