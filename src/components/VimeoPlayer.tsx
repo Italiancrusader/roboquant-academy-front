@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -127,6 +126,14 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       }
       setIsLoading(false);
       return;
+    }
+
+    // Add the Vimeo Player API script dynamically
+    if (!document.querySelector('script[src="https://player.vimeo.com/api/player.js"]')) {
+      const script = document.createElement('script');
+      script.src = "https://player.vimeo.com/api/player.js";
+      script.async = true;
+      document.body.appendChild(script);
     }
 
     let timeUpdateInterval: number | undefined;
@@ -313,7 +320,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     );
   }
   
-  // Construct the src URL with all parameters
+  // Construct the src URL with all parameters - using the same format from VimeoDemo
   const buildSrcUrl = () => {
     let src = `https://player.vimeo.com/video/${vimeoId}`;
     
@@ -322,7 +329,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       src += `/${vimeoHash}`;
     }
     
-    // Add query parameters
+    // Add query parameters - using the working configuration from VimeoDemo
     const params = new URLSearchParams();
     params.append('title', '0');
     params.append('byline', '0');
@@ -331,10 +338,10 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     params.append('dnt', dnt ? '1' : '0');
     params.append('controls', controls ? '1' : '0');
     params.append('transparent', transparent ? '1' : '0');
-    params.append('app_id', '58479');  // Match the app_id from your embed code
+    params.append('app_id', '58479');  // Match the app_id from working demo
     params.append('player_id', `player${vimeoId}`);
-    params.append('pip', '0');
     params.append('badge', '0');
+    params.append('autopause', '0'); // Added from working example
     
     // Add timestamp to bust cache on retries
     if (retryCount > 0) {
