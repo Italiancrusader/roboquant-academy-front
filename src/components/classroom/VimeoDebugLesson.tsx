@@ -6,12 +6,12 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { resolveVimeoId, getVimeoHash } from '../vimeo/VimeoUrlUtils';
+import { resolveVimeoId, getVimeoHash, buildVimeoSrcUrl } from '../vimeo/VimeoUrlUtils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const VimeoDebugLesson: React.FC = () => {
-  // Hardcoded video URL from the provided embed
-  const videoUrl = 'https://player.vimeo.com/video/1080540494';
+  // Example of a private video URL with hash
+  const videoUrl = 'https://vimeo.com/1080540494/9e4c378255?share=copy';
   const [showEmbed, setShowEmbed] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
   
@@ -19,8 +19,18 @@ const VimeoDebugLesson: React.FC = () => {
   const vimeoId = resolveVimeoId(undefined, videoUrl);
   const vimeoHash = getVimeoHash(videoUrl);
   
-  // Exactly match the provided embed URL from the working iframe
-  const providedEmbedUrl = "https://player.vimeo.com/video/1080540494?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479";
+  // Build the embed URL with our utility
+  const builtEmbedUrl = buildVimeoSrcUrl({
+    vimeoId: vimeoId || '',
+    vimeoHash: vimeoHash,
+    autoplay: false,
+    dnt: true,
+    controls: true,
+    transparent: true
+  });
+
+  // Raw embed URL from the sample code
+  const rawEmbedUrl = `https://player.vimeo.com/video/${vimeoId}?h=${vimeoHash}&badge=0&autopause=0&player_id=0&app_id=58479`;
 
   return (
     <Card className="mb-8">
@@ -42,8 +52,9 @@ const VimeoDebugLesson: React.FC = () => {
               <div className="mt-2 space-y-2 text-sm">
                 <div><strong>Video ID:</strong> {vimeoId || 'Not resolved'}</div>
                 <div><strong>Hash:</strong> {vimeoHash || 'None'}</div>
-                <div className="break-all"><strong>Our Built URL:</strong> {providedEmbedUrl}</div>
-                <div className="break-all"><strong>Provided Embed URL:</strong> {providedEmbedUrl}</div>
+                <div className="break-all"><strong>Our Built URL:</strong> {builtEmbedUrl}</div>
+                <div className="break-all"><strong>Raw Embed URL:</strong> {rawEmbedUrl}</div>
+                <div className="break-all"><strong>Original URL:</strong> {videoUrl}</div>
               </div>
             </AlertDescription>
           </Alert>
@@ -82,7 +93,7 @@ const VimeoDebugLesson: React.FC = () => {
               <AspectRatio ratio={16/9}>
                 <div className="w-full h-full border rounded-md overflow-hidden">
                   <iframe 
-                    src={providedEmbedUrl}
+                    src={rawEmbedUrl}
                     frameBorder="0" 
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" 
                     style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
@@ -91,7 +102,7 @@ const VimeoDebugLesson: React.FC = () => {
                 </div>
               </AspectRatio>
               <div className="text-xs text-muted-foreground border-l-4 border-muted-foreground/20 pl-3 py-1">
-                Using the exact iframe embed code provided in the request
+                Using the raw iframe embed code
               </div>
             </>
           )}
@@ -100,7 +111,7 @@ const VimeoDebugLesson: React.FC = () => {
           
           <h3 className="text-md font-semibold">Raw HTML Embed Code:</h3>
           <div className="bg-muted p-4 rounded-md text-xs overflow-auto max-h-40">
-            <code>{`<div style="padding:56.25% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1080540494?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Different Types of Trading Bots(1)"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>`}</code>
+            <code>{`<div style="padding:56.25% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/${vimeoId}?h=${vimeoHash}&badge=0&autopause=0&player_id=0&app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Different Types of Trading Bots"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>`}</code>
           </div>
         </div>
       </CardContent>

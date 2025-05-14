@@ -42,22 +42,16 @@ export const resolveVimeoId = (videoId?: string, videoUrl?: string): string | nu
 export const getVimeoHash = (videoUrl?: string): string | null => {
   if (!videoUrl) return null;
   
-  // Try to extract hash from URLs like vimeo.com/123456789/abcdefgh
+  // Check for hash in format like vimeo.com/123456789/abcdef123
   const privateHashMatch = videoUrl.match(/\/(\d+)\/([a-zA-Z0-9]+)/);
   if (privateHashMatch && privateHashMatch[2]) {
     return privateHashMatch[2];
   }
   
-  // Try to match the hash pattern in the URL
-  const matchHash = videoUrl.match(/\/([a-zA-Z0-9]+)(?:[?#]|$)/);
-  if (matchHash && matchHash[1] && !videoUrl.includes(`/${matchHash[1]}/`)) {
-    return matchHash[1];
-  }
-  
-  // If there's a direct hash in the URL
-  const hashMatch = videoUrl.match(/\/video\/\d+\/([a-zA-Z0-9]+)/);
-  if (hashMatch && hashMatch[1]) {
-    return hashMatch[1];
+  // Check for h=abcdef123 parameter in the URL
+  const hParamMatch = videoUrl.match(/[?&]h=([a-zA-Z0-9]+)/);
+  if (hParamMatch && hParamMatch[1]) {
+    return hParamMatch[1];
   }
   
   return null;
@@ -65,7 +59,6 @@ export const getVimeoHash = (videoUrl?: string): string | null => {
 
 /**
  * Builds the complete Vimeo player embed URL with all necessary parameters
- * Uses the exact parameters from the working example
  */
 export const buildVimeoSrcUrl = ({
   vimeoId,
@@ -88,12 +81,36 @@ export const buildVimeoSrcUrl = ({
 }): string => {
   let src = `https://player.vimeo.com/video/${vimeoId}`;
   
-  // Add the hash/private token if available - but don't duplicate the ID
-  if (vimeoHash && vimeoHash !== vimeoId) {
-    src += `/${vimeoHash}`;
+  // Add the hash parameter either as part of the path or as h= query parameter
+  if (vimeoHash) {
+    if (vimeoHash !== vimeoId) {
+      // According to the embed code format, use h= parameter
+      const params = new URLSearchParams();
+      params.append('h', vimeoHash);
+      params.append('title', '0');
+      params.append('byline', '0');
+      params.append('portrait', '0');
+      params.append('badge', '0');
+      params.append('autopause', '0');
+      params.append('player_id', '0');
+      params.append('app_id', '58479');
+      
+      // Add timestamp to bust cache on retries
+      if (retryCount > 0) {
+        params.append('_t', Date.now().toString());
+      }
+      
+      // Add special parameters for admins to bypass privacy restrictions
+      if (isAdmin) {
+        params.append('background', '1');
+        params.append('muted', '0');
+      }
+      
+      return `${src}?${params.toString()}`;
+    }
   }
   
-  // Add query parameters - using the exact parameters from the working demo
+  // Fallback to standard parameters without hash
   const params = new URLSearchParams();
   params.append('title', '0');
   params.append('byline', '0');

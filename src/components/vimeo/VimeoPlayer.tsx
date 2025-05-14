@@ -77,6 +77,24 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     );
   }
 
+  // Log the video ID and hash for debugging
+  console.log('Vimeo Video ID:', vimeoId);
+  console.log('Vimeo Hash:', vimeoHash);
+  
+  // Build the source URL for the iframe
+  const srcUrl = buildVimeoSrcUrl({
+    vimeoId,
+    vimeoHash,
+    autoplay,
+    dnt,
+    controls,
+    transparent,
+    retryCount,
+    isAdmin
+  });
+  
+  console.log('Built Vimeo URL:', srcUrl);
+
   return (
     <div className="relative aspect-video bg-black">
       {error && (
@@ -93,16 +111,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
       
       <iframe
         ref={iframeRef}
-        src={buildVimeoSrcUrl({
-          vimeoId,
-          vimeoHash,
-          autoplay,
-          dnt,
-          controls,
-          transparent,
-          retryCount,
-          isAdmin
-        })}
+        src={srcUrl}
         className="absolute top-0 left-0 w-full h-full"
         frameBorder="0"
         allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
