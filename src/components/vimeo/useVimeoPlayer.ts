@@ -60,28 +60,10 @@ export const useVimeoPlayer = ({
         setError("Video failed to load within the expected time");
         if (onError) onError("Video failed to load within the expected time");
       }
-    }, 20000); // 20 second timeout - increased to give more time for loading
+    }, 20000); // 20 second timeout
     
-    // Load Vimeo Player API script if it's not already loaded
-    if (!window.Vimeo) {
-      const script = document.createElement('script');
-      script.src = 'https://player.vimeo.com/api/player.js';
-      script.async = true;
-      script.onload = initializePlayer;
-      document.body.appendChild(script);
-      
-      script.onerror = () => {
-        clearTimeout(initTimeout);
-        const errorMsg = "Failed to load Vimeo player script";
-        setError(errorMsg);
-        if (onError) onError(errorMsg);
-        setIsLoading(false);
-      };
-    } else {
-      initializePlayer();
-    }
-    
-    function initializePlayer() {
+    // Function to initialize the player
+    const initializePlayer = () => {
       try {
         if (!iframeRef.current) return;
 
@@ -100,14 +82,14 @@ export const useVimeoPlayer = ({
         playerInstance = player;
         
         // Listen for play event to confirm the player is working
-        player.on('play', function() {
+        player.on('play', () => {
           clearTimeout(initTimeout);
           setIsLoading(false);
           setError(null);
         });
         
         // Listen for errors
-        player.on('error', function(err: any) {
+        player.on('error', (err: any) => {
           clearTimeout(initTimeout);
           const errorMsg = `Video player error: ${err?.message || 'Unknown error'}`;
           console.error(errorMsg, err);
@@ -116,26 +98,16 @@ export const useVimeoPlayer = ({
           setIsLoading(false);
         });
         
-        // Explicitly handle the notFound error that's shown in the screenshot
-        player.on('notfound', function() {
-          clearTimeout(initTimeout);
-          const errorMsg = "notfound";  // Just use "notfound" to match with VideoErrorDialog handling
-          console.error(errorMsg);
-          setError(errorMsg);
-          if (onError) onError(errorMsg);
-          setIsLoading(false);
-        });
-        
-        // Listen for other initialization errors
+        // Listen for other initialization errors - we don't use "notfound" as an event anymore
         player.ready().catch((err: any) => {
           clearTimeout(initTimeout);
           let errorMsg = "There was a problem loading this video";
           
           if (err && err.name) {
             if (err.name === "PrivacyError") {
-              errorMsg = "private";  // Use simple "private" to match with VideoErrorDialog
+              errorMsg = "This video is private and cannot be accessed";
             } else if (err.name === "NotFoundError") {
-              errorMsg = "notfound";  // Use simple "notfound" to match with VideoErrorDialog
+              errorMsg = "Video not found. It may have been deleted or made private.";
             }
           }
           
@@ -160,7 +132,9 @@ export const useVimeoPlayer = ({
           
           // For private videos or videos that don't exist, show an error
           if (err && (err.name === "NotFoundError" || err.name === "PrivacyError")) {
-            const errorMsg = err.name === "NotFoundError" ? "notfound" : "private";
+            const errorMsg = err.name === "NotFoundError" 
+              ? "Video not found. It may have been deleted or made private."
+              : "This video is private and cannot be accessed";
             setError(errorMsg);
             if (onError) onError(errorMsg);
           }
@@ -193,6 +167,25 @@ export const useVimeoPlayer = ({
         if (onError) onError(errorMsg);
         setIsLoading(false);
       }
+    };
+    
+    // Load Vimeo Player API script if it's not already loaded
+    if (!window.Vimeo) {
+      const script = document.createElement('script');
+      script.src = 'https://player.vimeo.com/api/player.js';
+      script.async = true;
+      script.onload = initializePlayer;
+      document.body.appendChild(script);
+      
+      script.onerror = () => {
+        clearTimeout(initTimeout);
+        const errorMsg = "Failed to load Vimeo player script";
+        setError(errorMsg);
+        if (onError) onError(errorMsg);
+        setIsLoading(false);
+      };
+    } else {
+      initializePlayer();
     }
     
     // Clean up
@@ -207,7 +200,6 @@ export const useVimeoPlayer = ({
         try {
           playerInstance.off('ended');
           playerInstance.off('error');
-          playerInstance.off('notfound');
           playerInstance.off('play');
         } catch (err) {
           console.error('Error cleaning up Vimeo player:', err);

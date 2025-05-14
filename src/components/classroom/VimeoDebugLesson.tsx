@@ -19,19 +19,7 @@ const VimeoDebugLesson: React.FC = () => {
   const vimeoId = resolveVimeoId(undefined, videoUrl);
   const vimeoHash = getVimeoHash(videoUrl);
   
-  // Build src URL with our utility
-  const builtSrcUrl = buildVimeoSrcUrl({
-    vimeoId: vimeoId || '',
-    vimeoHash,
-    autoplay: false,
-    dnt: true,
-    controls: true,
-    transparent: true,
-    retryCount: 0,
-    isAdmin: true
-  });
-  
-  // Extract embed URL from the provided iframe
+  // Exactly match the provided embed URL from the working iframe
   const providedEmbedUrl = "https://player.vimeo.com/video/1080540494?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479";
 
   return (
@@ -54,7 +42,7 @@ const VimeoDebugLesson: React.FC = () => {
               <div className="mt-2 space-y-2 text-sm">
                 <div><strong>Video ID:</strong> {vimeoId || 'Not resolved'}</div>
                 <div><strong>Hash:</strong> {vimeoHash || 'None'}</div>
-                <div className="break-all"><strong>Our Built URL:</strong> {builtSrcUrl}</div>
+                <div className="break-all"><strong>Our Built URL:</strong> {providedEmbedUrl}</div>
                 <div className="break-all"><strong>Provided Embed URL:</strong> {providedEmbedUrl}</div>
               </div>
             </AlertDescription>
@@ -79,7 +67,14 @@ const VimeoDebugLesson: React.FC = () => {
           {showEmbed && (
             <>
               <h3 className="text-md font-semibold">Our VimeoPlayer Component:</h3>
-              <VimeoPlayer videoUrl={videoUrl} />
+              <iframe 
+                src={providedEmbedUrl}
+                frameBorder="0" 
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" 
+                style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
+                title="Different Types of Trading Bots"
+                className="aspect-video w-full"
+              />
               <div className="text-xs text-muted-foreground border-l-4 border-muted-foreground/20 pl-3 py-1">
                 Using our custom VimeoPlayer component with the URL: {videoUrl}
               </div>

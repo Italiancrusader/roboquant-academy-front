@@ -92,19 +92,20 @@ export const buildVimeoSrcUrl = ({
     src += `/${vimeoHash}`;
   }
   
-  // Add query parameters - using the working configuration from VimeoDemo
+  // Add query parameters - exactly matching the working embed from VimeoDemo
   const params = new URLSearchParams();
   params.append('title', '0');
   params.append('byline', '0');
   params.append('portrait', '0');
-  params.append('autoplay', autoplay ? '1' : '0');
-  params.append('dnt', dnt ? '1' : '0');
-  params.append('controls', controls ? '1' : '0');
-  params.append('transparent', transparent ? '1' : '0');
-  params.append('app_id', '58479');
-  params.append('player_id', `player${vimeoId}`);
   params.append('badge', '0');
   params.append('autopause', '0');
+  params.append('player_id', '0');
+  params.append('app_id', '58479');
+  
+  // Only add these parameters if they differ from the default values in the working example
+  if (autoplay) {
+    params.append('autoplay', '1');
+  }
   
   // Add timestamp to bust cache on retries
   if (retryCount > 0) {
