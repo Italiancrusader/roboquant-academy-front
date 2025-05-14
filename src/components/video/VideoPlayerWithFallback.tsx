@@ -89,8 +89,9 @@ const VideoPlayerWithFallback: React.FC<VideoPlayerWithFallbackProps> = ({
     <div className={`bg-black relative overflow-hidden rounded-lg ${className}`}>
       {hasError ? (
         <VideoErrorHandler
-          message="There was an error loading the video. Please refresh the page."
-          className="w-full aspect-video flex items-center justify-center bg-black/90"
+          error="There was an error loading the video. Please refresh the page."
+          onRetry={() => setHasError(false)}
+          videoId={videoId}
         />
       ) : (
         <AspectRatio ratio={16/9}>
