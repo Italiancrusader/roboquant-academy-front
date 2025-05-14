@@ -139,7 +139,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         setError("Video failed to load within the expected time");
         if (onError) onError("Video failed to load within the expected time");
       }
-    }, 15000); // 15 second timeout - increased from 10 to give more time
+    }, 20000); // 20 second timeout - increased to give more time for loading
     
     // Load Vimeo Player API script if it's not already loaded
     if (!window.Vimeo) {
@@ -198,7 +198,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         // Explicitly handle the notFound error that's shown in the screenshot
         player.on('notfound', function() {
           clearTimeout(initTimeout);
-          const errorMsg = "This video could not be found or is private";
+          const errorMsg = "notfound";  // Just use "notfound" to match with VideoErrorDialog handling
           console.error(errorMsg);
           setError(errorMsg);
           if (onError) onError(errorMsg);
@@ -212,9 +212,9 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
           
           if (err && err.name) {
             if (err.name === "PrivacyError") {
-              errorMsg = "This video is private and requires a valid access token";
+              errorMsg = "private";  // Use simple "private" to match with VideoErrorDialog
             } else if (err.name === "NotFoundError") {
-              errorMsg = "This video could not be found or has been removed";
+              errorMsg = "notfound";  // Use simple "notfound" to match with VideoErrorDialog
             }
           }
           
@@ -239,7 +239,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
           
           // For private videos or videos that don't exist, show an error
           if (err && (err.name === "NotFoundError" || err.name === "PrivacyError")) {
-            const errorMsg = "This video is either private or doesn't exist";
+            const errorMsg = err.name === "NotFoundError" ? "notfound" : "private";
             setError(errorMsg);
             if (onError) onError(errorMsg);
           }
@@ -331,7 +331,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
     params.append('dnt', dnt ? '1' : '0');
     params.append('controls', controls ? '1' : '0');
     params.append('transparent', transparent ? '1' : '0');
-    params.append('app_id', '58479');
+    params.append('app_id', '58479');  // Match the app_id from your embed code
     params.append('player_id', `player${vimeoId}`);
     params.append('pip', '0');
     params.append('badge', '0');
@@ -388,7 +388,7 @@ const VimeoPlayer: React.FC<VimeoPlayerProps> = ({
         src={buildSrcUrl()}
         className="absolute top-0 left-0 w-full h-full"
         frameBorder="0"
-        allow="autoplay; fullscreen; picture-in-picture"
+        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
         allowFullScreen
         title="Vimeo video player"
         onError={handleIframeError}
