@@ -37,9 +37,12 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
       // Determine if the user qualifies for a call based on the survey answers
       const qualifiesForCall = checkQualification(combinedData);
       
-      console.log("Survey dialog data:", combinedData);
-      console.log("Dialog qualifies for call:", qualifiesForCall);
-      console.log("Dialog trading capital:", combinedData.tradingCapital);
+      console.log("[SurveyDialog] FULL QUALIFICATION DEBUG");
+      console.log("[SurveyDialog] Survey dialog data:", combinedData);
+      console.log("[SurveyDialog] Dialog qualifies for call:", qualifiesForCall);
+      console.log("[SurveyDialog] Dialog trading capital:", combinedData.tradingCapital);
+      console.log("[SurveyDialog] Trading capital type:", typeof combinedData.tradingCapital);
+      console.log("[SurveyDialog] Is included in approved list:", ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(combinedData.tradingCapital));
       
       // Submit lead data regardless of qualification
       await submitLead({
@@ -62,18 +65,22 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
         duration: 3000,
       });
       
+      console.log("[SurveyDialog] About to redirect to:", qualifiesForCall ? "/book-call" : "/vsl?qualified=false");
+      
       // Route based on qualification with a slight delay for the toast to be visible
       setTimeout(() => {
         if (qualifiesForCall) {
           // Redirect to calendar booking page
+          console.log("[SurveyDialog] Redirecting to /book-call");
           navigate("/book-call");
         } else {
           // Redirect to pricing/checkout page with qualified parameter
+          console.log("[SurveyDialog] Redirecting to /vsl?qualified=false");
           navigate("/vsl?qualified=false");
         }
       }, 1000);
     } catch (error) {
-      console.error("Error submitting survey:", error);
+      console.error("[SurveyDialog] Error submitting survey:", error);
       toast({
         title: "Error",
         description: "There was an error processing your survey. Please try again.",

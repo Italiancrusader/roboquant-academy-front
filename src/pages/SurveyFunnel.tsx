@@ -24,9 +24,12 @@ const SurveyFunnel = () => {
       // Determine if the user qualifies for a call based on the survey answers
       const qualifiesForCall = checkQualification(combinedData);
       
-      console.log("Survey data:", combinedData);
-      console.log("Qualifies for call:", qualifiesForCall);
-      console.log("Trading capital:", combinedData.tradingCapital);
+      console.log("[SurveyFunnel] FULL QUALIFICATION DEBUG");
+      console.log("[SurveyFunnel] Survey data:", combinedData);
+      console.log("[SurveyFunnel] Qualifies for call:", qualifiesForCall);
+      console.log("[SurveyFunnel] Trading capital:", combinedData.tradingCapital);
+      console.log("[SurveyFunnel] Trading capital type:", typeof combinedData.tradingCapital);
+      console.log("[SurveyFunnel] Is included in approved list:", ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(combinedData.tradingCapital));
       
       // Submit lead data regardless of qualification
       await submitLead({
@@ -46,18 +49,22 @@ const SurveyFunnel = () => {
         duration: 3000,
       });
       
+      console.log("[SurveyFunnel] About to redirect to:", qualifiesForCall ? "/book-call" : "/vsl?qualified=false");
+      
       // Route based on qualification with slight delay for toast
       setTimeout(() => {
         if (qualifiesForCall) {
           // Redirect to calendar booking page
+          console.log("[SurveyFunnel] Redirecting to /book-call");
           navigate("/book-call");
         } else {
           // Redirect to pricing/checkout page
+          console.log("[SurveyFunnel] Redirecting to /vsl?qualified=false");
           navigate("/vsl?qualified=false");
         }
       }, 1000);
     } catch (error) {
-      console.error("Error submitting survey:", error);
+      console.error("[SurveyFunnel] Error submitting survey:", error);
       toast({
         title: "Error",
         description: "There was an error processing your survey. Please try again.",

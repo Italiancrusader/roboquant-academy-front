@@ -40,12 +40,16 @@ const VSL = () => {
   // Check if user is qualified from URL parameter
   const qualified = searchParams.get('qualified');
   const isQualified = qualified === 'true';
-  console.log("VSL Page - Qualified parameter:", qualified);
-  console.log("VSL Page - isQualified:", isQualified);
+  
+  console.log("[VSL] DEBUG - URL parameters:", Object.fromEntries(searchParams.entries()));
+  console.log("[VSL] DEBUG - qualified parameter:", qualified);
+  console.log("[VSL] DEBUG - isQualified:", isQualified);
+  console.log("[VSL] DEBUG - Current URL:", window.location.href);
   
   // If user is qualified, show them as having "watched" the video
   useEffect(() => {
     if (isQualified) {
+      console.log("[VSL] User is qualified via URL parameter, setting watched=true");
       setWatched(true);
       
       trackEvent('qualified_viewer', {
@@ -136,8 +140,9 @@ const VSL = () => {
     }
   };
   
-  // Handle going to book-call page if qualified
+  // Handle booking call redirection to ensure it works
   const handleBookCall = () => {
+    console.log("[VSL] Book call button clicked, navigating to /book-call");
     navigate('/book-call');
     trackEvent('book_call_clicked', {
       event_category: 'Navigation',

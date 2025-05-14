@@ -75,10 +75,15 @@ const handler = async (req: Request): Promise<Response> => {
     });
     
     // Simplified qualification logic - only check for minimum capital
-    const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(tradingCapital);
+    const approvedCapitalValues = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"];
+    const hasMinimumCapital = approvedCapitalValues.includes(tradingCapital);
     
-    console.log("Trading capital from typeform:", tradingCapital);
-    console.log("Has minimum capital from typeform:", hasMinimumCapital);
+    console.log("DEBUG TYPEFORM WEBHOOK - All processed answers:", JSON.stringify(processedAnswers));
+    console.log("DEBUG TYPEFORM WEBHOOK - Trading capital from typeform:", tradingCapital);
+    console.log("DEBUG TYPEFORM WEBHOOK - Trading capital type:", typeof tradingCapital);
+    console.log("DEBUG TYPEFORM WEBHOOK - Approved capital values:", JSON.stringify(approvedCapitalValues));
+    console.log("DEBUG TYPEFORM WEBHOOK - Has minimum capital?", hasMinimumCapital);
+    console.log("DEBUG TYPEFORM WEBHOOK - includes() result:", approvedCapitalValues.includes(tradingCapital));
     
     // Main qualification gate
     const qualifiesForCall = hasMinimumCapital;
@@ -92,13 +97,22 @@ const handler = async (req: Request): Promise<Response> => {
         phone,
         answers: processedAnswers,
         qualifies_for_call: qualifiesForCall,
-        submission_date: new Date().toISOString()
+        submission_date: new Date().toISOString(),
+        debug_info: {
+          trading_capital: tradingCapital,
+          has_minimum_capital: hasMinimumCapital,
+          qualifies_for_call: qualifiesForCall,
+          approved_values: approvedCapitalValues
+        }
       }
     ]);
     
     if (error) {
       console.error("Error saving submission:", error);
     }
+
+    const redirectUrl = qualifiesForCall ? "/book-call" : "/vsl?qualified=false";
+    console.log("DEBUG TYPEFORM WEBHOOK - Redirect URL:", redirectUrl);
     
     // Return the qualification status with the correct qualified value in the URL
     return new Response(
@@ -106,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
         success: true, 
         qualifiesForCall,
         tradingCapital,
-        redirectUrl: qualifiesForCall ? "/book-call" : "/vsl?qualified=false"
+        redirectUrl
       }),
       {
         status: 200,

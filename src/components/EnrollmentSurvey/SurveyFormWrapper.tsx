@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SurveyForm from './SurveyForm';
@@ -30,9 +29,12 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
       // Determine if the user qualifies for a call based on the survey answers
       const qualifiesForCall = checkQualification(combinedData);
       
-      console.log("Survey wrapper data:", combinedData);
-      console.log("Wrapper qualifies for call:", qualifiesForCall);
-      console.log("Wrapper trading capital:", combinedData.tradingCapital);
+      console.log("[SurveyFormWrapper] FULL QUALIFICATION DEBUG");
+      console.log("[SurveyFormWrapper] Survey wrapper data:", combinedData);
+      console.log("[SurveyFormWrapper] Wrapper qualifies for call:", qualifiesForCall);
+      console.log("[SurveyFormWrapper] Wrapper trading capital:", combinedData.tradingCapital);
+      console.log("[SurveyFormWrapper] Trading capital type:", typeof combinedData.tradingCapital);
+      console.log("[SurveyFormWrapper] Is included in approved list:", ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(combinedData.tradingCapital));
       
       // Submit lead data regardless of qualification
       await submitLead({
@@ -57,18 +59,22 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
         duration: 3000,
       });
       
+      console.log("[SurveyFormWrapper] About to redirect to:", qualifiesForCall ? "/book-call" : "/vsl?qualified=false");
+      
       // Route based on qualification with slight delay for toast
       setTimeout(() => {
         if (qualifiesForCall) {
           // Redirect to calendar booking page
+          console.log("[SurveyFormWrapper] Redirecting to /book-call");
           navigate("/book-call");
         } else {
           // Redirect to pricing/checkout page
+          console.log("[SurveyFormWrapper] Redirecting to /vsl?qualified=false");
           navigate("/vsl?qualified=false");
         }
       }, 1000);
     } catch (error) {
-      console.error("Error submitting survey:", error);
+      console.error("[SurveyFormWrapper] Error submitting survey:", error);
       toast({
         title: "Error",
         description: "There was an error processing your survey. Please try again.",

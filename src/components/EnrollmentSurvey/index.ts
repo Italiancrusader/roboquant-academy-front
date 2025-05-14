@@ -5,5 +5,8 @@ export { default as SurveyFormWrapper } from './SurveyFormWrapper';
 export const checkQualification = (data: Record<string, any>): boolean => {
   // Only check for minimum capital requirement of $5,000
   const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
+  console.log("DEBUG checkQualification - Trading Capital:", data.tradingCapital);
+  console.log("DEBUG checkQualification - Has Minimum Capital:", hasMinimumCapital);
+  console.log("DEBUG checkQualification - Full Data:", JSON.stringify(data));
   return hasMinimumCapital;
 };
