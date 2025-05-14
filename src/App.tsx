@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SimpleLanding from './pages/SimpleLanding';
 import Index from './pages/Index';
@@ -20,6 +21,7 @@ import Checkout from './pages/Checkout';
 import ThankYou from './pages/ThankYou';
 import SurveyFunnel from './pages/SurveyFunnel';
 import StrategyReportGeniePage from './pages/StrategyReportGenie';
+import VimeoDemo from './pages/VimeoDemo';
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -91,6 +93,9 @@ function App() {
                   path="/courses/:courseId/lessons/:lessonId"
                   element={<ProtectedRoute><CourseLesson /></ProtectedRoute>}
                 />
+                
+                {/* New Vimeo Demo Page */}
+                <Route path="/vimeo-demo" element={<VimeoDemo />} />
                 
                 {/* New Sales Funnel Routes */}
                 <Route path="/quiz" element={<Quiz />} />
