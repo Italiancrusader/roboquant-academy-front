@@ -6,6 +6,7 @@ import VimeoError from './VimeoError';
 import VimeoLoading from './VimeoLoading';
 import { useVimeoPlayer } from './useVimeoPlayer';
 import { resolveVimeoId, getVimeoHash, buildVimeoSrcUrl } from './VimeoUrlUtils';
+import { toast } from '@/components/ui/use-toast';
 
 interface VimeoPlayerProps {
   videoUrl?: string;

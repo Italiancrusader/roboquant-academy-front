@@ -1,19 +1,23 @@
 
 import { toast } from '@/components/ui/use-toast';
 import { Lesson } from '@/types/courses';
+import { resolveVimeoId } from '@/components/vimeo/VimeoUrlUtils';
 
 export const extractVimeoDuration = async (videoUrl: string): Promise<number | undefined> => {
   if (!videoUrl || !videoUrl.includes('vimeo.com')) {
     return undefined;
   }
   
-  // Extract Vimeo ID from URL
-  const vimeoIdMatch = videoUrl.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/);
-  if (!vimeoIdMatch || !vimeoIdMatch[1]) {
+  // Extract Vimeo ID using our utility function
+  const vimeoId = resolveVimeoId(undefined, videoUrl);
+  if (!vimeoId) {
+    toast({
+      title: "Error",
+      description: "Could not extract Vimeo ID from URL",
+      variant: "destructive",
+    });
     return undefined;
   }
-  
-  const vimeoId = vimeoIdMatch[1];
   
   try {
     // Fetch video metadata from Vimeo oEmbed API

@@ -3,6 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Book, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import VimeoPlayer from '@/components/vimeo/VimeoPlayer';
 
 interface LessonContentProps {
   title: string;
