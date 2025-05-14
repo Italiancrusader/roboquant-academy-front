@@ -8,6 +8,7 @@ import { trackEvent } from '@/utils/googleAnalytics';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { handleStripeCheckout } from '@/services/stripe';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/components/ui/use-toast';
 
 // Define interface for YouTube player
 interface YouTubePlayer {
@@ -37,6 +38,12 @@ const VSL = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
+  // Debug info - logged on component load
+  console.log("[VSL] Component loaded", {
+    currentUrl: window.location.href,
+    searchParams: Object.fromEntries(searchParams.entries())
+  });
+  
   // Check if user is qualified from URL parameter
   const qualified = searchParams.get('qualified');
   const isQualified = qualified === 'true';
@@ -55,6 +62,13 @@ const VSL = () => {
       trackEvent('qualified_viewer', {
         event_category: 'Qualification',
         event_label: 'Qualified via quiz'
+      });
+      
+      // Show success toast for qualified users
+      toast({
+        title: "Strategy Call Qualification",
+        description: "You qualify for a free strategy call based on your answers.",
+        duration: 5000,
       });
     }
   }, [isQualified]);
@@ -110,6 +124,7 @@ const VSL = () => {
 
   // Direct checkout with Stripe
   const handleDirectCheckout = async () => {
+    console.log("[VSL] Direct checkout button clicked");
     setIsLoading(true);
     
     try {
@@ -121,6 +136,8 @@ const VSL = () => {
       
       // Process checkout with Stripe
       const userId = user ? user.id : undefined;
+      console.log("[VSL] Initiating checkout with user ID:", userId);
+      
       const result = await handleStripeCheckout({
         courseId: 'roboquant-academy',
         courseTitle: 'RoboQuant Academy',
@@ -134,7 +151,7 @@ const VSL = () => {
         throw new Error("Failed to initiate checkout");
       }
     } catch (error) {
-      console.error('Error during checkout:', error);
+      console.error('[VSL] Error during checkout:', error);
       setIsLoading(false);
       navigate('/checkout'); // Fallback to checkout page in case of errors
     }

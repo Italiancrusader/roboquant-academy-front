@@ -3,9 +3,10 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Origin": "*", // Allow requests from any origin
+  "Access-Control-Allow-Methods": "POST, OPTIONS", // Allow POST and OPTIONS
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-requested-with, origin, accept",
+  "Access-Control-Max-Age": "86400", // Cache CORS preflight requests for 24 hours
 };
 
 // Initialize Supabase client
@@ -14,20 +15,57 @@ const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("Typeform webhook received request:", req.method);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    console.log("Handling CORS preflight request");
+    return new Response(null, { 
+      status: 204, // No content status is appropriate for OPTIONS
+      headers: corsHeaders 
+    });
   }
 
   try {
-    console.log("Received webhook from Typeform");
+    if (req.method !== "POST") {
+      console.log(`Invalid method: ${req.method}, expected POST`);
+      return new Response(
+        JSON.stringify({ error: "Method not allowed" }),
+        { status: 405, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
     
     // Parse the webhook payload
-    const payload = await req.json();
-    console.log("Webhook payload:", JSON.stringify(payload));
+    let payload;
+    try {
+      console.log("Attempting to parse request body");
+      payload = await req.json();
+      console.log("Request body parsed successfully");
+      console.log("Webhook payload summary:", {
+        form_id: payload.form_id,
+        event_id: payload.event_id,
+        event_type: payload.event_type,
+        has_hidden_fields: !!payload.form_response?.hidden,
+        answer_count: payload.form_response?.answers?.length || 0
+      });
+    } catch (error) {
+      console.error("Error parsing webhook payload:", error);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON payload", details: error.message }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
     
     // Extract the form response data
     const formResponse = payload.form_response;
+    if (!formResponse) {
+      console.error("Missing form_response in payload");
+      return new Response(
+        JSON.stringify({ error: "Missing form_response in payload" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    
     const answers = formResponse.answers;
     const hiddenFields = formResponse.hidden || {};
     
@@ -36,6 +74,8 @@ const handler = async (req: Request): Promise<Response> => {
     const firstName = hiddenFields.firstName || "";
     const lastName = hiddenFields.lastName || "";
     const phone = hiddenFields.phone || "";
+    
+    console.log("Extracted user info from hidden fields:", { email, firstName, lastName, phone });
     
     // Process the answers and determine qualification
     const processedAnswers = {};
@@ -74,6 +114,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
     });
     
+    // Log all question IDs and values for debugging
+    console.log("All Typeform question IDs and answers:", JSON.stringify(
+      answers.map((a: any) => ({ 
+        id: a.field.id, 
+        title: a.field.title,
+        type: a.type, 
+        value: a[a.type] // Value based on answer type
+      }))
+    ));
+    
     // Simplified qualification logic - only check for minimum capital
     const approvedCapitalValues = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"];
     const hasMinimumCapital = approvedCapitalValues.includes(tradingCapital);
@@ -89,39 +139,52 @@ const handler = async (req: Request): Promise<Response> => {
     const qualifiesForCall = hasMinimumCapital;
     
     // Save the submission data to Supabase
-    const { data, error } = await supabase.from("quiz_submissions").insert([
-      {
-        email,
-        first_name: firstName,
-        last_name: lastName,
-        phone,
-        answers: processedAnswers,
-        qualifies_for_call: qualifiesForCall,
-        submission_date: new Date().toISOString(),
-        debug_info: {
-          trading_capital: tradingCapital,
-          has_minimum_capital: hasMinimumCapital,
+    try {
+      console.log("Saving submission to Supabase");
+      const { data, error } = await supabase.from("quiz_submissions").insert([
+        {
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+          answers: processedAnswers,
           qualifies_for_call: qualifiesForCall,
-          approved_values: approvedCapitalValues
+          submission_date: new Date().toISOString(),
+          debug_info: {
+            trading_capital: tradingCapital,
+            has_minimum_capital: hasMinimumCapital,
+            qualifies_for_call: qualifiesForCall,
+            approved_values: approvedCapitalValues,
+            raw_answers: answers
+          }
         }
+      ]);
+      
+      if (error) {
+        console.error("Error saving submission to Supabase:", error);
+        // Continue with the response even if saving fails
+      } else {
+        console.log("Successfully saved submission to Supabase");
       }
-    ]);
-    
-    if (error) {
-      console.error("Error saving submission:", error);
+    } catch (dbError) {
+      console.error("Exception when saving to database:", dbError);
+      // Continue with the response even if saving fails
     }
 
     const redirectUrl = qualifiesForCall ? "/book-call" : "/vsl?qualified=false";
     console.log("DEBUG TYPEFORM WEBHOOK - Redirect URL:", redirectUrl);
     
     // Return the qualification status with the correct qualified value in the URL
+    const responseBody = {
+      success: true, 
+      qualifiesForCall,
+      tradingCapital,
+      redirectUrl
+    };
+    
+    console.log("Sending successful response:", responseBody);
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        qualifiesForCall,
-        tradingCapital,
-        redirectUrl
-      }),
+      JSON.stringify(responseBody),
       {
         status: 200,
         headers: { 
@@ -131,12 +194,13 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error) {
-    console.error("Error processing webhook:", error);
+    console.error("Unhandled error in typeform-webhook:", error);
     return new Response(
       JSON.stringify({ 
         success: false, 
         error: error.message,
-        redirectUrl: "/vsl?qualified=false" // Default redirect on error
+        redirectUrl: "/vsl?qualified=false", // Default redirect on error
+        stack: error.stack // Include stack trace for debugging
       }),
       {
         status: 500,
@@ -149,4 +213,5 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
+console.log("Typeform webhook function initialized and ready");
 serve(handler);
