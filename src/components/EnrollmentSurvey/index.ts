@@ -15,9 +15,17 @@ export const checkQualification = (data: Record<string, any>): boolean => {
   
   // Map special values that might come from Typeform
   let mappedCapital = data.tradingCapital;
-  if (data.tradingCapital === "> $25k" || data.tradingCapital === "> $250k") {
+  
+  // Handle different formats of high capital values
+  if (data.tradingCapital === "> $25k" || data.tradingCapital === "> $250k" || data.tradingCapital === "$10k-$250k") {
     mappedCapital = "Over $250,000";
-    console.log("[checkQualification] Mapped '> $25k' to 'Over $250,000'");
+    console.log("[checkQualification] Mapped high capital value to 'Over $250,000'");
+  }
+  
+  // Direct check for known qualifying values
+  if (data.tradingCapital === "> $25k") {
+    console.log("[checkQualification] Direct match for '> $25k', qualifying");
+    return true;
   }
   
   // Check if the trading capital is in the approved list

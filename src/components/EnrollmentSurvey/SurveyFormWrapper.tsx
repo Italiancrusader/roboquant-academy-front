@@ -27,7 +27,41 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
     setIsSubmitting(true);
     
     try {
-      // Determine if the user qualifies for a call based on the survey answers
+      // Handle special case for high capital values directly
+      if (combinedData.tradingCapital === "> $25k" || combinedData.tradingCapital === "> $250k") {
+        console.log("[SurveyFormWrapper] Direct qualifying high capital value detected:", combinedData.tradingCapital);
+        
+        // Submit lead data for qualified lead
+        await submitLead({
+          name: combinedData.fullName,
+          email: combinedData.email,
+          phone: combinedData.phone || "",
+          source: "enrollment_survey",
+          leadMagnet: "strategy_call"
+        });
+        
+        // Call onComplete callback if provided
+        if (onComplete) {
+          onComplete();
+        }
+        
+        // Show success toast
+        toast({
+          title: "You qualify for a strategy call!",
+          description: "Redirecting you to book your strategy call.",
+          duration: 3000,
+        });
+        
+        // Redirect to calendar booking page with slight delay for toast
+        setTimeout(() => {
+          navigate("/book-call");
+        }, 1000);
+        
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Standard flow for all other cases
       const qualifiesForCall = checkQualification(combinedData);
       
       console.log("[SurveyFormWrapper] FULL QUALIFICATION DEBUG");
@@ -35,7 +69,6 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
       console.log("[SurveyFormWrapper] Wrapper qualifies for call:", qualifiesForCall);
       console.log("[SurveyFormWrapper] Wrapper trading capital:", combinedData.tradingCapital);
       console.log("[SurveyFormWrapper] Trading capital type:", typeof combinedData.tradingCapital);
-      console.log("[SurveyFormWrapper] Is included in approved list:", ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(combinedData.tradingCapital));
       
       // Hard-coded mapping for Typeform responses to our internal format
       // This is a fallback in case the webhook fails
@@ -45,7 +78,7 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
         combinedData.tradingCapital = "$1,000 – $5,000";
       } else if (combinedData.tradingCapital === "$5k-$10k") {
         combinedData.tradingCapital = "$5,000 – $10,000";
-      } else if (combinedData.tradingCapital === "$10k-$250k") {
+      } else if (combinedData.tradingCapital === "$10k-$250k" || combinedData.tradingCapital === "$10k-$25k") {
         combinedData.tradingCapital = "$10,000 – $250,000";
       } else if (combinedData.tradingCapital === "> $250k" || combinedData.tradingCapital === "> $25k") {
         combinedData.tradingCapital = "Over $250,000";

@@ -150,25 +150,33 @@ const handler = async (req: Request): Promise<Response> => {
       mappedTradingCapital = "$1,000 – $5,000";
     } else if (tradingCapital === "$5k-$10k") {
       mappedTradingCapital = "$5,000 – $10,000";
-    } else if (tradingCapital === "$10k-$250k") {
+    } else if (tradingCapital === "$10k-$25k" || tradingCapital === "$10k-$250k") {
       mappedTradingCapital = "$10,000 – $250,000";
-    } else if (tradingCapital === "> $250k" || tradingCapital === "> $25k") {
+    } else if (tradingCapital === "> $25k" || tradingCapital === "> $250k") {
       mappedTradingCapital = "Over $250,000";
     }
     
-    // Simplified qualification logic - only check for minimum capital
-    const approvedCapitalValues = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"];
-    const hasMinimumCapital = approvedCapitalValues.includes(mappedTradingCapital);
-    
-    console.log("DEBUG TYPEFORM WEBHOOK - All processed answers:", JSON.stringify(processedAnswers));
     console.log("DEBUG TYPEFORM WEBHOOK - Original trading capital:", tradingCapital);
     console.log("DEBUG TYPEFORM WEBHOOK - Mapped trading capital:", mappedTradingCapital);
-    console.log("DEBUG TYPEFORM WEBHOOK - Approved capital values:", JSON.stringify(approvedCapitalValues));
-    console.log("DEBUG TYPEFORM WEBHOOK - Has minimum capital?", hasMinimumCapital);
-    console.log("DEBUG TYPEFORM WEBHOOK - includes() result:", approvedCapitalValues.includes(mappedTradingCapital));
     
-    // Main qualification gate
-    const qualifiesForCall = hasMinimumCapital;
+    // Direct qualification check for higher capital values
+    let qualifiesForCall = false;
+    
+    // Direct check for known qualifying values first
+    if (tradingCapital === "> $25k" || tradingCapital === "> $250k") {
+      console.log("DEBUG TYPEFORM WEBHOOK - Direct qualification for high capital value");
+      qualifiesForCall = true;
+    } 
+    // Then check for other approved values
+    else {
+      const approvedCapitalValues = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"];
+      qualifiesForCall = approvedCapitalValues.includes(mappedTradingCapital);
+    }
+    
+    console.log("DEBUG TYPEFORM WEBHOOK - All processed answers:", JSON.stringify(processedAnswers));
+    console.log("DEBUG TYPEFORM WEBHOOK - Approved capital values:", ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"]);
+    console.log("DEBUG TYPEFORM WEBHOOK - Has minimum capital?", qualifiesForCall);
+    console.log("DEBUG TYPEFORM WEBHOOK - Final qualification status:", qualifiesForCall);
     
     // Save the submission data to Supabase
     try {
@@ -185,9 +193,8 @@ const handler = async (req: Request): Promise<Response> => {
           debug_info: {
             original_trading_capital: tradingCapital,
             mapped_trading_capital: mappedTradingCapital,
-            has_minimum_capital: hasMinimumCapital,
             qualifies_for_call: qualifiesForCall,
-            approved_values: approvedCapitalValues,
+            approved_values: ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"],
             raw_answers: answers,
             raw_payload: payload
           }
@@ -212,7 +219,7 @@ const handler = async (req: Request): Promise<Response> => {
     const responseBody = {
       success: true, 
       qualifiesForCall,
-      tradingCapital: mappedTradingCapital,
+      tradingCapital,
       redirectUrl
     };
     
