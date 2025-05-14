@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ShieldCheck, Check, ArrowRight, Loader2 } from 'lucide-react';
+import { ShieldCheck, Check, ArrowRight, Loader2, Calendar } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { handleStripeCheckout } from '@/services/stripe';
