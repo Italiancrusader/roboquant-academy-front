@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for handling Vimeo video URLs and IDs
  */
@@ -87,8 +88,8 @@ export const buildVimeoSrcUrl = ({
 }): string => {
   let src = `https://player.vimeo.com/video/${vimeoId}`;
   
-  // Add the hash/private token if available
-  if (vimeoHash) {
+  // Add the hash/private token if available - but don't duplicate the ID
+  if (vimeoHash && vimeoHash !== vimeoId) {
     src += `/${vimeoHash}`;
   }
   
@@ -101,10 +102,10 @@ export const buildVimeoSrcUrl = ({
   params.append('dnt', dnt ? '1' : '0');
   params.append('controls', controls ? '1' : '0');
   params.append('transparent', transparent ? '1' : '0');
-  params.append('app_id', '58479');  // Match the app_id from working demo
+  params.append('app_id', '58479');
   params.append('player_id', `player${vimeoId}`);
   params.append('badge', '0');
-  params.append('autopause', '0'); // Added from working example
+  params.append('autopause', '0');
   
   // Add timestamp to bust cache on retries
   if (retryCount > 0) {

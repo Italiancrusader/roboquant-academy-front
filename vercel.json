@@ -5,4 +5,4 @@
     { "source": "/_vercel/speed-insights/script.js", "destination": "https://vitals.vercel-analytics.com/v1/script.js" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
-} 
+}
