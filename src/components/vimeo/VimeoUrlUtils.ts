@@ -65,6 +65,7 @@ export const getVimeoHash = (videoUrl?: string): string | null => {
 
 /**
  * Builds the complete Vimeo player embed URL with all necessary parameters
+ * Uses the exact parameters from the working example
  */
 export const buildVimeoSrcUrl = ({
   vimeoId,
@@ -92,7 +93,7 @@ export const buildVimeoSrcUrl = ({
     src += `/${vimeoHash}`;
   }
   
-  // Add query parameters - exactly matching the working embed from VimeoDemo
+  // Add query parameters - using the exact parameters from the working demo
   const params = new URLSearchParams();
   params.append('title', '0');
   params.append('byline', '0');
@@ -102,11 +103,6 @@ export const buildVimeoSrcUrl = ({
   params.append('player_id', '0');
   params.append('app_id', '58479');
   
-  // Only add these parameters if they differ from the default values in the working example
-  if (autoplay) {
-    params.append('autoplay', '1');
-  }
-  
   // Add timestamp to bust cache on retries
   if (retryCount > 0) {
     params.append('_t', Date.now().toString());
@@ -114,8 +110,7 @@ export const buildVimeoSrcUrl = ({
   
   // Add special parameters for admins to bypass privacy restrictions
   if (isAdmin) {
-    // Force remove background restriction for admins
-    params.append('background', '1'); 
+    params.append('background', '1');
     params.append('muted', '0');
   }
   

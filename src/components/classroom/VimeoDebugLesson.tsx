@@ -6,7 +6,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { resolveVimeoId, getVimeoHash, buildVimeoSrcUrl } from '../vimeo/VimeoUrlUtils';
+import { resolveVimeoId, getVimeoHash } from '../vimeo/VimeoUrlUtils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const VimeoDebugLesson: React.FC = () => {
@@ -67,14 +67,7 @@ const VimeoDebugLesson: React.FC = () => {
           {showEmbed && (
             <>
               <h3 className="text-md font-semibold">Our VimeoPlayer Component:</h3>
-              <iframe 
-                src={providedEmbedUrl}
-                frameBorder="0" 
-                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" 
-                style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
-                title="Different Types of Trading Bots"
-                className="aspect-video w-full"
-              />
+              <VimeoPlayer videoUrl={videoUrl} />
               <div className="text-xs text-muted-foreground border-l-4 border-muted-foreground/20 pl-3 py-1">
                 Using our custom VimeoPlayer component with the URL: {videoUrl}
               </div>

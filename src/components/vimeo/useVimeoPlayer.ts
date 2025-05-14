@@ -1,4 +1,3 @@
-
 import { useState, useEffect, RefObject } from 'react';
 
 interface UseVimeoPlayerOptions {
@@ -41,9 +40,10 @@ export const useVimeoPlayer = ({
       return;
     }
 
-    // Add the Vimeo Player API script dynamically
-    if (!document.querySelector('script[src="https://player.vimeo.com/api/player.js"]')) {
-      const script = document.createElement('script');
+    // Add the Vimeo Player API script dynamically if it doesn't exist
+    let script: HTMLScriptElement | null = document.querySelector('script[src="https://player.vimeo.com/api/player.js"]');
+    if (!script) {
+      script = document.createElement('script');
       script.src = "https://player.vimeo.com/api/player.js";
       script.async = true;
       document.body.appendChild(script);
@@ -57,8 +57,9 @@ export const useVimeoPlayer = ({
     initTimeout = setTimeout(() => {
       if (isLoading) {
         setIsLoading(false);
-        setError("Video failed to load within the expected time");
-        if (onError) onError("Video failed to load within the expected time");
+        const errorMsg = "Video failed to load within the expected time";
+        setError(errorMsg);
+        if (onError) onError(errorMsg);
       }
     }, 20000); // 20 second timeout
     
@@ -66,6 +67,12 @@ export const useVimeoPlayer = ({
     const initializePlayer = () => {
       try {
         if (!iframeRef.current) return;
+        
+        // Make sure Vimeo API is available
+        if (!window.Vimeo) {
+          console.warn("Vimeo API not loaded yet");
+          return; // Will retry on next script load event
+        }
 
         // Clean up previous player instance if it exists
         if (playerInstance) {
@@ -77,7 +84,7 @@ export const useVimeoPlayer = ({
           playerInstance = null;
         }
 
-        // @ts-ignore - Vimeo is loaded via script
+        // Create new player instance
         const player = new window.Vimeo.Player(iframeRef.current);
         playerInstance = player;
         
@@ -88,7 +95,7 @@ export const useVimeoPlayer = ({
           setError(null);
         });
         
-        // Listen for errors
+        // Listen for error event
         player.on('error', (err: any) => {
           clearTimeout(initTimeout);
           const errorMsg = `Video player error: ${err?.message || 'Unknown error'}`;
@@ -98,8 +105,28 @@ export const useVimeoPlayer = ({
           setIsLoading(false);
         });
         
-        // Listen for other initialization errors - we don't use "notfound" as an event anymore
-        player.ready().catch((err: any) => {
+        // Get video duration once it's ready
+        player.ready().then(() => {
+          clearTimeout(initTimeout);
+          setIsLoading(false);
+          
+          player.getDuration().then((duration: number) => {
+            if (onDurationChange) {
+              onDurationChange(duration);
+            }
+          }).catch((err: any) => {
+            console.error("Error getting video duration:", err);
+            
+            // For private videos or videos that don't exist, show an error
+            if (err && (err.name === "NotFoundError" || err.name === "PrivacyError")) {
+              const errorMsg = err.name === "NotFoundError" 
+                ? "Video not found. It may have been deleted or made private."
+                : "This video is private and cannot be accessed";
+              setError(errorMsg);
+              if (onError) onError(errorMsg);
+            }
+          });
+        }).catch((err: any) => {
           clearTimeout(initTimeout);
           let errorMsg = "There was a problem loading this video";
           
@@ -114,31 +141,6 @@ export const useVimeoPlayer = ({
           console.error("Player ready error:", err);
           setError(errorMsg);
           if (onError) onError(errorMsg);
-          setIsLoading(false);
-        });
-        
-        // Get video duration once it's ready
-        player.getDuration().then((duration: number) => {
-          clearTimeout(initTimeout);
-          if (onDurationChange) {
-            onDurationChange(duration);
-          }
-          setIsLoading(false);
-        }).catch((err: any) => {
-          clearTimeout(initTimeout);
-          
-          // If we can't get duration, still mark as loaded but log the error
-          console.error("Error getting video duration:", err);
-          
-          // For private videos or videos that don't exist, show an error
-          if (err && (err.name === "NotFoundError" || err.name === "PrivacyError")) {
-            const errorMsg = err.name === "NotFoundError" 
-              ? "Video not found. It may have been deleted or made private."
-              : "This video is private and cannot be accessed";
-            setError(errorMsg);
-            if (onError) onError(errorMsg);
-          }
-          
           setIsLoading(false);
         });
         
@@ -169,23 +171,12 @@ export const useVimeoPlayer = ({
       }
     };
     
-    // Load Vimeo Player API script if it's not already loaded
-    if (!window.Vimeo) {
-      const script = document.createElement('script');
-      script.src = 'https://player.vimeo.com/api/player.js';
-      script.async = true;
-      script.onload = initializePlayer;
-      document.body.appendChild(script);
-      
-      script.onerror = () => {
-        clearTimeout(initTimeout);
-        const errorMsg = "Failed to load Vimeo player script";
-        setError(errorMsg);
-        if (onError) onError(errorMsg);
-        setIsLoading(false);
-      };
-    } else {
+    // Initialize player if Vimeo API is already loaded
+    if (window.Vimeo) {
       initializePlayer();
+    } else {
+      // Otherwise wait for script to load
+      script.addEventListener('load', initializePlayer);
     }
     
     // Clean up
@@ -201,9 +192,15 @@ export const useVimeoPlayer = ({
           playerInstance.off('ended');
           playerInstance.off('error');
           playerInstance.off('play');
+          playerInstance.destroy();
         } catch (err) {
           console.error('Error cleaning up Vimeo player:', err);
         }
+      }
+      
+      // Remove script load event listener
+      if (script) {
+        script.removeEventListener('load', initializePlayer);
       }
     };
   }, [iframeRef, vimeoId, onComplete, onTimeUpdate, onDurationChange, onError]);
