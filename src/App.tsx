@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SimpleLanding from './pages/SimpleLanding';
 import Index from './pages/Index';
@@ -49,8 +48,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { GoogleAnalytics } from './components/GoogleAnalytics';
 import { MetaPixel } from './components/MetaPixel';
-import { VercelAnalytics } from './components/VercelAnalytics';
-import { SpeedInsightsComponent } from './components/SpeedInsights';
 
 const queryClient = new QueryClient();
 
@@ -71,8 +68,6 @@ function App() {
             <Router>
               <GoogleAnalytics />
               <MetaPixel />
-              <VercelAnalytics />
-              <SpeedInsightsComponent />
               <Routes>
                 {/* Use SimpleLanding as the main route and keep full Index available in dev mode */}
                 <Route path="/" element={isDevelopmentMode ? <Index /> : <SimpleLanding />} />
