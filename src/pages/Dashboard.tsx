@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
 import { Clock, Book } from 'lucide-react';
 import { useAdminStatus } from '@/hooks/useAdminStatus';
+import { VimeoDebugLesson } from '@/components/classroom';
 
 interface EnrolledCourse {
   id: string;
@@ -171,6 +172,9 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 pt-24 pb-20">
         <h1 className="text-3xl font-bold gradient-text mb-2">Your Dashboard</h1>
         <p className="text-muted-foreground mb-8">Track your progress and continue your learning journey</p>
+        
+        {/* Vimeo Debug Lesson - Only visible for admins */}
+        {isAdmin && <VimeoDebugLesson />}
         
         {/* Admin Quick Link - Only for admins */}
         {isAdmin && (
