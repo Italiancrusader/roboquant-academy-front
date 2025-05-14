@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,10 +16,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const location = useLocation();
   const { courseId } = useParams<{ courseId: string }>();
   const { isAdmin, isLoading: adminCheckLoading } = useAdminStatus(user?.id);
-  const [isEnrolled, setIsEnrolled] = React.useState<boolean | null>(null);
-  const [isCheckingEnrollment, setIsCheckingEnrollment] = React.useState<boolean>(!!courseId);
+  const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
+  const [isCheckingEnrollment, setIsCheckingEnrollment] = useState<boolean>(!!courseId);
+  const [showAccessDenied, setShowAccessDenied] = useState<boolean>(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const checkEnrollment = async () => {
       // Skip enrollment check if no user or no courseId
       if (!user || !courseId) {
@@ -89,9 +90,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         }
 
         setIsEnrolled(!!enrollmentData);
+        if (!enrollmentData) {
+          setShowAccessDenied(true);
+        }
       } catch (error) {
         console.error('Error checking access:', error);
         setIsEnrolled(false);
+        setShowAccessDenied(true);
       } finally {
         setIsCheckingEnrollment(false);
       }
@@ -106,6 +111,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
   }, [user, courseId, isAdmin, adminCheckLoading]);
 
+  // Show the access denied toast in a useEffect
+  useEffect(() => {
+    if (showAccessDenied) {
+      toast({
+        title: "Access denied",
+        description: "You need to enroll in this course to access its content",
+        variant: "destructive",
+      });
+      setShowAccessDenied(false); // Reset the flag to prevent showing the toast again
+    }
+  }, [showAccessDenied]);
+
   const isLoading = authLoading || adminCheckLoading || isCheckingEnrollment;
 
   if (isLoading) {
@@ -119,11 +136,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // If this is a course page and the user is not enrolled and not admin, redirect to the course page
   if (courseId && !isEnrolled && !isAdmin) {
-    toast({
-      title: "Access denied",
-      description: "You need to enroll in this course to access its content",
-      variant: "destructive",
-    });
     return <Navigate to={`/courses/${courseId}`} replace />;
   }
 
