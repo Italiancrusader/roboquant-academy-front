@@ -1,16 +1,84 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Home, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
+import { handleHashTokens } from '@/contexts/auth/auth-utils';
 
 const NotFound = () => {
   // Get the current domain and path
   const currentDomain = window.location.hostname;
   const currentPath = window.location.pathname;
+  const navigate = useNavigate();
+  
+  // Check if this looks like an OAuth callback
   const isOAuthCallback = currentPath.includes('/auth/v1/callback') || 
-                          currentPath.includes('/auth') && window.location.search.includes('error');
+                          (currentPath.includes('/auth') && window.location.search.includes('error')) ||
+                          (window.location.search.includes('code=') && window.location.search.includes('state='));
+
+  useEffect(() => {
+    // Attempt to recover the session if this is an OAuth callback
+    const attemptSessionRecovery = async () => {
+      if (isOAuthCallback) {
+        console.log("Detected OAuth callback on 404 page - attempting session recovery");
+        
+        try {
+          // Extract the code and state from the URL if present
+          const params = new URLSearchParams(window.location.search);
+          const code = params.get('code');
+          const state = params.get('state');
+          const accessToken = params.get('access_token');
+          
+          if ((code && state) || accessToken) {
+            console.log("OAuth parameters detected, attempting to exchange for session");
+            
+            // Try to recover the session from the URL
+            const session = await handleHashTokens();
+            
+            if (session) {
+              console.log("Successfully recovered session from OAuth callback");
+              toast({
+                title: "Authentication successful",
+                description: "You have been successfully signed in.",
+              });
+              navigate('/dashboard', { replace: true });
+              return;
+            } 
+            
+            // If no session, try to manually handle the callback using the code exchange
+            if (code && state) {
+              try {
+                const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+                
+                if (error) {
+                  throw error;
+                }
+                
+                if (data.session) {
+                  console.log("Successfully exchanged code for session");
+                  toast({
+                    title: "Authentication successful",
+                    description: "You have been successfully signed in.",
+                  });
+                  navigate('/dashboard', { replace: true });
+                  return;
+                }
+              } catch (err) {
+                console.error("Failed to exchange code for session:", err);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error recovering from OAuth callback:", error);
+        }
+      }
+    };
+    
+    attemptSessionRecovery();
+  }, [isOAuthCallback, navigate]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 font-neulis">

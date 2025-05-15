@@ -117,13 +117,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const currentDomain = window.location.hostname;
       const protocol = window.location.protocol;
       const currentOrigin = window.location.origin;
+      const isDevelopmentMode = window.location.search.includes('dev=true');
       
       // Domain detection logic
       // Determine if we're in a development/preview environment
       const isDevelopment = 
         currentDomain.includes('localhost') || 
         currentDomain.includes('lovableproject.com') ||
-        currentDomain.includes('lovable.app');
+        currentDomain.includes('lovable.app') ||
+        isDevelopmentMode;
       
       // Base URL configuration - always prioritize the origin first
       let baseUrl = currentOrigin;
@@ -131,17 +133,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // For production on roboquant.ai, ensure we use the proper URL format
       if (currentDomain.includes('roboquant.ai')) {
         // Always use www prefix for roboquant.ai
-        baseUrl = `${protocol}//www.roboquant.ai`;
+        baseUrl = isDevelopmentMode 
+          ? currentOrigin  // Keep the full origin with dev=true
+          : `${protocol}//www.roboquant.ai`;
       }
       
+      // Preserve any development mode flags
+      const redirectSuffix = isDevelopmentMode ? '?dev=true' : '';
+      
       // Always use /auth as the redirect path
-      const redirectTo = `${baseUrl}/auth`;
+      const redirectTo = `${baseUrl}/auth${redirectSuffix}`;
       
       // Log the redirect URL for debugging
       console.log("=== GOOGLE AUTH SETUP ===");
       console.log("Google sign-in with redirect to:", redirectTo);
       console.log("Current domain:", currentDomain);
       console.log("Current environment:", isDevelopment ? "Development/Preview" : "Production");
+      console.log("Development mode:", isDevelopmentMode ? "Yes" : "No");
       console.log("Current URL:", window.location.href);
       console.log("Current origin:", window.location.origin);
       console.log("Application base URL:", baseUrl);

@@ -44,12 +44,12 @@ export const processUrlErrors = () => {
 };
 
 /**
- * Handles OAuth tokens found in the URL hash
+ * Handles OAuth tokens found in the URL hash or query parameters
  * @returns Promise that resolves to a session if recovered, null otherwise
  */
 export const handleHashTokens = async () => {
   console.log("=== HASH TOKEN PROCESSING ===");
-  console.log("Checking for tokens in URL hash");
+  console.log("Checking for tokens in URL hash or query params");
   
   // Check if URL has hash with tokens - this also works for OAuth response hash fragments
   if (window.location.hash && (
@@ -135,8 +135,48 @@ export const handleHashTokens = async () => {
     } else {
       console.log("No access token found in hash");
     }
+  } 
+  
+  // Check if this is an OAuth code flow callback (for Google etc)
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  const state = urlParams.get('state');
+  
+  if (code && state) {
+    console.log("Detected code and state in URL query params, attempting to exchange for session");
+    
+    try {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      
+      if (error) {
+        console.error("Failed to exchange code for session:", error);
+        toast({
+          title: "Authentication Error",
+          description: "Failed to complete authentication. Please try again.",
+          variant: "destructive",
+        });
+        return null;
+      }
+      
+      if (data.session) {
+        console.log("Successfully exchanged code for session");
+        console.log("User authenticated:", data.session.user.email);
+        
+        // Clear the query params to remove code from URL
+        window.history.replaceState(null, document.title, window.location.pathname);
+        
+        toast({
+          title: "Authentication Successful",
+          description: `Welcome${data.session.user.user_metadata?.name ? `, ${data.session.user.user_metadata.name}` : ''}!`,
+        });
+        
+        return data.session;
+      }
+    } catch (err) {
+      console.error("Error exchanging code for session:", err);
+    }
   } else {
-    console.log("No relevant tokens found in URL hash");
+    console.log("No code and state found in URL query params");
   }
   
   return null;

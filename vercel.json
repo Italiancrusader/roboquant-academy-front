@@ -3,6 +3,7 @@
   "rewrites": [
     { "source": "/_vercel/insights/script.js", "destination": "https://va.vercel-scripts.com/v1/script.js" },
     { "source": "/_vercel/speed-insights/script.js", "destination": "https://vitals.vercel-analytics.com/v1/script.js" },
+    { "source": "/auth/v1/callback", "destination": "/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
