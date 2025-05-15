@@ -158,43 +158,46 @@ const handler = async (req: Request): Promise<Response> => {
       }))
     ));
     
-    // Map Typeform values to our application format for consistency
-    let mappedTradingCapital = tradingCapital;
-    
-    if (tradingCapital === "< $1k") {
-      mappedTradingCapital = "Under $1,000";
-    } else if (tradingCapital === "$1k-$5k") {
-      mappedTradingCapital = "$1,000 – $5,000";
-    } else if (tradingCapital === "$5k-$10k") {
-      mappedTradingCapital = "$5,000 – $10,000";
-    } else if (tradingCapital === "$10k-$25k" || tradingCapital === "$10k-$250k") {
-      mappedTradingCapital = "$10,000 – $250,000";
-    } else if (tradingCapital === "> $25k" || tradingCapital === "> $250k") {
-      mappedTradingCapital = "Over $250,000";
-    }
-    
-    console.log("DEBUG TYPEFORM WEBHOOK - Original trading capital:", tradingCapital);
-    console.log("DEBUG TYPEFORM WEBHOOK - Mapped trading capital:", mappedTradingCapital);
-    
-    // CRITICAL FIX: Direct qualification check for higher capital values ("> $25k") - fixed logic!
+    // CRITICAL FIX: Handle high capital values directly first
     let qualifiesForCall = false;
     
     // First check specifically for high capital values which should always qualify
-    if (tradingCapital === "> $25k" || tradingCapital === "> $250k" || tradingCapital === "Haa2tZ1srkPu") {
-      console.log("DEBUG TYPEFORM WEBHOOK - Direct qualification for high capital value:", tradingCapital);
+    if (tradingCapital === "> $25k" || 
+        tradingCapital === "> $250k" || 
+        tradingCapital === "Haa2tZ1srkPu") {
+      console.log("DIRECT HIGH CAPITAL QUALIFICATION:", tradingCapital);
       qualifiesForCall = true;
     } 
-    // Then check other cases against approved values
+    // Then check other capital values after mapping
     else {
+      // Map Typeform values to our application format for consistency
+      let mappedTradingCapital = tradingCapital;
+      
+      if (tradingCapital === "< $1k") {
+        mappedTradingCapital = "Under $1,000";
+      } else if (tradingCapital === "$1k-$5k") {
+        mappedTradingCapital = "$1,000 – $5,000";
+      } else if (tradingCapital === "$5k-$10k") {
+        mappedTradingCapital = "$5,000 – $10,000";
+      } else if (tradingCapital === "$10k-$25k" || tradingCapital === "$10k-$250k") {
+        mappedTradingCapital = "$10,000 – $250,000";
+      } else if (tradingCapital === "> $25k" || tradingCapital === "> $250k") {
+        mappedTradingCapital = "Over $250,000";
+      }
+      
+      console.log("DEBUG TYPEFORM WEBHOOK - Original trading capital:", tradingCapital);
+      console.log("DEBUG TYPEFORM WEBHOOK - Mapped trading capital:", mappedTradingCapital);
+      
+      // Check against approved values
       const approvedCapitalValues = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"];
       qualifiesForCall = approvedCapitalValues.includes(mappedTradingCapital);
     }
     
     console.log("DEBUG TYPEFORM WEBHOOK - All processed answers:", JSON.stringify(processedAnswers));
-    console.log("DEBUG TYPEFORM WEBHOOK - Has minimum capital?", qualifiesForCall);
     console.log("DEBUG TYPEFORM WEBHOOK - Final qualification status:", qualifiesForCall);
+    console.log("DEBUG TYPEFORM WEBHOOK - Trading capital value:", tradingCapital);
     
-    // Save the submission data to Supabase with error handling
+    // Try to save the submission data to Supabase, but don't fail if this doesn't work
     try {
       console.log("Saving submission to Supabase");
       const { error } = await supabase.from("quiz_submissions").insert([
@@ -208,23 +211,19 @@ const handler = async (req: Request): Promise<Response> => {
           submission_date: new Date().toISOString(),
           debug_info: {
             original_trading_capital: tradingCapital,
-            mapped_trading_capital: mappedTradingCapital,
-            qualifies_for_call: qualifiesForCall,
-            approved_values: ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"],
-            raw_answers: answers,
+            qualifies_for_call: qualifiesForCall
           }
         }
       ]);
       
       if (error) {
         console.error("Error saving submission to Supabase:", error);
-        // Continue with the response even if saving fails
       } else {
         console.log("Successfully saved submission to Supabase");
       }
     } catch (dbError) {
+      // Log but continue - the critical path is returning qualification status
       console.error("Exception when saving to database:", dbError);
-      // Continue with the response even if saving fails
     }
 
     // Set correct redirect URL based on qualification status

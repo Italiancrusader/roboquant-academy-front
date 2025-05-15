@@ -12,9 +12,8 @@ export const checkQualification = (data: Record<string, any>): boolean => {
   
   // First, explicitly check for high capital values which should always qualify
   // This handles multiple possible formats of high capital values
-  if (data.tradingCapital === "> $25k" || 
-      data.tradingCapital === "> $250k" || 
-      data.tradingCapital === "Haa2tZ1srkPu") {
+  const highCapitalValues = ["> $25k", "> $250k", "Haa2tZ1srkPu"];
+  if (highCapitalValues.includes(data.tradingCapital)) {
     console.log("[checkQualification] Direct match for high capital value, qualifying");
     return true;
   }

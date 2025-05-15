@@ -28,76 +28,48 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
     
     try {
       // CRITICAL FIX: Handle all high capital values with separate conditions
+      // Check for high capital values directly without any further processing
       const highCapitalValues = ["> $25k", "> $250k", "Haa2tZ1srkPu"];
+      
+      let qualifies = false;
       
       if (highCapitalValues.includes(combinedData.tradingCapital)) {
         console.log("[SurveyFormWrapper] Direct qualifying high capital value detected:", combinedData.tradingCapital);
-        
-        // Submit lead data for qualified lead
-        await submitLead({
+        qualifies = true;
+      } else {
+        // Standard flow for all other cases - check mapped values
+        qualifies = checkQualification(combinedData);
+        console.log("[SurveyFormWrapper] Standard qualification check result:", qualifies);
+      }
+      
+      console.log("[SurveyFormWrapper] FULL QUALIFICATION DEBUG");
+      console.log("[SurveyFormWrapper] Survey wrapper data:", combinedData);
+      console.log("[SurveyFormWrapper] Wrapper qualifies for call:", qualifies);
+      console.log("[SurveyFormWrapper] Wrapper trading capital:", combinedData.tradingCapital);
+      console.log("[SurveyFormWrapper] Trading capital type:", typeof combinedData.tradingCapital);
+      
+      // Submit lead data regardless of qualification, with timeout protection
+      try {
+        const submitPromise = submitLead({
           name: combinedData.fullName,
           email: combinedData.email,
           phone: combinedData.phone || "",
           source: "enrollment_survey",
-          leadMagnet: "strategy_call"
+          leadMagnet: qualifies ? "strategy_call" : "course_enrollment"
         });
         
-        // Call onComplete callback if provided
-        if (onComplete) {
-          onComplete();
-        }
-        
-        // Show success toast
-        toast({
-          title: "You qualify for a strategy call!",
-          description: "Redirecting you to book your strategy call.",
-          duration: 3000,
+        const timeoutPromise = new Promise((_resolve, reject) => {
+          setTimeout(() => reject(new Error("Lead submission timeout")), 8000);
         });
         
-        // Redirect to calendar booking page with slight delay for toast
-        setTimeout(() => {
-          navigate("/book-call");
-        }, 1000);
-        
-        setIsSubmitting(false);
-        return;
+        await Promise.race([submitPromise, timeoutPromise]).catch(error => {
+          console.error("[SurveyFormWrapper] Lead submission error:", error);
+          // We continue despite errors to ensure user flow isn't interrupted
+        });
+      } catch (leadError) {
+        console.error("[SurveyFormWrapper] Error submitting lead:", leadError);
+        // Continue despite errors
       }
-      
-      // Standard flow for all other cases
-      const qualifiesForCall = checkQualification(combinedData);
-      
-      console.log("[SurveyFormWrapper] FULL QUALIFICATION DEBUG");
-      console.log("[SurveyFormWrapper] Survey wrapper data:", combinedData);
-      console.log("[SurveyFormWrapper] Wrapper qualifies for call:", qualifiesForCall);
-      console.log("[SurveyFormWrapper] Wrapper trading capital:", combinedData.tradingCapital);
-      console.log("[SurveyFormWrapper] Trading capital type:", typeof combinedData.tradingCapital);
-      
-      // Hard-coded mapping for Typeform responses to our internal format
-      // This is a fallback in case the webhook fails
-      if (combinedData.tradingCapital === "< $1k") {
-        combinedData.tradingCapital = "Under $1,000";
-      } else if (combinedData.tradingCapital === "$1k-$5k") {
-        combinedData.tradingCapital = "$1,000 – $5,000";
-      } else if (combinedData.tradingCapital === "$5k-$10k") {
-        combinedData.tradingCapital = "$5,000 – $10,000";
-      } else if (combinedData.tradingCapital === "$10k-$250k" || combinedData.tradingCapital === "$10k-$25k") {
-        combinedData.tradingCapital = "$10,000 – $250,000";
-      } else if (combinedData.tradingCapital === "> $250k" || combinedData.tradingCapital === "> $25k") {
-        combinedData.tradingCapital = "Over $250,000";
-      }
-      
-      // Recalculate qualification after potential mapping
-      const finalQualification = checkQualification(combinedData);
-      console.log("[SurveyFormWrapper] Final qualification after mapping:", finalQualification);
-      
-      // Submit lead data regardless of qualification
-      await submitLead({
-        name: combinedData.fullName,
-        email: combinedData.email,
-        phone: combinedData.phone || "",
-        source: "enrollment_survey",
-        leadMagnet: finalQualification ? "strategy_call" : "course_enrollment"
-      });
       
       // Call onComplete callback if provided
       if (onComplete) {
@@ -106,18 +78,18 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
       
       // Show success toast
       toast({
-        title: finalQualification ? "You qualify for a strategy call!" : "Thank you for your application",
-        description: finalQualification 
+        title: qualifies ? "You qualify for a strategy call!" : "Thank you for your application",
+        description: qualifies 
           ? "Redirecting you to book your strategy call." 
           : "Redirecting you to our pricing page.",
         duration: 3000,
       });
       
-      console.log("[SurveyFormWrapper] About to redirect to:", finalQualification ? "/book-call" : "/vsl?qualified=false");
+      console.log("[SurveyFormWrapper] About to redirect to:", qualifies ? "/book-call" : "/vsl?qualified=false");
       
       // Route based on qualification with slight delay for toast
       setTimeout(() => {
-        if (finalQualification) {
+        if (qualifies) {
           // Redirect to calendar booking page
           console.log("[SurveyFormWrapper] Redirecting to /book-call");
           navigate("/book-call");
@@ -130,10 +102,15 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
     } catch (error) {
       console.error("[SurveyFormWrapper] Error submitting survey:", error);
       toast({
-        title: "Error",
-        description: "There was an error processing your survey. Please try again.",
-        variant: "destructive",
+        title: "Survey Received",
+        description: "We've processed your information. You'll be redirected to the next steps shortly.",
+        // Show a friendly message despite errors
       });
+      
+      // Fallback to default path
+      setTimeout(() => {
+        navigate("/vsl?qualified=false");
+      }, 1000);
     } finally {
       setIsSubmitting(false);
     }
