@@ -45,6 +45,7 @@ export const processUrlErrors = () => {
 
 /**
  * Handles OAuth tokens found in the URL hash or query parameters
+ * Enhanced to better handle PKCE flows
  * @returns Promise that resolves to a session if recovered, null otherwise
  */
 export const handleHashTokens = async () => {
@@ -87,13 +88,9 @@ export const handleHashTokens = async () => {
     // Check if we have the necessary tokens for session recovery
     const accessToken = hashParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token');
-    const providerToken = hashParams.get('provider_token');
-    const providerRefreshToken = hashParams.get('provider_refresh_token');
     
     console.log("Access token present:", !!accessToken);
     console.log("Refresh token present:", !!refreshToken);
-    console.log("Provider token present:", !!providerToken);
-    console.log("Provider refresh token present:", !!providerRefreshToken);
     
     if (accessToken) {
       console.log("Found access token, attempting to recover session");
@@ -146,10 +143,48 @@ export const handleHashTokens = async () => {
     console.log("Detected code and state in URL query params, attempting to exchange for session");
     
     try {
+      // First attempt - direct code exchange
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       
       if (error) {
-        console.error("Failed to exchange code for session:", error);
+        console.error("Failed to exchange code for session (first attempt):", error);
+        
+        // Second attempt - backup approach using complete flow
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const fullUrl = window.location.href;
+          console.log("Trying second approach with full URL:", fullUrl);
+          
+          // Try moving to a proper path and attempt again
+          if (window.location.pathname.includes('/auth/v1/callback')) {
+            // Move to the /auth path which our app handles
+            window.history.replaceState({}, '', '/auth' + window.location.search);
+            
+            // Try the exchange again
+            const secondAttempt = await supabase.auth.exchangeCodeForSession(code);
+            if (secondAttempt.error) {
+              console.error("Second attempt also failed:", secondAttempt.error);
+              toast({
+                title: "Authentication Error",
+                description: "Failed to complete authentication. Please try again.",
+                variant: "destructive",
+              });
+              return null;
+            }
+            
+            if (secondAttempt.data.session) {
+              console.log("Second attempt succeeded!");
+              toast({
+                title: "Authentication Successful",
+                description: `Welcome${secondAttempt.data.session.user.user_metadata?.name ? `, ${secondAttempt.data.session.user.user_metadata.name}` : ''}!`,
+              });
+              return secondAttempt.data.session;
+            }
+          }
+        } catch (secondError) {
+          console.error("Second attempt error:", secondError);
+        }
+        
         toast({
           title: "Authentication Error",
           description: "Failed to complete authentication. Please try again.",
@@ -192,6 +227,11 @@ export const getOAuthRedirectUrl = () => {
   
   // Base URL will be the current origin by default
   let baseUrl = window.location.origin;
+  
+  // For production on roboquant.ai, always use www
+  if (currentDomain.includes('roboquant.ai')) {
+    baseUrl = `${protocol}//www.roboquant.ai`;
+  }
   
   // Always use /auth as the redirect path
   return `${baseUrl}/auth`;
