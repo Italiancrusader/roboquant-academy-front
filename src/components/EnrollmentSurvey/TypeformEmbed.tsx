@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { LoaderCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useNavigate } from 'react-router-dom';
 
 interface TypeformEmbedProps {
   typeformId: string;
@@ -24,6 +25,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const navigate = useNavigate();
   
   // Simulate loading progress
   useEffect(() => {
@@ -106,12 +108,24 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
                     (data.event && data.event === 'submit')) {
                   console.log('Typeform submission detected via message event', data);
                   onSubmit(data);
+                  
+                  // Add a delay before redirecting to ensure the webhook has time to process
+                  setTimeout(() => {
+                    console.log('Redirecting to book-call after submission');
+                    navigate('/book-call');
+                  }, 1500);
                 }
               } catch (parseError) {
                 // If it's not valid JSON, check for other event formats
                 if (event.data.includes('form-submit') || event.data.includes('form_submit')) {
                   console.log('Typeform submission detected via string event', event.data);
                   onSubmit();
+                  
+                  // Add a delay before redirecting to ensure the webhook has time to process
+                  setTimeout(() => {
+                    console.log('Redirecting to book-call after submission');
+                    navigate('/book-call');
+                  }, 1500);
                 }
               }
             } else if (event.data && typeof event.data === 'object') {
@@ -121,6 +135,12 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
                   (event.data.event && event.data.event === 'submit')) {
                 console.log('Typeform submission detected via object event', event.data);
                 onSubmit(event.data);
+                
+                // Add a delay before redirecting to ensure the webhook has time to process
+                setTimeout(() => {
+                  console.log('Redirecting to book-call after submission');
+                  navigate('/book-call');
+                }, 1500);
               }
             }
           } catch (error) {
@@ -138,7 +158,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
       console.error('Error setting up Typeform:', error);
       onError();
     }
-  }, [typeformId, userInfo, onSubmit, onError]);
+  }, [typeformId, userInfo, onSubmit, onError, navigate]);
   
   return (
     <>

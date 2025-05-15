@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -105,6 +104,8 @@ const Quiz = () => {
       event_category: 'Quiz',
       event_label: userInfo.email || 'Unknown'
     });
+    
+    // We don't need to add a redirect here as it's now handled in the TypeformEmbed component
   };
   
   const handleTypeformError = () => {
@@ -146,6 +147,19 @@ const Quiz = () => {
   useEffect(() => {
     console.log('Current step:', step);
   }, [step]);
+  
+  // Implement a fallback redirect for when the form is completed
+  useEffect(() => {
+    if (step === 'completed') {
+      // Add a fallback redirect timer as a safety measure
+      const redirectTimeout = setTimeout(() => {
+        console.log('Fallback redirect to book-call');
+        navigate('/book-call');
+      }, 3000);
+      
+      return () => clearTimeout(redirectTimeout);
+    }
+  }, [step, navigate]);
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -193,7 +207,7 @@ const Quiz = () => {
               <div className="w-full max-w-md mx-auto">
                 <Progress value={100} className="h-2" />
               </div>
-              <p className="text-sm text-muted-foreground mt-4">Redirecting you in a moment...</p>
+              <p className="text-sm text-muted-foreground mt-4">Redirecting you to the next step...</p>
             </div>
           ) : (
             <div id="quiz-step-questions" className="bg-card p-8 rounded-lg shadow-lg">
