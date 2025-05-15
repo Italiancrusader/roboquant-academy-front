@@ -6,6 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 // Initialize Supabase client
@@ -16,7 +17,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders, status: 200 });
   }
 
   try {
@@ -62,39 +63,58 @@ const handler = async (req: Request): Promise<Response> => {
       processedAnswers[questionId] = value;
       
       // Map specific questions to our qualification criteria
-      // Note: You'll need to replace these IDs with the actual question IDs from your Typeform
-      if (questionId.includes("trading_capital")) {
+      // Check for trading capital question
+      if (answer.field.ref && answer.field.ref.includes("bc58b7b4-c80f-4e7b-baf7-367a9b5cfa52")) {
         tradingCapital = value;
-      } else if (questionId.includes("trading_experience")) {
+        console.log("Found trading capital value:", value);
+      } else if (answer.field.ref && answer.field.ref.includes("aa27c676-b783-4047-a535-93ad0e36613c")) {
         tradingExperience = value;
-      } else if (questionId.includes("trading_goal")) {
+      } else if (answer.field.ref && answer.field.ref.includes("c93242f6-c837-430f-b482-6a31745f5990")) {
         tradingGoal = value;
-      } else if (questionId.includes("prop_firm")) {
+      } else if (answer.field.ref && answer.field.ref.includes("cf017582-0450-41ea-a997-83e42f981f85")) {
         propFirmUsage = value;
       }
     });
     
-    // Simplified qualification logic - only check for minimum capital
-    const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(tradingCapital);
+    // Log the trading capital for debugging
+    console.log("Trading capital extracted:", tradingCapital);
+    
+    // Qualification logic - check for minimum capital
+    const hasMinimumCapital = ["$5,000 – $10k", "$5k-$10k", "$10k-$25k", "$10,000 – $250,000", "> $25k", "Over $250,000"].some(
+      capital => tradingCapital.includes(capital)
+    );
     
     // Main qualification gate
     const qualifiesForCall = hasMinimumCapital;
+
+    console.log("Qualification status:", qualifiesForCall);
+    console.log("Has minimum capital:", hasMinimumCapital);
     
-    // Save the submission data to Supabase
-    const { data, error } = await supabase.from("quiz_submissions").insert([
-      {
-        email,
-        first_name: firstName,
-        last_name: lastName,
-        phone,
-        answers: processedAnswers,
-        qualifies_for_call: qualifiesForCall,
-        submission_date: new Date().toISOString()
+    // Determine redirect URL based on qualification
+    const redirectUrl = qualifiesForCall ? "/book-call" : "/checkout";
+    console.log("DEBUG TYPEFORM WEBHOOK - Redirect URL:", redirectUrl);
+    
+    try {
+      // Save the submission data to Supabase
+      const { data, error } = await supabase.from("quiz_submissions").insert([
+        {
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+          answers: processedAnswers,
+          qualifies_for_call: qualifiesForCall,
+          submission_date: new Date().toISOString()
+        }
+      ]);
+      
+      if (error) {
+        console.error("Error saving submission to Supabase:", error);
+      } else {
+        console.log("Submission saved successfully:", data);
       }
-    ]);
-    
-    if (error) {
-      console.error("Error saving submission:", error);
+    } catch (dbError) {
+      console.error("Error saving submission:", dbError);
     }
     
     // Return the qualification status
@@ -102,7 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         qualifiesForCall,
-        redirectUrl: qualifiesForCall ? "/vsl?qualified=true" : "/checkout"
+        redirectUrl
       }),
       {
         status: 200,
@@ -117,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message,
+        error: error.message || "Unknown error",
         redirectUrl: "/checkout" // Default redirect on error
       }),
       {

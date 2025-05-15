@@ -5,12 +5,14 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SurveyForm from '@/components/EnrollmentSurvey/SurveyForm';
 import { submitLead } from '@/services/leadService';
+import { useToast } from '@/components/ui/use-toast';
 
 const SurveyFunnel = () => {
   const [step, setStep] = useState(1);
   const [surveyData, setSurveyData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSurveyComplete = async (formData: Record<string, any>) => {
     const combinedData = { ...surveyData, ...formData };
@@ -38,6 +40,10 @@ const SurveyFunnel = () => {
       // Route based on qualification
       if (qualifiesForCall) {
         // Redirect to calendar booking page
+        toast({
+          title: "Congratulations!",
+          description: "You qualify for a strategy call with our team!",
+        });
         navigate("/book-call");
       } else {
         // Redirect to pricing/checkout page
@@ -45,6 +51,11 @@ const SurveyFunnel = () => {
       }
     } catch (error) {
       console.error("Error submitting survey:", error);
+      toast({
+        title: "Submission Error",
+        description: "There was an error processing your submission. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -61,8 +72,22 @@ const SurveyFunnel = () => {
   // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
   const checkQualification = (data: Record<string, any>): boolean => {
     console.log("Checking qualification with trading capital:", data.tradingCapital);
-    // Only check for minimum capital requirement of $5,000
-    const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
+    
+    // Capital thresholds that qualify
+    const qualifyingCapitalValues = [
+      "$5,000 – $10,000", 
+      "$10,000 – $250,000", 
+      "Over $250,000", 
+      "$5k-$10k", 
+      "$10k-$25k", 
+      "> $25k"
+    ];
+    
+    // Check if the user's trading capital is in the qualifying range
+    const hasMinimumCapital = qualifyingCapitalValues.some(value => 
+      data.tradingCapital && data.tradingCapital.includes(value)
+    );
+    
     console.log("Has minimum capital:", hasMinimumCapital);
     
     // Return true if minimum capital requirement is met

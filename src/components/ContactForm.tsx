@@ -45,7 +45,7 @@ const ContactForm: React.FC = () => {
       });
       
       // Save to Supabase
-      const { error } = await supabase
+      const { error: supabaseError } = await supabase
         .from('contact_submissions')
         .insert({
           name: data.name,
@@ -54,17 +54,21 @@ const ContactForm: React.FC = () => {
           message: data.message,
         });
       
-      if (error) throw error;
+      if (supabaseError) throw supabaseError;
       
       // Call edge function to send email notification
-      const response = await fetch('/api/send-contact-notification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to send notification');
+      try {
+        const response = await fetch('/api/send-contact-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        
+        if (!response.ok) {
+          console.warn('Email notification may not have been sent, but submission was saved');
+        }
+      } catch (notificationError) {
+        console.warn('Failed to send notification email, but submission was saved');
       }
       
       toast({
