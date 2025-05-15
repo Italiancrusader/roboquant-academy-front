@@ -26,7 +26,16 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({ onSurveyComplete 
     
     try {
       // Add a timeout to avoid infinite loading states
-      const completionPromise = onSurveyComplete(combinedData);
+      const completionPromise = new Promise<void>(async (resolve, reject) => {
+        try {
+          await onSurveyComplete(combinedData);
+          resolve();
+        } catch (error) {
+          console.error("Error in survey completion:", error);
+          reject(error);
+        }
+      });
+      
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error("Survey submission timeout")), 15000);
       });

@@ -1,70 +1,46 @@
 
 /**
- * Creates preconnect links for specified domains to improve loading performance
+ * Establishes early connections to domains for performance optimization
  * 
  * @param domains Array of domains to preconnect to
- * @returns Cleanup function to remove the created link elements
+ * @returns Cleanup function to remove the preconnect links
  */
-export function preconnectToDomains(domains: string[]): () => void {
-  const createdLinks: HTMLLinkElement[] = [];
+export const preconnectToDomains = (domains: string[]): () => void => {
+  const addedLinks: HTMLLinkElement[] = [];
 
   domains.forEach(domain => {
-    // Create preconnect link
-    const preconnectLink = document.createElement('link');
-    preconnectLink.rel = 'preconnect';
-    preconnectLink.href = domain;
-    preconnectLink.crossOrigin = 'anonymous';
-    document.head.appendChild(preconnectLink);
-    createdLinks.push(preconnectLink);
-
-    // Create DNS-prefetch as fallback
-    const dnsPrefetchLink = document.createElement('link');
-    dnsPrefetchLink.rel = 'dns-prefetch';
-    dnsPrefetchLink.href = domain;
-    document.head.appendChild(dnsPrefetchLink);
-    createdLinks.push(dnsPrefetchLink);
-  });
-
-  // Return cleanup function to remove all created links when done
-  return () => {
-    createdLinks.forEach(link => {
-      if (link.parentNode) {
-        link.parentNode.removeChild(link);
+    try {
+      // Check if preconnect already exists
+      const existingLink = document.querySelector(`link[rel="preconnect"][href="${domain}"]`);
+      if (existingLink) {
+        return; // Skip if already exists
       }
-    });
-  };
-}
 
-/**
- * Properly preloads images with correct 'as' attribute
- * 
- * @param imageUrls Array of image URLs to preload
- * @param highPriority Whether these images should be high priority
- * @returns Cleanup function to remove the created link elements
- */
-export function preloadImages(imageUrls: string[], highPriority: boolean = false): () => void {
-  const createdLinks: HTMLLinkElement[] = [];
-
-  imageUrls.forEach(url => {
-    const preloadLink = document.createElement('link');
-    preloadLink.rel = 'preload';
-    preloadLink.href = url;
-    preloadLink.as = 'image'; // Explicitly set as 'image' to avoid browser warnings
-    
-    if (highPriority) {
-      preloadLink.setAttribute('fetchpriority', 'high');
+      // Create preconnect link
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = domain;
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+      addedLinks.push(link);
+      
+      // Add DNS-prefetch as fallback
+      const dnsLink = document.createElement('link');
+      dnsLink.rel = 'dns-prefetch';
+      dnsLink.href = domain;
+      document.head.appendChild(dnsLink);
+      addedLinks.push(dnsLink);
+    } catch (error) {
+      console.error(`Error adding preconnect for ${domain}:`, error);
     }
-    
-    document.head.appendChild(preloadLink);
-    createdLinks.push(preloadLink);
   });
 
   // Return cleanup function
   return () => {
-    createdLinks.forEach(link => {
-      if (link.parentNode) {
-        link.parentNode.removeChild(link);
+    addedLinks.forEach(link => {
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
       }
     });
   };
-}
+};

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -10,6 +11,7 @@ import LeadForm from '@/components/LeadForm';
 import { LoaderCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
+import { TypeformEmbed } from '@/components/EnrollmentSurvey';
 
 // Typeform embed ID - using the correct form ID from the URL
 const TYPEFORM_ID = "Mxpdceu1";
@@ -17,8 +19,6 @@ const TYPEFORM_ID = "Mxpdceu1";
 const Quiz = () => {
   const [step, setStep] = useState<'form' | 'questions' | 'completed'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isTypeformLoading, setIsTypeformLoading] = useState(true);
-  const [loadingProgress, setLoadingProgress] = useState(0);
   const [qualificationResult, setQualificationResult] = useState<boolean | null>(null);
   const navigate = useNavigate();
   
@@ -73,7 +73,7 @@ const Quiz = () => {
         phone: values.phone
       });
       
-      // Show success message with 3 second duration
+      // Show success message
       toast({
         title: "Success!",
         description: "Your information has been submitted. Please continue with the survey.",
@@ -138,151 +138,12 @@ const Quiz = () => {
     }
   };
   
-  // Simulate loading progress
-  useEffect(() => {
-    if (step === 'questions' && isTypeformLoading) {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 5;
-        setLoadingProgress(progress);
-        if (progress >= 100) {
-          clearInterval(interval);
-        }
-      }, 150);
-      
-      return () => clearInterval(interval);
-    }
-  }, [step, isTypeformLoading]);
-  
-  // Load and configure Typeform with improved error handling
-  useEffect(() => {
-    if (step === 'questions') {
-      console.log('Loading Typeform...');
-      
-      // Create Typeform container first
-      const typeformContainer = document.getElementById('typeform-container');
-      if (!typeformContainer) return;
-      
-      // Clear existing container content
-      typeformContainer.innerHTML = '';
-      
-      // Use iframe method with fallback for failed fetch errors
-      const iframe = document.createElement('iframe');
-      iframe.id = 'typeform-iframe';
-      
-      // Build the URL with hidden fields
-      let typeformUrl = `https://form.typeform.com/to/${TYPEFORM_ID}?embed-hide-header=true&embed-hide-footer=true`;
-      
-      // Add hidden fields to URL if available
-      if (userInfo.email) {
-        typeformUrl += `&email=${encodeURIComponent(userInfo.email)}`;
-        typeformUrl += `&firstName=${encodeURIComponent(userInfo.firstName)}`;
-        typeformUrl += `&lastName=${encodeURIComponent(userInfo.lastName)}`;
-        typeformUrl += `&phone=${encodeURIComponent(userInfo.phone)}`;
-      }
-      
-      iframe.src = typeformUrl;
-      
-      // Set iframe attributes
-      iframe.style.width = '100%';
-      iframe.style.height = '650px';
-      iframe.style.border = 'none';
-      
-      // Add sandbox attributes to improve security
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation');
-      
-      // Handle iframe load and error events
-      iframe.onload = () => {
-        console.log('Typeform iframe loaded');
-        setIsTypeformLoading(false);
-      };
-      
-      iframe.onerror = () => {
-        console.error('Failed to load Typeform iframe');
-        handleTypeformError();
-      };
-      
-      // Append the iframe to the container
-      typeformContainer.appendChild(iframe);
-      
-      // Set up a message listener to detect form submission
-      const messageHandler = (event: MessageEvent) => {
-        if (event.origin.includes('typeform.com')) {
-          try {
-            // Parse the data if it's a string
-            const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-            
-            // Check for multiple possible event formats
-            if (data.type === 'form-submit' || 
-                (data.eventName && data.eventName === 'form_submit') ||
-                (data.event && data.event === 'submit')) {
-              handleTypeformSubmit(data);
-            }
-          } catch (error) {
-            console.error('Error parsing message from Typeform:', error);
-          }
-        }
-      };
-      
-      // Add event listener for messages
-      window.addEventListener('message', messageHandler);
-      
-      // Fallback: Handle completion after timeout in case other methods fail
-      const autoCompleteTimeout = setTimeout(() => {
-        if (step === 'questions') {
-          console.log('Auto-completing survey after timeout');
-          handleTypeformSubmit();
-        }
-      }, 180000); // 3 minutes
-      
-      // Set additional fallback timeout for "Failed to fetch" errors
-      const fetchErrorTimeout = setTimeout(() => {
-        if (isTypeformLoading) {
-          console.log('Typeform may have failed to load - checking status');
-          // Check if there are any fetch errors in the console
-          const iframe = document.getElementById('typeform-iframe') as HTMLIFrameElement;
-          if (iframe && iframe.contentWindow) {
-            try {
-              // Check if we can access the iframe content
-              if (!iframe.contentWindow.document) {
-                handleTypeformError();
-              }
-            } catch (e) {
-              // If we can't access the iframe content, there might be a CORS or loading issue
-              handleTypeformError();
-            }
-          }
-        }
-      }, 15000); // 15 seconds
-      
-      // Cleanup function
-      return () => {
-        if (typeformContainer) {
-          typeformContainer.innerHTML = '';
-        }
-        
-        window.removeEventListener('message', messageHandler);
-        clearTimeout(autoCompleteTimeout);
-        clearTimeout(fetchErrorTimeout);
-      };
-    }
-  }, [step, userInfo, navigate]);
-  
-  // Helper function to handle Typeform errors
   const handleTypeformError = () => {
-    console.log('Handling Typeform error');
-    setIsTypeformLoading(false);
+    console.log('Handling Typeform error - proceeding to next step');
     
-    toast({
-      title: "Survey Loading Issue",
-      description: "We're having trouble loading the survey. You'll be directed to the next step automatically.",
-      variant: "destructive",
-    });
-    
-    // Wait 3 seconds, then auto-complete
-    setTimeout(() => {
-      handleTypeformSubmit({ qualifiesForCall: true });
-    }, 3000);
+    // If there's an error loading the typeform, we'll just consider the user qualified
+    // This provides better UX than failing completely
+    handleTypeformSubmit({ qualifiesForCall: true });
   };
   
   // Handle performance optimization
@@ -352,26 +213,12 @@ const Quiz = () => {
             <div id="quiz-step-questions" className="bg-card p-8 rounded-lg shadow-lg">
               <h2 className="text-2xl font-semibold mb-6">Qualification Survey</h2>
               
-              {isTypeformLoading ? (
-                <div className="flex flex-col items-center justify-center space-y-6 py-16">
-                  <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium mb-3">Loading your survey...</h3>
-                    <div className="w-full max-w-md mx-auto">
-                      <Progress value={loadingProgress} className="h-2" />
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-2">Please wait while we prepare your application survey</p>
-                  </div>
-                </div>
-              ) : null}
-              
-              {/* Typeform container */}
-              <div 
-                id="typeform-container"
-                className={`w-full min-h-[650px] ${isTypeformLoading ? 'hidden' : 'block'}`}
-              >
-                {/* Typeform iframe will be added here */}
-              </div>
+              <TypeformEmbed 
+                typeformId={TYPEFORM_ID}
+                userInfo={userInfo}
+                onSubmit={handleTypeformSubmit}
+                onError={handleTypeformError}
+              />
               
               <p className="text-xs mt-4 text-center text-muted-foreground">
                 This information helps us determine if you're a good fit for our program.

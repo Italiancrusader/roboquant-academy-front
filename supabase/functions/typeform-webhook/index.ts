@@ -29,8 +29,30 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Received webhook from Typeform");
     
     // Parse the webhook payload
-    const payload = await req.json();
+    const payload = await req.json().catch(error => {
+      console.error("Error parsing webhook payload:", error);
+      return {};
+    });
+    
     console.log("Webhook payload:", JSON.stringify(payload));
+    
+    if (!payload || !payload.form_response) {
+      console.warn("Invalid webhook payload format");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Invalid payload format",
+          redirectUrl: "/book-call" // Default redirect on error for better UX
+        }),
+        {
+          status: 400,
+          headers: { 
+            "Content-Type": "application/json",
+            ...corsHeaders 
+          }
+        }
+      );
+    }
     
     // Extract the form response data
     const formResponse = payload.form_response;
@@ -106,9 +128,9 @@ const handler = async (req: Request): Promise<Response> => {
     const redirectUrl = qualifiesForCall ? "/book-call" : "/checkout";
     console.log("DEBUG TYPEFORM WEBHOOK - Redirect URL:", redirectUrl);
     
-    try {
-      // Save the submission data to Supabase with better error handling
-      if (email) {
+    // Save the submission data to Supabase with better error handling
+    if (email) {
+      try {
         const { data, error } = await supabase.from("quiz_submissions").insert([
           {
             email,
@@ -126,11 +148,12 @@ const handler = async (req: Request): Promise<Response> => {
         } else {
           console.log("Submission saved successfully to Supabase");
         }
-      } else {
-        console.log("No email provided, skipping database save");
+      } catch (dbError) {
+        console.error("Error saving submission:", dbError);
+        // Continue execution despite database error
       }
-    } catch (dbError) {
-      console.error("Error saving submission:", dbError);
+    } else {
+      console.log("No email provided, skipping database save");
     }
     
     // Return the qualification status
@@ -154,7 +177,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: false, 
         error: error.message || "Unknown error",
-        redirectUrl: "/checkout" // Default redirect on error
+        redirectUrl: "/book-call" // Default redirect on error for better UX
       }),
       {
         status: 500,
