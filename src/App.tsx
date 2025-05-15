@@ -53,10 +53,7 @@ const queryClient = new QueryClient();
 function App() {
   const isAdminRoute = window.location.pathname.startsWith('/admin');
 
-  // Use development mode flag
-  const isDevelopmentMode = window.location.search.includes('dev=true');
-
-  // Conditionally set the background color based on the route
+  // Always set the background color based on the route, no development mode check
   const backgroundColor = isAdminRoute ? '#0F1117' : '#0F1117';
 
   return (
@@ -68,11 +65,11 @@ function App() {
               <GoogleAnalytics />
               <MetaPixel />
               <Routes>
-                {/* Use SimpleLanding as the main route and keep full Index available in dev mode */}
-                <Route path="/" element={isDevelopmentMode ? <Index /> : <SimpleLanding />} />
+                {/* Use Index as the main route (full version) */}
+                <Route path="/" element={<Index />} />
                 
-                {/* Keep all other routes for development */}
-                <Route path="/full" element={<Index />} />
+                {/* Keep SimpleLanding as a separate route if needed */}
+                <Route path="/simple" element={<SimpleLanding />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -88,7 +85,7 @@ function App() {
                   element={<ProtectedRoute><CourseLesson /></ProtectedRoute>}
                 />
                 
-                {/* New Sales Funnel Routes */}
+                {/* Sales Funnel Routes */}
                 <Route path="/quiz" element={<Quiz />} />
                 <Route path="/vsl" element={<VSL />} />
                 <Route path="/checkout" element={<Checkout />} />
