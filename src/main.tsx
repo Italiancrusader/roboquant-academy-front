@@ -1,8 +1,13 @@
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
 import LoadingAnimation from './components/LoadingAnimation';
+import { supabase } from '@/integrations/supabase/client';
+
+// Initialize Supabase client before anything else
+console.log("Initializing Supabase client:", !!supabase);
 
 // Define dataLayer for Google Tag Manager if it doesn't exist
 window.dataLayer = window.dataLayer || [];

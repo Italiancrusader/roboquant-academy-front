@@ -52,8 +52,6 @@ const queryClient = new QueryClient();
 
 function App() {
   const isAdminRoute = window.location.pathname.startsWith('/admin');
-
-  // Always set the background color based on the route, no development mode check
   const backgroundColor = isAdminRoute ? '#0F1117' : '#0F1117';
 
   return (
@@ -71,6 +69,10 @@ function App() {
                 {/* Keep SimpleLanding as a separate route if needed */}
                 <Route path="/simple" element={<SimpleLanding />} />
                 <Route path="/auth" element={<Auth />} />
+                
+                {/* Add explicit route for OAuth callback */}
+                <Route path="/auth/v1/callback" element={<Auth />} />
+                
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/contact" element={<Contact />} />

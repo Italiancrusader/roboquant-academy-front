@@ -1,4 +1,3 @@
-
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -143,53 +142,41 @@ export const handleHashTokens = async () => {
     console.log("Detected code and state in URL query params, attempting to exchange for session");
     
     try {
-      // First attempt - direct code exchange
+      console.log("Exchange code attempt - Current pathname:", window.location.pathname);
+      
+      // Check if we're on the callback URL that Google redirected to
+      const isCallbackPath = window.location.pathname.includes('/auth/v1/callback');
+      
+      if (isCallbackPath) {
+        console.log("We are on the callback URL path, redirecting to /auth with code and state");
+        // Redirect to our app's /auth path but keep the query parameters
+        const newAuthUrl = `/auth${window.location.search}`;
+        console.log("Redirecting to:", newAuthUrl);
+        window.location.href = newAuthUrl;
+        return null;
+      }
+      
+      console.log("Attempting direct code exchange with code:", code.substring(0, 10) + "...");
+      
+      // Try exchanging the code for a session
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       
       if (error) {
-        console.error("Failed to exchange code for session (first attempt):", error);
+        console.error("Failed to exchange code for session:", error);
         
-        // Second attempt - backup approach using complete flow
-        try {
-          const params = new URLSearchParams(window.location.search);
-          const fullUrl = window.location.href;
-          console.log("Trying second approach with full URL:", fullUrl);
-          
-          // Try moving to a proper path and attempt again
-          if (window.location.pathname.includes('/auth/v1/callback')) {
-            // Move to the /auth path which our app handles
-            window.history.replaceState({}, '', '/auth' + window.location.search);
-            
-            // Try the exchange again
-            const secondAttempt = await supabase.auth.exchangeCodeForSession(code);
-            if (secondAttempt.error) {
-              console.error("Second attempt also failed:", secondAttempt.error);
-              toast({
-                title: "Authentication Error",
-                description: "Failed to complete authentication. Please try again.",
-                variant: "destructive",
-              });
-              return null;
-            }
-            
-            if (secondAttempt.data.session) {
-              console.log("Second attempt succeeded!");
-              toast({
-                title: "Authentication Successful",
-                description: `Welcome${secondAttempt.data.session.user.user_metadata?.name ? `, ${secondAttempt.data.session.user.user_metadata.name}` : ''}!`,
-              });
-              return secondAttempt.data.session;
-            }
-          }
-        } catch (secondError) {
-          console.error("Second attempt error:", secondError);
-        }
+        // Add diagnostic information
+        console.log("Detailed error information:");
+        console.log("- Error code:", error.code);
+        console.log("- Error message:", error.message);
+        console.log("- Status:", error.status);
+        console.log("- URL:", window.location.href);
         
         toast({
           title: "Authentication Error",
-          description: "Failed to complete authentication. Please try again.",
+          description: "Failed to complete authentication. Please try again. Error: " + error.message,
           variant: "destructive",
         });
+        
         return null;
       }
       
@@ -197,7 +184,7 @@ export const handleHashTokens = async () => {
         console.log("Successfully exchanged code for session");
         console.log("User authenticated:", data.session.user.email);
         
-        // Clear the query params to remove code from URL
+        // Clear the query params to remove code and state from URL
         window.history.replaceState(null, document.title, window.location.pathname);
         
         toast({
@@ -209,9 +196,21 @@ export const handleHashTokens = async () => {
       }
     } catch (err) {
       console.error("Error exchanging code for session:", err);
+      
+      // Add more diagnostic information
+      console.log("Technical details for debugging:");
+      console.log("- URL:", window.location.href);
+      console.log("- Code param length:", code.length);
+      console.log("- State param length:", state.length);
+      console.log("- Full error:", err);
     }
   } else {
     console.log("No code and state found in URL query params");
+    if (window.location.pathname.includes('/auth/v1/callback')) {
+      console.log("We are on callback path but missing code/state, redirecting to /auth");
+      window.location.href = "/auth";
+      return null;
+    }
   }
   
   return null;
