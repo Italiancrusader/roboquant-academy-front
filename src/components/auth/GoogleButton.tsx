@@ -38,6 +38,9 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({ onClick, isLoading, buttonT
     console.log("Base URL to be used:", baseUrl);
     console.log("Environment:", isDevelopment ? "Development" : "Production");
     console.log("Auth path:", `${baseUrl}/auth`);
+    console.log("Browser user agent:", navigator.userAgent);
+    console.log("Cookies enabled:", navigator.cookieEnabled);
+    console.log("Local storage available:", typeof localStorage !== 'undefined');
     
     // Call the provided onClick handler
     onClick();

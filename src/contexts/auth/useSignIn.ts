@@ -51,9 +51,26 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
       console.log("Current hostname:", window.location.hostname);
       console.log("Current origin:", window.location.origin);
       console.log("Redirect URL to be used:", redirectTo);
+      console.log("Browser localStorage available:", typeof localStorage !== 'undefined');
+      console.log("Browser cookies enabled:", navigator.cookieEnabled);
       
-      // We no longer need to handle the www redirect here as domain is properly configured
-      // Just handle the auth flow directly
+      // Clear any existing cookies to avoid conflicts
+      document.cookie.split(';').forEach(cookie => {
+        const trimmedCookie = cookie.trim();
+        const cookieName = trimmedCookie.split('=')[0];
+        
+        // Only clear non-essential cookies
+        if (cookieName && 
+            !cookieName.includes('_csrf') && 
+            !cookieName.includes('__Host')) {
+          console.log("Clearing cookie:", cookieName);
+          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        }
+      });
+      
+      // Clear related localStorage items to ensure a fresh auth session
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('supabase.auth.refreshToken');
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -62,7 +79,9 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          }
+          },
+          // Explicitly use PKCE flow
+          flowType: 'pkce'
         }
       });
       
