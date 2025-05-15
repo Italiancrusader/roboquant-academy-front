@@ -118,11 +118,17 @@ const Quiz = () => {
         console.log("[Quiz] Processing typeform submission data:", JSON.stringify(data));
         
         if (data) {
-          // Check if the data includes qualification status
+          // Check if the data includes qualification status directly
           if (typeof data.qualifiesForCall === 'boolean') {
             isQualified = data.qualifiesForCall;
             console.log("[Quiz] Using direct qualifiesForCall value:", isQualified);
-          } else if (data.answers) {
+          } 
+          // Special handling for high capital values
+          else if (data.tradingCapital === "> $25k" || data.tradingCapital === "> $250k") {
+            isQualified = true;
+            console.log("[Quiz] High capital value detected, setting qualified = true");
+          }
+          else if (data.answers) {
             // Process answers to determine qualification
             console.log("[Quiz] Checking answers:", JSON.stringify(data.answers));
             
@@ -130,26 +136,32 @@ const Quiz = () => {
             const tradingCapitalAnswer = getAnswerByFieldName(data.answers, 'trading_capital');
             console.log("[Quiz] Trading capital from answers:", tradingCapitalAnswer);
             
-            // Map Typeform value format to our application format
-            let mappedTradingCapital = tradingCapitalAnswer;
-            
-            if (tradingCapitalAnswer === "< $1k") {
-              mappedTradingCapital = "Under $1,000";
-            } else if (tradingCapitalAnswer === "$1k-$5k") {
-              mappedTradingCapital = "$1,000 – $5,000";
-            } else if (tradingCapitalAnswer === "$5k-$10k") {
-              mappedTradingCapital = "$5,000 – $10,000";
-            } else if (tradingCapitalAnswer === "$10k-$250k") {
-              mappedTradingCapital = "$10,000 – $250,000";
-            } else if (tradingCapitalAnswer === "> $250k") {
-              mappedTradingCapital = "Over $250,000";
+            // Special case handling for high capital values
+            if (tradingCapitalAnswer === "> $25k" || tradingCapitalAnswer === "> $250k") {
+              isQualified = true;
+              console.log("[Quiz] High capital value detected in answers, setting qualified = true");
+            } else {
+              // Map Typeform value format to our application format
+              let mappedTradingCapital = tradingCapitalAnswer;
+              
+              if (tradingCapitalAnswer === "< $1k") {
+                mappedTradingCapital = "Under $1,000";
+              } else if (tradingCapitalAnswer === "$1k-$5k") {
+                mappedTradingCapital = "$1,000 – $5,000";
+              } else if (tradingCapitalAnswer === "$5k-$10k") {
+                mappedTradingCapital = "$5,000 – $10,000";
+              } else if (tradingCapitalAnswer === "$10k-$25k" || tradingCapitalAnswer === "$10k-$250k") {
+                mappedTradingCapital = "$10,000 – $250,000";
+              } else if (tradingCapitalAnswer === "> $250k" || tradingCapitalAnswer === "> $25k") {
+                mappedTradingCapital = "Over $250,000";
+              }
+              
+              console.log("[Quiz] Mapped trading capital:", mappedTradingCapital);
+              
+              // Apply qualification logic directly - same as checkQualification function
+              isQualified = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(mappedTradingCapital);
+              console.log("[Quiz] Final qualification status:", isQualified);
             }
-            
-            console.log("[Quiz] Mapped trading capital:", mappedTradingCapital);
-            
-            // Apply qualification logic directly - same as checkQualification function
-            isQualified = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(mappedTradingCapital);
-            console.log("[Quiz] Final qualification status:", isQualified);
           }
         }
       } catch (error) {
@@ -234,7 +246,7 @@ const Quiz = () => {
     }
   }, [step, isTypeformLoading]);
   
-  // Load and configure Typeform - simplified approach to avoid fetch errors
+  // Load and configure Typeform - improved approach to handle errors better
   useEffect(() => {
     if (step === 'questions') {
       console.log('Loading Typeform...');

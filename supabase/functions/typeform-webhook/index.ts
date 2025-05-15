@@ -159,15 +159,15 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("DEBUG TYPEFORM WEBHOOK - Original trading capital:", tradingCapital);
     console.log("DEBUG TYPEFORM WEBHOOK - Mapped trading capital:", mappedTradingCapital);
     
-    // Direct qualification check for higher capital values
+    // CRITICAL FIX: Direct qualification check for higher capital values ("> $25k")
     let qualifiesForCall = false;
     
-    // Direct check for known qualifying values first
+    // First check specifically for "> $25k" value which should always qualify
     if (tradingCapital === "> $25k" || tradingCapital === "> $250k") {
-      console.log("DEBUG TYPEFORM WEBHOOK - Direct qualification for high capital value");
+      console.log("DEBUG TYPEFORM WEBHOOK - Direct qualification for high capital value:", tradingCapital);
       qualifiesForCall = true;
     } 
-    // Then check for other approved values
+    // Then check other cases against approved values
     else {
       const approvedCapitalValues = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"];
       qualifiesForCall = approvedCapitalValues.includes(mappedTradingCapital);
@@ -212,6 +212,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Continue with the response even if saving fails
     }
 
+    // CRITICAL FIX: Set correct redirect URL based on qualification status
     const redirectUrl = qualifiesForCall ? "/book-call" : "/vsl?qualified=false";
     console.log("DEBUG TYPEFORM WEBHOOK - Redirect URL:", redirectUrl);
     
