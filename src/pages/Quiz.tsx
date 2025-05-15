@@ -93,31 +93,7 @@ const Quiz = () => {
     }
   };
 
-  // Function to handle redirect for typeform webhook
-  useEffect(() => {
-    if (step === 'completed') {
-      // Set up polling to check for redirects from webhook
-      const pollForWebhookRedirect = async () => {
-        try {
-          // The redirect will be handled by the webhook response in the iframe
-          console.log('Waiting for webhook response to determine redirect...');
-        } catch (error) {
-          console.error('Error checking redirect status:', error);
-        }
-      };
-
-      // Poll every few seconds (this is just a fallback)
-      const pollInterval = setInterval(pollForWebhookRedirect, 5000);
-      
-      // Initial check
-      pollForWebhookRedirect();
-      
-      // Clean up
-      return () => clearInterval(pollInterval);
-    }
-  }, [step, navigate]);
-  
-  // Handle form completion when webhook responds
+  // Function to handle typeform webhook results
   const handleTypeformSubmit = (data?: any) => {
     console.log('Typeform submitted successfully', data);
     
@@ -129,12 +105,6 @@ const Quiz = () => {
       event_category: 'Quiz',
       event_label: userInfo.email || 'Unknown'
     });
-
-    // Force a redirect to /book-call after 1.5 seconds
-    // This is a fallback in case the webhook redirect doesn't happen
-    setTimeout(() => {
-      navigate('/book-call');
-    }, 1500);
   };
   
   const handleTypeformError = () => {
@@ -151,8 +121,7 @@ const Quiz = () => {
   useEffect(() => {
     const links = [
       { rel: 'preconnect', href: 'https://form.typeform.com', crossOrigin: 'anonymous' },
-      { rel: 'preconnect', href: 'https://renderer-assets.typeform.com', crossOrigin: 'anonymous' },
-      { rel: 'preload', href: 'https://form.typeform.com/to/Mxpdceu1', as: 'document' }
+      { rel: 'preconnect', href: 'https://renderer-assets.typeform.com', crossOrigin: 'anonymous' }
     ];
     
     const elements = links.map(link => {
@@ -160,7 +129,6 @@ const Quiz = () => {
       element.rel = link.rel;
       element.href = link.href;
       if (link.crossOrigin) element.crossOrigin = link.crossOrigin;
-      if (link.as) element.setAttribute('as', link.as);
       document.head.appendChild(element);
       return element;
     });

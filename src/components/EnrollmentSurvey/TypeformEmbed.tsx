@@ -94,14 +94,34 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
         if (event.origin.includes('typeform.com')) {
           try {
             console.log('Received message from Typeform:', event.data);
-            const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
             
-            // Check for various submission event formats
-            if (data.type === 'form-submit' || 
-                (data.eventName && data.eventName === 'form_submit') ||
-                (data.event && data.event === 'submit')) {
-              console.log('Typeform submission detected via message event', data);
-              onSubmit(data);
+            // Handle different message formats
+            if (typeof event.data === 'string') {
+              try {
+                const data = JSON.parse(event.data);
+                
+                // Check for various submission event formats
+                if (data.type === 'form-submit' || 
+                    (data.eventName && data.eventName === 'form_submit') ||
+                    (data.event && data.event === 'submit')) {
+                  console.log('Typeform submission detected via message event', data);
+                  onSubmit(data);
+                }
+              } catch (parseError) {
+                // If it's not valid JSON, check for other event formats
+                if (event.data.includes('form-submit') || event.data.includes('form_submit')) {
+                  console.log('Typeform submission detected via string event', event.data);
+                  onSubmit();
+                }
+              }
+            } else if (event.data && typeof event.data === 'object') {
+              // Handle object format events
+              if (event.data.type === 'form-submit' || 
+                  (event.data.eventName && event.data.eventName === 'form_submit') ||
+                  (event.data.event && event.data.event === 'submit')) {
+                console.log('Typeform submission detected via object event', event.data);
+                onSubmit(event.data);
+              }
             }
           } catch (error) {
             console.error('Error parsing Typeform message:', error);
