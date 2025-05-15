@@ -18,19 +18,9 @@ const BookCall = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Debug info - logged on component load
-  console.log("[BookCall] Component loaded", {
-    currentUrl: window.location.href,
-    searchParams: Object.fromEntries(searchParams.entries()),
-    step: step
-  });
-  
   // Check if payment was successful
   useEffect(() => {
-    console.log("[BookCall] useEffect running, checking URL parameters");
-    
     if (searchParams.get('paid') === '1') {
-      console.log("[BookCall] Paid parameter detected, setting step to calendar");
       setStep('calendar');
       trackEvent('deposit_paid', {
         event_category: 'Payment',
@@ -40,7 +30,6 @@ const BookCall = () => {
     }
     
     // Load Calendly widget script
-    console.log("[BookCall] Loading Calendly widget");
     const script = document.createElement('script');
     script.src = 'https://assets.calendly.com/assets/external/widget.js';
     script.async = true;
@@ -55,13 +44,10 @@ const BookCall = () => {
   
   // Handle deposit payment
   const handlePayDeposit = async () => {
-    console.log("[BookCall] Pay deposit button clicked");
     setIsLoading(true);
     
     try {
       const userId = user ? user.id : undefined;
-      console.log("[BookCall] Initiating checkout with user ID:", userId);
-      
       const result = await handleStripeCheckout({
         courseId: 'call-deposit',
         courseTitle: 'Strategy Call Deposit',
@@ -75,7 +61,7 @@ const BookCall = () => {
         throw new Error("Failed to initiate checkout");
       }
     } catch (error) {
-      console.error('[BookCall] Error during checkout:', error);
+      console.error('Error during checkout:', error);
       toast({
         title: "Payment Error",
         description: "There was an error processing your payment. Please try again.",
@@ -87,10 +73,7 @@ const BookCall = () => {
   
   // Handle Calendly event
   const handleCalendlyEvent = (e: any) => {
-    console.log("[BookCall] Calendly event received:", e.data.event);
-    
     if (e.data.event === "calendly.event_scheduled") {
-      console.log("[BookCall] Call successfully booked");
       trackEvent('call_booked', {
         event_category: 'Booking',
         event_label: 'Strategy Call'
@@ -113,7 +96,6 @@ const BookCall = () => {
   
   // Listen for Calendly events
   useEffect(() => {
-    console.log("[BookCall] Setting up Calendly event listener");
     window.addEventListener('message', handleCalendlyEvent);
     return () => window.removeEventListener('message', handleCalendlyEvent);
   }, []);

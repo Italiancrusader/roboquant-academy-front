@@ -5,8 +5,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SurveyForm from '@/components/EnrollmentSurvey/SurveyForm';
 import { submitLead } from '@/services/leadService';
-import { toast } from '@/components/ui/use-toast';
-import { checkQualification } from '@/components/EnrollmentSurvey';
 
 const SurveyFunnel = () => {
   const [step, setStep] = useState(1);
@@ -24,12 +22,9 @@ const SurveyFunnel = () => {
       // Determine if the user qualifies for a call based on the survey answers
       const qualifiesForCall = checkQualification(combinedData);
       
-      console.log("[SurveyFunnel] FULL QUALIFICATION DEBUG");
-      console.log("[SurveyFunnel] Survey data:", combinedData);
-      console.log("[SurveyFunnel] Qualifies for call:", qualifiesForCall);
-      console.log("[SurveyFunnel] Trading capital:", combinedData.tradingCapital);
-      console.log("[SurveyFunnel] Trading capital type:", typeof combinedData.tradingCapital);
-      console.log("[SurveyFunnel] Is included in approved list:", ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(combinedData.tradingCapital));
+      console.log("Survey data:", combinedData);
+      console.log("Qualifies for call:", qualifiesForCall);
+      console.log("Trading capital:", combinedData.tradingCapital);
       
       // Submit lead data regardless of qualification
       await submitLead({
@@ -40,36 +35,16 @@ const SurveyFunnel = () => {
         leadMagnet: qualifiesForCall ? "strategy_call" : "course_enrollment"
       });
       
-      // Show success toast
-      toast({
-        title: qualifiesForCall ? "You qualify for a strategy call!" : "Thank you for your application",
-        description: qualifiesForCall 
-          ? "Redirecting you to book your strategy call." 
-          : "Redirecting you to our pricing page.",
-        duration: 3000,
-      });
-      
-      console.log("[SurveyFunnel] About to redirect to:", qualifiesForCall ? "/book-call" : "/vsl?qualified=false");
-      
-      // Route based on qualification with slight delay for toast
-      setTimeout(() => {
-        if (qualifiesForCall) {
-          // Redirect to calendar booking page
-          console.log("[SurveyFunnel] Redirecting to /book-call");
-          navigate("/book-call");
-        } else {
-          // Redirect to pricing/checkout page
-          console.log("[SurveyFunnel] Redirecting to /vsl?qualified=false");
-          navigate("/vsl?qualified=false");
-        }
-      }, 1000);
+      // Route based on qualification
+      if (qualifiesForCall) {
+        // Redirect to calendar booking page
+        navigate("/book-call");
+      } else {
+        // Redirect to pricing/checkout page
+        navigate("/pricing");
+      }
     } catch (error) {
-      console.error("[SurveyFunnel] Error submitting survey:", error);
-      toast({
-        title: "Error",
-        description: "There was an error processing your survey. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error submitting survey:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -81,6 +56,17 @@ const SurveyFunnel = () => {
     
     // Move to next step
     setStep(step + 1);
+  };
+
+  // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
+  const checkQualification = (data: Record<string, any>): boolean => {
+    console.log("Checking qualification with trading capital:", data.tradingCapital);
+    // Only check for minimum capital requirement of $5,000
+    const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
+    console.log("Has minimum capital:", hasMinimumCapital);
+    
+    // Return true if minimum capital requirement is met
+    return hasMinimumCapital;
   };
 
   return (

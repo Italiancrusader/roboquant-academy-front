@@ -38,18 +38,14 @@ const ContactForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Track Lead event - even if the rest fails, we at least capture this
-      try {
-        trackLead({
-          content_name: data.subject,
-          content_category: 'contact'
-        });
-      } catch (trackingError) {
-        console.warn("Lead tracking failed but continuing:", trackingError);
-      }
+      // Track Lead event
+      trackLead({
+        content_name: data.subject,
+        content_category: 'contact'
+      });
       
-      // Save to Supabase with timeout
-      const savePromise = supabase
+      // Save to Supabase
+      const { error } = await supabase
         .from('contact_submissions')
         .insert({
           name: data.name,
@@ -58,41 +54,17 @@ const ContactForm: React.FC = () => {
           message: data.message,
         });
       
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Database timeout")), 8000);
-      });
-      
-      const { error } = await Promise.race([savePromise, timeoutPromise])
-        .catch(err => {
-          console.error("Database operation failed:", err);
-          return { error: err };
-        });
-      
       if (error) throw error;
       
-      // Call edge function to send email notification with timeout
-      const notificationPromise = fetch('/api/send-contact-notification', {
+      // Call edge function to send email notification
+      const response = await fetch('/api/send-contact-notification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
       
-      const notificationTimeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Notification timeout")), 5000);
-      });
-      
-      const response = await Promise.race([notificationPromise, notificationTimeoutPromise])
-        .catch(err => {
-          console.warn("Notification sending failed but continuing:", err);
-          // Create a mock successful response to continue
-          return new Response(JSON.stringify({ success: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-          });
-        });
-      
       if (!response.ok) {
-        console.warn("Notification response not OK, but continuing");
+        throw new Error('Failed to send notification');
       }
       
       toast({
@@ -106,13 +78,10 @@ const ContactForm: React.FC = () => {
     } catch (error: any) {
       console.error('Error submitting contact form:', error);
       toast({
-        title: "Message received",
-        description: "Thank you for your message. We've received your information.",
-        // Show a positive message even when there are errors behind the scenes
+        title: "Something went wrong",
+        description: error.message || "Failed to send your message. Please try again.",
+        variant: "destructive",
       });
-      
-      // Still clear the form to avoid duplicate submissions
-      reset();
     } finally {
       setIsSubmitting(false);
     }

@@ -111,104 +111,41 @@ const Quiz = () => {
       });
       
       // Determine if user qualifies based on submitted responses
+      // Use data from Typeform if available, otherwise default to not qualified
       let isQualified = false;
       
-      try {
-        // Process the Typeform submission data
-        console.log("[Quiz] Processing typeform submission data:", JSON.stringify(data));
-        
-        if (data) {
-          // Check if the data includes qualification status directly
+      if (data) {
+        try {
+          // Check if the data includes qualification status
           if (typeof data.qualifiesForCall === 'boolean') {
             isQualified = data.qualifiesForCall;
-            console.log("[Quiz] Using direct qualifiesForCall value:", isQualified);
-          } 
-          // Special handling for high capital values with multiple possible formats
-          else if (data.tradingCapital === "> $25k" || 
-                  data.tradingCapital === "> $250k" || 
-                  data.tradingCapital === "Haa2tZ1srkPu") {
-            isQualified = true;
-            console.log("[Quiz] High capital value detected, setting qualified = true");
-          }
-          else if (data.answers) {
+          } else if (data.answers) {
             // Process answers to determine qualification
-            console.log("[Quiz] Checking answers:", JSON.stringify(data.answers));
+            const tradingCapital = getAnswerByFieldName(data.answers, 'trading_capital');
+            const tradingExperience = getAnswerByFieldName(data.answers, 'trading_experience');
             
-            // Find trading capital answer
-            const tradingCapitalAnswer = getAnswerByFieldName(data.answers, 'trading_capital');
-            console.log("[Quiz] Trading capital from answers:", tradingCapitalAnswer);
-            
-            // Special case handling for high capital values
-            if (tradingCapitalAnswer === "> $25k" || 
-                tradingCapitalAnswer === "> $250k" || 
-                tradingCapitalAnswer === "Haa2tZ1srkPu") {
-              isQualified = true;
-              console.log("[Quiz] High capital value detected in answers, setting qualified = true");
-            } else {
-              // Map Typeform value format to our application format
-              let mappedTradingCapital = tradingCapitalAnswer;
-              
-              if (tradingCapitalAnswer === "< $1k") {
-                mappedTradingCapital = "Under $1,000";
-              } else if (tradingCapitalAnswer === "$1k-$5k") {
-                mappedTradingCapital = "$1,000 – $5,000";
-              } else if (tradingCapitalAnswer === "$5k-$10k") {
-                mappedTradingCapital = "$5,000 – $10,000";
-              } else if (tradingCapitalAnswer === "$10k-$25k" || tradingCapitalAnswer === "$10k-$250k") {
-                mappedTradingCapital = "$10,000 – $250,000";
-              } else if (tradingCapitalAnswer === "> $250k" || tradingCapitalAnswer === "> $25k") {
-                mappedTradingCapital = "Over $250,000";
-              }
-              
-              console.log("[Quiz] Mapped trading capital:", mappedTradingCapital);
-              
-              // Apply qualification logic directly
-              isQualified = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(mappedTradingCapital);
-              console.log("[Quiz] Final qualification status:", isQualified);
-            }
+            // Basic qualification rules - higher capital and some experience
+            isQualified = !(
+              ['Under $1,000', '$1,000 – $5,000'].includes(tradingCapital) ||
+              ["I've never traded", "0–1 year"].includes(tradingExperience)
+            );
           }
+        } catch (error) {
+          console.error('Error processing qualification data:', error);
+          isQualified = false; // Default to not qualified on error
         }
-      } catch (error) {
-        console.error('[Quiz] Error processing qualification data:', error);
-        console.log('[Quiz] Falling back to default qualification: false');
-        isQualified = false;
-      }
-      
-      // If we encounter issues with the regular qualification flow, 
-      // check URL parameters directly as a last resort
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlQualified = urlParams.get('qualified');
-      
-      if (urlQualified === 'true') {
-        console.log("[Quiz] Using URL parameter qualification override: true");
-        isQualified = true;
       }
       
       setQualificationResult(isQualified);
       
-      // Add error handling for the redirect with a more robust approach
-      try {
-        // Redirect to the appropriate page based on qualification with error handling
-        setTimeout(() => {
-          try {
-            if (isQualified) {
-              console.log("[Quiz] Redirecting to /book-call");
-              navigate('/book-call');
-            } else {
-              console.log("[Quiz] Redirecting to /vsl?qualified=false");
-              navigate('/vsl?qualified=false');
-            }
-          } catch (redirectError) {
-            console.error("[Quiz] Error during redirect:", redirectError);
-            // Emergency direct window location change as last resort
-            window.location.href = isQualified ? '/book-call' : '/vsl?qualified=false';
-          }
-        }, 1500);
-      } catch (redirectSetupError) {
-        console.error("[Quiz] Error setting up redirect:", redirectSetupError);
-        // Immediate emergency fallback
-        window.location.href = isQualified ? '/book-call' : '/vsl?qualified=false';
-      }
+      // Redirect to the appropriate page based on qualification
+      setTimeout(() => {
+        if (isQualified) {
+          navigate('/book-call');
+        } else {
+          navigate('/vsl?qualified=false');
+        }
+      }, 1500);
     }
   };
   
@@ -250,7 +187,7 @@ const Quiz = () => {
     }
   }, [step, isTypeformLoading]);
   
-  // Load and configure Typeform - improved approach to handle errors better
+  // Load and configure Typeform - simplified approach to avoid fetch errors
   useEffect(() => {
     if (step === 'questions') {
       console.log('Loading Typeform...');
@@ -262,113 +199,89 @@ const Quiz = () => {
       // Clear existing container content
       typeformContainer.innerHTML = '';
       
-      try {
-        // Enhanced iframe method with better error handling
-        const iframe = document.createElement('iframe');
-        iframe.id = 'typeform-iframe';
-        
-        // Build the URL with hidden fields
-        let typeformUrl = `https://form.typeform.com/to/${TYPEFORM_ID}?embed-hide-header=true&embed-hide-footer=true`;
-        
-        // Add hidden fields to URL if available - with proper encoding
-        if (userInfo.email) {
-          typeformUrl += `&email=${encodeURIComponent(userInfo.email)}`;
-          typeformUrl += `&firstName=${encodeURIComponent(userInfo.firstName)}`;
-          typeformUrl += `&lastName=${encodeURIComponent(userInfo.lastName)}`;
-          typeformUrl += `&phone=${encodeURIComponent(userInfo.phone)}`;
+      // Use simple iframe method instead of SDK to avoid fetch errors
+      const iframe = document.createElement('iframe');
+      iframe.id = 'typeform-iframe';
+      
+      // Build the URL with hidden fields
+      let typeformUrl = `https://form.typeform.com/to/${TYPEFORM_ID}?embed-hide-header=true&embed-hide-footer=true`;
+      
+      // Add hidden fields to URL if available
+      if (userInfo.email) {
+        typeformUrl += `&email=${encodeURIComponent(userInfo.email)}`;
+        typeformUrl += `&firstName=${encodeURIComponent(userInfo.firstName)}`;
+        typeformUrl += `&lastName=${encodeURIComponent(userInfo.lastName)}`;
+        typeformUrl += `&phone=${encodeURIComponent(userInfo.phone)}`;
+      }
+      
+      iframe.src = typeformUrl;
+      
+      // Set iframe attributes
+      iframe.style.width = '100%';
+      iframe.style.height = '650px';
+      iframe.style.border = 'none';
+      
+      // Handle iframe load event
+      iframe.onload = () => {
+        console.log('Typeform iframe loaded');
+        setIsTypeformLoading(false);
+      };
+      
+      iframe.onerror = () => {
+        console.error('Failed to load Typeform iframe');
+        toast({
+          title: "Error",
+          description: "Failed to load the survey. Please refresh the page and try again.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      };
+      
+      // Append the iframe to the container
+      typeformContainer.appendChild(iframe);
+      
+      // Set up a message listener to detect form submission
+      const messageHandler = (event: MessageEvent) => {
+        // Check if the message is from Typeform
+        if (event.origin.includes('typeform.com')) {
+          try {
+            // Parse the data if it's a string
+            const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+            
+            // Check if the form was submitted - look for multiple possible event formats
+            if (data.type === 'form-submit' || 
+                (data.eventName && data.eventName === 'form_submit') ||
+                (data.event && data.event === 'submit')) {
+              handleTypeformSubmit(data);
+            }
+          } catch (error) {
+            console.error('Error parsing message from Typeform:', error);
+          }
+        }
+      };
+      
+      // Add event listener for messages
+      window.addEventListener('message', messageHandler);
+      
+      // Handle automatic completion after 5 minutes in case other methods fail
+      const autoCompleteTimeout = setTimeout(() => {
+        // If still on questions step after 5 minutes, assume completion
+        if (step === 'questions') {
+          console.log('Auto-completing survey after timeout');
+          handleTypeformSubmit();
+        }
+      }, 300000); // 5 minutes
+      
+      // Cleanup function
+      return () => {
+        if (typeformContainer) {
+          typeformContainer.innerHTML = '';
         }
         
-        iframe.src = typeformUrl;
-        
-        // Set iframe attributes for better responsiveness
-        iframe.style.width = '100%';
-        iframe.style.height = '650px';
-        iframe.style.border = 'none';
-        iframe.allow = "camera; microphone; autoplay; encrypted-media; fullscreen;";
-        
-        // Handle iframe load event
-        iframe.onload = () => {
-          console.log('Typeform iframe loaded');
-          setIsTypeformLoading(false);
-        };
-        
-        iframe.onerror = () => {
-          console.error('Failed to load Typeform iframe');
-          toast({
-            title: "Error",
-            description: "Failed to load the survey. Please refresh the page and try again.",
-            variant: "destructive",
-            duration: 3000,
-          });
-        };
-        
-        // Append the iframe to the container
-        typeformContainer.appendChild(iframe);
-        
-        // Set up a message listener to detect form submission with enhanced error handling
-        const messageHandler = (event: MessageEvent) => {
-          // Make sure the origin check is robust (could be any typeform domain)
-          if (event.origin.includes('typeform.com')) {
-            try {
-              // Parse the data if it's a string
-              let data = event.data;
-              if (typeof event.data === 'string') {
-                try {
-                  data = JSON.parse(event.data);
-                } catch (parseError) {
-                  // If it fails to parse, keep as string
-                }
-              }
-              
-              // Check if the form was submitted - look for multiple possible event formats
-              if ((typeof data === 'object' && 
-                  (data.type === 'form-submit' || 
-                   (data.eventName && data.eventName === 'form_submit') ||
-                   (data.event && data.event === 'submit')))) {
-                console.log('Typeform submission detected via postMessage:', data);
-                handleTypeformSubmit(data);
-              }
-            } catch (error) {
-              console.error('Error handling message from Typeform:', error);
-            }
-          }
-        };
-        
-        // Add event listener for messages
-        window.addEventListener('message', messageHandler);
-        
-        // Handle automatic completion after 5 minutes in case other methods fail
-        const autoCompleteTimeout = setTimeout(() => {
-          // If still on questions step after 5 minutes, assume completion
-          if (step === 'questions') {
-            console.log('Auto-completing survey after timeout');
-            handleTypeformSubmit();
-          }
-        }, 300000); // 5 minutes
-        
-        // Cleanup function
-        return () => {
-          window.removeEventListener('message', messageHandler);
-          clearTimeout(autoCompleteTimeout);
-        };
-      } catch (setupError) {
-        console.error('Error setting up Typeform:', setupError);
-        
-        // Fallback to manual completion after 10 seconds if iframe setup fails
-        setTimeout(() => {
-          if (step === 'questions') {
-            console.log('Triggering fallback completion due to setup error');
-            handleTypeformSubmit();
-          }
-        }, 10000);
-        
-        setIsTypeformLoading(false);
-        toast({
-          title: "Survey Loading Issue",
-          description: "We're experiencing technical difficulties. Please continue to the next step.",
-          duration: 5000,
-        });
-      }
+        // Clean up event listener and timeout
+        window.removeEventListener('message', messageHandler);
+        clearTimeout(autoCompleteTimeout);
+      };
     }
   }, [step, userInfo, navigate]);
   

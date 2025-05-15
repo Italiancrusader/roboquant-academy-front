@@ -1,14 +1,14 @@
+
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ShieldCheck, Check, ArrowRight, Loader2, Calendar } from 'lucide-react';
+import { ShieldCheck, Check, ArrowRight, Loader2 } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { handleStripeCheckout } from '@/services/stripe';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/components/ui/use-toast';
 
 // Define interface for YouTube player
 interface YouTubePlayer {
@@ -38,37 +38,19 @@ const VSL = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  // Debug info - logged on component load
-  console.log("[VSL] Component loaded", {
-    currentUrl: window.location.href,
-    searchParams: Object.fromEntries(searchParams.entries())
-  });
-  
-  // Check if user is qualified from URL parameter
-  const qualified = searchParams.get('qualified');
-  const isQualified = qualified === 'true';
-  
-  console.log("[VSL] DEBUG - URL parameters:", Object.fromEntries(searchParams.entries()));
-  console.log("[VSL] DEBUG - qualified parameter:", qualified);
-  console.log("[VSL] DEBUG - isQualified:", isQualified);
-  console.log("[VSL] DEBUG - Current URL:", window.location.href);
+  // Check if user is qualified from URL parameter, explicitly compare as string
+  const isQualified = searchParams.get('qualified') === 'true';
+  console.log("VSL Page - Qualified parameter:", searchParams.get('qualified'));
+  console.log("VSL Page - isQualified:", isQualified);
   
   // If user is qualified, show them as having "watched" the video
   useEffect(() => {
     if (isQualified) {
-      console.log("[VSL] User is qualified via URL parameter, setting watched=true");
       setWatched(true);
       
       trackEvent('qualified_viewer', {
         event_category: 'Qualification',
         event_label: 'Qualified via quiz'
-      });
-      
-      // Show success toast for qualified users
-      toast({
-        title: "Strategy Call Qualification",
-        description: "You qualify for a free strategy call based on your answers.",
-        duration: 5000,
       });
     }
   }, [isQualified]);
@@ -124,7 +106,6 @@ const VSL = () => {
 
   // Direct checkout with Stripe
   const handleDirectCheckout = async () => {
-    console.log("[VSL] Direct checkout button clicked");
     setIsLoading(true);
     
     try {
@@ -136,8 +117,6 @@ const VSL = () => {
       
       // Process checkout with Stripe
       const userId = user ? user.id : undefined;
-      console.log("[VSL] Initiating checkout with user ID:", userId);
-      
       const result = await handleStripeCheckout({
         courseId: 'roboquant-academy',
         courseTitle: 'RoboQuant Academy',
@@ -151,20 +130,10 @@ const VSL = () => {
         throw new Error("Failed to initiate checkout");
       }
     } catch (error) {
-      console.error('[VSL] Error during checkout:', error);
+      console.error('Error during checkout:', error);
       setIsLoading(false);
       navigate('/checkout'); // Fallback to checkout page in case of errors
     }
-  };
-  
-  // Handle booking call redirection to ensure it works
-  const handleBookCall = () => {
-    console.log("[VSL] Book call button clicked, navigating to /book-call");
-    navigate('/book-call');
-    trackEvent('book_call_clicked', {
-      event_category: 'Navigation',
-      event_label: 'Book Call Button Clicked'
-    });
   };
   
   // FAQ items for the accordion
@@ -193,23 +162,6 @@ const VSL = () => {
       
       <div className="flex-grow container mx-auto px-4 pt-24 pb-20">
         <div className="max-w-4xl mx-auto">
-          {isQualified && (
-            <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6 text-center">
-              <h2 className="text-xl font-semibold mb-2 text-green-800 dark:text-green-300">
-                Congratulations! You qualify for a strategy call
-              </h2>
-              <p className="mb-4 text-green-700 dark:text-green-400">
-                Based on your quiz answers, you're eligible for a personalized strategy session with our team.
-              </p>
-              <Button 
-                onClick={handleBookCall}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                Book Your Free Strategy Call <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          )}
-          
           <h1 className="text-3xl md:text-5xl font-bold mb-4 text-center gradient-text">
             How To Build Profitable Trading Bots (Without Code)
           </h1>
@@ -234,69 +186,49 @@ const VSL = () => {
             {/* CTA Section Below Video */}
             <div className="p-6 bg-gradient-to-br from-card to-card/90">
               <div className="flex flex-col items-center">
-                {isQualified ? (
-                  <>
-                    <h2 className="text-2xl font-bold mb-4 text-center">
-                      Book Your Free Strategy Call
-                    </h2>
-                    <p className="text-center mb-6 max-w-2xl">
-                      Our team will analyze your trading goals and create a custom implementation plan for your automated strategy.
-                    </p>
-                    <Button 
-                      onClick={handleBookCall}
-                      className="w-full max-w-md py-6 bg-primary hover:bg-primary/90 text-primary-foreground text-lg"
-                    >
-                      <Calendar className="mr-2 h-5 w-5" />
-                      Schedule Your Strategy Call
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-2xl font-bold mb-4 text-center">
-                      Get Instant Access to RoboQuant Academy
-                    </h2>
-                    
-                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 w-full max-w-2xl">
-                      {[
-                        "Build profitable bots without any coding",
-                        "Deploy on MT4, MT5 & TradingView",
-                        "Lifetime access to all materials",
-                        "30-day money-back guarantee",
-                        "Step-by-step video tutorials",
-                        "Private community support"
-                      ].map((item, i) => (
-                        <li key={i} className="flex items-center">
-                          <Check className="text-green-500 mr-2 h-5 w-5 flex-shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <div className="w-full max-w-md space-y-4">
-                      <Button 
-                        onClick={handleDirectCheckout}
-                        disabled={isLoading}
-                        className="w-full py-6 bg-primary hover:bg-primary/90 text-primary-foreground text-lg"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            <ShieldCheck className="mr-2 h-5 w-5" /> 
-                            Get Instant Access — $1,500
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground mt-4 text-center">
-                      One-time payment • Lifetime access • 30-day money-back guarantee
-                    </p>
-                  </>
-                )}
+                <h2 className="text-2xl font-bold mb-4 text-center">
+                  Get Instant Access to RoboQuant Academy
+                </h2>
+                
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 w-full max-w-2xl">
+                  {[
+                    "Build profitable bots without any coding",
+                    "Deploy on MT4, MT5 & TradingView",
+                    "Lifetime access to all materials",
+                    "30-day money-back guarantee",
+                    "Step-by-step video tutorials",
+                    "Private community support"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center">
+                      <Check className="text-green-500 mr-2 h-5 w-5 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <div className="w-full max-w-md space-y-4">
+                  <Button 
+                    onClick={handleDirectCheckout}
+                    disabled={isLoading}
+                    className="w-full py-6 bg-primary hover:bg-primary/90 text-primary-foreground text-lg"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="mr-2 h-5 w-5" /> 
+                        Get Instant Access — $1,500
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                <p className="text-sm text-muted-foreground mt-4 text-center">
+                  One-time payment • Lifetime access • 30-day money-back guarantee
+                </p>
               </div>
             </div>
           </div>
@@ -361,31 +293,22 @@ const VSL = () => {
               Join RoboQuant Academy today and build your first profitable trading bot within days, even if you have no coding experience.
             </p>
             <div className="flex justify-center">
-              {isQualified ? (
-                <Button 
-                  onClick={handleBookCall}
-                  className="py-6 px-8 bg-primary hover:bg-primary/90 text-primary-foreground text-lg"
-                >
-                  Book Your Strategy Call <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleDirectCheckout}
-                  disabled={isLoading}
-                  className="py-6 px-8 bg-primary hover:bg-primary/90 text-primary-foreground text-lg"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      Get Instant Access <ArrowRight className="ml-2 h-5 w-5" />
-                    </>
-                  )}
-                </Button>
-              )}
+              <Button 
+                onClick={handleDirectCheckout}
+                disabled={isLoading}
+                className="py-6 px-8 bg-primary hover:bg-primary/90 text-primary-foreground text-lg"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Get Instant Access <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>

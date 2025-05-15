@@ -10,8 +10,6 @@ import {
 import SurveyForm from "./SurveyForm";
 import { useNavigate } from "react-router-dom";
 import { submitLead } from "@/services/leadService";
-import { toast } from "@/components/ui/use-toast";
-import { checkQualification } from "./index";
 
 interface SurveyDialogProps {
   isOpen: boolean;
@@ -37,12 +35,9 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
       // Determine if the user qualifies for a call based on the survey answers
       const qualifiesForCall = checkQualification(combinedData);
       
-      console.log("[SurveyDialog] FULL QUALIFICATION DEBUG");
-      console.log("[SurveyDialog] Survey dialog data:", combinedData);
-      console.log("[SurveyDialog] Dialog qualifies for call:", qualifiesForCall);
-      console.log("[SurveyDialog] Dialog trading capital:", combinedData.tradingCapital);
-      console.log("[SurveyDialog] Trading capital type:", typeof combinedData.tradingCapital);
-      console.log("[SurveyDialog] Is included in approved list:", ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(combinedData.tradingCapital));
+      console.log("Survey dialog data:", combinedData);
+      console.log("Dialog qualifies for call:", qualifiesForCall);
+      console.log("Dialog trading capital:", combinedData.tradingCapital);
       
       // Submit lead data regardless of qualification
       await submitLead({
@@ -56,36 +51,16 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
       // Close the dialog
       onOpenChange(false);
       
-      // Show toast notification
-      toast({
-        title: qualifiesForCall ? "You qualify for a strategy call!" : "Thank you for your application",
-        description: qualifiesForCall 
-          ? "Redirecting you to book your strategy call." 
-          : "Redirecting you to our pricing page.",
-        duration: 3000,
-      });
-      
-      console.log("[SurveyDialog] About to redirect to:", qualifiesForCall ? "/book-call" : "/vsl?qualified=false");
-      
-      // Route based on qualification with a slight delay for the toast to be visible
-      setTimeout(() => {
-        if (qualifiesForCall) {
-          // Redirect to calendar booking page
-          console.log("[SurveyDialog] Redirecting to /book-call");
-          navigate("/book-call");
-        } else {
-          // Redirect to pricing/checkout page with qualified parameter
-          console.log("[SurveyDialog] Redirecting to /vsl?qualified=false");
-          navigate("/vsl?qualified=false");
-        }
-      }, 1000);
+      // Route based on qualification
+      if (qualifiesForCall) {
+        // Redirect to calendar booking page
+        navigate("/book-call");
+      } else {
+        // Redirect to pricing/checkout page
+        navigate("/pricing");
+      }
     } catch (error) {
-      console.error("[SurveyDialog] Error submitting survey:", error);
-      toast({
-        title: "Error",
-        description: "There was an error processing your survey. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error submitting survey:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -97,6 +72,17 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
     
     // Move to next step
     setStep(step + 1);
+  };
+
+  // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
+  const checkQualification = (data: Record<string, any>): boolean => {
+    console.log("Dialog checking qualification with trading capital:", data.tradingCapital);
+    // Only check for minimum capital requirement of $5,000
+    const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
+    console.log("Dialog has minimum capital:", hasMinimumCapital);
+    
+    // Return true if minimum capital requirement is met
+    return hasMinimumCapital;
   };
 
   return (
