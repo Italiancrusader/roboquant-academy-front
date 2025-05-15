@@ -25,6 +25,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   
   // Simulate loading progress
@@ -97,54 +98,61 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
           try {
             console.log('Received message from Typeform:', event.data);
             
+            let isSubmitEvent = false;
+            let eventData = null;
+            
             // Handle different message formats
             if (typeof event.data === 'string') {
               try {
                 const data = JSON.parse(event.data);
+                eventData = data;
                 
                 // Check for various submission event formats
                 if (data.type === 'form-submit' || 
                     (data.eventName && data.eventName === 'form_submit') ||
                     (data.event && data.event === 'submit')) {
-                  console.log('Typeform submission detected via message event', data);
-                  onSubmit(data);
-                  
-                  // Add a delay before redirecting to ensure the webhook has time to process
-                  setTimeout(() => {
-                    console.log('Redirecting to book-call after submission');
-                    navigate('/book-call');
-                  }, 1500);
+                  isSubmitEvent = true;
                 }
               } catch (parseError) {
                 // If it's not valid JSON, check for other event formats
                 if (event.data.includes('form-submit') || event.data.includes('form_submit')) {
-                  console.log('Typeform submission detected via string event', event.data);
-                  onSubmit();
-                  
-                  // Add a delay before redirecting to ensure the webhook has time to process
-                  setTimeout(() => {
-                    console.log('Redirecting to book-call after submission');
-                    navigate('/book-call');
-                  }, 1500);
+                  isSubmitEvent = true;
                 }
               }
             } else if (event.data && typeof event.data === 'object') {
+              eventData = event.data;
               // Handle object format events
               if (event.data.type === 'form-submit' || 
                   (event.data.eventName && event.data.eventName === 'form_submit') ||
                   (event.data.event && event.data.event === 'submit')) {
-                console.log('Typeform submission detected via object event', event.data);
-                onSubmit(event.data);
-                
-                // Add a delay before redirecting to ensure the webhook has time to process
-                setTimeout(() => {
-                  console.log('Redirecting to book-call after submission');
-                  navigate('/book-call');
-                }, 1500);
+                isSubmitEvent = true;
               }
             }
+            
+            // Handle submission event
+            if (isSubmitEvent) {
+              console.log('Typeform submission detected!', eventData);
+              
+              // Show submission state
+              setIsSubmitting(true);
+              
+              // Call the onSubmit callback with any available data
+              onSubmit(eventData);
+              
+              // Show success toast
+              toast({
+                title: "Survey Completed",
+                description: "Thank you for completing the qualification survey!",
+              });
+              
+              // Add a delay before redirecting to ensure the webhook has time to process
+              setTimeout(() => {
+                console.log('Redirecting after submission');
+                navigate('/book-call');
+              }, 3000); // Increased time to give the webhook more time to process
+            }
           } catch (error) {
-            console.error('Error parsing Typeform message:', error);
+            console.error('Error processing Typeform message:', error);
           }
         }
       };
@@ -175,9 +183,22 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
         </div>
       )}
       
+      {isSubmitting && (
+        <div className="flex flex-col items-center justify-center space-y-6 py-16">
+          <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
+          <div className="text-center">
+            <h3 className="text-lg font-medium mb-3">Processing your submission...</h3>
+            <div className="w-full max-w-md mx-auto">
+              <Progress value={75} className="h-2" />
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">Please wait while we analyze your responses</p>
+          </div>
+        </div>
+      )}
+      
       <div 
         id="typeform-container"
-        className={`w-full min-h-[650px] ${isLoading ? 'hidden' : 'block'}`}
+        className={`w-full min-h-[650px] ${isLoading || isSubmitting ? 'hidden' : 'block'}`}
       />
     </>
   );

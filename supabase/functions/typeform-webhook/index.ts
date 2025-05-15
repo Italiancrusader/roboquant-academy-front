@@ -198,8 +198,8 @@ function checkMinimumCapital(capitalValue: string): boolean {
   // Convert to lowercase for case-insensitive matching
   const capital = capitalValue.toLowerCase();
   
-  // All the different ways we might get the minimum capital threshold
-  const minimumCapitalThresholds = [
+  // Define minimum qualifying capital thresholds (5k and above)
+  const qualifyingCapitalThresholds = [
     "$5,000", "$5k", "5000", "5k", 
     "$10,000", "$10k", "10000", "10k",
     "$25,000", "$25k", "25000", "25k",
@@ -213,8 +213,21 @@ function checkMinimumCapital(capitalValue: string): boolean {
     "over $250,000", "over $250k", "> $250k"
   ];
   
-  // Check if the capital value includes any of the threshold strings
-  const matches = minimumCapitalThresholds.some(threshold => 
+  // Exclude ranges below $5k specifically
+  const nonQualifyingRanges = [
+    "$1k-$5k", "$1k–$5k", "$1,000-$5,000", "$1,000–$5,000",
+    "< $5k", "<$5k", "less than $5k", "below $5k",
+    "$0-$5k", "$0–$5k", "$0-$5,000", "$0–$5,000"
+  ];
+  
+  // First check if it's explicitly a non-qualifying range
+  if (nonQualifyingRanges.some(range => capital.includes(range.toLowerCase()))) {
+    console.log(`Capital value "${capital}" matches a non-qualifying range`);
+    return false;
+  }
+  
+  // If not explicitly excluded, check if it matches a qualifying threshold
+  const matches = qualifyingCapitalThresholds.some(threshold => 
     capital.includes(threshold.toLowerCase())
   );
   
