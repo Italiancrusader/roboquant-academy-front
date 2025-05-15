@@ -2,10 +2,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
+// Enhanced CORS headers to ensure proper communication with Typeform
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*", // Allow requests from any origin
   "Access-Control-Allow-Methods": "POST, OPTIONS", // Allow POST and OPTIONS
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-requested-with, origin, accept",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-requested-with, origin, accept, X-Requested-With",
   "Access-Control-Max-Age": "86400", // Cache CORS preflight requests for 24 hours
 };
 
@@ -14,10 +15,21 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Helper function to ensure consistent response format
+const createResponse = (body: any, status = 200) => {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...corsHeaders
+    }
+  });
+};
+
 const handler = async (req: Request): Promise<Response> => {
   console.log("Typeform webhook received request:", req.method);
   
-  // Handle CORS preflight requests
+  // Handle CORS preflight requests first
   if (req.method === "OPTIONS") {
     console.log("Handling CORS preflight request");
     return new Response(null, { 
@@ -27,15 +39,17 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Only allow POST method
     if (req.method !== "POST") {
       console.log(`Invalid method: ${req.method}, expected POST`);
-      return new Response(
-        JSON.stringify({ error: "Method not allowed" }),
-        { status: 405, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return createResponse({ 
+        error: "Method not allowed",
+        success: false,
+        redirectUrl: "/vsl?qualified=false" // Default redirect for errors
+      }, 405);
     }
     
-    // Parse the webhook payload
+    // Parse the webhook payload with error handling
     let payload;
     try {
       console.log("Attempting to parse request body");
@@ -50,23 +64,26 @@ const handler = async (req: Request): Promise<Response> => {
       });
     } catch (error) {
       console.error("Error parsing webhook payload:", error);
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON payload", details: error.message }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return createResponse({
+        error: "Invalid JSON payload",
+        details: error.message,
+        success: false,
+        redirectUrl: "/vsl?qualified=false" // Default redirect for errors
+      }, 400);
     }
     
     // Extract the form response data
     const formResponse = payload.form_response;
     if (!formResponse) {
       console.error("Missing form_response in payload");
-      return new Response(
-        JSON.stringify({ error: "Missing form_response in payload" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return createResponse({
+        error: "Missing form_response in payload",
+        success: false,
+        redirectUrl: "/vsl?qualified=false" // Default redirect for errors
+      }, 400);
     }
     
-    const answers = formResponse.answers;
+    const answers = formResponse.answers || [];
     const hiddenFields = formResponse.hidden || {};
     
     // Extract user info from hidden fields
@@ -78,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Extracted user info from hidden fields:", { email, firstName, lastName, phone });
     
     // Process the answers and determine qualification
-    const processedAnswers = {};
+    const processedAnswers: Record<string, any> = {};
     let tradingCapital = "";
     let tradingExperience = "";
     let tradingGoal = "";
@@ -159,11 +176,11 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("DEBUG TYPEFORM WEBHOOK - Original trading capital:", tradingCapital);
     console.log("DEBUG TYPEFORM WEBHOOK - Mapped trading capital:", mappedTradingCapital);
     
-    // CRITICAL FIX: Direct qualification check for higher capital values ("> $25k")
+    // CRITICAL FIX: Direct qualification check for higher capital values ("> $25k") - fixed logic!
     let qualifiesForCall = false;
     
-    // First check specifically for "> $25k" value which should always qualify
-    if (tradingCapital === "> $25k" || tradingCapital === "> $250k") {
+    // First check specifically for high capital values which should always qualify
+    if (tradingCapital === "> $25k" || tradingCapital === "> $250k" || tradingCapital === "Haa2tZ1srkPu") {
       console.log("DEBUG TYPEFORM WEBHOOK - Direct qualification for high capital value:", tradingCapital);
       qualifiesForCall = true;
     } 
@@ -174,14 +191,13 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     console.log("DEBUG TYPEFORM WEBHOOK - All processed answers:", JSON.stringify(processedAnswers));
-    console.log("DEBUG TYPEFORM WEBHOOK - Approved capital values:", ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"]);
     console.log("DEBUG TYPEFORM WEBHOOK - Has minimum capital?", qualifiesForCall);
     console.log("DEBUG TYPEFORM WEBHOOK - Final qualification status:", qualifiesForCall);
     
-    // Save the submission data to Supabase
+    // Save the submission data to Supabase with error handling
     try {
       console.log("Saving submission to Supabase");
-      const { data, error } = await supabase.from("quiz_submissions").insert([
+      const { error } = await supabase.from("quiz_submissions").insert([
         {
           email,
           first_name: firstName,
@@ -196,7 +212,6 @@ const handler = async (req: Request): Promise<Response> => {
             qualifies_for_call: qualifiesForCall,
             approved_values: ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"],
             raw_answers: answers,
-            raw_payload: payload
           }
         }
       ]);
@@ -212,46 +227,25 @@ const handler = async (req: Request): Promise<Response> => {
       // Continue with the response even if saving fails
     }
 
-    // CRITICAL FIX: Set correct redirect URL based on qualification status
+    // Set correct redirect URL based on qualification status
     const redirectUrl = qualifiesForCall ? "/book-call" : "/vsl?qualified=false";
     console.log("DEBUG TYPEFORM WEBHOOK - Redirect URL:", redirectUrl);
     
-    // Return the qualification status with the correct qualified value in the URL
-    const responseBody = {
+    // Return the qualification status with the correct redirect URL
+    return createResponse({
       success: true, 
       qualifiesForCall,
       tradingCapital,
       redirectUrl
-    };
-    
-    console.log("Sending successful response:", responseBody);
-    return new Response(
-      JSON.stringify(responseBody),
-      {
-        status: 200,
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders 
-        }
-      }
-    );
+    });
   } catch (error) {
     console.error("Unhandled error in typeform-webhook:", error);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message,
-        redirectUrl: "/vsl?qualified=false", // Default redirect on error
-        stack: error.stack // Include stack trace for debugging
-      }),
-      {
-        status: 500,
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders 
-        }
-      }
-    );
+    return createResponse({ 
+      success: false, 
+      error: error.message,
+      redirectUrl: "/vsl?qualified=false", // Default redirect on error
+      stack: error.stack // Include stack trace for debugging
+    }, 500);
   }
 };
 

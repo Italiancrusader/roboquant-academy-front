@@ -27,8 +27,10 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({
     setIsSubmitting(true);
     
     try {
-      // CRITICAL FIX: Handle special case for high capital values directly and clearly
-      if (combinedData.tradingCapital === "> $25k" || combinedData.tradingCapital === "> $250k") {
+      // CRITICAL FIX: Handle all high capital values with separate conditions
+      const highCapitalValues = ["> $25k", "> $250k", "Haa2tZ1srkPu"];
+      
+      if (highCapitalValues.includes(combinedData.tradingCapital)) {
         console.log("[SurveyFormWrapper] Direct qualifying high capital value detected:", combinedData.tradingCapital);
         
         // Submit lead data for qualified lead

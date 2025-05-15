@@ -10,20 +10,23 @@ export const checkQualification = (data: Record<string, any>): boolean => {
   console.log("[checkQualification] Capital value:", data.tradingCapital);
   console.log("[checkQualification] Capital value type:", typeof data.tradingCapital);
   
-  // These are the approved capital values that qualify for a strategy call
-  const approvedCapitalValues = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"];
-  
-  // First, explicitly check for the "> $25k" special case which should always qualify
-  if (data.tradingCapital === "> $25k" || data.tradingCapital === "> $250k") {
+  // First, explicitly check for high capital values which should always qualify
+  // This handles multiple possible formats of high capital values
+  if (data.tradingCapital === "> $25k" || 
+      data.tradingCapital === "> $250k" || 
+      data.tradingCapital === "Haa2tZ1srkPu") {
     console.log("[checkQualification] Direct match for high capital value, qualifying");
     return true;
   }
+  
+  // These are the approved capital values that qualify for a strategy call
+  const approvedCapitalValues = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"];
   
   // Map special values that might come from Typeform
   let mappedCapital = data.tradingCapital;
   
   // Handle different formats of capital values for consistency
-  if (data.tradingCapital === "> $25k" || data.tradingCapital === "> $250k") {
+  if (data.tradingCapital === "> $25k" || data.tradingCapital === "> $250k" || data.tradingCapital === "Haa2tZ1srkPu") {
     mappedCapital = "Over $250,000";
     console.log("[checkQualification] Mapped high capital value to 'Over $250,000'");
   } else if (data.tradingCapital === "$10k-$25k" || data.tradingCapital === "$10k-$250k") {
