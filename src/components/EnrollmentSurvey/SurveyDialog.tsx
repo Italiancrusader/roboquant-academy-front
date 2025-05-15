@@ -74,11 +74,34 @@ const SurveyDialog: React.FC<SurveyDialogProps> = ({
     setStep(step + 1);
   };
 
-  // Logic to determine if user qualifies for a strategy call - simplified to only check minimum capital
+  // Logic to determine if user qualifies for a strategy call - using the expanded capital check
   const checkQualification = (data: Record<string, any>): boolean => {
     console.log("Dialog checking qualification with trading capital:", data.tradingCapital);
-    // Only check for minimum capital requirement of $5,000
-    const hasMinimumCapital = ["$5,000 – $10,000", "$10,000 – $250,000", "Over $250,000"].includes(data.tradingCapital);
+    
+    if (!data.tradingCapital) return false;
+    
+    // Convert to lowercase for case-insensitive matching
+    const userCapital = data.tradingCapital.toLowerCase();
+    
+    // Capital thresholds that qualify - expanded to include more variations
+    const qualifyingCapitalValues = [
+      "$5,000", "$5k", "5000", "5k",
+      "$10,000", "$10k", "10000", "10k", 
+      "$25,000", "$25k", "25000", "25k",
+      "$250,000", "$250k", "250000", "250k",
+      "$5,000 – $10,000", "$5k – $10k", "$5k-$10k",
+      "$10,000 – $25,000", "$10k – $25k", "$10k-$25k",
+      "$10,000 – $250,000", "$10k – $250k", "$10k-$250k",
+      "over $5,000", "over $5k", "> $5k",
+      "over $25,000", "over $25k", "> $25k",
+      "over $250,000", "over $250k", "> $250k"
+    ];
+    
+    // Check if the user's trading capital includes any qualifying value
+    const hasMinimumCapital = qualifyingCapitalValues.some(value => 
+      userCapital.includes(value.toLowerCase())
+    );
+    
     console.log("Dialog has minimum capital:", hasMinimumCapital);
     
     // Return true if minimum capital requirement is met

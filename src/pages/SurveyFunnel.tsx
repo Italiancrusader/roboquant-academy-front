@@ -73,19 +73,30 @@ const SurveyFunnel = () => {
   const checkQualification = (data: Record<string, any>): boolean => {
     console.log("Checking qualification with trading capital:", data.tradingCapital);
     
-    // Capital thresholds that qualify
+    // Capital thresholds that qualify - expanded to include more variations
     const qualifyingCapitalValues = [
-      "$5,000 – $10,000", 
-      "$10,000 – $250,000", 
-      "Over $250,000", 
-      "$5k-$10k", 
-      "$10k-$25k", 
-      "> $25k"
+      "$5,000", "$5k", "5000", "5k",
+      "$10,000", "$10k", "10000", "10k",
+      "$25,000", "$25k", "25000", "25k",
+      "$250,000", "$250k", "250000", "250k",
+      "$5,000 – $10,000", "$5k – $10k", "$5k-$10k",
+      "$10,000 – $25,000", "$10k – $25k", "$10k-$25k",
+      "$10,000 – $250,000", "$10k – $250k", "$10k-$250k",
+      "Over $25k", "> $25k", "Over $25,000",
+      "Over $250k", "> $250k", "Over $250,000"
     ];
     
-    // Check if the user's trading capital is in the qualifying range
+    if (!data.tradingCapital) {
+      console.log("No trading capital provided");
+      return false;
+    }
+    
+    // Convert to lowercase for case-insensitive matching
+    const userCapital = data.tradingCapital.toLowerCase();
+    
+    // Check if the user's trading capital contains any qualifying value
     const hasMinimumCapital = qualifyingCapitalValues.some(value => 
-      data.tradingCapital && data.tradingCapital.includes(value)
+      userCapital.includes(value.toLowerCase())
     );
     
     console.log("Has minimum capital:", hasMinimumCapital);

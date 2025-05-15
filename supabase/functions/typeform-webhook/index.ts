@@ -139,7 +139,8 @@ const handler = async (req: Request): Promise<Response> => {
             phone,
             answers: processedAnswers,
             qualifies_for_call: qualifiesForCall,
-            submission_date: new Date().toISOString()
+            submission_date: new Date().toISOString(),
+            trading_capital: tradingCapital
           }
         ]);
         
@@ -199,22 +200,27 @@ function checkMinimumCapital(capitalValue: string): boolean {
   
   // All the different ways we might get the minimum capital threshold
   const minimumCapitalThresholds = [
-    // Format variations for $5k+
     "$5,000", "$5k", "5000", "5k", 
-    "$5,000 – $10,000", "$5,000 – $10k", "$5k-$10k", "$5k – $10k",
-    // Format variations for $10k+
     "$10,000", "$10k", "10000", "10k",
-    "$10,000 – $250,000", "$10k-$25k", "$10k – $25k", 
-    // Format variations for $25k+
-    "$25,000", "$25k", "25000", "25k", "> $25k",
-    // Format variations for $250k+
-    "$250,000", "$250k", "250000", "250k", "over $250,000"
+    "$25,000", "$25k", "25000", "25k",
+    "$250,000", "$250k", "250000", "250k",
+    "$5,000 – $10,000", "$5k – $10k", "$5k-$10k",
+    "$10,000 – $25,000", "$10k – $25k", "$10k-$25k",
+    "$10,000 – $250,000", "$10k – $250k", "$10k-$250k", 
+    "over $5,000", "over $5k", "> $5k",
+    "over $10,000", "over $10k", "> $10k",
+    "over $25,000", "over $25k", "> $25k",
+    "over $250,000", "over $250k", "> $250k"
   ];
   
   // Check if the capital value includes any of the threshold strings
-  return minimumCapitalThresholds.some(threshold => 
+  const matches = minimumCapitalThresholds.some(threshold => 
     capital.includes(threshold.toLowerCase())
   );
+  
+  console.log(`Capital value: "${capital}", Matches minimum threshold: ${matches}`);
+  
+  return matches;
 }
 
 serve(handler);
