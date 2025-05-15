@@ -88,10 +88,12 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
       // Append iframe to container
       container.appendChild(iframe);
       
-      // Set up message handler
+      // Set up message listener for Typeform submission events
       const messageHandler = (event: MessageEvent) => {
+        // Only accept messages from Typeform domains
         if (event.origin.includes('typeform.com')) {
           try {
+            console.log('Received message from Typeform:', event.data);
             const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
             
             // Check for various submission event formats

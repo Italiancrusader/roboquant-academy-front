@@ -156,7 +156,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("No email provided, skipping database save");
     }
     
-    // Return the qualification status
+    // Return the qualification status and redirect URL
     return new Response(
       JSON.stringify({ 
         success: true, 

@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import SurveyForm from './SurveyForm';
 import { toast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface SurveyFormWrapperProps {
   onSurveyComplete: (data: Record<string, any>) => void;
@@ -11,6 +12,7 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({ onSurveyComplete 
   const [step, setStep] = React.useState(1);
   const [surveyData, setSurveyData] = React.useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const navigate = useNavigate();
 
   const handleStepSubmit = (formData: Record<string, any>) => {
     // Save current step data

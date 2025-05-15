@@ -6,7 +6,6 @@ import { toast } from '@/components/ui/use-toast';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { trackLead } from '@/utils/metaPixel';
 import { submitLead } from '@/services/leadService';
-import { preconnectToDomains } from '@/utils/performance';
 import LeadForm from '@/components/LeadForm';
 import { LoaderCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -93,25 +92,49 @@ const Quiz = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Function to handle redirect for typeform webhook
+  useEffect(() => {
+    if (step === 'completed') {
+      // Set up polling to check for redirects from webhook
+      const pollForWebhookRedirect = async () => {
+        try {
+          // The redirect will be handled by the webhook response in the iframe
+          console.log('Waiting for webhook response to determine redirect...');
+        } catch (error) {
+          console.error('Error checking redirect status:', error);
+        }
+      };
+
+      // Poll every few seconds (this is just a fallback)
+      const pollInterval = setInterval(pollForWebhookRedirect, 5000);
+      
+      // Initial check
+      pollForWebhookRedirect();
+      
+      // Clean up
+      return () => clearInterval(pollInterval);
+    }
+  }, [step, navigate]);
   
   // Handle form completion when webhook responds
   const handleTypeformSubmit = (data?: any) => {
     console.log('Typeform submitted successfully', data);
     
-    // Only proceed if not already completed
-    if (step !== 'completed') {
-      setStep('completed');
-      
-      // Track completion event
-      trackEvent('quiz_completed', {
-        event_category: 'Quiz',
-        event_label: userInfo.email || 'Unknown'
-      });
-      
-      // The webhook will handle the qualification and redirect logic
-      // We just show completed state here and wait for webhook to handle redirection
-      // This message will display briefly before redirect happens from webhook
-    }
+    // Show completed state
+    setStep('completed');
+    
+    // Track completion event
+    trackEvent('quiz_completed', {
+      event_category: 'Quiz',
+      event_label: userInfo.email || 'Unknown'
+    });
+
+    // Force a redirect to /book-call after 1.5 seconds
+    // This is a fallback in case the webhook redirect doesn't happen
+    setTimeout(() => {
+      navigate('/book-call');
+    }, 1500);
   };
   
   const handleTypeformError = () => {
@@ -124,24 +147,28 @@ const Quiz = () => {
     });
   };
   
-  // Handle performance optimization
+  // Preconnect to typeform domain
   useEffect(() => {
-    // Preconnect to typeform domain to improve loading performance
-    const domains = ['https://form.typeform.com', 'https://renderer-assets.typeform.com'];
+    const links = [
+      { rel: 'preconnect', href: 'https://form.typeform.com', crossOrigin: 'anonymous' },
+      { rel: 'preconnect', href: 'https://renderer-assets.typeform.com', crossOrigin: 'anonymous' },
+      { rel: 'preload', href: 'https://form.typeform.com/to/Mxpdceu1', as: 'document' }
+    ];
     
-    const links = domains.map(domain => {
-      const link = document.createElement('link');
-      link.rel = 'preconnect';
-      link.href = domain;
-      link.crossOrigin = 'anonymous';
-      document.head.appendChild(link);
-      return link;
+    const elements = links.map(link => {
+      const element = document.createElement('link');
+      element.rel = link.rel;
+      element.href = link.href;
+      if (link.crossOrigin) element.crossOrigin = link.crossOrigin;
+      if (link.as) element.setAttribute('as', link.as);
+      document.head.appendChild(element);
+      return element;
     });
     
     return () => {
-      links.forEach(link => {
-        if (document.head.contains(link)) {
-          document.head.removeChild(link);
+      elements.forEach(element => {
+        if (document.head.contains(element)) {
+          document.head.removeChild(element);
         }
       });
     };
