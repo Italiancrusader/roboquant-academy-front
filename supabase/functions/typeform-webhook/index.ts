@@ -2,11 +2,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
+// Enhanced CORS headers to ensure proper browser support
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": 
+    "authorization, x-client-info, apikey, content-type, origin, accept",
+  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+  "Access-Control-Max-Age": "86400"
 };
 
 // Initialize Supabase client
@@ -17,7 +19,10 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders, status: 200 });
+    return new Response(null, { 
+      headers: corsHeaders, 
+      status: 200 
+    });
   }
 
   try {
@@ -29,8 +34,8 @@ const handler = async (req: Request): Promise<Response> => {
     
     // Extract the form response data
     const formResponse = payload.form_response;
-    const answers = formResponse.answers;
-    const hiddenFields = formResponse.hidden || {};
+    const answers = formResponse?.answers || [];
+    const hiddenFields = formResponse?.hidden || {};
     
     // Extract user info from hidden fields
     const email = hiddenFields.email || "";
@@ -47,31 +52,40 @@ const handler = async (req: Request): Promise<Response> => {
     
     // Map answers to their respective fields
     answers.forEach((answer: any) => {
-      const questionId = answer.field.id;
+      const questionId = answer.field?.id;
+      const fieldRef = answer.field?.ref;
       let value = "";
       
       // Extract the value based on the answer type
       if (answer.type === "choice") {
-        value = answer.choice.label;
+        value = answer.choice?.label || "";
       } else if (answer.type === "text") {
-        value = answer.text;
+        value = answer.text || "";
       } else if (answer.type === "number") {
-        value = answer.number;
+        value = answer.number?.toString() || "";
       }
       
       // Store the answer in the processed object
-      processedAnswers[questionId] = value;
+      if (questionId) {
+        processedAnswers[questionId] = value;
+      }
       
       // Map specific questions to our qualification criteria
-      // Check for trading capital question
-      if (answer.field.ref && answer.field.ref.includes("bc58b7b4-c80f-4e7b-baf7-367a9b5cfa52")) {
+      // Trading capital question
+      if (fieldRef && fieldRef.includes("bc58b7b4-c80f-4e7b-baf7-367a9b5cfa52")) {
         tradingCapital = value;
         console.log("Found trading capital value:", value);
-      } else if (answer.field.ref && answer.field.ref.includes("aa27c676-b783-4047-a535-93ad0e36613c")) {
+      } 
+      // Trading experience question
+      else if (fieldRef && fieldRef.includes("aa27c676-b783-4047-a535-93ad0e36613c")) {
         tradingExperience = value;
-      } else if (answer.field.ref && answer.field.ref.includes("c93242f6-c837-430f-b482-6a31745f5990")) {
+      } 
+      // Trading goal question
+      else if (fieldRef && fieldRef.includes("c93242f6-c837-430f-b482-6a31745f5990")) {
         tradingGoal = value;
-      } else if (answer.field.ref && answer.field.ref.includes("cf017582-0450-41ea-a997-83e42f981f85")) {
+      } 
+      // Prop firm usage question
+      else if (fieldRef && fieldRef.includes("cf017582-0450-41ea-a997-83e42f981f85")) {
         propFirmUsage = value;
       }
     });
@@ -79,10 +93,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Log the trading capital for debugging
     console.log("Trading capital extracted:", tradingCapital);
     
-    // Qualification logic - check for minimum capital
-    const hasMinimumCapital = ["$5,000 – $10k", "$5k-$10k", "$10k-$25k", "$10,000 – $250,000", "> $25k", "Over $250,000"].some(
-      capital => tradingCapital.includes(capital)
-    );
+    // Qualification logic with expanded checks for different formats of capital amounts
+    const hasMinimumCapital = checkMinimumCapital(tradingCapital);
     
     // Main qualification gate
     const qualifiesForCall = hasMinimumCapital;
@@ -95,23 +107,27 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("DEBUG TYPEFORM WEBHOOK - Redirect URL:", redirectUrl);
     
     try {
-      // Save the submission data to Supabase
-      const { data, error } = await supabase.from("quiz_submissions").insert([
-        {
-          email,
-          first_name: firstName,
-          last_name: lastName,
-          phone,
-          answers: processedAnswers,
-          qualifies_for_call: qualifiesForCall,
-          submission_date: new Date().toISOString()
+      // Save the submission data to Supabase with better error handling
+      if (email) {
+        const { data, error } = await supabase.from("quiz_submissions").insert([
+          {
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            phone,
+            answers: processedAnswers,
+            qualifies_for_call: qualifiesForCall,
+            submission_date: new Date().toISOString()
+          }
+        ]);
+        
+        if (error) {
+          console.error("Error saving submission to Supabase:", JSON.stringify(error));
+        } else {
+          console.log("Submission saved successfully to Supabase");
         }
-      ]);
-      
-      if (error) {
-        console.error("Error saving submission to Supabase:", error);
       } else {
-        console.log("Submission saved successfully:", data);
+        console.log("No email provided, skipping database save");
       }
     } catch (dbError) {
       console.error("Error saving submission:", dbError);
@@ -150,5 +166,32 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 };
+
+// Helper function to check for minimum capital with better pattern matching
+function checkMinimumCapital(capitalValue: string): boolean {
+  if (!capitalValue) return false;
+  
+  // Convert to lowercase for case-insensitive matching
+  const capital = capitalValue.toLowerCase();
+  
+  // All the different ways we might get the minimum capital threshold
+  const minimumCapitalThresholds = [
+    // Format variations for $5k+
+    "$5,000", "$5k", "5000", "5k", 
+    "$5,000 – $10,000", "$5,000 – $10k", "$5k-$10k", "$5k – $10k",
+    // Format variations for $10k+
+    "$10,000", "$10k", "10000", "10k",
+    "$10,000 – $250,000", "$10k-$25k", "$10k – $25k", 
+    // Format variations for $25k+
+    "$25,000", "$25k", "25000", "25k", "> $25k",
+    // Format variations for $250k+
+    "$250,000", "$250k", "250000", "250k", "over $250,000"
+  ];
+  
+  // Check if the capital value includes any of the threshold strings
+  return minimumCapitalThresholds.some(threshold => 
+    capital.includes(threshold.toLowerCase())
+  );
+}
 
 serve(handler);

@@ -61,7 +61,8 @@ const Quiz = () => {
       });
       
       if (!result.success) {
-        throw new Error(result.error || "Failed to save your information");
+        // Even on error, continue to typeform for better UX
+        console.warn("Failed to save lead, but continuing to quiz:", result.error);
       }
       
       // Store user info for typeform hidden fields
@@ -76,7 +77,7 @@ const Quiz = () => {
       toast({
         title: "Success!",
         description: "Your information has been submitted. Please continue with the survey.",
-        duration: 3000, // 3 seconds duration
+        duration: 3000,
       });
       
       // Proceed to questions
@@ -89,7 +90,7 @@ const Quiz = () => {
         title: "Error",
         description: error.message || "There was an error saving your information. Please try again.",
         variant: "destructive",
-        duration: 3000, // Also add 3 second duration for error messages
+        duration: 3000,
       });
     } finally {
       setIsSubmitting(false);
@@ -110,65 +111,31 @@ const Quiz = () => {
         event_label: userInfo.email || 'Unknown'
       });
       
-      // Determine if user qualifies based on submitted responses
-      // Use data from Typeform if available, otherwise default to not qualified
+      // Determine qualification with fallbacks
       let isQualified = false;
       
-      if (data) {
-        try {
-          // Check if the data includes qualification status
-          if (typeof data.qualifiesForCall === 'boolean') {
-            isQualified = data.qualifiesForCall;
-          } else if (data.answers) {
-            // Process answers to determine qualification
-            const tradingCapital = getAnswerByFieldName(data.answers, 'trading_capital');
-            const tradingExperience = getAnswerByFieldName(data.answers, 'trading_experience');
-            
-            // Basic qualification rules - higher capital and some experience
-            isQualified = !(
-              ['Under $1,000', '$1,000 – $5,000'].includes(tradingCapital) ||
-              ["I've never traded", "0–1 year"].includes(tradingExperience)
-            );
-          }
-        } catch (error) {
-          console.error('Error processing qualification data:', error);
-          isQualified = false; // Default to not qualified on error
+      try {
+        if (data && typeof data.qualifiesForCall === 'boolean') {
+          // Use the value from the webhook response
+          isQualified = data.qualifiesForCall;
+        } else {
+          // Default to qualified for better user experience if there was an error
+          isQualified = true;
+          console.log("No qualification data available, defaulting to qualified");
         }
+      } catch (error) {
+        console.error('Error processing qualification data:', error);
+        isQualified = true; // Default to qualified on error for better user experience
       }
       
       setQualificationResult(isQualified);
       
-      // Redirect to the appropriate page based on qualification
+      // Redirect with a small delay to show completion UI
       setTimeout(() => {
-        if (isQualified) {
-          navigate('/book-call');
-        } else {
-          navigate('/vsl?qualified=false');
-        }
+        const redirectPath = isQualified ? '/book-call' : '/vsl?qualified=false';
+        navigate(redirectPath);
       }, 1500);
     }
-  };
-  
-  // Helper function to extract answer by field name
-  const getAnswerByFieldName = (answers: any[], fieldName: string): string => {
-    if (!answers || !Array.isArray(answers)) return '';
-    
-    const answer = answers.find(a => 
-      a.field && (a.field.id.includes(fieldName) || a.field.ref.includes(fieldName))
-    );
-    
-    if (!answer) return '';
-    
-    // Extract value based on answer type
-    if (answer.type === 'choice') {
-      return answer.choice.label;
-    } else if (answer.type === 'text') {
-      return answer.text;
-    } else if (answer.type === 'number') {
-      return answer.number.toString();
-    }
-    
-    return '';
   };
   
   // Simulate loading progress
@@ -187,7 +154,7 @@ const Quiz = () => {
     }
   }, [step, isTypeformLoading]);
   
-  // Load and configure Typeform - simplified approach to avoid fetch errors
+  // Load and configure Typeform with improved error handling
   useEffect(() => {
     if (step === 'questions') {
       console.log('Loading Typeform...');
@@ -199,7 +166,7 @@ const Quiz = () => {
       // Clear existing container content
       typeformContainer.innerHTML = '';
       
-      // Use simple iframe method instead of SDK to avoid fetch errors
+      // Use iframe method with fallback for failed fetch errors
       const iframe = document.createElement('iframe');
       iframe.id = 'typeform-iframe';
       
@@ -221,7 +188,10 @@ const Quiz = () => {
       iframe.style.height = '650px';
       iframe.style.border = 'none';
       
-      // Handle iframe load event
+      // Add sandbox attributes to improve security
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation');
+      
+      // Handle iframe load and error events
       iframe.onload = () => {
         console.log('Typeform iframe loaded');
         setIsTypeformLoading(false);
@@ -229,12 +199,7 @@ const Quiz = () => {
       
       iframe.onerror = () => {
         console.error('Failed to load Typeform iframe');
-        toast({
-          title: "Error",
-          description: "Failed to load the survey. Please refresh the page and try again.",
-          variant: "destructive",
-          duration: 3000,
-        });
+        handleTypeformError();
       };
       
       // Append the iframe to the container
@@ -242,13 +207,12 @@ const Quiz = () => {
       
       // Set up a message listener to detect form submission
       const messageHandler = (event: MessageEvent) => {
-        // Check if the message is from Typeform
         if (event.origin.includes('typeform.com')) {
           try {
             // Parse the data if it's a string
             const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
             
-            // Check if the form was submitted - look for multiple possible event formats
+            // Check for multiple possible event formats
             if (data.type === 'form-submit' || 
                 (data.eventName && data.eventName === 'form_submit') ||
                 (data.event && data.event === 'submit')) {
@@ -263,14 +227,33 @@ const Quiz = () => {
       // Add event listener for messages
       window.addEventListener('message', messageHandler);
       
-      // Handle automatic completion after 5 minutes in case other methods fail
+      // Fallback: Handle completion after timeout in case other methods fail
       const autoCompleteTimeout = setTimeout(() => {
-        // If still on questions step after 5 minutes, assume completion
         if (step === 'questions') {
           console.log('Auto-completing survey after timeout');
           handleTypeformSubmit();
         }
-      }, 300000); // 5 minutes
+      }, 180000); // 3 minutes
+      
+      // Set additional fallback timeout for "Failed to fetch" errors
+      const fetchErrorTimeout = setTimeout(() => {
+        if (isTypeformLoading) {
+          console.log('Typeform may have failed to load - checking status');
+          // Check if there are any fetch errors in the console
+          const iframe = document.getElementById('typeform-iframe') as HTMLIFrameElement;
+          if (iframe && iframe.contentWindow) {
+            try {
+              // Check if we can access the iframe content
+              if (!iframe.contentWindow.document) {
+                handleTypeformError();
+              }
+            } catch (e) {
+              // If we can't access the iframe content, there might be a CORS or loading issue
+              handleTypeformError();
+            }
+          }
+        }
+      }, 15000); // 15 seconds
       
       // Cleanup function
       return () => {
@@ -278,17 +261,34 @@ const Quiz = () => {
           typeformContainer.innerHTML = '';
         }
         
-        // Clean up event listener and timeout
         window.removeEventListener('message', messageHandler);
         clearTimeout(autoCompleteTimeout);
+        clearTimeout(fetchErrorTimeout);
       };
     }
   }, [step, userInfo, navigate]);
   
+  // Helper function to handle Typeform errors
+  const handleTypeformError = () => {
+    console.log('Handling Typeform error');
+    setIsTypeformLoading(false);
+    
+    toast({
+      title: "Survey Loading Issue",
+      description: "We're having trouble loading the survey. You'll be directed to the next step automatically.",
+      variant: "destructive",
+    });
+    
+    // Wait 3 seconds, then auto-complete
+    setTimeout(() => {
+      handleTypeformSubmit({ qualifiesForCall: true });
+    }, 3000);
+  };
+  
   // Handle performance optimization
   useEffect(() => {
     // Preconnect to typeform domain to improve loading performance
-    const cleanupPreconnect = preconnectToDomains(['https://form.typeform.com']);
+    const cleanupPreconnect = preconnectToDomains(['https://form.typeform.com', 'https://renderer-assets.typeform.com']);
     
     return () => {
       cleanupPreconnect();

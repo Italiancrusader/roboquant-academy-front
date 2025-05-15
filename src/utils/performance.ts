@@ -1,102 +1,70 @@
 
 /**
- * Utility functions for performance optimization
- */
-
-/**
- * Preconnect to external domains to speed up resource fetching
+ * Creates preconnect links for specified domains to improve loading performance
+ * 
  * @param domains Array of domains to preconnect to
+ * @returns Cleanup function to remove the created link elements
  */
-export const preconnectToDomains = (domains: string[]): (() => void) => {
-  // Skip if no domains are provided or if not in browser environment
-  if (!domains || domains.length === 0 || typeof document === 'undefined') return () => {};
-  
-  const preconnectLinks: HTMLLinkElement[] = [];
-  
+export function preconnectToDomains(domains: string[]): () => void {
+  const createdLinks: HTMLLinkElement[] = [];
+
   domains.forEach(domain => {
-    if (!domain || domain.trim() === '') return; // Skip empty domains
-    
-    const link = document.createElement('link');
-    link.rel = 'preconnect';
-    link.href = domain;
-    link.crossOrigin = 'anonymous';
-    document.head.appendChild(link);
-    preconnectLinks.push(link);
+    // Create preconnect link
+    const preconnectLink = document.createElement('link');
+    preconnectLink.rel = 'preconnect';
+    preconnectLink.href = domain;
+    preconnectLink.crossOrigin = 'anonymous';
+    document.head.appendChild(preconnectLink);
+    createdLinks.push(preconnectLink);
+
+    // Create DNS-prefetch as fallback
+    const dnsPrefetchLink = document.createElement('link');
+    dnsPrefetchLink.rel = 'dns-prefetch';
+    dnsPrefetchLink.href = domain;
+    document.head.appendChild(dnsPrefetchLink);
+    createdLinks.push(dnsPrefetchLink);
   });
-  
-  // Return cleanup function
+
+  // Return cleanup function to remove all created links when done
   return () => {
-    preconnectLinks.forEach(link => {
-      if (document.head.contains(link)) {
-        document.head.removeChild(link);
+    createdLinks.forEach(link => {
+      if (link.parentNode) {
+        link.parentNode.removeChild(link);
       }
     });
   };
-};
+}
 
 /**
- * Preload critical resources - only use for resources that will definitely be used immediately
- * @param urls Array of URLs to preload
- * @param type Resource type (image, font, etc.)
- * @param timeoutMs Time in ms to automatically clean up preload links if unused (default: 5000ms)
+ * Properly preloads images with correct 'as' attribute
+ * 
+ * @param imageUrls Array of image URLs to preload
+ * @param highPriority Whether these images should be high priority
+ * @returns Cleanup function to remove the created link elements
  */
-export const preloadResources = (
-  urls: string[], 
-  type: 'image' | 'font' | 'style' | 'script',
-  timeoutMs: number = 5000
-): (() => void) => {
-  // Skip preloading if no URLs are provided to avoid warnings or if not in browser environment
-  if (!urls || urls.length === 0 || typeof document === 'undefined') return () => {};
-  
-  // Filter out empty URLs
-  const validUrls = urls.filter(url => url && url.trim() !== '');
-  if (validUrls.length === 0) return () => {};
-  
-  const preloadLinks: HTMLLinkElement[] = [];
-  
-  validUrls.forEach(url => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = url;
+export function preloadImages(imageUrls: string[], highPriority: boolean = false): () => void {
+  const createdLinks: HTMLLinkElement[] = [];
+
+  imageUrls.forEach(url => {
+    const preloadLink = document.createElement('link');
+    preloadLink.rel = 'preload';
+    preloadLink.href = url;
+    preloadLink.as = 'image'; // Explicitly set as 'image' to avoid browser warnings
     
-    // Set appropriate 'as' attribute based on type
-    switch(type) {
-      case 'image':
-        link.as = 'image';
-        break;
-      case 'font':
-        link.as = 'font';
-        link.crossOrigin = 'anonymous';
-        break;
-      case 'style':
-        link.as = 'style';
-        break;
-      case 'script':
-        link.as = 'script';
-        break;
+    if (highPriority) {
+      preloadLink.setAttribute('fetchpriority', 'high');
     }
     
-    document.head.appendChild(link);
-    preloadLinks.push(link);
+    document.head.appendChild(preloadLink);
+    createdLinks.push(preloadLink);
   });
-  
-  // Set a timeout to automatically clean up preload links if they haven't been used
-  // This helps prevent console warnings
-  const timeoutId = setTimeout(() => {
-    preloadLinks.forEach(link => {
-      if (document.head.contains(link)) {
-        document.head.removeChild(link);
-      }
-    });
-  }, timeoutMs);
-  
-  // Return cleanup function that removes preload links when they're no longer needed
+
+  // Return cleanup function
   return () => {
-    clearTimeout(timeoutId);
-    preloadLinks.forEach(link => {
-      if (document.head.contains(link)) {
-        document.head.removeChild(link);
+    createdLinks.forEach(link => {
+      if (link.parentNode) {
+        link.parentNode.removeChild(link);
       }
     });
   };
-};
+}
