@@ -42,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ 
           success: false, 
           error: "Invalid payload format",
-          redirectUrl: "/book-call" // Default redirect on error for better UX
+          redirectUrl: "/checkout" // Default to checkout on error for better UX
         }),
         {
           status: 400,
@@ -115,7 +115,29 @@ const handler = async (req: Request): Promise<Response> => {
     // Log the trading capital for debugging
     console.log("Trading capital extracted:", tradingCapital);
     
-    // Qualification logic with expanded checks for different formats of capital amounts
+    // First, check for explicit non-qualifying ranges
+    const nonQualifyingCapital = checkNonQualifyingCapital(tradingCapital);
+    if (nonQualifyingCapital) {
+      console.log(`Capital value "${tradingCapital}" explicitly non-qualifying`);
+      const redirectUrl = "/checkout";
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          qualifiesForCall: false,
+          redirectUrl
+        }),
+        {
+          status: 200,
+          headers: { 
+            "Content-Type": "application/json",
+            ...corsHeaders 
+          }
+        }
+      );
+    }
+    
+    // Then check for qualifying capital if not explicitly non-qualifying
     const hasMinimumCapital = checkMinimumCapital(tradingCapital);
     
     // Main qualification gate
@@ -178,7 +200,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: false, 
         error: error.message || "Unknown error",
-        redirectUrl: "/book-call" // Default redirect on error for better UX
+        redirectUrl: "/checkout" // Default to checkout on error for better UX
       }),
       {
         status: 500,
@@ -190,6 +212,32 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 };
+
+// Helper function to explicitly check for non-qualifying capital ranges
+function checkNonQualifyingCapital(capitalValue: string): boolean {
+  if (!capitalValue) return false;
+  
+  // Convert to lowercase for case-insensitive matching
+  const capital = capitalValue.toLowerCase();
+  
+  // Define explicitly non-qualifying capital ranges
+  const nonQualifyingRanges = [
+    "< $1k", 
+    "$1k-$5k", 
+    "$1k–$5k", 
+    "$1,000-$5,000", 
+    "$1,000–$5,000",
+    "less than $1k",
+    "less than $5k",
+    "$0-$1k",
+    "$0-$5k"
+  ];
+  
+  // Check if capital matches any non-qualifying range exactly
+  return nonQualifyingRanges.some(range => 
+    capital === range.toLowerCase()
+  );
+}
 
 // Helper function to check for minimum capital with better pattern matching
 function checkMinimumCapital(capitalValue: string): boolean {
@@ -213,22 +261,9 @@ function checkMinimumCapital(capitalValue: string): boolean {
     "over $250,000", "over $250k", "> $250k"
   ];
   
-  // Exclude ranges below $5k specifically
-  const nonQualifyingRanges = [
-    "$1k-$5k", "$1k–$5k", "$1,000-$5,000", "$1,000–$5,000",
-    "< $5k", "<$5k", "less than $5k", "below $5k",
-    "$0-$5k", "$0–$5k", "$0-$5,000", "$0–$5,000"
-  ];
-  
-  // First check if it's explicitly a non-qualifying range
-  if (nonQualifyingRanges.some(range => capital.includes(range.toLowerCase()))) {
-    console.log(`Capital value "${capital}" matches a non-qualifying range`);
-    return false;
-  }
-  
-  // If not explicitly excluded, check if it matches a qualifying threshold
+  // Check if it matches a qualifying threshold
   const matches = qualifyingCapitalThresholds.some(threshold => 
-    capital.includes(threshold.toLowerCase())
+    capital === threshold.toLowerCase()
   );
   
   console.log(`Capital value: "${capital}", Matches minimum threshold: ${matches}`);

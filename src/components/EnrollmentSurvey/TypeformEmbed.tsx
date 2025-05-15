@@ -145,11 +145,69 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
                 description: "Thank you for completing the qualification survey!",
               });
               
-              // Add a delay before redirecting to ensure the webhook has time to process
+              // Process form data to determine capital amount
+              const extractCapitalFromResponses = (data: any): string | null => {
+                try {
+                  // Try to extract from event data structure
+                  if (data?.form_response?.answers) {
+                    const capitalAnswer = data.form_response.answers.find(
+                      (answer: any) => answer.field?.ref?.includes("bc58b7b4-c80f-4e7b-baf7-367a9b5cfa52")
+                    );
+                    if (capitalAnswer?.choice?.label) {
+                      return capitalAnswer.choice.label;
+                    }
+                  }
+                  return null;
+                } catch (error) {
+                  console.error('Error extracting capital from responses:', error);
+                  return null;
+                }
+              };
+              
+              // Extract capital value
+              const capitalValue = extractCapitalFromResponses(eventData);
+              console.log('Extracted capital value:', capitalValue);
+              
+              // Determine qualification manually as a fallback
+              const qualifyingCapitalValues = [
+                "$5k-$10k", "$10k-$25k", "> $25k", 
+                "$5,000-$10,000", "$10,000-$25,000", 
+                "Over $25,000", "Over $25k"
+              ];
+              
+              const nonQualifyingCapitalValues = [
+                "< $1k", "$1k-$5k",
+                "$0-$5,000", "$1,000-$5,000"
+              ];
+              
+              const isQualified = capitalValue ? qualifyingCapitalValues.some(
+                val => capitalValue.toLowerCase().includes(val.toLowerCase())
+              ) : false;
+              
+              const isDisqualified = capitalValue ? nonQualifyingCapitalValues.some(
+                val => capitalValue.toLowerCase() === val.toLowerCase()
+              ) : false;
+              
+              console.log('Capital qualification check:', { 
+                capitalValue, 
+                isQualified, 
+                isDisqualified 
+              });
+              
+              // Make redirection decision based on capital value
               setTimeout(() => {
-                console.log('Redirecting after submission');
-                navigate('/book-call');
-              }, 3000); // Increased time to give the webhook more time to process
+                if (isDisqualified) {
+                  console.log('Redirecting to checkout (non-qualifying capital)');
+                  navigate('/checkout');
+                } else if (isQualified) {
+                  console.log('Redirecting to book-call (qualifying capital)');
+                  navigate('/book-call');
+                } else {
+                  // Default handling - rely on webhook results (fallback to book-call for safety)
+                  console.log('Using default redirect to checkout');
+                  navigate('/checkout');
+                }
+              }, 3500); // Extended delay to ensure proper visual feedback
             }
           } catch (error) {
             console.error('Error processing Typeform message:', error);
