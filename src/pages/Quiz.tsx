@@ -19,15 +19,13 @@ const TYPEFORM_ID = "Mxpdceu1";
 const Quiz = () => {
   const [step, setStep] = useState<'form' | 'questions' | 'completed'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [qualificationResult, setQualificationResult] = useState<boolean | null>(null);
-  const navigate = useNavigate();
-  
   const [userInfo, setUserInfo] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: ''
   });
+  const navigate = useNavigate();
   
   const handleLeadSubmit = async (values: { firstName: string, lastName: string, email: string, phone: string }) => {
     setIsSubmitting(true);
@@ -61,7 +59,6 @@ const Quiz = () => {
       });
       
       if (!result.success) {
-        // Even on error, continue to typeform for better UX
         console.warn("Failed to save lead, but continuing to quiz:", result.error);
       }
       
@@ -97,7 +94,7 @@ const Quiz = () => {
     }
   };
   
-  // Handle form completion - detect both manual and automatic completion
+  // Handle form completion when webhook responds
   const handleTypeformSubmit = (data?: any) => {
     console.log('Typeform submitted successfully', data);
     
@@ -111,48 +108,42 @@ const Quiz = () => {
         event_label: userInfo.email || 'Unknown'
       });
       
-      // Determine qualification with fallbacks
-      let isQualified = false;
-      
-      try {
-        if (data && typeof data.qualifiesForCall === 'boolean') {
-          // Use the value from the webhook response
-          isQualified = data.qualifiesForCall;
-        } else {
-          // Default to qualified for better user experience if there was an error
-          isQualified = true;
-          console.log("No qualification data available, defaulting to qualified");
-        }
-      } catch (error) {
-        console.error('Error processing qualification data:', error);
-        isQualified = true; // Default to qualified on error for better user experience
-      }
-      
-      setQualificationResult(isQualified);
-      
-      // Redirect with a small delay to show completion UI
-      setTimeout(() => {
-        const redirectPath = isQualified ? '/book-call' : '/vsl?qualified=false';
-        navigate(redirectPath);
-      }, 1500);
+      // The webhook will handle the qualification and redirect logic
+      // We just show completed state here and wait for webhook to handle redirection
+      // This message will display briefly before redirect happens from webhook
     }
   };
   
   const handleTypeformError = () => {
-    console.log('Handling Typeform error - proceeding to next step');
+    console.error('Error loading Typeform');
     
-    // If there's an error loading the typeform, we'll just consider the user qualified
-    // This provides better UX than failing completely
-    handleTypeformSubmit({ qualifiesForCall: true });
+    toast({
+      title: "Survey Error",
+      description: "There was an error loading the survey. Please refresh the page to try again.",
+      variant: "destructive",
+    });
   };
   
   // Handle performance optimization
   useEffect(() => {
     // Preconnect to typeform domain to improve loading performance
-    const cleanupPreconnect = preconnectToDomains(['https://form.typeform.com', 'https://renderer-assets.typeform.com']);
+    const domains = ['https://form.typeform.com', 'https://renderer-assets.typeform.com'];
+    
+    const links = domains.map(domain => {
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = domain;
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+      return link;
+    });
     
     return () => {
-      cleanupPreconnect();
+      links.forEach(link => {
+        if (document.head.contains(link)) {
+          document.head.removeChild(link);
+        }
+      });
     };
   }, []);
 
@@ -202,7 +193,7 @@ const Quiz = () => {
               </div>
               <h2 className="text-2xl font-semibold mb-4">Thank You For Completing The Survey!</h2>
               <p className="mb-8 text-muted-foreground">
-                We're reviewing your information and will redirect you to {qualificationResult ? 'book a strategy call' : 'the next step'} shortly.
+                We're reviewing your information. You will be redirected based on your qualification status shortly.
               </p>
               <div className="w-full max-w-md mx-auto">
                 <Progress value={100} className="h-2" />

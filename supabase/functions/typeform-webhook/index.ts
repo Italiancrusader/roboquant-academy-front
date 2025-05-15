@@ -31,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Parse the webhook payload
     const payload = await req.json().catch(error => {
       console.error("Error parsing webhook payload:", error);
-      return {};
+      throw new Error("Invalid JSON payload");
     });
     
     console.log("Webhook payload:", JSON.stringify(payload));
@@ -126,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     // Determine redirect URL based on qualification
     const redirectUrl = qualifiesForCall ? "/book-call" : "/checkout";
-    console.log("DEBUG TYPEFORM WEBHOOK - Redirect URL:", redirectUrl);
+    console.log("Redirect URL:", redirectUrl);
     
     // Save the submission data to Supabase with better error handling
     if (email) {

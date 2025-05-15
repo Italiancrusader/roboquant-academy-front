@@ -1,43 +1,51 @@
 
 /**
- * Establishes early connections to domains for performance optimization
- * 
- * @param domains Array of domains to preconnect to
- * @returns Cleanup function to remove the preconnect links
+ * Performance utility functions
  */
-export const preconnectToDomains = (domains: string[]): () => void => {
-  const addedLinks: HTMLLinkElement[] = [];
 
-  domains.forEach(domain => {
-    try {
-      // Check if preconnect already exists
-      const existingLink = document.querySelector(`link[rel="preconnect"][href="${domain}"]`);
-      if (existingLink) {
-        return; // Skip if already exists
-      }
-
-      // Create preconnect link
-      const link = document.createElement('link');
-      link.rel = 'preconnect';
-      link.href = domain;
-      link.crossOrigin = 'anonymous';
-      document.head.appendChild(link);
-      addedLinks.push(link);
-      
-      // Add DNS-prefetch as fallback
-      const dnsLink = document.createElement('link');
-      dnsLink.rel = 'dns-prefetch';
-      dnsLink.href = domain;
-      document.head.appendChild(dnsLink);
-      addedLinks.push(dnsLink);
-    } catch (error) {
-      console.error(`Error adding preconnect for ${domain}:`, error);
-    }
+/**
+ * Preconnect to specified domains to improve loading performance
+ * @param domains Array of domains to preconnect to
+ * @returns Cleanup function to remove preconnect links
+ */
+export const preconnectToDomains = (domains: string[]): (() => void) => {
+  const links = domains.map(domain => {
+    const link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = domain;
+    link.crossOrigin = 'anonymous';
+    document.head.appendChild(link);
+    return link;
   });
-
-  // Return cleanup function
+  
   return () => {
-    addedLinks.forEach(link => {
+    links.forEach(link => {
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+    });
+  };
+};
+
+/**
+ * Prefetch specified resources
+ * @param resources Array of URLs to prefetch
+ * @returns Cleanup function to remove prefetch links
+ */
+export const prefetchResources = (resources: Array<{url: string, as: string}>): (() => void) => {
+  const links = resources.map(resource => {
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = resource.url;
+    if (resource.as) {
+      link.setAttribute('as', resource.as);
+    }
+    document.head.appendChild(link);
+    return link;
+  });
+  
+  return () => {
+    links.forEach(link => {
       if (document.head.contains(link)) {
         document.head.removeChild(link);
       }

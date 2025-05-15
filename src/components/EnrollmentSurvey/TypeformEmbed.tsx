@@ -82,7 +82,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
       
       iframe.onerror = () => {
         console.error('Failed to load Typeform iframe');
-        handleTypeformError();
+        onError();
       };
       
       // Append iframe to container
@@ -98,6 +98,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
             if (data.type === 'form-submit' || 
                 (data.eventName && data.eventName === 'form_submit') ||
                 (data.event && data.event === 'submit')) {
+              console.log('Typeform submission detected via message event', data);
               onSubmit(data);
             }
           } catch (error) {
@@ -108,45 +109,14 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
       
       window.addEventListener('message', messageHandler);
       
-      // Set fallback timeout for failed loads that don't trigger onerror
-      const fetchErrorTimeout = setTimeout(() => {
-        if (isLoading) {
-          console.log('Typeform may have failed to load - checking status');
-          handleTypeformError();
-        }
-      }, 15000);
-      
-      // Fallback for completion
-      const autoCompleteTimeout = setTimeout(() => {
-        console.log('Auto-completing survey after timeout');
-        onSubmit();
-      }, 180000); // 3 minutes
-      
       return () => {
         window.removeEventListener('message', messageHandler);
-        clearTimeout(fetchErrorTimeout);
-        clearTimeout(autoCompleteTimeout);
       };
     } catch (error) {
       console.error('Error setting up Typeform:', error);
-      handleTypeformError();
-    }
-  }, [typeformId, userInfo]);
-  
-  const handleTypeformError = () => {
-    setIsLoading(false);
-    
-    toast({
-      title: "Survey Loading Issue",
-      description: "We're having trouble loading the survey. You'll be directed to the next step automatically.",
-      variant: "destructive",
-    });
-    
-    // Wait 3 seconds, then notify parent
-    setTimeout(() => {
       onError();
-    }, 3000);
-  };
+    }
+  }, [typeformId, userInfo, onSubmit, onError]);
   
   return (
     <>

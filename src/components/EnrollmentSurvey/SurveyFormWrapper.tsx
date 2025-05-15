@@ -25,40 +25,18 @@ const SurveyFormWrapper: React.FC<SurveyFormWrapperProps> = ({ onSurveyComplete 
     const combinedData = { ...surveyData, ...formData };
     
     try {
-      // Add a timeout to avoid infinite loading states
-      const completionPromise = new Promise<void>(async (resolve, reject) => {
-        try {
-          await onSurveyComplete(combinedData);
-          resolve();
-        } catch (error) {
-          console.error("Error in survey completion:", error);
-          reject(error);
-        }
-      });
-      
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Survey submission timeout")), 15000);
-      });
-      
-      // Race between actual completion and timeout
-      await Promise.race([completionPromise, timeoutPromise]).catch(error => {
-        console.error("Survey submission error or timeout:", error);
-        
-        // Even on error, show success to the user and return resolved promise
-        toast({
-          title: "Application Received",
-          description: "Your application has been received. We'll contact you shortly.",
-        });
-        
-        return Promise.resolve();
+      await onSurveyComplete(combinedData);
+      toast({
+        title: "Application Received",
+        description: "Your application has been received. We'll contact you shortly.",
       });
     } catch (error) {
       console.error('Error completing survey:', error);
       
-      // Show a user-friendly message
       toast({
-        title: "Application Submitted",
-        description: "Thank you for your application. We'll be in touch soon!",
+        title: "Error",
+        description: "There was an error submitting your application. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
