@@ -79,9 +79,8 @@ export const useSignInWithGoogle = (setError?: (error: string | null) => void) =
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          },
-          // Explicitly use PKCE flow
-          flowType: 'pkce'
+          }
+          // Removed invalid 'flowType' property here
         }
       });
       
