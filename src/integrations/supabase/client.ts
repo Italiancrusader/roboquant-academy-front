@@ -9,6 +9,8 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Create the Supabase client with explicit storage configuration to ensure
+// PKCE flow works correctly with proper storage of code verifiers
 export const supabase = createClient<Database>(
   SUPABASE_URL, 
   SUPABASE_PUBLISHABLE_KEY,
@@ -18,10 +20,30 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      storage: localStorage
+      storage: typeof localStorage !== 'undefined' ? localStorage : undefined
     }
   }
 );
+
+// Initialize auth environment on client load
+if (typeof window !== 'undefined') {
+  // Check for auth parameters in URL early
+  if (window.location.href.includes('code=') && window.location.href.includes('state=')) {
+    console.log("Auth parameters detected in URL - PKCE flow started");
+  }
+
+  // Clear any lingering service worker cache that might interfere with auth
+  if ('caches' in window) {
+    caches.keys().then(names => {
+      names.forEach(name => {
+        if (name.includes('supabase') || name.includes('auth')) {
+          console.log("Clearing cache:", name);
+          caches.delete(name);
+        }
+      });
+    });
+  }
+}
 
 // Log initialization 
 console.log("Supabase client initialized with PKCE flow enabled");

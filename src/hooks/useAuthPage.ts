@@ -55,6 +55,8 @@ export const useAuthPage = () => {
     
     if (isCallback) {
       console.log("Detected potential OAuth callback - processing authentication");
+      console.log("PKCE Code detected:", !!code);
+      console.log("State detected:", !!state);
       setIsProcessingCallback(true);
       setCallbackStatus('processing');
       
@@ -65,6 +67,9 @@ export const useAuthPage = () => {
             console.log("Attempting direct code exchange with code:", code.substring(0, 10) + "...");
             
             try {
+              // Clear any cached PKCE data that might be invalid
+              localStorage.removeItem('supabase.auth.code_verifier');
+              
               const { data, error } = await supabase.auth.exchangeCodeForSession(code);
               
               if (error) {
@@ -89,6 +94,7 @@ export const useAuthPage = () => {
               }
             } catch (err) {
               console.error("Exception during direct code exchange:", err);
+              console.error("Error details:", err instanceof Error ? err.message : String(err));
             }
           }
           

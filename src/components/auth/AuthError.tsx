@@ -23,6 +23,14 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
     error.includes('redirect_uri_mismatch') ||
     error.includes('supabase.co/www');
   
+  // Check for PKCE specific errors
+  const isPkceError = 
+    error.includes('pkce') ||
+    error.includes('code verifier') ||
+    error.includes('invalid request') || 
+    error.toLowerCase().includes('invalid_grant') ||
+    error.toLowerCase().includes('bad request');
+  
   // Check if it's specifically a Google OAuth issue
   const isGoogleAuthError = 
     error.includes('google') || 
@@ -31,13 +39,6 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
     error.includes('OAuth') ||
     error.includes('oauth') ||
     window.location.hash.includes('provider_token');
-  
-  // Check for specific PKCE errors
-  const isPkceError = 
-    error.includes('pkce') || 
-    error.includes('code_verifier') || 
-    error.includes('code_challenge') || 
-    error.includes('Bad Request');
   
   // Get the current environment 
   const currentUrl = window.location.href;
@@ -95,32 +96,13 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
             {isPkceError && (
               <div className="mt-3 p-3 border border-yellow-500 rounded bg-yellow-50 dark:bg-yellow-900/20">
                 <p className="font-bold text-yellow-700 dark:text-yellow-400">PKCE Authentication Issue:</p>
-                <p className="mt-1">This error may be related to PKCE authentication flow issues, which generally involve:</p>
+                <p className="mt-1">This error is related to PKCE authentication flow issues with code and code verifier. Try the following:</p>
                 <ol className="list-decimal pl-5 mt-2 space-y-1">
-                  <li>Missing or incorrect code verifier/challenge parameters</li>
-                  <li>Third-party cookie restrictions in your browser</li>
-                  <li>Local storage access issues for storing authentication state</li>
+                  <li>Clear browser cookies and local storage for this site</li>
+                  <li>Make sure third-party cookies are enabled in your browser</li>
+                  <li>Check that your browser allows local storage</li>
+                  <li>Try using an incognito/private window</li>
                 </ol>
-                <p className="mt-2">Try the following:</p>
-                <ul className="list-disc pl-5 mt-1 space-y-1">
-                  <li>Clear your browser cache and cookies</li>
-                  <li>Disable ad blockers or privacy extensions temporarily</li>
-                  <li>Try a different browser</li>
-                  <li>Check that your cookies are enabled for this site</li>
-                </ul>
-              </div>
-            )}
-            
-            {isGoogleInvalidRequest && (
-              <div className="mt-3 p-3 border border-yellow-500 rounded bg-yellow-50 dark:bg-yellow-900/20">
-                <p className="font-bold text-yellow-700 dark:text-yellow-400">Important Note about Google OAuth:</p>
-                <p className="mt-1">The error message "richiesta non valida" (invalid request) typically indicates that:</p>
-                <ol className="list-decimal pl-5 mt-2 space-y-1">
-                  <li>The Authorized JavaScript Origins in Google Cloud Console don't match the sites you're coming from.</li>
-                  <li>The Authorized Redirect URIs in Google Cloud Console don't include the URL that Supabase is trying to redirect to.</li>
-                  <li>There might be a delay in Google's systems applying your changes (can take up to 5-10 minutes).</li>
-                </ol>
-                <p className="mt-2">Try clearing your browser cookies and cache, then attempt to sign in again after a few minutes.</p>
               </div>
             )}
           </div>
@@ -144,11 +126,12 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
               <p><strong>User Agent:</strong> {navigator.userAgent}</p>
               <p><strong>Cookies Enabled:</strong> {navigator.cookieEnabled.toString()}</p>
               <p><strong>Local Storage Available:</strong> {(typeof localStorage !== 'undefined').toString()}</p>
+              <p><strong>PKCE Flow Enabled:</strong> {(supabase?.auth && 'flowType' in (supabase.auth as any)) ? "Yes" : "No"}</p>
               <p><strong>Error Type:</strong> {
+                isPkceError ? "PKCE Authentication Error" : 
                 isInvalidPathError ? "Invalid Path Error" : 
                 isGoogleAuthError ? "Google OAuth Error" : 
                 isGoogleInvalidRequest ? "Google Invalid Request Error" :
-                isPkceError ? "PKCE Authentication Error" : 
                 "General Authentication Error"
               }</p>
               <p><strong>Hash Fragment:</strong> {window.location.hash ? window.location.hash.substring(0, 50) + "..." : "None"}</p>
