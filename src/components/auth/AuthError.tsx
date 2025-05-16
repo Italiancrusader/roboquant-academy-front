@@ -5,6 +5,7 @@ import { AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthErrorProps {
   error: string;
@@ -126,7 +127,7 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
               <p><strong>User Agent:</strong> {navigator.userAgent}</p>
               <p><strong>Cookies Enabled:</strong> {navigator.cookieEnabled.toString()}</p>
               <p><strong>Local Storage Available:</strong> {(typeof localStorage !== 'undefined').toString()}</p>
-              <p><strong>PKCE Flow Enabled:</strong> {(supabase?.auth && 'flowType' in (supabase.auth as any)) ? "Yes" : "No"}</p>
+              <p><strong>PKCE Flow Enabled:</strong> {(supabase?.auth && 'flowType' in supabase.auth.config) ? "Yes" : "No"}</p>
               <p><strong>Error Type:</strong> {
                 isPkceError ? "PKCE Authentication Error" : 
                 isInvalidPathError ? "Invalid Path Error" : 
