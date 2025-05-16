@@ -118,6 +118,8 @@ export const handleHashTokens = async () => {
   } 
   
   // If we still don't have a session, try checking for direct tokens in the hash
+  // Define hashParams here so it's available in this scope
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
   const access_token = hashParams.get('access_token');
   const refresh_token = hashParams.get('refresh_token');
   
