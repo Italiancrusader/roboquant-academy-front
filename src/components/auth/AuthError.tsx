@@ -127,7 +127,7 @@ const AuthError: React.FC<AuthErrorProps> = ({ error, isRedirectError }) => {
               <p><strong>User Agent:</strong> {navigator.userAgent}</p>
               <p><strong>Cookies Enabled:</strong> {navigator.cookieEnabled.toString()}</p>
               <p><strong>Local Storage Available:</strong> {(typeof localStorage !== 'undefined').toString()}</p>
-              <p><strong>PKCE Flow Enabled:</strong> {Boolean(supabase?.auth?.exportSession).toString()}</p>
+              <p><strong>PKCE Flow Enabled:</strong> {(supabase?.auth?.getSession !== undefined).toString()}</p>
               <p><strong>Error Type:</strong> {
                 isPkceError ? "PKCE Authentication Error" : 
                 isInvalidPathError ? "Invalid Path Error" : 
