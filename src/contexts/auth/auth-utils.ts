@@ -1,3 +1,4 @@
+
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -68,6 +69,10 @@ export const handleHashTokens = async () => {
     console.log("Code present (first 10 chars):", code.substring(0, 10) + "...");
     console.log("State present (first 10 chars):", state.substring(0, 10) + "...");
     
+    // Check for existing code verifier in storage
+    const codeVerifier = localStorage.getItem('supabase.auth.code_verifier');
+    console.log("Code verifier present in storage:", !!codeVerifier);
+    
     try {
       console.log("Attempting to exchange code for session via official Supabase method");
       console.log("PKCE flow is enabled:", supabase.auth.onAuthStateChange ? "Yes" : "No");
@@ -112,8 +117,39 @@ export const handleHashTokens = async () => {
     }
   } 
   
-  // Keep existing code for handling non-PKCE methods
-  // ... keep existing code (hash token handling logic)
+  // If we still don't have a session, try checking for direct tokens in the hash
+  const access_token = hashParams.get('access_token');
+  const refresh_token = hashParams.get('refresh_token');
+  
+  if (access_token && refresh_token) {
+    console.log("Found direct tokens in hash fragment, attempting to use them");
+    try {
+      const { data, error } = await supabase.auth.setSession({
+        access_token,
+        refresh_token
+      });
+      
+      if (error) {
+        console.error("Error setting session from hash tokens:", error);
+        return null;
+      }
+      
+      if (data.session) {
+        console.log("Successfully set session from hash tokens");
+        
+        // Clean up URL
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, document.title, window.location.pathname);
+        }
+        
+        return data.session;
+      }
+    } catch (err) {
+      console.error("Exception setting session from hash:", err);
+    }
+  }
+  
+  return null;
 };
 
 /**

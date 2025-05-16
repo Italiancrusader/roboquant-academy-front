@@ -9,6 +9,23 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Custom storage implementation that logs operations for debugging
+const customStorage = typeof window !== 'undefined' ? {
+  getItem: (key: string) => {
+    const item = localStorage.getItem(key);
+    console.log(`[PKCE Debug] Getting ${key} from storage`, item ? "found" : "not found");
+    return item;
+  },
+  setItem: (key: string, value: string) => {
+    console.log(`[PKCE Debug] Setting ${key} in storage`);
+    localStorage.setItem(key, value);
+  },
+  removeItem: (key: string) => {
+    console.log(`[PKCE Debug] Removing ${key} from storage`);
+    localStorage.removeItem(key);
+  },
+} : undefined;
+
 // Create the Supabase client with explicit storage configuration to ensure
 // PKCE flow works correctly with proper storage of code verifiers
 export const supabase = createClient<Database>(
@@ -20,16 +37,29 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      storage: typeof localStorage !== 'undefined' ? localStorage : undefined
+      storage: customStorage
     }
   }
 );
 
 // Initialize auth environment on client load
 if (typeof window !== 'undefined') {
+  // Debug logging for auth configuration
+  console.log("[Supabase Auth] Initializing in environment:", 
+    import.meta.env.MODE || "unknown",
+    "URL:", window.location.href);
+  
   // Check for auth parameters in URL early
   if (window.location.href.includes('code=') && window.location.href.includes('state=')) {
-    console.log("Auth parameters detected in URL - PKCE flow started");
+    console.log("[Supabase Auth] Auth parameters detected in URL - PKCE flow started");
+    
+    // Force reload code verifier from storage to ensure it's available
+    const codeVerifier = localStorage.getItem('supabase.auth.code_verifier');
+    console.log("[Supabase Auth] Code verifier available:", !!codeVerifier);
+    
+    if (!codeVerifier) {
+      console.warn("[Supabase Auth] No code verifier found in storage. Auth may fail.");
+    }
   }
 
   // Clear any lingering service worker cache that might interfere with auth
@@ -37,7 +67,7 @@ if (typeof window !== 'undefined') {
     caches.keys().then(names => {
       names.forEach(name => {
         if (name.includes('supabase') || name.includes('auth')) {
-          console.log("Clearing cache:", name);
+          console.log("[Supabase Auth] Clearing cache:", name);
           caches.delete(name);
         }
       });
@@ -46,4 +76,4 @@ if (typeof window !== 'undefined') {
 }
 
 // Log initialization 
-console.log("Supabase client initialized with PKCE flow enabled");
+console.log("[Supabase Auth] Client initialized with PKCE flow enabled");
