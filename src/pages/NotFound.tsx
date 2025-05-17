@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -5,7 +6,7 @@ import { Home, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { handleHashTokens } from '@/contexts/auth/auth-utils';
+import { handleHashTokens, ensureCodeVerifierForPKCE } from '@/contexts/auth/auth-utils';
 
 const NotFound = () => {
   // Get the current domain and path
@@ -33,13 +34,32 @@ const NotFound = () => {
           if (code && state) {
             console.log("OAuth parameters detected, redirecting to /auth with parameters");
             
+            // Ensure the code verifier is available before redirecting
+            ensureCodeVerifierForPKCE(code, state);
+            
             // Special handling for callback URLs - redirect to /auth with the same params
             const authUrl = `/auth${window.location.search}`;
             navigate(authUrl, { replace: true });
             return;
           }
+          
+          // If no code/state or other issue, try to handle hash tokens
+          const session = await handleHashTokens();
+          if (session) {
+            console.log("Successfully recovered session from hash tokens");
+            navigate('/dashboard', { replace: true });
+          } else {
+            console.log("Could not recover session, redirecting to /auth");
+            navigate('/auth', { replace: true });
+          }
         } catch (error) {
           console.error("Error recovering from OAuth callback:", error);
+          toast({
+            title: "Authentication Error",
+            description: "Failed to process authentication. Please try signing in again.",
+            variant: "destructive",
+          });
+          navigate('/auth', { replace: true });
         }
       }
     };

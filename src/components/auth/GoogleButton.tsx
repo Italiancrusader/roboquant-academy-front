@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { LucideGithub } from 'lucide-react';
+import { Chrome } from 'lucide-react'; // Using Chrome icon as Google isn't available
 
 interface GoogleButtonProps {
   onClick: () => Promise<void>;

@@ -70,8 +70,9 @@ function App() {
                 <Route path="/simple" element={<SimpleLanding />} />
                 <Route path="/auth" element={<Auth />} />
                 
-                {/* Add explicit route for OAuth callback */}
+                {/* Add explicit routes for OAuth callbacks */}
                 <Route path="/auth/v1/callback" element={<Auth />} />
+                <Route path="/auth/callback" element={<Auth />} />
                 
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
