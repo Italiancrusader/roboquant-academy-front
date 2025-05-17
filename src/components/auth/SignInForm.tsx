@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import GoogleButton from './GoogleButton';
+import { Separator } from '@/components/ui/separator';
 
 export interface SignInFormProps {
   isLoading: boolean;
@@ -15,7 +17,7 @@ export interface SignInFormProps {
 const SignInForm: React.FC<SignInFormProps> = ({ isLoading, setAuthError, setIsLoading }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +30,19 @@ const SignInForm: React.FC<SignInFormProps> = ({ isLoading, setAuthError, setIsL
       console.error("Sign in error:", error);
       setAuthError(error.message || 'Failed to sign in');
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setAuthError(null);
+    setIsLoading(true);
+    try {
+      await signInWithGoogle();
+      // OAuth flow will redirect, no need to handle navigation here
+    } catch (error: any) {
+      console.error("Google sign in error:", error);
+      setAuthError(error.message || 'Failed to sign in with Google');
       setIsLoading(false);
     }
   };
@@ -68,6 +83,17 @@ const SignInForm: React.FC<SignInFormProps> = ({ isLoading, setAuthError, setIsL
         >
           {isLoading ? "Signing in..." : "Sign In"}
         </Button>
+        
+        <div className="flex items-center w-full my-2">
+          <Separator className="flex-grow" />
+          <span className="px-2 text-xs text-muted-foreground">OR</span>
+          <Separator className="flex-grow" />
+        </div>
+        
+        <GoogleButton 
+          onClick={handleGoogleSignIn} 
+          isLoading={isLoading} 
+        />
       </CardFooter>
     </form>
   );
