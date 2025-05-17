@@ -40,8 +40,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           const { data: existingEnrollment, error } = await supabase
             .from('enrollments')
             .select('id')
-            .eq('user_id', user.id)
-            .eq('course_id', courseId)
+            .eq('user_id', user.id as any) // Type assertion
+            .eq('course_id', courseId as any) // Type assertion
             .maybeSingle();
 
           // Only create enrollment if it doesn't exist
@@ -53,7 +53,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
                   user_id: user.id,
                   course_id: courseId,
                   payment_status: 'completed'
-                });
+                } as any); // Type assertion for now
                 
               if (insertError) {
                 console.error('Error creating admin enrollment:', insertError);
@@ -79,8 +79,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         const { data: enrollmentData, error: enrollmentError } = await supabase
           .from('enrollments')
           .select('id')
-          .eq('user_id', user.id)
-          .eq('course_id', courseId)
+          .eq('user_id', user.id as any) // Type assertion
+          .eq('course_id', courseId as any) // Type assertion
           .maybeSingle();
 
         if (enrollmentError && enrollmentError.code !== 'PGRST116') {

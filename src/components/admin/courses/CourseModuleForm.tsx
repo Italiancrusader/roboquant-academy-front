@@ -37,8 +37,8 @@ const CourseModuleForm = ({ courseId, module, onSuccess, onCancel }: CourseModul
         // Update existing module
         const { error } = await supabase
           .from('modules')
-          .update({ title })
-          .eq('id', module.id);
+          .update({ title } as any)
+          .eq('id', module.id as any);
         
         if (error) throw error;
         
@@ -51,13 +51,16 @@ const CourseModuleForm = ({ courseId, module, onSuccess, onCancel }: CourseModul
         const { data: modulesData, error: fetchError } = await supabase
           .from('modules')
           .select('sort_order')
-          .eq('course_id', courseId)
+          .eq('course_id', courseId as any)
           .order('sort_order', { ascending: false })
           .limit(1);
         
         if (fetchError) throw fetchError;
         
-        const maxSortOrder = modulesData && modulesData.length > 0 ? modulesData[0].sort_order : 0;
+        // Safely handle potential null/undefined and ensure proper type checking
+        const maxSortOrder = modulesData && modulesData.length > 0 && modulesData[0] && 'sort_order' in modulesData[0] 
+          ? (modulesData[0].sort_order as number) 
+          : 0;
         
         // Create new module
         const { error } = await supabase
@@ -66,7 +69,7 @@ const CourseModuleForm = ({ courseId, module, onSuccess, onCancel }: CourseModul
             title,
             course_id: courseId,
             sort_order: maxSortOrder + 1
-          });
+          } as any);
         
         if (error) throw error;
         

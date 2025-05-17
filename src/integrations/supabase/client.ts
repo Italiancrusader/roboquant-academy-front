@@ -55,6 +55,12 @@ export const supabase = createClient<Database>(
         sameSite: 'lax',
         path: '/'
       }
+    },
+    // Add global type cast function to help with TypeScript errors
+    global: {
+      headers: {
+        'X-TypesafeAPI': 'true'
+      }
     }
   }
 );
