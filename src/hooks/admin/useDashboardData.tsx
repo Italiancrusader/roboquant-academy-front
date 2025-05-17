@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -32,52 +33,52 @@ export const useDashboardData = () => {
           .from('courses')
           .select('*', { count: 'exact' });
 
-        if (coursesError) {
-          throw new Error(`Error fetching courses: ${coursesError.message}`);
-        }
+        if (coursesError) throw new Error(`Error fetching courses: ${coursesError.message}`);
 
         // Fetch total lessons
         const { data: lessons, error: lessonsError, count: lessonsCount } = await supabase
           .from('lessons')
           .select('*', { count: 'exact' });
 
-        if (lessonsError) {
-          throw new Error(`Error fetching lessons: ${lessonsError.message}`);
-        }
+        if (lessonsError) throw new Error(`Error fetching lessons: ${lessonsError.message}`);
 
         // Fetch total users
         const { data: users, error: usersError, count: usersCount } = await supabase
           .from('auth_users_view')
           .select('*', { count: 'exact' });
 
-        if (usersError) {
-          throw new Error(`Error fetching users: ${usersError.message}`);
-        }
+        if (usersError) throw new Error(`Error fetching users: ${usersError.message}`);
 
         // Fetch total revenue (example: sum of course prices - adjust as needed)
         const { data: enrollments, error: enrollmentsError } = await supabase
           .from('enrollments')
           .select('course_id');
 
-        if (enrollmentsError) {
-          throw new Error(`Error fetching enrollments: ${enrollmentsError.message}`);
-        }
+        if (enrollmentsError) throw new Error(`Error fetching enrollments: ${enrollmentsError.message}`);
 
         let totalRevenue = 0;
 
         if (enrollments && enrollments.length > 0) {
           // Fetch course prices for enrolled courses
-          const courseIds = enrollments.map(enrollment => enrollment.course_id);
+          const courseIds = enrollments
+            .filter((enrollment): enrollment is { course_id: string } => 
+              enrollment && typeof enrollment === 'object' && 'course_id' in enrollment)
+            .map(enrollment => enrollment.course_id);
 
-          const { data: coursePrices, error: coursePricesError } = await supabase
-            .from('courses')
-            .select('price')
-            .in('id', courseIds as any);
+          if (courseIds.length > 0) {
+            const { data: coursePrices, error: coursePricesError } = await supabase
+              .from('courses')
+              .select('price')
+              .in('id', courseIds as any);
 
-          if (coursePricesError) {
-            console.error("Error fetching course prices:", coursePricesError);
-          } else if (coursePrices) {
-            totalRevenue = coursePrices.reduce((sum, course) => sum + (course.price || 0), 0);
+            if (coursePricesError) {
+              console.error("Error fetching course prices:", coursePricesError);
+            } else if (coursePrices) {
+              totalRevenue = coursePrices
+                .filter((course): course is { price: number } => 
+                  course && typeof course === 'object' && 'price' in course)
+                .reduce((sum, course) => sum + (course.price || 0), 0);
+            }
           }
         }
 
@@ -88,16 +89,31 @@ export const useDashboardData = () => {
           .order('created_at', { ascending: false })
           .limit(5);
 
-        if (recentSignupsError) {
-          throw new Error(`Error fetching recent signups: ${recentSignupsError.message}`);
-        }
+        if (recentSignupsError) throw new Error(`Error fetching recent signups: ${recentSignupsError.message}`);
+
+        // Format the recent signup data with type safety
+        const formattedSignups = (recentSignups || []).map(user => {
+          if (!user || typeof user !== 'object') {
+            return {
+              id: 'unknown',
+              email: 'unknown',
+              created_at: new Date().toISOString()
+            };
+          }
+          
+          return {
+            id: (user as any).id as string || 'unknown',
+            email: (user as any).email as string || 'unknown',
+            created_at: (user as any).created_at as string || new Date().toISOString()
+          };
+        });
 
         setDashboardData({
           totalCourses: coursesCount || 0,
           totalLessons: lessonsCount || 0,
           totalUsers: usersCount || 0,
           totalRevenue: totalRevenue,
-          recentSignups: (recentSignups || []) as any,
+          recentSignups: formattedSignups,
         });
       } catch (err: any) {
         setError(err.message);

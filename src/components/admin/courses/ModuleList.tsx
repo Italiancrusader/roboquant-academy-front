@@ -51,7 +51,8 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
         if (moduleLessons && moduleLessons.length > 0) {
           // Safely extract lesson IDs with type checking
           const lessonIds = moduleLessons
-            .filter(lesson => lesson && typeof lesson === 'object' && 'id' in lesson)
+            .filter((lesson): lesson is { id: string } => 
+              lesson && typeof lesson === 'object' && 'id' in lesson)
             .map(lesson => lesson.id);
           
           if (lessonIds.length > 0) {

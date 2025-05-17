@@ -87,11 +87,22 @@ export const useAuthUsers = (options: UseAuthUsersOptions = {}) => {
         }
         
         // Explicitly type cast the response data to our AuthUser type
-        return (data || []).map(user => ({
-          id: user.id as string,
-          email: user.email as string,
-          created_at: user.created_at as string
-        }));
+        return (data || []).map(user => {
+          // Add type guard to ensure we have the properties we need
+          if (!user || typeof user !== 'object') {
+            return {
+              id: 'unknown',
+              email: 'unknown',
+              created_at: new Date().toISOString()
+            };
+          }
+          
+          return {
+            id: (user as any).id as string || 'unknown',
+            email: (user as any).email as string || 'unknown',
+            created_at: (user as any).created_at as string || new Date().toISOString()
+          };
+        });
       } catch (error: any) {
         console.error('Unexpected error:', error);
         toast({
