@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -23,53 +22,21 @@ const NotFound = () => {
     // Attempt to recover the session if this is an OAuth callback
     const attemptSessionRecovery = async () => {
       if (isOAuthCallback) {
-        console.log("Detected OAuth callback on 404 page - attempting session recovery");
+        console.log("Detected OAuth callback on 404 page - attempting session recovery and redirect");
         
         try {
           // Extract the code and state from the URL if present
           const params = new URLSearchParams(window.location.search);
           const code = params.get('code');
           const state = params.get('state');
-          const accessToken = params.get('access_token');
           
-          if ((code && state) || accessToken) {
-            console.log("OAuth parameters detected, attempting to exchange for session");
+          if (code && state) {
+            console.log("OAuth parameters detected, redirecting to /auth with parameters");
             
-            // Try to recover the session from the URL
-            const session = await handleHashTokens();
-            
-            if (session) {
-              console.log("Successfully recovered session from OAuth callback");
-              toast({
-                title: "Authentication successful",
-                description: "You have been successfully signed in.",
-              });
-              navigate('/dashboard', { replace: true });
-              return;
-            } 
-            
-            // If no session, try to manually handle the callback using the code exchange
-            if (code && state) {
-              try {
-                const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-                
-                if (error) {
-                  throw error;
-                }
-                
-                if (data.session) {
-                  console.log("Successfully exchanged code for session");
-                  toast({
-                    title: "Authentication successful",
-                    description: "You have been successfully signed in.",
-                  });
-                  navigate('/dashboard', { replace: true });
-                  return;
-                }
-              } catch (err) {
-                console.error("Failed to exchange code for session:", err);
-              }
-            }
+            // Special handling for callback URLs - redirect to /auth with the same params
+            const authUrl = `/auth${window.location.search}`;
+            navigate(authUrl, { replace: true });
+            return;
           }
         } catch (error) {
           console.error("Error recovering from OAuth callback:", error);
@@ -96,12 +63,7 @@ const NotFound = () => {
               <AlertTitle>Authentication Redirect Issue</AlertTitle>
               <AlertDescription>
                 <p className="mb-2">This appears to be an OAuth callback after Google sign-in.</p>
-                <p className="mb-2">Try these steps to resolve the issue:</p>
-                <ol className="list-decimal pl-5 space-y-1 mb-4">
-                  <li>Make sure your application is deployed to the domain configured in Supabase</li>
-                  <li>Visit the homepage directly at <a href="/" className="underline">https://{currentDomain}/</a></li>
-                  <li>Try signing in again after confirming the site is properly deployed</li>
-                </ol>
+                <p className="mb-2">Redirecting you to the authentication page...</p>
               </AlertDescription>
             </Alert>
           )}

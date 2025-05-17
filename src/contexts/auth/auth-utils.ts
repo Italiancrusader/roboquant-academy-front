@@ -45,7 +45,7 @@ export const processUrlErrors = () => {
 
 /**
  * Handles OAuth tokens found in the URL hash or query parameters
- * Enhanced to better handle PKCE flows
+ * Enhanced to better handle PKCE flows with proper callback handling
  * @returns Promise that resolves to a session if recovered, null otherwise
  */
 export const handleHashTokens = async () => {
@@ -59,66 +59,117 @@ export const handleHashTokens = async () => {
   console.log("URL search:", window.location.search);
   console.log("URL hash:", window.location.hash);
   
-  // Check if we're on the auth page with a code parameter (PKCE flow)
+  // Check if we're on the OAuth callback path or have callback parameters
+  const isAuthCallbackPath = window.location.pathname.includes('/auth/v1/callback');
+  
+  // Check if this is a PKCE callback with code and state
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code');
   const state = urlParams.get('state');
   
+  // Special handling for '/auth/v1/callback' path
+  if (isAuthCallbackPath) {
+    console.log("Detected auth callback path, redirecting to /auth with params");
+    
+    // Preserve all query parameters and redirect to /auth
+    if (window.history && window.history.replaceState) {
+      const authPath = '/auth' + window.location.search;
+      window.location.href = authPath;
+      return null;
+    }
+  }
+  
   if (code && state) {
     console.log("Found code and state in URL query params");
-    console.log("Code present (first 10 chars):", code.substring(0, 10) + "...");
-    console.log("State present (first 10 chars):", state.substring(0, 10) + "...");
     
-    // Check for existing code verifier in storage
-    const codeVerifier = localStorage.getItem('supabase.auth.code_verifier');
-    console.log("Code verifier present in storage:", !!codeVerifier);
+    // Check for code verifier in local storage before attempting code exchange
+    const storageKey = 'sb-' + 'gqnzsnzolqvsalyzbhmq' + '-auth-code-verifier';
+    const codeVerifier = localStorage.getItem(storageKey);
+    
+    if (!codeVerifier) {
+      console.log("No code verifier found in local storage. Setting up a new one.");
+      // Try to set up a general-purpose code verifier that might help
+      localStorage.setItem(storageKey, state);
+    }
+    
+    console.log("Code verifier available:", !!codeVerifier);
     
     try {
-      console.log("Attempting to exchange code for session via official Supabase method");
-      console.log("PKCE flow is enabled:", supabase.auth.onAuthStateChange ? "Yes" : "No");
+      console.log("Attempting to exchange code for session");
       
-      // Let the Supabase client handle the code exchange directly
-      // This should work with the detectSessionInUrl option
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      
-      if (error) {
-        console.error("Error exchanging code for session:", error);
-        console.error("Error details:", JSON.stringify(error, null, 2));
+      // First attempt: direct code exchange
+      try {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         
-        toast({
-          title: "Authentication Error",
-          description: error.message || "Failed to complete authentication",
-          variant: "destructive",
-        });
-        
-        return null;
-      }
-      
-      if (data && data.session) {
-        console.log("Successfully exchanged code for session");
-        console.log("User authenticated:", data.session.user.email);
-        
-        // Clear the URL of the code and state params
-        if (window.history && window.history.replaceState) {
-          window.history.replaceState(null, document.title, window.location.pathname);
+        if (error) {
+          console.error("Error exchanging code for session:", error);
+        } else if (data && data.session) {
+          console.log("Successfully exchanged code for session");
+          
+          // Clean up the URL
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, document.title, '/auth');
+          }
+          
+          toast({
+            title: "Authentication Successful",
+            description: `Welcome${data.session.user.user_metadata?.name ? `, ${data.session.user.user_metadata.name}` : ''}!`,
+          });
+          
+          return data.session;
         }
-        
-        toast({
-          title: "Authentication Successful",
-          description: `Welcome${data.session.user.user_metadata?.name ? `, ${data.session.user.user_metadata.name}` : ''}!`,
-        });
-        
-        return data.session;
-      } else {
-        console.log("No session data returned after code exchange");
+      } catch (err) {
+        console.error("Exception during code exchange:", err);
       }
+      
+      // Second attempt: try to extract tokens directly from the URL
+      const accessToken = urlParams.get('access_token');
+      const refreshToken = urlParams.get('refresh_token');
+      
+      if (accessToken && refreshToken) {
+        console.log("Found tokens in URL, setting session directly");
+        
+        try {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          
+          if (error) {
+            console.error("Error setting session from URL tokens:", error);
+          } else if (data.session) {
+            console.log("Successfully set session from URL tokens");
+            
+            // Clean up the URL
+            if (window.history && window.history.replaceState) {
+              window.history.replaceState(null, document.title, '/auth');
+            }
+            
+            return data.session;
+          }
+        } catch (err) {
+          console.error("Exception setting session from URL:", err);
+        }
+      }
+      
+      // If we get here, try a fallback approach of signing in directly with provider
+      console.log("Direct token exchange failed, attempting to sign in with OAuth again");
+      
+      // Clean up local storage items and try again
+      localStorage.removeItem(storageKey);
+      
+      // Show a user-friendly error with recovery options
+      toast({
+        title: "Authentication Session Error",
+        description: "Could not establish session. Please try signing in again.",
+        variant: "destructive",
+      });
     } catch (err) {
-      console.error("Exception during code exchange:", err);
+      console.error("Exception during authentication:", err);
     }
   } 
   
   // If we still don't have a session, try checking for direct tokens in the hash
-  // Define hashParams here so it's available in this scope
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
   const access_token = hashParams.get('access_token');
   const refresh_token = hashParams.get('refresh_token');
