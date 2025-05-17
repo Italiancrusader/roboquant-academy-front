@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardContent, CardFooter } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
-import GoogleButton from './GoogleButton';
 
 export interface SignInFormProps {
   isLoading: boolean;
@@ -17,7 +15,7 @@ export interface SignInFormProps {
 const SignInForm: React.FC<SignInFormProps> = ({ isLoading, setAuthError, setIsLoading }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn } = useAuth();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,19 +28,6 @@ const SignInForm: React.FC<SignInFormProps> = ({ isLoading, setAuthError, setIsL
       console.error("Sign in error:", error);
       setAuthError(error.message || 'Failed to sign in');
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setAuthError(null);
-    setIsLoading(true);
-    try {
-      await signInWithGoogle();
-      // The redirect will happen automatically - we'll be taken to Google auth
-    } catch (error: any) {
-      console.error("Google sign in error:", error);
-      setAuthError(error.message || 'Google sign in failed');
       setIsLoading(false);
     }
   };
@@ -83,21 +68,6 @@ const SignInForm: React.FC<SignInFormProps> = ({ isLoading, setAuthError, setIsL
         >
           {isLoading ? "Signing in..." : "Sign In"}
         </Button>
-        
-        <div className="relative w-full">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-          </div>
-        </div>
-        
-        <GoogleButton 
-          onClick={handleGoogleSignIn} 
-          isLoading={isLoading} 
-          buttonText="Sign in with Google"
-        />
       </CardFooter>
     </form>
   );

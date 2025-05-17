@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardContent, CardFooter } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
-import GoogleButton from './GoogleButton';
 
 export interface SignUpFormProps {
   isLoading: boolean;
@@ -19,7 +17,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsL
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp } = useAuth();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,19 +30,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsL
       console.error("Sign up error:", error);
       setAuthError(error.message || 'Failed to create account');
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setAuthError(null);
-    setIsLoading(true);
-    try {
-      await signInWithGoogle();
-      // The redirect will happen automatically - we'll be taken to Google auth
-    } catch (error: any) {
-      console.error("Google sign in error:", error);
-      setAuthError(error.message || 'Google sign in failed');
       setIsLoading(false);
     }
   };
@@ -107,21 +92,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsL
         >
           {isLoading ? "Creating account..." : "Create Account"}
         </Button>
-        
-        <div className="relative w-full">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-          </div>
-        </div>
-        
-        <GoogleButton 
-          onClick={handleGoogleSignIn} 
-          isLoading={isLoading} 
-          buttonText="Sign up with Google"
-        />
       </CardFooter>
     </form>
   );
