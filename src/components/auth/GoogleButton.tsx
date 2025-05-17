@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Google } from 'lucide-react';
+import { Chrome } from 'lucide-react';
 
 interface GoogleButtonProps {
   onClick: () => Promise<void>;
@@ -17,7 +17,7 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({ onClick, isLoading }) => {
       onClick={onClick}
       disabled={isLoading}
     >
-      <Google size={18} />
+      <Chrome size={18} />
       {isLoading ? "Connecting..." : "Continue with Google"}
     </Button>
   );
