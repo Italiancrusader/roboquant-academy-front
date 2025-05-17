@@ -44,34 +44,8 @@ export const processUrlErrors = () => {
 };
 
 /**
- * Helper to ensure code verifier is available for PKCE flow
- * Used to fix common issues with missing code verifier
- */
-export const ensureCodeVerifierForPKCE = (code: string, state: string) => {
-  const storageKey = 'sb-gqnzsnzolqvsalyzbhmq-auth-code-verifier';
-  let codeVerifier = localStorage.getItem(storageKey);
-  
-  console.log("Checking code verifier for PKCE flow");
-  console.log("Code verifier present:", !!codeVerifier);
-  console.log("State available:", !!state);
-  
-  // If no code verifier is found, create a new one based on state
-  // This is a fallback mechanism when the code verifier is lost or not set properly
-  if (!codeVerifier && state) {
-    console.log("No code verifier found, creating fallback from state");
-    // Create a fallback code verifier from state (must be at least 43 chars)
-    const fallbackVerifier = state.padEnd(43, state);
-    localStorage.setItem(storageKey, fallbackVerifier);
-    console.log("Created fallback code verifier from state");
-    return fallbackVerifier;
-  }
-  
-  return codeVerifier;
-};
-
-/**
  * Handles OAuth tokens found in the URL hash or query parameters
- * Enhanced to better handle PKCE flows with proper callback handling
+ * Enhanced to better handle PKCE flows
  * @returns Promise that resolves to a session if recovered, null otherwise
  */
 export const handleHashTokens = async () => {
@@ -85,121 +59,72 @@ export const handleHashTokens = async () => {
   console.log("URL search:", window.location.search);
   console.log("URL hash:", window.location.hash);
   
-  // Check if we're on the OAuth callback path or have callback parameters
-  const isAuthCallbackPath = window.location.pathname.includes('/auth/v1/callback');
-  
-  // Check if this is a PKCE callback with code and state
+  // Check if we're on the auth page with a code parameter (PKCE flow)
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code');
   const state = urlParams.get('state');
   
-  // Special handling for '/auth/v1/callback' path
-  if (isAuthCallbackPath) {
-    console.log("Detected auth callback path, redirecting to /auth with params");
-    
-    // Preserve all query parameters and redirect to /auth
-    if (window.history && window.history.replaceState) {
-      const authPath = '/auth' + window.location.search;
-      window.location.href = authPath;
-      return null;
-    }
-  }
-  
   if (code && state) {
     console.log("Found code and state in URL query params");
+    console.log("Code present (first 10 chars):", code.substring(0, 10) + "...");
+    console.log("State present (first 10 chars):", state.substring(0, 10) + "...");
     
-    // Ensure we have a code verifier for the PKCE flow
-    ensureCodeVerifierForPKCE(code, state);
+    // Check for existing code verifier in storage
+    const codeVerifier = localStorage.getItem('supabase.auth.code_verifier');
+    console.log("Code verifier present in storage:", !!codeVerifier);
     
     try {
-      console.log("Attempting multiple methods to exchange code for session");
+      console.log("Attempting to exchange code for session via official Supabase method");
+      console.log("PKCE flow is enabled:", supabase.auth.onAuthStateChange ? "Yes" : "No");
       
-      // Method 1: Direct code exchange
-      try {
-        console.log("Method 1: Direct code exchange");
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      // Let the Supabase client handle the code exchange directly
+      // This should work with the detectSessionInUrl option
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      
+      if (error) {
+        console.error("Error exchanging code for session:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         
-        if (error) {
-          console.error("Error in direct code exchange:", error);
-          console.error("Error details:", JSON.stringify(error, null, 2));
-        } else if (data && data.session) {
-          console.log("Successfully exchanged code for session");
-          
-          // Clean up the URL
-          if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, document.title, '/auth');
-          }
-          
-          toast({
-            title: "Authentication Successful",
-            description: `Welcome${data.session.user.user_metadata?.name ? `, ${data.session.user.user_metadata.name}` : ''}!`,
-          });
-          
-          return data.session;
-        }
-      } catch (err) {
-        console.error("Exception during direct code exchange:", err);
-      }
-      
-      // Method 2: Try to extract tokens from URL params
-      const accessToken = urlParams.get('access_token');
-      const refreshToken = urlParams.get('refresh_token');
-      
-      if (accessToken && refreshToken) {
-        console.log("Method 2: Using tokens from URL params");
+        toast({
+          title: "Authentication Error",
+          description: error.message || "Failed to complete authentication",
+          variant: "destructive",
+        });
         
-        try {
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          });
-          
-          if (error) {
-            console.error("Error setting session from URL tokens:", error);
-          } else if (data.session) {
-            console.log("Successfully set session from URL tokens");
-            
-            // Clean up the URL
-            if (window.history && window.history.replaceState) {
-              window.history.replaceState(null, document.title, '/auth');
-            }
-            
-            return data.session;
-          }
-        } catch (err) {
-          console.error("Exception setting session from URL:", err);
+        return null;
+      }
+      
+      if (data && data.session) {
+        console.log("Successfully exchanged code for session");
+        console.log("User authenticated:", data.session.user.email);
+        
+        // Clear the URL of the code and state params
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, document.title, window.location.pathname);
         }
+        
+        toast({
+          title: "Authentication Successful",
+          description: `Welcome${data.session.user.user_metadata?.name ? `, ${data.session.user.user_metadata.name}` : ''}!`,
+        });
+        
+        return data.session;
+      } else {
+        console.log("No session data returned after code exchange");
       }
-      
-      // Method 3: Try to sign in with provider directly
-      console.log("Method 3: Attempting to get session through provider sign-in");
-      // This is a last resort and will redirect the user again
-      
-      // Clean up the URL and show a toast to explain the situation
-      if (window.history && window.history.replaceState) {
-        window.history.replaceState(null, document.title, '/auth');
-      }
-      
-      // Show a user-friendly error with recovery options
-      toast({
-        title: "Authentication Session Error",
-        description: "Having trouble establishing your session. Please try signing in again.",
-        variant: "destructive",
-      });
-      
-      return null;
     } catch (err) {
-      console.error("Exception during authentication:", err);
+      console.error("Exception during code exchange:", err);
     }
   } 
   
-  // Method 4: If we still don't have a session, try checking for direct tokens in the hash
+  // If we still don't have a session, try checking for direct tokens in the hash
+  // Define hashParams here so it's available in this scope
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
   const access_token = hashParams.get('access_token');
   const refresh_token = hashParams.get('refresh_token');
   
   if (access_token && refresh_token) {
-    console.log("Method 4: Found direct tokens in hash fragment");
+    console.log("Found direct tokens in hash fragment, attempting to use them");
     try {
       const { data, error } = await supabase.auth.setSession({
         access_token,

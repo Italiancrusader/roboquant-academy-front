@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -80,8 +79,8 @@ export const useLesson = (
       const { data, error } = await supabase
         .from('enrollments')
         .select('id')
-        .eq('user_id', user.id as any)
-        .eq('course_id', courseId as any)
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
         .single();
         
       if (error) return false;
@@ -107,22 +106,12 @@ export const useLesson = (
           const { data: lessonData, error: lessonError } = await supabase
             .from('lessons')
             .select('*')
-            .eq('id', lessonId as any)
-            .eq('course_id', courseId as any)
+            .eq('id', lessonId)
+            .eq('course_id', courseId)
             .single();
 
           if (lessonError) throw lessonError;
-          
-          if (lessonData) {
-            const typedLesson: Lesson = {
-              id: lessonData.id || '',
-              title: lessonData.title || '',
-              description: lessonData.description,
-              video_url: lessonData.video_url,
-              sort_order: lessonData.sort_order || 0
-            };
-            setLesson(typedLesson);
-          }
+          setLesson(lessonData);
         }
 
         // Record that the user accessed this lesson (skip for admins if not enrolled)
@@ -132,9 +121,9 @@ export const useLesson = (
             const { data: existingProgress } = await supabase
               .from('progress')
               .select('id')
-              .eq('user_id', user.id as any)
-              .eq('lesson_id', lessonId as any)
-              .eq('course_id', courseId as any);
+              .eq('user_id', user.id)
+              .eq('lesson_id', lessonId)
+              .eq('course_id', courseId);
             
             if (!existingProgress || existingProgress.length === 0) {
               // Insert new record with all required fields
@@ -147,15 +136,15 @@ export const useLesson = (
                   last_accessed_at: new Date().toISOString(),
                   last_position_seconds: 0,
                   completed: false
-                } as any);
+                });
             } else {
               // Update existing record - only update the timestamp
               await supabase
                 .from('progress')
-                .update({ last_accessed_at: new Date().toISOString() } as any)
-                .eq('user_id', user.id as any)
-                .eq('lesson_id', lessonId as any)
-                .eq('course_id', courseId as any);
+                .update({ last_accessed_at: new Date().toISOString() })
+                .eq('user_id', user.id)
+                .eq('lesson_id', lessonId)
+                .eq('course_id', courseId);
             }
           } catch (progressError) {
             // Only log the error without showing a toast
@@ -167,8 +156,8 @@ export const useLesson = (
         const { data: allLessons, error: lessonsError } = await supabase
           .from('lessons')
           .select('id, title, sort_order, description, video_url')
-          .eq('course_id', courseId as any)
-          .eq('is_published', true as any)
+          .eq('course_id', courseId)
+          .eq('is_published', true)
           .order('sort_order', { ascending: true });
 
         if (lessonsError) throw lessonsError;
@@ -178,36 +167,14 @@ export const useLesson = (
           
           if (currentIndex > 0) {
             // Get previous lesson
-            const prevLessonData = allLessons[currentIndex - 1];
-            if (prevLessonData) {
-              setPrevLesson({
-                id: prevLessonData.id || '',
-                title: prevLessonData.title || '',
-                description: prevLessonData.description,
-                video_url: prevLessonData.video_url,
-                sort_order: prevLessonData.sort_order || 0
-              });
-            } else {
-              setPrevLesson(null);
-            }
+            setPrevLesson(allLessons[currentIndex - 1]);
           } else {
             setPrevLesson(null);
           }
 
           if (currentIndex < allLessons.length - 1) {
             // Get next lesson
-            const nextLessonData = allLessons[currentIndex + 1];
-            if (nextLessonData) {
-              setNextLesson({
-                id: nextLessonData.id || '',
-                title: nextLessonData.title || '',
-                description: nextLessonData.description,
-                video_url: nextLessonData.video_url,
-                sort_order: nextLessonData.sort_order || 0
-              });
-            } else {
-              setNextLesson(null);
-            }
+            setNextLesson(allLessons[currentIndex + 1]);
           } else {
             setNextLesson(null);
           }
@@ -217,19 +184,13 @@ export const useLesson = (
         const { data: attachmentsData, error: attachmentsError } = await supabase
           .from('lesson_attachments')
           .select('*')
-          .eq('lesson_id', lessonId as any);
+          .eq('lesson_id', lessonId);
           
         if (attachmentsError) throw attachmentsError;
         
         // Make sure we're setting the correct type for attachments
         if (attachmentsData) {
-          const typedAttachments: Attachment[] = attachmentsData.map(attachment => ({
-            id: attachment.id || '',
-            name: attachment.name || '',
-            file_url: attachment.file_url || '',
-            type: attachment.type || ''
-          }));
-          setAttachments(typedAttachments);
+          setAttachments(attachmentsData as Attachment[]);
         } else {
           setAttachments([]);
         }

@@ -44,7 +44,7 @@ const ContactForm: React.FC = () => {
         content_category: 'contact'
       });
       
-      // Save to Supabase - use correct types according to database schema
+      // Save to Supabase
       const { error: supabaseError } = await supabase
         .from('contact_submissions')
         .insert({
@@ -52,7 +52,7 @@ const ContactForm: React.FC = () => {
           email: data.email,
           subject: data.subject,
           message: data.message,
-        } as any); // Type assertion to bypass TS error since the generated types might be incorrect
+        });
       
       if (supabaseError) throw supabaseError;
       

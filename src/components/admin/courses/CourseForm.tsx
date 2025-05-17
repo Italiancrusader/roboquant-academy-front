@@ -82,8 +82,8 @@ const CourseForm = ({ editingCourse, onSuccess, onCancel }: CourseFormProps) => 
         // Update existing course
         const { error } = await supabase
           .from('courses')
-          .update(courseData as any) // Type assertion to bypass TS error
-          .eq('id', editingCourse.id as any); // Type assertion
+          .update(courseData)
+          .eq('id', editingCourse.id);
         
         if (error) throw error;
         
@@ -93,10 +93,7 @@ const CourseForm = ({ editingCourse, onSuccess, onCancel }: CourseFormProps) => 
         });
       } else {
         // Create new course
-        const { data, error } = await supabase
-          .from('courses')
-          .insert(courseData as any) // Type assertion to bypass TS error
-          .select();
+        const { data, error } = await supabase.from('courses').insert(courseData).select();
         
         if (error) throw error;
         

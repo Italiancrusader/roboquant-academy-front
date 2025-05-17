@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -43,33 +42,26 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
         const { data: moduleLessons, error: fetchError } = await supabase
           .from('lessons')
           .select('id')
-          .eq('module_id', moduleId as any);
+          .eq('module_id', moduleId);
         
         if (fetchError) throw fetchError;
         
         // Delete all lessons in the module
         if (moduleLessons && moduleLessons.length > 0) {
-          // Safely extract lesson IDs with type checking
-          const lessonIds = moduleLessons
-            .filter((lesson): lesson is { id: string } => 
-              lesson && typeof lesson === 'object' && 'id' in lesson)
-            .map(lesson => lesson.id);
+          const lessonIds = moduleLessons.map(lesson => lesson.id);
+          const { error: deleteError } = await supabase
+            .from('lessons')
+            .delete()
+            .in('id', lessonIds);
           
-          if (lessonIds.length > 0) {
-            const { error: deleteError } = await supabase
-              .from('lessons')
-              .delete()
-              .in('id', lessonIds as any[]);
-            
-            if (deleteError) throw deleteError;
-          }
+          if (deleteError) throw deleteError;
         }
         
         // Delete the module
         const { error } = await supabase
           .from('modules')
           .delete()
-          .eq('id', moduleId as any);
+          .eq('id', moduleId);
         
         if (error) throw error;
         
@@ -103,15 +95,15 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
       // Swap sort orders
       const { error: error1 } = await supabase
         .from('modules')
-        .update({ sort_order: targetModule.sort_order } as any)
-        .eq('id', currentModule.id as any);
+        .update({ sort_order: targetModule.sort_order })
+        .eq('id', currentModule.id);
       
       if (error1) throw error1;
       
       const { error: error2 } = await supabase
         .from('modules')
-        .update({ sort_order: currentModule.sort_order } as any)
-        .eq('id', targetModule.id as any);
+        .update({ sort_order: currentModule.sort_order })
+        .eq('id', targetModule.id);
       
       if (error2) throw error2;
       
@@ -163,7 +155,7 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
         const { error } = await supabase
           .from('lessons')
           .delete()
-          .eq('id', lessonId as any);
+          .eq('id', lessonId);
         
         if (error) throw error;
         
@@ -201,15 +193,15 @@ const ModuleList = ({ courseId, modules, lessons, onRefresh }: ModuleListProps) 
       // Swap sort orders
       const { error: error1 } = await supabase
         .from('lessons')
-        .update({ sort_order: targetLesson.sort_order } as any)
-        .eq('id', currentLesson.id as any);
+        .update({ sort_order: targetLesson.sort_order })
+        .eq('id', currentLesson.id);
       
       if (error1) throw error1;
       
       const { error: error2 } = await supabase
         .from('lessons')
-        .update({ sort_order: currentLesson.sort_order } as any)
-        .eq('id', targetLesson.id as any);
+        .update({ sort_order: currentLesson.sort_order })
+        .eq('id', targetLesson.id);
       
       if (error2) throw error2;
       

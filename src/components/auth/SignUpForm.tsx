@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import GoogleButton from './GoogleButton';
-import { Separator } from '@/components/ui/separator';
 
 export interface SignUpFormProps {
   isLoading: boolean;
@@ -19,7 +17,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsL
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp } = useAuth();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,19 +30,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsL
       console.error("Sign up error:", error);
       setAuthError(error.message || 'Failed to create account');
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setAuthError(null);
-    setIsLoading(true);
-    try {
-      await signInWithGoogle();
-      // OAuth flow will redirect, no need to handle navigation here
-    } catch (error: any) {
-      console.error("Google sign in error:", error);
-      setAuthError(error.message || 'Failed to sign in with Google');
       setIsLoading(false);
     }
   };
@@ -107,17 +92,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsL
         >
           {isLoading ? "Creating account..." : "Create Account"}
         </Button>
-        
-        <div className="flex items-center w-full my-2">
-          <Separator className="flex-grow" />
-          <span className="px-2 text-xs text-muted-foreground">OR</span>
-          <Separator className="flex-grow" />
-        </div>
-        
-        <GoogleButton 
-          onClick={handleGoogleSignIn} 
-          isLoading={isLoading} 
-        />
       </CardFooter>
     </form>
   );

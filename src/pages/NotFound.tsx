@@ -6,7 +6,7 @@ import { Home, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { handleHashTokens, ensureCodeVerifierForPKCE } from '@/contexts/auth/auth-utils';
+import { handleHashTokens } from '@/contexts/auth/auth-utils';
 
 const NotFound = () => {
   // Get the current domain and path
@@ -23,43 +23,56 @@ const NotFound = () => {
     // Attempt to recover the session if this is an OAuth callback
     const attemptSessionRecovery = async () => {
       if (isOAuthCallback) {
-        console.log("Detected OAuth callback on 404 page - attempting session recovery and redirect");
+        console.log("Detected OAuth callback on 404 page - attempting session recovery");
         
         try {
           // Extract the code and state from the URL if present
           const params = new URLSearchParams(window.location.search);
           const code = params.get('code');
           const state = params.get('state');
+          const accessToken = params.get('access_token');
           
-          if (code && state) {
-            console.log("OAuth parameters detected, redirecting to /auth with parameters");
+          if ((code && state) || accessToken) {
+            console.log("OAuth parameters detected, attempting to exchange for session");
             
-            // Ensure the code verifier is available before redirecting
-            ensureCodeVerifierForPKCE(code, state);
+            // Try to recover the session from the URL
+            const session = await handleHashTokens();
             
-            // Special handling for callback URLs - redirect to /auth with the same params
-            const authUrl = `/auth${window.location.search}`;
-            navigate(authUrl, { replace: true });
-            return;
-          }
-          
-          // If no code/state or other issue, try to handle hash tokens
-          const session = await handleHashTokens();
-          if (session) {
-            console.log("Successfully recovered session from hash tokens");
-            navigate('/dashboard', { replace: true });
-          } else {
-            console.log("Could not recover session, redirecting to /auth");
-            navigate('/auth', { replace: true });
+            if (session) {
+              console.log("Successfully recovered session from OAuth callback");
+              toast({
+                title: "Authentication successful",
+                description: "You have been successfully signed in.",
+              });
+              navigate('/dashboard', { replace: true });
+              return;
+            } 
+            
+            // If no session, try to manually handle the callback using the code exchange
+            if (code && state) {
+              try {
+                const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+                
+                if (error) {
+                  throw error;
+                }
+                
+                if (data.session) {
+                  console.log("Successfully exchanged code for session");
+                  toast({
+                    title: "Authentication successful",
+                    description: "You have been successfully signed in.",
+                  });
+                  navigate('/dashboard', { replace: true });
+                  return;
+                }
+              } catch (err) {
+                console.error("Failed to exchange code for session:", err);
+              }
+            }
           }
         } catch (error) {
           console.error("Error recovering from OAuth callback:", error);
-          toast({
-            title: "Authentication Error",
-            description: "Failed to process authentication. Please try signing in again.",
-            variant: "destructive",
-          });
-          navigate('/auth', { replace: true });
         }
       }
     };
@@ -83,7 +96,12 @@ const NotFound = () => {
               <AlertTitle>Authentication Redirect Issue</AlertTitle>
               <AlertDescription>
                 <p className="mb-2">This appears to be an OAuth callback after Google sign-in.</p>
-                <p className="mb-2">Redirecting you to the authentication page...</p>
+                <p className="mb-2">Try these steps to resolve the issue:</p>
+                <ol className="list-decimal pl-5 space-y-1 mb-4">
+                  <li>Make sure your application is deployed to the domain configured in Supabase</li>
+                  <li>Visit the homepage directly at <a href="/" className="underline">https://{currentDomain}/</a></li>
+                  <li>Try signing in again after confirming the site is properly deployed</li>
+                </ol>
               </AlertDescription>
             </Alert>
           )}

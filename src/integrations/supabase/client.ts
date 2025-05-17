@@ -9,37 +9,25 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Custom storage implementation with extra robustness for PKCE flow
+// Custom storage implementation that logs operations for debugging
 const customStorage = typeof window !== 'undefined' ? {
   getItem: (key: string) => {
-    try {
-      const item = localStorage.getItem(key);
-      console.log(`[PKCE Debug] Getting ${key} from storage`, item ? "found" : "not found");
-      return item;
-    } catch (error) {
-      console.error(`[PKCE Debug] Error getting ${key} from storage:`, error);
-      return null;
-    }
+    const item = localStorage.getItem(key);
+    console.log(`[PKCE Debug] Getting ${key} from storage`, item ? "found" : "not found");
+    return item;
   },
   setItem: (key: string, value: string) => {
-    try {
-      console.log(`[PKCE Debug] Setting ${key} in storage`);
-      localStorage.setItem(key, value);
-    } catch (error) {
-      console.error(`[PKCE Debug] Error setting ${key} in storage:`, error);
-    }
+    console.log(`[PKCE Debug] Setting ${key} in storage`);
+    localStorage.setItem(key, value);
   },
   removeItem: (key: string) => {
-    try {
-      console.log(`[PKCE Debug] Removing ${key} from storage`);
-      localStorage.removeItem(key);
-    } catch (error) {
-      console.error(`[PKCE Debug] Error removing ${key} from storage:`, error);
-    }
+    console.log(`[PKCE Debug] Removing ${key} from storage`);
+    localStorage.removeItem(key);
   },
 } : undefined;
 
-// Create the Supabase client with explicit storage configuration for PKCE
+// Create the Supabase client with explicit storage configuration to ensure
+// PKCE flow works correctly with proper storage of code verifiers
 export const supabase = createClient<Database>(
   SUPABASE_URL, 
   SUPABASE_PUBLISHABLE_KEY,
@@ -49,18 +37,7 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      storage: customStorage,
-      debug: true,
-      cookieOptions: {
-        sameSite: 'lax',
-        path: '/'
-      }
-    },
-    // Add global type cast function to help with TypeScript errors
-    global: {
-      headers: {
-        'X-TypesafeAPI': 'true'
-      }
+      storage: customStorage
     }
   }
 );
@@ -73,34 +50,15 @@ if (typeof window !== 'undefined') {
     "URL:", window.location.href);
   
   // Check for auth parameters in URL early
-  const urlParams = new URLSearchParams(window.location.search);
-  const hasCode = urlParams.has('code');
-  const hasState = urlParams.has('state');
-  
-  if (hasCode && hasState) {
+  if (window.location.href.includes('code=') && window.location.href.includes('state=')) {
     console.log("[Supabase Auth] Auth parameters detected in URL - PKCE flow started");
     
-    // Set code verifier in storage if it's missing
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
+    // Force reload code verifier from storage to ensure it's available
+    const codeVerifier = localStorage.getItem('supabase.auth.code_verifier');
+    console.log("[Supabase Auth] Code verifier available:", !!codeVerifier);
     
-    if (code && state) {
-      // Storage key for the specific Supabase project
-      const storageKey = 'sb-gqnzsnzolqvsalyzbhmq-auth-code-verifier';
-      
-      // Force reload code verifier from storage to ensure it's available
-      const codeVerifier = localStorage.getItem(storageKey);
-      console.log("[Supabase Auth] Code verifier available:", !!codeVerifier);
-      
-      if (!codeVerifier) {
-        console.warn("[Supabase Auth] No code verifier found in storage. Creating fallback verifier.");
-        
-        // Try to create a fallback code verifier using state as seed
-        // The verifier needs to be at least 43 characters long
-        const fallbackVerifier = state.padEnd(43, state);
-        localStorage.setItem(storageKey, fallbackVerifier);
-        console.log("[Supabase Auth] Created fallback code verifier from state");
-      }
+    if (!codeVerifier) {
+      console.warn("[Supabase Auth] No code verifier found in storage. Auth may fail.");
     }
   }
 
@@ -115,32 +73,6 @@ if (typeof window !== 'undefined') {
       });
     });
   }
-  
-  // Handle PKCE auth errors better
-  window.addEventListener('unhandledrejection', function(event) {
-    const error = event.reason;
-    if (error && typeof error === 'object' && 'message' in error) {
-      if (String(error.message).toLowerCase().includes('pkce') || 
-          String(error.message).toLowerCase().includes('code verifier') ||
-          String(error.message).toLowerCase().includes('flow state')) {
-        console.error("[Supabase Auth] PKCE auth error detected:", error);
-        
-        // Clear problematic storage items
-        try {
-          localStorage.removeItem('sb-gqnzsnzolqvsalyzbhmq-auth-code-verifier');
-          localStorage.removeItem('sb-gqnzsnzolqvsalyzbhmq-auth-flow-state');
-          console.log("[Supabase Auth] Cleared problematic auth storage items");
-          
-          // Redirect to auth page after clearing storage
-          if (window.location.pathname !== '/auth') {
-            window.location.href = '/auth';
-          }
-        } catch (e) {
-          console.error("[Supabase Auth] Could not clear storage:", e);
-        }
-      }
-    }
-  });
 }
 
 // Log initialization 
