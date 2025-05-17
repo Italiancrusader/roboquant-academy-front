@@ -86,7 +86,12 @@ export const useAuthUsers = (options: UseAuthUsersOptions = {}) => {
           return [];
         }
         
-        return data || [];
+        // Explicitly type cast the response data to our AuthUser type
+        return (data || []).map(user => ({
+          id: user.id as string,
+          email: user.email as string,
+          created_at: user.created_at as string
+        }));
       } catch (error: any) {
         console.error('Unexpected error:', error);
         toast({

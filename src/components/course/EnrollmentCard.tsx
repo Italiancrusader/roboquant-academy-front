@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,7 +59,7 @@ const EnrollmentCard = ({
               user_id: userId,
               course_id: courseId,
               payment_status: 'completed'
-            });
+            } as any);
             
           if (enrollError) {
             console.error("Enrollment error:", enrollError);
