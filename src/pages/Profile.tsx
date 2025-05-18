@@ -11,9 +11,13 @@ import Navbar from '@/components/Navbar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail, Phone, Globe, Briefcase, MapPin, AlertCircle, Shield, Key } from 'lucide-react';
+import { Loader2, Mail, Phone, Globe, Briefcase, MapPin, Shield, Key } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 // Update interface to include all fields used in the component
 interface Profile {
@@ -29,6 +33,18 @@ interface Profile {
   updated_at: string;
 }
 
+// Schema for password change
+const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(6, "Current password is required"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(8, "Password confirmation is required"),
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>;
+
 const Profile = () => {
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -41,8 +57,19 @@ const Profile = () => {
   const [location, setLocation] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const isMobile = useIsMobile();
+
+  // Form for password change
+  const passwordChangeForm = useForm<PasswordChangeFormValues>({
+    resolver: zodResolver(passwordChangeSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    },
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -145,6 +172,51 @@ const Profile = () => {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async (values: PasswordChangeFormValues) => {
+    if (!user) return;
+    
+    setIsChangingPassword(true);
+    try {
+      // First, verify the current password by trying to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email!,
+        password: values.currentPassword,
+      });
+      
+      if (signInError) {
+        toast({
+          title: "Password verification failed",
+          description: "The current password you entered is incorrect.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // If sign-in successful, update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: values.newPassword,
+      });
+      
+      if (updateError) throw updateError;
+      
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed successfully.",
+      });
+      
+      // Reset form
+      passwordChangeForm.reset();
+    } catch (error: any) {
+      toast({
+        title: "Error changing password",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -348,68 +420,75 @@ const Profile = () => {
                   <CardDescription>Manage your account security settings</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <Shield className="h-6 w-6 text-primary" />
+                  {/* Password Change Form */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <Shield className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-medium">Password Management</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Update your password to keep your account secure
+                        </p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <h4 className="font-medium">Change Password</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Update your password to keep your account secure
-                      </p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      className="ml-auto"
-                      disabled={true}
-                    >
-                      <Key className="mr-2 h-4 w-4" />
-                      Coming Soon
-                    </Button>
-                  </div>
 
-                  <Separator />
-
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <AlertCircle className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="font-medium">Two-Factor Authentication</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Add an extra layer of security to your account
-                      </p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      className="ml-auto"
-                      disabled={true}
-                    >
-                      Coming Soon
-                    </Button>
+                    <Form {...passwordChangeForm}>
+                      <form onSubmit={passwordChangeForm.handleSubmit(handlePasswordChange)} className="space-y-4">
+                        <FormField
+                          control={passwordChangeForm.control}
+                          name="currentPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Current Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Enter current password" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={passwordChangeForm.control}
+                          name="newPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>New Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Enter new password" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={passwordChangeForm.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Confirm New Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Confirm new password" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="submit" className="w-full" disabled={isChangingPassword}>
+                          {isChangingPassword ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Updating Password...
+                            </>
+                          ) : "Change Password"}
+                        </Button>
+                      </form>
+                    </Form>
                   </div>
 
                   <Separator />
                   
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <Globe className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="font-medium">Active Sessions</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Manage all devices where you're currently logged in
-                      </p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      className="ml-auto"
-                      disabled={true}
-                    >
-                      Coming Soon
-                    </Button>
-                  </div>
-
                   <div className="mt-6 pt-6 border-t">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
