@@ -24,7 +24,7 @@ export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
         event_label: 'Apply Now Button'
       });
       
-      // Navigate to quiz page
+      // Navigate directly to quiz page - the quiz page now shows Typeform immediately
       navigate('/quiz');
     } catch (error) {
       console.error('Error navigating to quiz:', error);

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Check, ArrowRight, Star } from 'lucide-react';
+import { Check, ArrowRight, Star, Loader2 } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { useNavigate } from 'react-router-dom';
 import { trackEvent } from '@/utils/googleAnalytics';
@@ -21,7 +21,7 @@ const PricingSection: React.FC = () => {
         event_label: 'Apply Button'
       });
 
-      // Navigate to quiz
+      // Navigate directly to quiz - Typeform is shown immediately
       navigate('/quiz');
     } catch (error) {
       console.error("Error navigating to quiz:", error);
@@ -100,7 +100,7 @@ const PricingSection: React.FC = () => {
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
-                    <ArrowRight className="mr-2 h-5 w-5 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Processing...
                   </span>
                 ) : (

@@ -23,7 +23,7 @@ const CTA: React.FC = () => {
         event_label: 'Apply Now Button'
       });
       
-      // Navigate to quiz page
+      // Navigate directly to quiz page - Typeform is shown immediately
       navigate('/quiz');
     } catch (error) {
       console.error('Error navigating to quiz:', error);

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Loader2 } from 'lucide-react';
@@ -22,7 +23,7 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialo
         event_label: 'Hero Apply Now Button'
       });
       
-      // Navigate to quiz
+      // Navigate directly to quiz - TypeForm is shown immediately
       navigate('/quiz');
     } catch (error) {
       console.error('Error navigating to quiz:', error);

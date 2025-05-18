@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -5,7 +6,6 @@ import { toast } from '@/components/ui/use-toast';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { trackLead } from '@/utils/metaPixel';
 import { submitLead } from '@/services/leadService';
-import LeadForm from '@/components/LeadForm';
 import { LoaderCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
@@ -15,7 +15,7 @@ import { TypeformEmbed } from '@/components/EnrollmentSurvey';
 const TYPEFORM_ID = "Mxpdceu1";
 
 const Quiz = () => {
-  const [step, setStep] = useState<'form' | 'questions' | 'completed'>('form');
+  const [step, setStep] = useState<'questions' | 'completed'>('questions');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userInfo, setUserInfo] = useState({
     firstName: '',
@@ -25,76 +25,36 @@ const Quiz = () => {
   });
   const navigate = useNavigate();
   
-  const handleLeadSubmit = async (values: { firstName: string, lastName: string, email: string, phone: string }) => {
-    setIsSubmitting(true);
-    
-    try {
-      // Track email submission event
-      trackEvent('lead_email_submit', {
-        event_category: 'Quiz',
-        event_label: values.email
-      });
-      
-      trackLead({
-        content_name: 'Quiz Lead',
-        email: values.email
-      });
-      
-      // Save lead in Supabase using our service
-      const fullName = `${values.firstName} ${values.lastName}`;
-      const result = await submitLead({
-        name: fullName,
-        email: values.email.toLowerCase().trim(),
-        phone: values.phone,
-        source: "quiz",
-        leadMagnet: "application_quiz",
-        metadata: { 
-          submission_date: new Date().toISOString(),
-          entry_point: "quiz_page",
-          firstName: values.firstName,
-          lastName: values.lastName
-        }
-      });
-      
-      if (!result.success) {
-        console.warn("Failed to save lead, but continuing to quiz:", result.error);
-      }
-      
-      // Store user info for typeform hidden fields
-      setUserInfo({
-        firstName: values.firstName,
-        lastName: values.lastName,
-        email: values.email,
-        phone: values.phone
-      });
-      
-      // Show success message
-      toast({
-        title: "Success!",
-        description: "Your information has been submitted. Please continue with the survey.",
-        duration: 3000,
-      });
-      
-      // Proceed to questions
-      setStep('questions');
-      console.log('Step changed to questions, will load Typeform now');
-      
-    } catch (error: any) {
-      console.error('Error submitting info:', error);
-      toast({
-        title: "Error",
-        description: error.message || "There was an error saving your information. Please try again.",
-        variant: "destructive",
-        duration: 3000,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  // Track page view when component mounts
+  useEffect(() => {
+    // Track page view with both Google Analytics and gtag
+    trackEvent('quiz_page_view', {
+      event_category: 'Quiz',
+      event_label: 'Quiz Page'
+    });
 
+    // Check for query parameters to show quiz directly
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('apply') === 'true') {
+      navigate('/quiz');
+    }
+  }, [navigate]);
+  
   // Function to handle typeform webhook results
   const handleTypeformSubmit = (data?: any) => {
     console.log('Typeform submitted successfully', data);
+    
+    // Extract user info from typeform responses if available
+    if (data && data.form_response && data.form_response.answers) {
+      // This would need to be customized based on the actual Typeform structure
+      try {
+        // Process any data from Typeform if needed
+        const answers = data.form_response.answers;
+        console.log('Typeform answers:', answers);
+      } catch (error) {
+        console.error('Error processing Typeform data:', error);
+      }
+    }
     
     // Show completed state
     setStep('completed');
@@ -104,8 +64,6 @@ const Quiz = () => {
       event_category: 'Quiz',
       event_label: userInfo.email || 'Unknown'
     });
-    
-    // We don't need to add a redirect here as it's now handled in the TypeformEmbed component
   };
   
   const handleTypeformError = () => {
@@ -171,27 +129,7 @@ const Quiz = () => {
             Apply For RoboQuant Academy
           </h1>
           
-          {step === 'form' ? (
-            <div id="quiz-step-form" className="bg-card p-8 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-semibold mb-6">Let's get started</h2>
-              <p className="mb-8 text-muted-foreground">
-                Please fill in your details below to start the application process and see if you qualify for our program.
-              </p>
-              
-              <LeadForm 
-                onSubmit={handleLeadSubmit}
-                buttonText="Start Survey →"
-                source="quiz"
-                leadMagnet="application_quiz"
-                isSubmitting={isSubmitting}
-                splitName={true}
-              />
-              
-              <p className="text-xs text-center text-muted-foreground mt-6">
-                We respect your privacy and will never share your information with third parties.
-              </p>
-            </div>
-          ) : step === 'completed' ? (
+          {step === 'completed' ? (
             <div id="quiz-step-completed" className="bg-card p-8 rounded-lg shadow-lg text-center">
               <div className="flex justify-center mb-6">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">

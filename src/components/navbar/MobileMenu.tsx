@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -57,7 +58,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         event_label: 'Mobile Apply Now'
       });
       
-      // Navigate to quiz
+      // Navigate directly to quiz page - Typeform is shown immediately
       navigate('/quiz');
     } catch (error) {
       console.error("Error navigating to quiz:", error);
