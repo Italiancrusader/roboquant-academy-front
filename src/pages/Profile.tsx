@@ -11,7 +11,7 @@ import Navbar from '@/components/Navbar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail, Phone, Globe, Briefcase, MapPin, AlertCircle } from 'lucide-react';
+import { Loader2, Mail, Phone, Globe, Briefcase, MapPin, AlertCircle, Shield, Key } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -155,7 +155,7 @@ const Profile = () => {
         <h1 className="text-3xl font-bold gradient-text mb-8">Your Profile</h1>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-3 mb-8">
+          <TabsList className="grid grid-cols-3 mb-8">
             <TabsTrigger value="personal">Personal Info</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
@@ -341,18 +341,99 @@ const Profile = () => {
           </TabsContent>
           
           <TabsContent value="account">
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Security</CardTitle>
-                <CardDescription>Manage your account security settings</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-center p-8 text-muted-foreground">
-                  <AlertCircle className="mr-2 h-4 w-4" />
-                  <p>Password change functionality coming soon.</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid gap-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Account Security</CardTitle>
+                  <CardDescription>Manage your account security settings</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-primary/10 p-2 rounded-full">
+                      <Shield className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-medium">Change Password</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Update your password to keep your account secure
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="ml-auto"
+                      disabled={true}
+                    >
+                      <Key className="mr-2 h-4 w-4" />
+                      Coming Soon
+                    </Button>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-primary/10 p-2 rounded-full">
+                      <AlertCircle className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-medium">Two-Factor Authentication</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Add an extra layer of security to your account
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="ml-auto"
+                      disabled={true}
+                    >
+                      Coming Soon
+                    </Button>
+                  </div>
+
+                  <Separator />
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-primary/10 p-2 rounded-full">
+                      <Globe className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-medium">Active Sessions</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Manage all devices where you're currently logged in
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="ml-auto"
+                      disabled={true}
+                    >
+                      Coming Soon
+                    </Button>
+                  </div>
+
+                  <div className="mt-6 pt-6 border-t">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                          Sign Out
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            You will need to sign back in to access your account and course content.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => signOut()}>Sign Out</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
