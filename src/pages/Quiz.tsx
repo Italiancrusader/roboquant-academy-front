@@ -8,7 +8,7 @@ import { trackLead } from '@/utils/metaPixel';
 import { submitLead } from '@/services/leadService';
 import { LoaderCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { TypeformEmbed } from '@/components/EnrollmentSurvey';
 
 // Typeform embed ID - using the correct form ID from the URL
@@ -17,6 +17,7 @@ const TYPEFORM_ID = "Mxpdceu1";
 const Quiz = () => {
   const [step, setStep] = useState<'questions' | 'completed'>('questions');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
   const [userInfo, setUserInfo] = useState({
     firstName: '',
     lastName: '',
@@ -24,6 +25,7 @@ const Quiz = () => {
     phone: ''
   });
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Track page view when component mounts
   useEffect(() => {
@@ -38,6 +40,9 @@ const Quiz = () => {
     if (urlParams.get('apply') === 'true') {
       navigate('/quiz');
     }
+
+    // Reset redirection state when component mounts
+    setHasRedirected(false);
   }, [navigate]);
   
   // Function to handle typeform webhook results
@@ -106,18 +111,29 @@ const Quiz = () => {
     console.log('Current step:', step);
   }, [step]);
   
+  // Prevent fallback redirect if we're already on book-call or checkout page
+  useEffect(() => {
+    // Clear any automatic redirection if we're already on book-call
+    // This prevents the redirect loop issue
+    if (location.pathname === '/book-call' || location.pathname === '/checkout') {
+      console.log('Already on target page, cancelling any pending redirects');
+      setHasRedirected(true);
+    }
+  }, [location.pathname]);
+  
   // Implement a fallback redirect for when the form is completed
   useEffect(() => {
-    if (step === 'completed') {
+    if (step === 'completed' && !hasRedirected) {
       // Add a fallback redirect timer as a safety measure
       const redirectTimeout = setTimeout(() => {
         console.log('Fallback redirect to book-call');
+        setHasRedirected(true);
         navigate('/book-call');
       }, 3000);
       
       return () => clearTimeout(redirectTimeout);
     }
-  }, [step, navigate]);
+  }, [step, navigate, hasRedirected]);
   
   return (
     <div className="min-h-screen bg-background flex flex-col">

@@ -27,6 +27,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [redirectPath, setRedirectPath] = useState<string | null>(null);
+  const [hasRedirected, setHasRedirected] = useState(false);
   const navigate = useNavigate();
   
   // Simulate loading progress
@@ -47,8 +48,11 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
   
   // Handle redirection after submission
   useEffect(() => {
-    if (redirectPath && !isSubmitting) {
-      // Add a small delay to ensure all processing is complete
+    if (redirectPath && !isSubmitting && !hasRedirected) {
+      // Mark as redirected to prevent multiple redirects
+      setHasRedirected(true);
+      
+      // Add a delay to ensure all processing is complete
       const redirectTimer = setTimeout(() => {
         console.log(`Navigating to: ${redirectPath}`);
         navigate(redirectPath);
@@ -56,7 +60,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
       
       return () => clearTimeout(redirectTimer);
     }
-  }, [redirectPath, isSubmitting, navigate]);
+  }, [redirectPath, isSubmitting, navigate, hasRedirected]);
   
   useEffect(() => {
     const container = document.getElementById('typeform-container');
@@ -240,7 +244,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
                   
                   // Set a fallback redirection after a longer delay
                   setTimeout(() => {
-                    if (!redirectPath) {
+                    if (!redirectPath && !hasRedirected) {
                       console.log('Using fallback redirect to checkout');
                       setRedirectPath('/checkout');
                     }
@@ -263,7 +267,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
       console.error('Error setting up Typeform:', error);
       onError();
     }
-  }, [typeformId, userInfo, onSubmit, onError, navigate]);
+  }, [typeformId, userInfo, onSubmit, onError, navigate, redirectPath, hasRedirected]);
   
   return (
     <>
