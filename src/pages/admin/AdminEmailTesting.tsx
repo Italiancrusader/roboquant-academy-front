@@ -12,7 +12,7 @@ const AdminEmailTesting = () => {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Email Testing</h1>
             <p className="text-muted-foreground">
-              Send test emails to verify templates and email delivery.
+              Send test purchase confirmation emails to verify delivery.
             </p>
           </div>
         </div>

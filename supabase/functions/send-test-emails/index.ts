@@ -1,11 +1,7 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
-import { 
-  purchaseConfirmationTemplate, 
-  courseCompletionEnhancedTemplate,
-  abandonedCartTemplate,
-  reEngagementTemplate
-} from "../utils/email-templates-enhanced.ts";
+import { purchaseConfirmationTemplate } from "../utils/email-templates-enhanced.ts";
 import { generateOrderNumber, formatDate } from "../utils/emailUtils.ts";
 
 const corsHeaders = {
@@ -43,7 +39,7 @@ serve(async (req) => {
     const resend = new Resend(resendApiKey);
     
     // Parse request body
-    const { type = "all", email = "ventos99@gmail.com" } = await req.json();
+    const { type = "purchase", email = "ventos99@gmail.com" } = await req.json();
     const results = [];
     
     console.log(`Sending ${type} email(s) to ${email}`);
@@ -52,154 +48,38 @@ serve(async (req) => {
     const fromEmail = "Roboquant <team@updates.roboquant.ai>";
     
     // Purchase Confirmation Test
-    if (type === "purchase" || type === "all") {
-      try {
-        console.log("Sending purchase confirmation email...");
-        const data = await resend.emails.send({
-          from: fromEmail,
-          to: [email],
-          subject: `[TEST] RoboQuant Academy Purchase Confirmation`,
-          html: purchaseConfirmationTemplate({
-            orderNumber: generateOrderNumber(),
-            customerName: "John Doe",
-            customerEmail: email,
-            courseTitle: "RoboQuant Academy Premium Course",
-            courseCoverImage: "https://roboquant.academy/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png",
-            purchaseDate: formatDate(new Date()),
-            purchaseAmount: 150000,
-            currency: "USD"
-          })
-        });
-        
-        console.log("Purchase email sent, response:", data);
-        
-        results.push({
-          type: "purchase",
-          success: true,
-          email_id: data.id
-        });
-        
-        // Add delay between requests to avoid rate limiting
-        await delay(600);
-      } catch (error) {
-        console.error("Purchase email error:", error);
-        results.push({
-          type: "purchase",
-          success: false,
-          error: error.message || String(error)
-        });
-      }
-    }
-    
-    // Course Completion Test
-    if (type === "completion" || type === "all") {
-      try {
-        console.log("Sending course completion email...");
-        const data = await resend.emails.send({
-          from: fromEmail,
-          to: [email],
-          subject: `[TEST] Congratulations on Completing Your Course!`,
-          html: courseCompletionEnhancedTemplate(
-            "John Doe",
-            "RoboQuant Academy Premium Course",
-            formatDate(new Date())
-          )
-        });
-        
-        console.log("Completion email sent, response:", data);
-        
-        results.push({
-          type: "completion",
-          success: true,
-          email_id: data.id
-        });
-        
-        // Add delay between requests to avoid rate limiting
-        await delay(600);
-      } catch (error) {
-        console.error("Completion email error:", error);
-        results.push({
-          type: "completion",
-          success: false,
-          error: error.message || String(error)
-        });
-      }
-    }
-    
-    // Abandoned Cart Test
-    if (type === "cart" || type === "all") {
-      try {
-        console.log("Sending abandoned cart email...");
-        const data = await resend.emails.send({
-          from: fromEmail,
-          to: [email],
-          subject: `[TEST] Complete Your RoboQuant Academy Enrollment`,
-          html: abandonedCartTemplate(
-            "John Doe",
-            "RoboQuant Academy Premium Course",
-            "https://roboquant.academy/checkout/test"
-          )
-        });
-        
-        console.log("Cart email sent, response:", data);
-        
-        results.push({
-          type: "cart",
-          success: true,
-          email_id: data.id
-        });
-        
-        // Add delay between requests to avoid rate limiting
-        await delay(600);
-      } catch (error) {
-        console.error("Cart email error:", error);
-        results.push({
-          type: "cart",
-          success: false,
-          error: error.message || String(error)
-        });
-      }
-    }
-    
-    // Re-engagement Test
-    if (type === "reengagement" || type === "all") {
-      try {
-        console.log("Sending re-engagement email...");
-        const data = await resend.emails.send({
-          from: fromEmail,
-          to: [email],
-          subject: `[TEST] We Miss You at RoboQuant Academy`,
-          html: reEngagementTemplate(
-            "John Doe",
-            formatDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
-            [
-              {
-                title: "Advanced Trading Strategies",
-                url: "https://roboquant.academy/courses/advanced-trading-strategies"
-              },
-              {
-                title: "Risk Management Masterclass",
-                url: "https://roboquant.academy/courses/risk-management"
-              }
-            ]
-          )
-        });
-        
-        console.log("Re-engagement email sent, response:", data);
-        
-        results.push({
-          type: "reengagement",
-          success: true,
-          email_id: data.id
-        });
-      } catch (error) {
-        console.error("Re-engagement email error:", error);
-        results.push({
-          type: "reengagement",
-          success: false,
-          error: error.message || String(error)
-        });
-      }
+    try {
+      console.log("Sending purchase confirmation email...");
+      const data = await resend.emails.send({
+        from: fromEmail,
+        to: [email],
+        subject: `[TEST] RoboQuant Academy Purchase Confirmation`,
+        html: purchaseConfirmationTemplate({
+          orderNumber: generateOrderNumber(),
+          customerName: "John Doe",
+          customerEmail: email,
+          courseTitle: "RoboQuant Academy Premium Course",
+          courseCoverImage: "https://roboquant.academy/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png",
+          purchaseDate: formatDate(new Date()),
+          purchaseAmount: 15000,
+          currency: "USD"
+        })
+      });
+      
+      console.log("Purchase email sent, response:", data);
+      
+      results.push({
+        type: "purchase",
+        success: true,
+        email_id: data.id
+      });
+    } catch (error) {
+      console.error("Purchase email error:", error);
+      results.push({
+        type: "purchase",
+        success: false,
+        error: error.message || String(error)
+      });
     }
     
     console.log("Email sending complete. Results:", results);
