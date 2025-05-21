@@ -107,7 +107,7 @@ serve(async (req) => {
       throw emailError;
     }
     
-    console.log(`�� Purchase confirmation email sent successfully: ${emailData?.id}`);
+    console.log(`✅ Purchase confirmation email sent successfully: ${emailData?.id}`);
     
     return new Response(JSON.stringify({ 
       success: true,
