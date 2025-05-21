@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@1.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.40.0";
@@ -70,7 +71,7 @@ serve(async (req) => {
     // Prepare email details
     const email = userData.user?.email;
     const firstName = userProfile?.first_name || userData.user?.email?.split('@')[0] || 'Student';
-    const courseCoverImage = courseData.cover_image;
+    const courseCoverImage = "https://p4uhxduk6ms8wmoc.public.blob.vercel-storage.com/roboquant%20%281%29.pdf-QeaP5rnNKRjSPHBW03oXOJ7DveVz7Q.png";
     
     if (!email) {
       throw new Error("User email not found");

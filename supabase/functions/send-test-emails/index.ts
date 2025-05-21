@@ -59,7 +59,7 @@ serve(async (req) => {
           customerName: "John Doe",
           customerEmail: email,
           courseTitle: "RoboQuant Academy Premium Course",
-          courseCoverImage: "https://roboquant.academy/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png",
+          courseCoverImage: "https://p4uhxduk6ms8wmoc.public.blob.vercel-storage.com/roboquant%20%281%29.pdf-QeaP5rnNKRjSPHBW03oXOJ7DveVz7Q.png",
           purchaseDate: formatDate(new Date()),
           purchaseAmount: 15000,
           currency: "USD"

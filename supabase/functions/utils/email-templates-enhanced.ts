@@ -32,8 +32,8 @@ export const purchaseConfirmationTemplate = (details: PurchaseDetails): string =
   } = details;
   
   const formattedPrice = formatPrice(purchaseAmount, currency);
-  // Use a fallback image URL with the full domain to ensure it loads properly
-  const coverImage = courseCoverImage || 'https://roboquant.academy/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png';
+  // Use the provided image URL with absolute path
+  const coverImage = courseCoverImage || 'https://p4uhxduk6ms8wmoc.public.blob.vercel-storage.com/roboquant%20%281%29.pdf-QeaP5rnNKRjSPHBW03oXOJ7DveVz7Q.png';
 
   return `
   <!DOCTYPE html>
