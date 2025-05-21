@@ -184,7 +184,7 @@ export const purchaseConfirmationTemplate = (details: PurchaseDetails): string =
           </div>
         </div>
         
-        <a href="https://roboquant.academy/dashboard" class="button">Go to Dashboard</a>
+        <a href="https://www.roboquant.ai/dashboard" class="button">Go to Dashboard</a>
         
         <p>If you have any questions, please contact our support team at <a href="mailto:info@roboquant.ai">info@roboquant.ai</a>.</p>
       </div>
