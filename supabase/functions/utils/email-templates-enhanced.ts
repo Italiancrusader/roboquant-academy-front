@@ -32,8 +32,8 @@ export const purchaseConfirmationTemplate = (details: PurchaseDetails): string =
   } = details;
   
   const formattedPrice = formatPrice(purchaseAmount, currency);
-  // Use the provided image URL with absolute path
-  const coverImage = courseCoverImage || 'https://p4uhxduk6ms8wmoc.public.blob.vercel-storage.com/roboquant%20%281%29.pdf-QeaP5rnNKRjSPHBW03oXOJ7DveVz7Q.png';
+  // Always use this absolute URL that works in emails
+  const coverImage = "https://p4uhxduk6ms8wmoc.public.blob.vercel-storage.com/roboquant%20%281%29.pdf-QeaP5rnNKRjSPHBW03oXOJ7DveVz7Q.png";
 
   return `
   <!DOCTYPE html>

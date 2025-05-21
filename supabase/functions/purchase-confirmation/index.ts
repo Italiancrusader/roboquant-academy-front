@@ -71,6 +71,7 @@ serve(async (req) => {
     // Prepare email details
     const email = userData.user?.email;
     const firstName = userProfile?.first_name || userData.user?.email?.split('@')[0] || 'Student';
+    // Always use this fixed image URL that works reliably in emails
     const courseCoverImage = "https://p4uhxduk6ms8wmoc.public.blob.vercel-storage.com/roboquant%20%281%29.pdf-QeaP5rnNKRjSPHBW03oXOJ7DveVz7Q.png";
     
     if (!email) {
