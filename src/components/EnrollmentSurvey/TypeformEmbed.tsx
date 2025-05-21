@@ -223,34 +223,32 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
                 isDisqualified 
               });
               
-              // Inform the user about next steps
-              setTimeout(() => {
-                if (isDisqualified) {
-                  toast({
-                    title: "Your Application Has Been Processed",
-                    description: "Check your email for your personalized enrollment options.",
-                  });
-                  setRedirectPath('/checkout');
-                } else if (isQualified) {
-                  toast({
-                    title: "Congratulations! You qualify for a Strategy Call",
-                    description: "Check your email for instructions on scheduling your call.",
-                  });
-                  setRedirectPath('/book-call');
-                } else {
-                  // Default handling - rely on webhook results
-                  // For safety, don't set a redirect path here - wait for webhook or let server decide
-                  console.log('Qualification unclear from client-side data, waiting for webhook decision');
-                  
-                  // Set a fallback redirection after a longer delay
-                  setTimeout(() => {
-                    if (!redirectPath && !hasRedirected) {
-                      console.log('Using fallback redirect to checkout');
-                      setRedirectPath('/checkout');
-                    }
-                  }, 5000); // Longer fallback timeout
-                }
-              }, 2000);
+              // Inform the user about next steps and set redirect path immediately
+              if (isDisqualified) {
+                toast({
+                  title: "Your Application Has Been Processed",
+                  description: "Check your email for your personalized enrollment options.",
+                });
+                setRedirectPath('/checkout');
+              } else if (isQualified) {
+                toast({
+                  title: "Congratulations! You qualify for a Strategy Call",
+                  description: "You'll be redirected to book your call in a moment.",
+                });
+                // Qualified leads go directly to book-call without deposit
+                setRedirectPath('/book-call');
+              } else {
+                // Default handling for unclear qualification
+                console.log('Qualification unclear from client-side data, using default path');
+                
+                // Set fallback path after a delay
+                setTimeout(() => {
+                  if (!redirectPath && !hasRedirected) {
+                    console.log('Using fallback redirect to checkout');
+                    setRedirectPath('/checkout');
+                  }
+                }, 3000);
+              }
             }
           } catch (error) {
             console.error('Error processing Typeform message:', error);
