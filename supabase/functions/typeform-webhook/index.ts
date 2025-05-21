@@ -59,11 +59,65 @@ const handler = async (req: Request): Promise<Response> => {
     const answers = formResponse?.answers || [];
     const hiddenFields = formResponse?.hidden || {};
     
-    // Extract user info from hidden fields
-    const email = hiddenFields.email || "";
-    const firstName = hiddenFields.firstName || "";
-    const lastName = hiddenFields.lastName || "";
-    const phone = hiddenFields.phone || "";
+    // Extract user info from hidden fields or query for Typeform data about the respondent
+    let email = hiddenFields.email || "";
+    let firstName = hiddenFields.firstName || "";
+    let lastName = hiddenFields.lastName || "";
+    let phone = hiddenFields.phone || "";
+    let fullName = hiddenFields.name || "";
+    
+    // If we have a full name but not first/last name, try to split it
+    if (fullName && (!firstName || !lastName)) {
+      const nameParts = fullName.trim().split(' ');
+      if (nameParts.length > 0) {
+        firstName = firstName || nameParts[0] || '';
+        lastName = lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
+      }
+    }
+    
+    // Try to extract contact information from form answers
+    answers.forEach((answer: any) => {
+      const fieldRef = answer.field?.ref || '';
+      
+      // Check for email fields by common identifiers or text patterns
+      if (answer.type === 'email') {
+        email = email || answer.email || '';
+      }
+      else if (answer.type === 'text') {
+        const textValue = answer.text || '';
+        
+        // Check for name fields by common identifiers
+        if (fieldRef.includes('name') || answer.field?.title?.toLowerCase().includes('name')) {
+          if (!fullName) {
+            fullName = textValue;
+            // If we don't have first/last name yet, try to parse it
+            if (!firstName || !lastName) {
+              const nameParts = textValue.trim().split(' ');
+              if (nameParts.length > 0) {
+                firstName = firstName || nameParts[0] || '';
+                lastName = lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
+              }
+            }
+          }
+        }
+        
+        // Check for email fields by common identifiers or text patterns
+        else if ((fieldRef.includes('email') || 
+            answer.field?.title?.toLowerCase().includes('email')) && 
+            textValue.includes('@')) {
+          email = email || textValue;
+        }
+        
+        // Check for phone fields by common identifiers
+        else if (fieldRef.includes('phone') || answer.field?.title?.toLowerCase().includes('phone')) {
+          phone = phone || textValue;
+        }
+      }
+      // Also try to extract phone from phone-typed questions
+      else if (answer.type === 'phone_number') {
+        phone = phone || answer.phone_number || '';
+      }
+    });
     
     // Process the answers and determine qualification
     const processedAnswers = {};
@@ -85,6 +139,10 @@ const handler = async (req: Request): Promise<Response> => {
         value = answer.text || "";
       } else if (answer.type === "number") {
         value = answer.number?.toString() || "";
+      } else if (answer.type === "email") {
+        value = answer.email || "";
+      } else if (answer.type === "phone_number") {
+        value = answer.phone_number || "";
       }
       
       // Store the answer in the processed object
@@ -112,8 +170,8 @@ const handler = async (req: Request): Promise<Response> => {
       }
     });
     
-    // Log the trading capital for debugging
-    console.log("Trading capital extracted:", tradingCapital);
+    // Log the extracted contact information
+    console.log("Contact information extracted:", { email, firstName, lastName, phone, fullName });
     
     // First, check for explicit non-qualifying ranges
     const nonQualifyingCapital = checkNonQualifyingCapital(tradingCapital);
@@ -149,6 +207,51 @@ const handler = async (req: Request): Promise<Response> => {
     // Determine redirect URL based on qualification
     const redirectUrl = qualifiesForCall ? "/book-call" : "/checkout";
     console.log("Redirect URL:", redirectUrl);
+    
+    // If we have valid contact info, also create a lead entry
+    if (email) {
+      try {
+        // Create a lead entry with the contact information
+        const leadData = {
+          name: fullName || `${firstName} ${lastName}`.trim(),
+          email: email,
+          phone: phone || "",
+          source: "typeform_quiz",
+          lead_magnet: "qualification_survey",
+          metadata: {
+            qualification_status: qualifiesForCall ? "qualified" : "not_qualified",
+            trading_capital: tradingCapital,
+            trading_experience: tradingExperience,
+            trading_goal: tradingGoal
+          }
+        };
+        
+        // Check if name and email are present before attempting to insert
+        if (leadData.name && leadData.email) {
+          console.log("Creating lead entry:", leadData);
+          
+          const { data: leadResult, error: leadError } = await supabase.rpc('insert_lead_service', {
+            name: leadData.name,
+            email: leadData.email,
+            phone: leadData.phone,
+            source: leadData.source,
+            lead_magnet: leadData.lead_magnet,
+            metadata: leadData.metadata
+          });
+          
+          if (leadError) {
+            console.error("Error creating lead entry:", leadError);
+          } else {
+            console.log("Lead entry created successfully:", leadResult);
+          }
+        } else {
+          console.log("Skipping lead creation due to missing name or email");
+        }
+      } catch (leadError) {
+        console.error("Error in lead creation:", leadError);
+        // Continue execution despite lead creation error
+      }
+    }
     
     // Save the submission data to Supabase with better error handling
     if (email) {

@@ -56,17 +56,28 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
       const iframe = document.createElement('iframe');
       iframe.id = 'typeform-iframe';
       
-      // Build URL with hidden fields
+      // Build URL with hidden fields for contact information
       let typeformUrl = `https://form.typeform.com/to/${typeformId}?embed-hide-header=true&embed-hide-footer=true`;
       
-      // Add hidden fields
+      // Add hidden fields - this passes user info to Typeform
       if (userInfo.email) {
         typeformUrl += `&email=${encodeURIComponent(userInfo.email)}`;
+      }
+      if (userInfo.firstName) {
         typeformUrl += `&firstName=${encodeURIComponent(userInfo.firstName)}`;
+      }
+      if (userInfo.lastName) {
         typeformUrl += `&lastName=${encodeURIComponent(userInfo.lastName)}`;
+      }
+      if (userInfo.phone) {
         typeformUrl += `&phone=${encodeURIComponent(userInfo.phone)}`;
       }
+      // Add full name if available (first and last name combined)
+      if (userInfo.firstName && userInfo.lastName) {
+        typeformUrl += `&name=${encodeURIComponent(`${userInfo.firstName} ${userInfo.lastName}`)}`;
+      }
       
+      console.log("Typeform URL with hidden fields:", typeformUrl);
       iframe.src = typeformUrl;
       
       // Set iframe attributes
