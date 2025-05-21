@@ -9,7 +9,7 @@ import {
   educationalTemplate,
   specialOfferTemplate,
   reEngagementTemplate
-} from "../survey-emails/email-templates.ts";
+} from "./email-templates.ts";
 
 // Initialize Resend client
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
