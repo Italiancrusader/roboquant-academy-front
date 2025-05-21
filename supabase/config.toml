@@ -10,18 +10,41 @@ schemas = ["public", "storage", "graphql_public"]
 port = 54322
 
 [studio]
-enabled = true
 port = 54323
-api_url = "http://localhost"
 
 [inbucket]
-enabled = true
 port = 54324
 
 [auth]
 enabled = true
-site_url = "https://www.roboquant.ai"
+site_url = "http://localhost:3000"
 
-[functions]
-[functions.typeform-webhook]
+[storage]
+enabled = true
+
+[realtime]
+enabled = true
+
+[analytics]
+enabled = true
+
+[[functions]]
 verify_jwt = false
+name = "typeform-webhook"
+
+[[functions]]
+verify_jwt = true
+name = "survey-emails"
+
+[[functions]]
+verify_jwt = false
+name = "email-sequences"
+
+[[functions]]
+verify_jwt = false
+name = "process-scheduled-emails"
+
+# Schedule the process-scheduled-emails function to run every hour
+[functions.process-scheduled-emails.cron]
+schedule = "0 * * * *"
+enabled = true

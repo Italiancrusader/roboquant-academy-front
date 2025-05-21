@@ -179,11 +179,26 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`Capital value "${tradingCapital}" explicitly non-qualifying`);
       const redirectUrl = "/checkout";
       
+      // Still create a lead entry if we have valid contact info
+      let leadId = null;
+      if (email) {
+        leadId = await createLeadEntry(email, firstName, lastName, phone, fullName, 'non-qualified', tradingCapital, tradingExperience, tradingGoal, propFirmUsage);
+        
+        // Start non-qualified email sequence
+        await startEmailSequence(leadId, 'non-qualified', {
+          tradingCapital,
+          tradingExperience,
+          tradingGoal,
+          propFirmUsage
+        });
+      }
+      
       return new Response(
         JSON.stringify({ 
           success: true, 
           qualifiesForCall: false,
-          redirectUrl
+          redirectUrl,
+          leadId
         }),
         {
           status: 200,
@@ -208,49 +223,33 @@ const handler = async (req: Request): Promise<Response> => {
     const redirectUrl = qualifiesForCall ? "/book-call" : "/checkout";
     console.log("Redirect URL:", redirectUrl);
     
-    // If we have valid contact info, also create a lead entry
+    // If we have valid contact info, create a lead entry
+    let leadId = null;
     if (email) {
-      try {
-        // Create a lead entry with the contact information
-        const leadData = {
-          name: fullName || `${firstName} ${lastName}`.trim(),
-          email: email,
-          phone: phone || "",
-          source: "typeform_quiz",
-          lead_magnet: "qualification_survey",
-          metadata: {
-            qualification_status: qualifiesForCall ? "qualified" : "not_qualified",
-            trading_capital: tradingCapital,
-            trading_experience: tradingExperience,
-            trading_goal: tradingGoal
-          }
-        };
-        
-        // Check if name and email are present before attempting to insert
-        if (leadData.name && leadData.email) {
-          console.log("Creating lead entry:", leadData);
-          
-          const { data: leadResult, error: leadError } = await supabase.rpc('insert_lead_service', {
-            name: leadData.name,
-            email: leadData.email,
-            phone: leadData.phone,
-            source: leadData.source,
-            lead_magnet: leadData.lead_magnet,
-            metadata: leadData.metadata
-          });
-          
-          if (leadError) {
-            console.error("Error creating lead entry:", leadError);
-          } else {
-            console.log("Lead entry created successfully:", leadResult);
-          }
-        } else {
-          console.log("Skipping lead creation due to missing name or email");
+      leadId = await createLeadEntry(
+        email, 
+        firstName, 
+        lastName, 
+        phone, 
+        fullName, 
+        qualifiesForCall ? 'qualified' : 'non-qualified',
+        tradingCapital,
+        tradingExperience,
+        tradingGoal,
+        propFirmUsage
+      );
+      
+      // Start appropriate email sequence based on qualification
+      await startEmailSequence(
+        leadId, 
+        qualifiesForCall ? 'qualified' : 'non-qualified', 
+        {
+          tradingCapital,
+          tradingExperience,
+          tradingGoal,
+          propFirmUsage
         }
-      } catch (leadError) {
-        console.error("Error in lead creation:", leadError);
-        // Continue execution despite lead creation error
-      }
+      );
     }
     
     // Save the submission data to Supabase with better error handling
@@ -287,7 +286,8 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         qualifiesForCall,
-        redirectUrl
+        redirectUrl,
+        leadId
       }),
       {
         status: 200,
@@ -372,6 +372,107 @@ function checkMinimumCapital(capitalValue: string): boolean {
   console.log(`Capital value: "${capital}", Matches minimum threshold: ${matches}`);
   
   return matches;
+}
+
+// Helper function to create a lead entry and return the lead ID
+async function createLeadEntry(
+  email: string, 
+  firstName: string, 
+  lastName: string, 
+  phone: string, 
+  fullName: string,
+  qualificationStatus: string,
+  tradingCapital: string,
+  tradingExperience: string,
+  tradingGoal: string,
+  propFirmUsage: string
+): Promise<string | null> {
+  try {
+    // Create a name from the available parts
+    const name = fullName || `${firstName} ${lastName}`.trim();
+    
+    if (!name || !email) {
+      console.log("Missing required name or email for lead creation");
+      return null;
+    }
+    
+    const leadData = {
+      name: name,
+      email: email,
+      phone: phone || "",
+      source: "typeform_quiz",
+      lead_magnet: "qualification_survey",
+      metadata: {
+        qualification_status: qualificationStatus,
+        trading_capital: tradingCapital,
+        trading_experience: tradingExperience,
+        trading_goal: tradingGoal,
+        prop_firm_usage: propFirmUsage,
+        first_name: firstName,
+        last_name: lastName
+      }
+    };
+    
+    console.log("Creating lead entry:", leadData);
+    
+    // Use the insert_lead_service RPC for lead creation
+    const { data: leadResult, error: leadError } = await supabase.rpc('insert_lead_service', {
+      name: leadData.name,
+      email: leadData.email,
+      phone: leadData.phone,
+      source: leadData.source,
+      lead_magnet: leadData.lead_magnet,
+      metadata: leadData.metadata
+    });
+    
+    if (leadError) {
+      console.error("Error creating lead entry:", leadError);
+      return null;
+    } else {
+      console.log("Lead entry created successfully:", leadResult);
+      return leadResult;
+    }
+    
+  } catch (error) {
+    console.error("Error in lead creation:", error);
+    return null;
+  }
+}
+
+// Helper function to start an email sequence for a lead
+async function startEmailSequence(leadId: string, qualification: string, additionalData: any): Promise<void> {
+  if (!leadId) {
+    console.log("No lead ID provided, skipping email sequence");
+    return;
+  }
+  
+  try {
+    // Call the email-sequences function to start the sequence
+    const response = await fetch(`${supabaseUrl}/functions/v1/email-sequences`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseKey}`
+      },
+      body: JSON.stringify({
+        leadId,
+        qualification,
+        additionalData
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to start email sequence: ${errorData.error || response.statusText}`);
+    }
+    
+    const result = await response.json();
+    console.log(`Email sequence started successfully: ${result.message}`);
+    
+  } catch (error) {
+    console.error(`Error starting email sequence for lead ${leadId}:`, error);
+    // Continue execution despite sequence error
+  }
 }
 
 serve(handler);

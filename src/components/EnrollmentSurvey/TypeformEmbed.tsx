@@ -153,7 +153,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
               // Show success toast
               toast({
                 title: "Survey Completed",
-                description: "Thank you for completing the qualification survey!",
+                description: "Thank you for completing the qualification survey! We'll be in touch soon.",
               });
               
               // Process form data to determine capital amount
@@ -205,6 +205,21 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
                 isDisqualified 
               });
               
+              // Inform the user about next steps
+              setTimeout(() => {
+                if (isDisqualified) {
+                  toast({
+                    title: "Your Application Has Been Processed",
+                    description: "Check your email for your personalized enrollment options.",
+                  });
+                } else if (isQualified) {
+                  toast({
+                    title: "Congratulations! You qualify for a Strategy Call",
+                    description: "Check your email for instructions on scheduling your call.",
+                  });
+                }
+              }, 2000);
+              
               // Make redirection decision based on capital value
               setTimeout(() => {
                 if (isDisqualified) {
@@ -214,7 +229,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
                   console.log('Redirecting to book-call (qualifying capital)');
                   navigate('/book-call');
                 } else {
-                  // Default handling - rely on webhook results (fallback to book-call for safety)
+                  // Default handling - rely on webhook results (fallback to checkout for safety)
                   console.log('Using default redirect to checkout');
                   navigate('/checkout');
                 }
@@ -261,6 +276,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
               <Progress value={75} className="h-2" />
             </div>
             <p className="text-sm text-muted-foreground mt-2">Please wait while we analyze your responses</p>
+            <p className="text-sm text-primary mt-4">Check your email for important next steps!</p>
           </div>
         </div>
       )}
