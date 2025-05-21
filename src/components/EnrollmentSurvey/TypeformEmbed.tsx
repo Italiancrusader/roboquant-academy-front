@@ -26,6 +26,7 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
   const navigate = useNavigate();
   
   // Simulate loading progress
@@ -43,6 +44,19 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
       return () => clearInterval(interval);
     }
   }, [isLoading]);
+  
+  // Handle redirection after submission
+  useEffect(() => {
+    if (redirectPath && !isSubmitting) {
+      // Add a small delay to ensure all processing is complete
+      const redirectTimer = setTimeout(() => {
+        console.log(`Navigating to: ${redirectPath}`);
+        navigate(redirectPath);
+      }, 1500);
+      
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [redirectPath, isSubmitting, navigate]);
   
   useEffect(() => {
     const container = document.getElementById('typeform-container');
@@ -212,28 +226,27 @@ const TypeformEmbed: React.FC<TypeformEmbedProps> = ({
                     title: "Your Application Has Been Processed",
                     description: "Check your email for your personalized enrollment options.",
                   });
+                  setRedirectPath('/checkout');
                 } else if (isQualified) {
                   toast({
                     title: "Congratulations! You qualify for a Strategy Call",
                     description: "Check your email for instructions on scheduling your call.",
                   });
+                  setRedirectPath('/book-call');
+                } else {
+                  // Default handling - rely on webhook results
+                  // For safety, don't set a redirect path here - wait for webhook or let server decide
+                  console.log('Qualification unclear from client-side data, waiting for webhook decision');
+                  
+                  // Set a fallback redirection after a longer delay
+                  setTimeout(() => {
+                    if (!redirectPath) {
+                      console.log('Using fallback redirect to checkout');
+                      setRedirectPath('/checkout');
+                    }
+                  }, 5000); // Longer fallback timeout
                 }
               }, 2000);
-              
-              // Make redirection decision based on capital value
-              setTimeout(() => {
-                if (isDisqualified) {
-                  console.log('Redirecting to checkout (non-qualifying capital)');
-                  navigate('/checkout');
-                } else if (isQualified) {
-                  console.log('Redirecting to book-call (qualifying capital)');
-                  navigate('/book-call');
-                } else {
-                  // Default handling - rely on webhook results (fallback to checkout for safety)
-                  console.log('Using default redirect to checkout');
-                  navigate('/checkout');
-                }
-              }, 3500); // Extended delay to ensure proper visual feedback
             }
           } catch (error) {
             console.error('Error processing Typeform message:', error);
