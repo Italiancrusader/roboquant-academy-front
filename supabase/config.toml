@@ -48,3 +48,15 @@ name = "process-scheduled-emails"
 [functions.process-scheduled-emails.cron]
 schedule = "0 * * * *"
 enabled = true
+
+[[functions]]
+verify_jwt = false
+name = "send-test-emails"
+
+[[functions]]
+verify_jwt = false
+name = "test-resend"
+
+[[functions]]
+verify_jwt = true
+name = "test-email-templates"
