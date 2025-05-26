@@ -51,6 +51,33 @@ import { MetaPixel } from './components/MetaPixel';
 
 const queryClient = new QueryClient();
 
+// Component to handle malformed verification URLs
+const VerificationRedirect = () => {
+  React.useEffect(() => {
+    // Extract any token from the malformed URL
+    const currentPath = window.location.pathname;
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    console.log("Handling malformed verification URL:", currentPath);
+    
+    // If this is a malformed verification URL, try to extract the token and redirect properly
+    if (currentPath.includes('/auth/v1/verify/')) {
+      // This is likely a malformed URL, redirect to auth with error
+      console.log("Detected malformed verification URL, redirecting to auth");
+      window.location.href = '/auth?error=invalid_verification_url';
+    } else {
+      // Just redirect to auth
+      window.location.href = '/auth';
+    }
+  }, []);
+
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  );
+};
+
 function App() {
   const isAdminRoute = window.location.pathname.startsWith('/admin');
   const backgroundColor = isAdminRoute ? '#0F1117' : '#0F1117';
@@ -74,6 +101,9 @@ function App() {
                 {/* Add explicit routes for OAuth and email verification callbacks */}
                 <Route path="/auth/v1/callback" element={<Auth />} />
                 <Route path="/auth/v1/verify" element={<Auth />} />
+                
+                {/* Catch malformed verification URLs */}
+                <Route path="/auth/v1/verify/*" element={<VerificationRedirect />} />
                 
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

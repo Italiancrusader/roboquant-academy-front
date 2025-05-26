@@ -52,56 +52,90 @@ export const useAuthPage = () => {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     
-    // Handle email verification callback
-    if (token && type === 'signup') {
-      console.log("Detected email verification token - processing verification");
+    // Handle email verification callback - check for both paths
+    const isVerificationCallback = (token && type === 'signup') || 
+                                  location.pathname.includes('/auth/v1/verify');
+    
+    if (isVerificationCallback) {
+      console.log("Detected email verification - processing verification");
       setIsProcessingCallback(true);
       setCallbackStatus('processing');
       
       const processVerification = async () => {
         try {
-          console.log("Attempting to verify email with token:", token.substring(0, 10) + "...");
-          
-          const { data, error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'signup'
-          });
-          
-          if (error) {
-            console.error("Email verification failed:", error);
+          // If we have a token in the URL params, use it directly
+          if (token && type === 'signup') {
+            console.log("Using token from URL params:", token.substring(0, 10) + "...");
+            
+            const { data, error } = await supabase.auth.verifyOtp({
+              token_hash: token,
+              type: 'signup'
+            });
+            
+            if (error) {
+              console.error("Email verification failed:", error);
+              setCallbackStatus('error');
+              toast({
+                title: "Email Verification Failed",
+                description: error.message || "Failed to verify your email. Please try again.",
+                variant: "destructive",
+              });
+            } else if (data.session) {
+              console.log("Email verification successful");
+              setCallbackStatus('success');
+              
+              toast({
+                title: "Email Verified Successfully!",
+                description: "Your account has been verified. You are now signed in.",
+              });
+              
+              // Clean up the URL and redirect
+              setTimeout(() => {
+                // Parse the redirect URL properly
+                let finalRedirect = '/dashboard';
+                if (redirectTo) {
+                  try {
+                    const url = new URL(redirectTo);
+                    finalRedirect = url.pathname === '/' ? '/dashboard' : url.pathname;
+                  } catch {
+                    finalRedirect = '/dashboard';
+                  }
+                }
+                
+                // Replace the current URL to clean it up
+                window.history.replaceState(null, '', '/auth');
+                navigate(finalRedirect, { replace: true });
+              }, 1500);
+            } else {
+              console.log("Email verification completed but no session");
+              setCallbackStatus('success');
+              
+              toast({
+                title: "Email Verified!",
+                description: "Your email has been verified. You can now sign in.",
+              });
+              
+              // Clean up URL and redirect to sign in
+              setTimeout(() => {
+                window.history.replaceState(null, '', '/auth');
+                navigate('/auth?signin=true', { replace: true });
+              }, 1500);
+            }
+          } else {
+            // If no token in params but we're on verification path, 
+            // this might be a malformed URL - redirect to auth
+            console.log("No verification token found, redirecting to auth");
             setCallbackStatus('error');
             toast({
-              title: "Email Verification Failed",
-              description: error.message || "Failed to verify your email. Please try again.",
+              title: "Invalid Verification Link",
+              description: "The verification link appears to be invalid or expired. Please try signing up again.",
               variant: "destructive",
             });
-          } else if (data.session) {
-            console.log("Email verification successful");
-            setCallbackStatus('success');
             
-            toast({
-              title: "Email Verified Successfully!",
-              description: "Your account has been verified. You are now signed in.",
-            });
-            
-            // Wait a moment before redirecting
             setTimeout(() => {
-              const finalRedirect = redirectTo || '/dashboard';
-              navigate(finalRedirect, { replace: true });
-            }, 1500);
-          } else {
-            console.log("Email verification completed but no session");
-            setCallbackStatus('success');
-            
-            toast({
-              title: "Email Verified!",
-              description: "Your email has been verified. You can now sign in.",
-            });
-            
-            // Redirect to sign in form
-            setTimeout(() => {
-              navigate('/auth?signin=true', { replace: true });
-            }, 1500);
+              window.history.replaceState(null, '', '/auth');
+              navigate('/auth?signup=true', { replace: true });
+            }, 2000);
           }
         } catch (error) {
           console.error("Error processing email verification:", error);
