@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SimpleLanding from './pages/SimpleLanding';
 import Index from './pages/Index';
