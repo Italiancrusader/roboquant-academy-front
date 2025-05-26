@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { Resend } from "npm:resend@2.0.0";
 
 // Enhanced CORS headers to ensure proper browser support
 const corsHeaders = {
@@ -14,6 +15,9 @@ const corsHeaders = {
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Initialize Resend for email notifications
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -172,6 +176,19 @@ const handler = async (req: Request): Promise<Response> => {
     // Log the extracted contact information
     console.log("Contact information extracted:", { email, firstName, lastName, phone, fullName });
     
+    // Send notification email to ventos99@gmail.com with submission details
+    await sendNotificationEmail({
+      userEmail: email,
+      userName: fullName || `${firstName} ${lastName}`.trim(),
+      userPhone: phone,
+      tradingCapital,
+      tradingExperience,
+      tradingGoal,
+      propFirmUsage,
+      allAnswers: answers,
+      submissionTime: new Date().toISOString()
+    });
+    
     // First, check for explicit non-qualifying ranges
     const nonQualifyingCapital = checkNonQualifyingCapital(tradingCapital);
     if (nonQualifyingCapital) {
@@ -314,6 +331,139 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 };
+
+// Helper function to send notification email
+async function sendNotificationEmail(data: {
+  userEmail: string;
+  userName: string;
+  userPhone: string;
+  tradingCapital: string;
+  tradingExperience: string;
+  tradingGoal: string;
+  propFirmUsage: string;
+  allAnswers: any[];
+  submissionTime: string;
+}) {
+  try {
+    // Generate detailed answers section
+    const answersHtml = data.allAnswers.map(answer => {
+      const question = answer.field?.title || 'Unknown Question';
+      let answerValue = '';
+      
+      if (answer.type === 'choice') {
+        answerValue = answer.choice?.label || '';
+      } else if (answer.type === 'text') {
+        answerValue = answer.text || '';
+      } else if (answer.type === 'number') {
+        answerValue = answer.number?.toString() || '';
+      } else if (answer.type === 'email') {
+        answerValue = answer.email || '';
+      } else if (answer.type === 'phone_number') {
+        answerValue = answer.phone_number || '';
+      }
+      
+      return `
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">${question}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${answerValue}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const qualification = checkMinimumCapital(data.tradingCapital) ? 'QUALIFIED for strategy call' : 'NON-QUALIFIED (checkout flow)';
+    
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New RoboQuant Academy Application</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #0080FF 0%, #00E5FF 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h1 style="margin: 0; font-size: 24px;">🤖 New RoboQuant Academy Application</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Qualification survey completed</p>
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h2 style="color: #0080FF; margin-top: 0;">Contact Information</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Name:</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${data.userName || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Email:</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${data.userEmail || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Phone:</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${data.userPhone || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Submission Time:</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${new Date(data.submissionTime).toLocaleString()}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h2 style="color: #0080FF; margin-top: 0;">Key Qualification Details</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Trading Capital:</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${data.tradingCapital || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Trading Experience:</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${data.tradingExperience || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Trading Goal:</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${data.tradingGoal || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Prop Firm Usage:</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${data.propFirmUsage || 'Not provided'}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="background-color: ${checkMinimumCapital(data.tradingCapital) ? '#d4edda' : '#f8d7da'}; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid ${checkMinimumCapital(data.tradingCapital) ? '#c3e6cb' : '#f5c6cb'};">
+          <h2 style="color: ${checkMinimumCapital(data.tradingCapital) ? '#155724' : '#721c24'}; margin-top: 0;">Qualification Status</h2>
+          <p style="font-size: 18px; font-weight: bold; margin: 0; color: ${checkMinimumCapital(data.tradingCapital) ? '#155724' : '#721c24'};">${qualification}</p>
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #0080FF; margin-top: 0;">All Survey Responses</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            ${answersHtml}
+          </table>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background-color: #e9ecef; border-radius: 8px; text-align: center;">
+          <p style="margin: 0; color: #6c757d; font-size: 14px;">
+            This notification was automatically generated by the RoboQuant Academy Typeform integration.
+          </p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const emailResponse = await resend.emails.send({
+      from: "RoboQuant Academy <team@roboquant.ai>",
+      to: ["ventos99@gmail.com"],
+      subject: `🤖 New Application: ${data.userName} (${qualification})`,
+      html: emailHtml,
+    });
+
+    console.log("Notification email sent successfully:", emailResponse);
+  } catch (error) {
+    console.error("Error sending notification email:", error);
+    // Don't throw error as this shouldn't break the main flow
+  }
+}
 
 // Helper function to explicitly check for non-qualifying capital ranges
 function checkNonQualifyingCapital(capitalValue: string): boolean {
