@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SimpleLanding from './pages/SimpleLanding';
 import Index from './pages/Index';
@@ -70,8 +71,9 @@ function App() {
                 <Route path="/simple" element={<SimpleLanding />} />
                 <Route path="/auth" element={<Auth />} />
                 
-                {/* Add explicit route for OAuth callback */}
+                {/* Add explicit routes for OAuth and email verification callbacks */}
                 <Route path="/auth/v1/callback" element={<Auth />} />
+                <Route path="/auth/v1/verify" element={<Auth />} />
                 
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
