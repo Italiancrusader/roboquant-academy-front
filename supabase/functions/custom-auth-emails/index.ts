@@ -376,28 +376,51 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("=== Custom Auth Emails Function Called ===");
+    console.log("Request method:", req.method);
+    console.log("Request headers:", Object.fromEntries(req.headers.entries()));
+    
     const payload = await req.text();
-    const headers = Object.fromEntries(req.headers);
+    console.log("Raw payload:", payload);
     
     // Parse the webhook payload
     const body = JSON.parse(payload);
-    
-    console.log("Received auth webhook:", JSON.stringify(body, null, 2));
+    console.log("Parsed webhook payload:", JSON.stringify(body, null, 2));
     
     const { user, email_data } = body;
+    
+    if (!email_data) {
+      console.error("No email_data found in webhook payload");
+      return new Response(JSON.stringify({ error: "No email_data found" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders }
+      });
+    }
+    
     const { email_action_type, token_hash, redirect_to } = email_data;
     
+    console.log("Email action type:", email_action_type);
+    console.log("User email:", user?.email);
+    console.log("Token hash (first 10 chars):", token_hash?.substring(0, 10));
+    console.log("Redirect to:", redirect_to);
+    
     if (!user?.email) {
-      throw new Error("No user email found in webhook payload");
+      console.error("No user email found in webhook payload");
+      return new Response(JSON.stringify({ error: "No user email found" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders }
+      });
     }
     
     // Get user metadata for personalization
     const firstName = user.user_metadata?.first_name || user.user_metadata?.name?.split(' ')[0] || '';
+    console.log("User first name:", firstName);
     
     let subject = "";
     let htmlContent = "";
     
     if (email_action_type === "signup") {
+      console.log("Processing signup confirmation email");
       // Email verification
       const confirmationUrl = `${Deno.env.get("SUPABASE_URL")}/auth/v1/verify?token=${token_hash}&type=signup&redirect_to=${redirect_to || 'https://roboquant.ai/dashboard'}`;
       
@@ -405,6 +428,7 @@ const handler = async (req: Request): Promise<Response> => {
       htmlContent = getEmailVerificationTemplate(confirmationUrl, firstName);
       
     } else if (email_action_type === "recovery") {
+      console.log("Processing password recovery email");
       // Password reset
       const resetUrl = `${Deno.env.get("SUPABASE_URL")}/auth/v1/verify?token=${token_hash}&type=recovery&redirect_to=${redirect_to || 'https://roboquant.ai/auth?tab=reset'}`;
       
@@ -412,11 +436,14 @@ const handler = async (req: Request): Promise<Response> => {
       htmlContent = getPasswordResetTemplate(resetUrl, firstName);
     } else {
       console.log(`Unknown email action type: ${email_action_type}`);
-      return new Response(JSON.stringify({ message: "Unknown email action type" }), {
+      return new Response(JSON.stringify({ error: "Unknown email action type" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders }
       });
     }
+    
+    console.log("Sending email with subject:", subject);
+    console.log("To:", user.email);
     
     // Send the email using Resend
     const emailResponse = await resend.emails.send({
@@ -430,8 +457,9 @@ const handler = async (req: Request): Promise<Response> => {
     
     return new Response(JSON.stringify({
       success: true,
-      message: "Email sent successfully",
-      emailId: emailResponse.id
+      message: "Custom email sent successfully",
+      emailId: emailResponse.id,
+      emailActionType: email_action_type
     }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders }
@@ -439,10 +467,12 @@ const handler = async (req: Request): Promise<Response> => {
     
   } catch (error: any) {
     console.error("Error in custom-auth-emails function:", error);
+    console.error("Error stack:", error.stack);
     
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: error.message,
+      details: error.stack
     }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders }
