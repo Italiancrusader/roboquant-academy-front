@@ -22,12 +22,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log("Auth state changed:", event);
+        console.log("Auth state changed:", event, session?.user?.email_confirmed_at ? "Email confirmed" : "Email not confirmed");
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           console.log("User authenticated:", session.user.email);
+          console.log("Email confirmed:", !!session.user.email_confirmed_at);
           
           // Check user roles after authentication
           const checkUserRoles = async () => {
@@ -55,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (event === 'SIGNED_IN') {
             toast({
               title: "Successfully signed in",
-              description: `Welcome${session.user.user_metadata?.name ? `, ${session.user.user_metadata.name}` : ''}!`,
+              description: `Welcome${session.user.user_metadata?.first_name ? `, ${session.user.user_metadata.first_name}` : ''}!`,
             });
           }
         } else if (event === 'SIGNED_OUT') {
@@ -96,12 +97,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      console.log("Attempting sign in for:", email);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
-        throw error;
+        console.error("Sign in error:", error);
+        
+        // Provide helpful error messages
+        if (error.message.includes('Email not confirmed')) {
+          throw new Error('Please check your email and click the verification link before signing in.');
+        } else if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.');
+        } else {
+          throw error;
+        }
       }
+      
+      console.log("Sign in successful for:", data.user?.email);
     } catch (error: any) {
+      console.error("Sign in error:", error);
       toast({
         title: "Sign in failed",
         description: error.message,
@@ -113,7 +127,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Attempting sign up for:", email);
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -125,14 +140,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
-        throw error;
+        console.error("Sign up error:", error);
+        
+        // Provide helpful error messages
+        if (error.message.includes('User already registered')) {
+          throw new Error('An account with this email already exists. Please sign in instead.');
+        } else if (error.message.includes('Password should be at least 6 characters')) {
+          throw new Error('Password must be at least 6 characters long.');
+        } else {
+          throw error;
+        }
       }
       
-      toast({
-        title: "Account created",
-        description: "Please check your email to verify your account.",
-      });
+      console.log("Sign up response:", data);
+      
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        console.log("User created but email confirmation required");
+        toast({
+          title: "Account created successfully!",
+          description: "Please check your email for a verification link to complete your account setup.",
+        });
+      } else if (data.session) {
+        console.log("User created and automatically signed in");
+        toast({
+          title: "Account created and signed in!",
+          description: `Welcome to RoboQuant${firstName ? `, ${firstName}` : ''}!`,
+        });
+      }
     } catch (error: any) {
+      console.error("Sign up error:", error);
       toast({
         title: "Sign up failed",
         description: error.message,

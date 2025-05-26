@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export interface SignUpFormProps {
   isLoading: boolean;
@@ -17,15 +19,19 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsL
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [signupSuccess, setSignupSuccess] = useState(false);
   const { signUp } = useAuth();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
     setIsLoading(true);
+    setSignupSuccess(false);
+    
     try {
       await signUp(email, password, firstName, lastName);
-      // Don't navigate immediately after signup as the user may need to verify email
+      setSignupSuccess(true);
+      console.log("Signup successful, showing confirmation message");
     } catch (error: any) {
       console.error("Sign up error:", error);
       setAuthError(error.message || 'Failed to create account');
@@ -33,6 +39,29 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsL
       setIsLoading(false);
     }
   };
+
+  if (signupSuccess) {
+    return (
+      <div className="text-center space-y-4 p-6">
+        <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+        <h3 className="text-lg font-semibold">Account Created Successfully!</h3>
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Please check your email for a verification link to complete your account setup.
+            If you don't see it, check your spam folder.
+          </AlertDescription>
+        </Alert>
+        <Button 
+          onClick={() => setSignupSuccess(false)} 
+          variant="outline"
+          className="w-full"
+        >
+          Back to Sign Up
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSignUp}>
@@ -76,10 +105,11 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ isLoading, setAuthError, setIsL
           <Input 
             id="signup-password"
             type="password"
-            placeholder="Create a password"
+            placeholder="Create a password (min 6 characters)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            minLength={6}
             disabled={isLoading}
           />
         </div>

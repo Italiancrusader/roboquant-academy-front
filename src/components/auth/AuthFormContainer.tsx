@@ -6,8 +6,9 @@ import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
 import AuthError from '@/components/auth/AuthError';
 import { Button } from '@/components/ui/button';
-import { Home } from 'lucide-react';
+import { Home, Mail } from 'lucide-react';
 import AuthDebugInfo from '@/components/auth/AuthDebugInfo';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AuthFormContainerProps {
   defaultTab: string;
@@ -37,6 +38,14 @@ const AuthFormContainer: React.FC<AuthFormContainerProps> = ({
         </div>
         
         {authError && <AuthError error={authError} isRedirectError={isRedirectError} />}
+        
+        <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+          <Mail className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Email Verification:</strong> After signing up, you'll receive a verification email. 
+            Click the link in the email to activate your account and be able to sign in.
+          </AlertDescription>
+        </Alert>
         
         <div className="rounded-lg border bg-card p-6 shadow-sm">
           <Tabs defaultValue={defaultTab} className="w-full">
