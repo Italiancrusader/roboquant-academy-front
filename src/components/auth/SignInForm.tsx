@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import ForgotPasswordForm from './ForgotPasswordForm';
 
 export interface SignInFormProps {
   isLoading: boolean;
@@ -15,22 +16,26 @@ export interface SignInFormProps {
 const SignInForm: React.FC<SignInFormProps> = ({ isLoading, setAuthError, setIsLoading }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { signIn } = useAuth();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
     setIsLoading(true);
+    
     try {
       await signIn(email, password);
-      // Navigation will happen automatically via useEffect in parent
     } catch (error: any) {
-      console.error("Sign in error:", error);
       setAuthError(error.message || 'Failed to sign in');
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (showForgotPassword) {
+    return <ForgotPasswordForm onBackToSignIn={() => setShowForgotPassword(false)} />;
+  }
 
   return (
     <form onSubmit={handleSignIn}>
@@ -58,6 +63,15 @@ const SignInForm: React.FC<SignInFormProps> = ({ isLoading, setAuthError, setIsL
             required
             disabled={isLoading}
           />
+        </div>
+        <div className="text-right">
+          <button
+            type="button"
+            onClick={() => setShowForgotPassword(true)}
+            className="text-sm text-primary hover:underline"
+          >
+            Forgot password?
+          </button>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col space-y-3">
