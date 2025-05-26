@@ -6,9 +6,7 @@ import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
 import AuthError from '@/components/auth/AuthError';
 import { Button } from '@/components/ui/button';
-import { Home, Mail } from 'lucide-react';
-import AuthDebugInfo from '@/components/auth/AuthDebugInfo';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Home } from 'lucide-react';
 
 interface AuthFormContainerProps {
   defaultTab: string;
@@ -33,19 +31,9 @@ const AuthFormContainer: React.FC<AuthFormContainerProps> = ({
         <div className="text-center">
           <h1 className="text-3xl font-bold gradient-text">Welcome to RoboQuant</h1>
           <p className="mt-2 text-muted-foreground">Sign in to your account or create a new one</p>
-          
-          <AuthDebugInfo />
         </div>
         
         {authError && <AuthError error={authError} isRedirectError={isRedirectError} />}
-        
-        <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-          <Mail className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Email Verification:</strong> After signing up, you'll receive a verification email. 
-            Click the link in the email to activate your account and be able to sign in.
-          </AlertDescription>
-        </Alert>
         
         <div className="rounded-lg border bg-card p-6 shadow-sm">
           <Tabs defaultValue={defaultTab} className="w-full">
