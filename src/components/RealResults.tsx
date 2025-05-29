@@ -310,21 +310,21 @@ const RealResults = () => {
               <Card className="p-6 bg-gradient-to-r from-green-500/10 to-blue-500/10 border-green-500/20">
                 <div className="text-center space-y-4">
                   <h3 className="text-2xl font-bold">Your Earning Potential Timeline</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <div className="space-y-2">
                       <div className="text-lg font-semibold text-green-500">Months 1-3</div>
-                      <div className="text-2xl font-bold">€500-2,000</div>
-                      <div className="text-sm text-muted-foreground">First projects & skill building</div>
+                      <div className="text-xl font-bold">€500-2,000</div>
+                      <div className="text-xs text-muted-foreground">First projects & skill building</div>
                     </div>
                     <div className="space-y-2">
                       <div className="text-lg font-semibold text-blue-500">Months 4-12</div>
-                      <div className="text-2xl font-bold">€2,000-10,000</div>
-                      <div className="text-sm text-muted-foreground">Regular clients & higher rates</div>
+                      <div className="text-xl font-bold">€2,000-10,000</div>
+                      <div className="text-xs text-muted-foreground">Regular clients & higher rates</div>
                     </div>
                     <div className="space-y-2">
                       <div className="text-lg font-semibold text-purple-500">Year 2+</div>
-                      <div className="text-2xl font-bold">€10,000-50,000+</div>
-                      <div className="text-sm text-muted-foreground">Expert status & premium projects</div>
+                      <div className="text-xl font-bold">€10,000-50,000+</div>
+                      <div className="text-xs text-muted-foreground">Expert status & premium projects</div>
                     </div>
                   </div>
                   <div className="mt-6 p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
