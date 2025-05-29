@@ -204,6 +204,7 @@ const RealResults = () => {
 
             {/* Earnings Tab */}
             <TabsContent value="earnings" className="space-y-8">
+              {/* Student Invoice */}
               <Card className="p-6 bg-card/50 backdrop-blur-sm">
                 <div className="flex items-center gap-3 mb-4">
                   <Euro className="w-6 h-6 text-green-500" />
@@ -211,33 +212,126 @@ const RealResults = () => {
                   <Badge variant="secondary" className="bg-green-500/10 text-green-500">Real Invoice</Badge>
                 </div>
                 <div className="space-y-6">
-                  <img alt="Real invoice showing €500 payment for software development services - demonstrating earning potential" className="w-full max-w-2xl mx-auto rounded-lg border border-border/50" src="/lovable-uploads/6f3fa911-a1b7-4196-8b30-018201f4844f.png" />
+                  <img 
+                    src="/lovable-uploads/6f3fa911-a1b7-4196-8b30-018201f4844f.png" 
+                    alt="Real invoice showing €500 payment for software development services - demonstrating earning potential" 
+                    className="w-full max-w-2xl mx-auto rounded-lg border border-border/50" 
+                  />
                   <div className="text-center space-y-4">
                     <h4 className="text-2xl font-bold text-green-500">€500 for Software Development</h4>
                     <p className="text-muted-foreground max-w-2xl mx-auto">
                       This is a real invoice from one of our students who now charges clients for custom trading bot development. 
                       Learn the skills that companies pay premium rates for.
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                      <Card className="p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10">
-                        <div className="text-2xl font-bold text-green-500">€50-150/hr</div>
-                        <div className="text-sm text-muted-foreground">Typical Hourly Rate</div>
-                      </Card>
-                      <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-cyan-500/10">
-                        <div className="text-2xl font-bold text-blue-500">€1,000-5,000</div>
-                        <div className="text-sm text-muted-foreground">Per Project Range</div>
-                      </Card>
-                      <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10">
-                        <div className="text-2xl font-bold text-purple-500">Unlimited</div>
-                        <div className="text-sm text-muted-foreground">Earning Potential</div>
-                      </Card>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Fiverr Marketplace Earnings */}
+              <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <DollarSign className="w-6 h-6 text-purple-500" />
+                  <h3 className="text-xl font-semibold">Fiverr Marketplace - Trading Bot Services</h3>
+                  <Badge variant="outline" className="border-purple-500/30 text-purple-500">Live Gigs</Badge>
+                </div>
+                <div className="space-y-6">
+                  <img 
+                    src="/lovable-uploads/1f17282c-bec6-4d8a-b3c2-3c2a04bec716.png" 
+                    alt="Fiverr marketplace showing MT5 trading bot development services with prices ranging from €6,533 to €1,867 per project" 
+                    className="w-full rounded-lg border border-border/50" 
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-500">€6,533</div>
+                      <div className="text-muted-foreground">Custom Trading Robot</div>
                     </div>
-                    <div className="mt-6 p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                      <p className="text-sm text-amber-700 dark:text-amber-300">
-                        💡 <strong>Pro Tip:</strong> Many students start freelancing within 3-6 months of completing the course, 
-                        often earning back their investment on their first project.
-                      </p>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-500">€3,733</div>
+                      <div className="text-muted-foreground">MT4/MT5 EA Work</div>
                     </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-500">€1,867</div>
+                      <div className="text-muted-foreground">Algorithm Coding</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-500">€560</div>
+                      <div className="text-muted-foreground">AI Trading Systems</div>
+                    </div>
+                  </div>
+                  <div className="bg-purple-500/10 p-4 rounded-lg">
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      💼 <strong>Market Reality:</strong> These are actual Fiverr gigs from verified professionals. 
+                      Notice the "Vetted Pro" badges and high ratings - proof of consistent quality delivery.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Upwork Earnings */}
+              <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <TrendingUp className="w-6 h-6 text-blue-500" />
+                  <h3 className="text-xl font-semibold">Upwork - Top Freelancer Earnings</h3>
+                  <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">100% Success Rate</Badge>
+                </div>
+                <div className="space-y-6">
+                  <img 
+                    src="/lovable-uploads/9c04def2-6fd1-43d7-9528-9f49b69962e2.png" 
+                    alt="Upwork profiles showing trading bot developers with 100% job success rates earning $400K+, $300K+, and $100K+ annually" 
+                    className="w-full rounded-lg border border-border/50" 
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-cyan-500/10">
+                      <div className="text-2xl font-bold text-blue-500">$400K+</div>
+                      <div className="text-sm text-muted-foreground">Top Earner - 200+ Projects</div>
+                      <div className="text-xs text-blue-400">100% Job Success</div>
+                    </Card>
+                    <Card className="p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10">
+                      <div className="text-2xl font-bold text-green-500">$300K+</div>
+                      <div className="text-sm text-muted-foreground">PineScript Expert</div>
+                      <div className="text-xs text-green-400">99% Job Success</div>
+                    </Card>
+                    <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10">
+                      <div className="text-2xl font-bold text-purple-500">$100K+</div>
+                      <div className="text-sm text-muted-foreground">Bot Development</div>
+                      <div className="text-xs text-purple-400">100% Job Success</div>
+                    </Card>
+                  </div>
+                  <div className="bg-blue-500/10 p-4 rounded-lg">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      📈 <strong>Career Trajectory:</strong> These professionals started where you are now. 
+                      Their 100% job success rates and 6-figure earnings prove the market demand for these skills.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Earning Potential Summary */}
+              <Card className="p-6 bg-gradient-to-r from-green-500/10 to-blue-500/10 border-green-500/20">
+                <div className="text-center space-y-4">
+                  <h3 className="text-2xl font-bold">Your Earning Potential Timeline</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div className="space-y-2">
+                      <div className="text-lg font-semibold text-green-500">Months 1-3</div>
+                      <div className="text-2xl font-bold">€500-2,000</div>
+                      <div className="text-sm text-muted-foreground">First projects & skill building</div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-lg font-semibold text-blue-500">Months 4-12</div>
+                      <div className="text-2xl font-bold">€2,000-10,000</div>
+                      <div className="text-sm text-muted-foreground">Regular clients & higher rates</div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-lg font-semibold text-purple-500">Year 2+</div>
+                      <div className="text-2xl font-bold">€10,000-50,000+</div>
+                      <div className="text-sm text-muted-foreground">Expert status & premium projects</div>
+                    </div>
+                  </div>
+                  <div className="mt-6 p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                    <p className="text-sm text-amber-700 dark:text-amber-300">
+                      💡 <strong>Reality Check:</strong> Many students start earning within their first month of completing the course. 
+                      The examples above show what's possible when you master these high-demand skills.
+                    </p>
                   </div>
                 </div>
               </Card>
