@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import WhyRoboQuant from '../components/WhyRoboQuant';
+import RealResults from '../components/RealResults';
 import CourseOutcomes from '../components/CourseOutcomes';
 import Curriculum from '../components/Curriculum';
 import CostCalculator from '../components/CostCalculator';
@@ -33,6 +34,7 @@ const Index = () => {
       <Navbar />
       <Hero />
       <WhyRoboQuant />
+      <RealResults />
       <CourseOutcomes />
       <Curriculum />
       <CostCalculator />
