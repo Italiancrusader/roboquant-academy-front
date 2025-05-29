@@ -4,52 +4,39 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, Code, BarChart3, Users, CheckCircle, ArrowRight, DollarSign, Target, Trophy, FileCode, Euro } from 'lucide-react';
-
 const RealResults = () => {
   const [activeTab, setActiveTab] = useState('performance');
-  
-  const performanceStats = [
-    {
-      label: 'Student Success Rate',
-      value: '87%',
-      icon: <Trophy className="w-5 h-5" />
-    },
-    {
-      label: 'Average Monthly Return',
-      value: '+12.4%',
-      icon: <TrendingUp className="w-5 h-5" />
-    },
-    {
-      label: 'Strategies Deployed',
-      value: '500+',
-      icon: <Target className="w-5 h-5" />
-    },
-    {
-      label: 'Active Trading Bots',
-      value: '1,200+',
-      icon: <BarChart3 className="w-5 h-5" />
-    }
-  ];
-
-  const testimonialResults = [
-    {
-      name: "dmarks2585",
-      result: "+$3,454 (3.45% return)",
-      timeframe: "68 trades over 3 months",
-      winRate: "73.53%",
-      strategy: "EMA Crossover Bot"
-    },
-    {
-      name: "TraderPilot_EA",
-      result: "+$14,200 profit",
-      timeframe: "Live trading account",
-      winRate: "84%",
-      strategy: "MNQT 15min No Wick Strategy"
-    }
-  ];
-
-  return (
-    <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
+  const performanceStats = [{
+    label: 'Student Success Rate',
+    value: '87%',
+    icon: <Trophy className="w-5 h-5" />
+  }, {
+    label: 'Average Monthly Return',
+    value: '+12.4%',
+    icon: <TrendingUp className="w-5 h-5" />
+  }, {
+    label: 'Strategies Deployed',
+    value: '500+',
+    icon: <Target className="w-5 h-5" />
+  }, {
+    label: 'Active Trading Bots',
+    value: '1,200+',
+    icon: <BarChart3 className="w-5 h-5" />
+  }];
+  const testimonialResults = [{
+    name: "dmarks2585",
+    result: "+$3,454 (3.45% return)",
+    timeframe: "68 trades over 3 months",
+    winRate: "73.53%",
+    strategy: "EMA Crossover Bot"
+  }, {
+    name: "TraderPilot_EA",
+    result: "+$14,200 profit",
+    timeframe: "Live trading account",
+    winRate: "84%",
+    strategy: "MNQT 15min No Wick Strategy"
+  }];
+  return <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-blue-primary/5 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-primary/5 rounded-full filter blur-3xl"></div>
@@ -71,15 +58,13 @@ const RealResults = () => {
 
         {/* Performance Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16 animate-fade-in-up animation-delay-200">
-          {performanceStats.map((stat, index) => (
-            <Card key={index} className="p-6 text-center bg-card/50 backdrop-blur-sm border-border/50 hover:border-blue-primary/30 transition-all duration-300">
+          {performanceStats.map((stat, index) => <Card key={index} className="p-6 text-center bg-card/50 backdrop-blur-sm border-border/50 hover:border-blue-primary/30 transition-all duration-300">
               <div className="flex justify-center mb-3 text-blue-primary">
                 {stat.icon}
               </div>
               <div className="text-2xl font-bold mb-2">{stat.value}</div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Main Content Tabs */}
@@ -123,11 +108,7 @@ const RealResults = () => {
                     <Badge variant="secondary" className="bg-green-500/10 text-green-500">Verified</Badge>
                   </div>
                   <div className="space-y-4">
-                    <img 
-                      src="/lovable-uploads/08298171-85bd-4aa4-aafd-34ef4f3a6f35.png" 
-                      alt="MNQT Strategy Performance - +$3,454 profit with 73.53% win rate" 
-                      className="w-full rounded-lg border border-border/50" 
-                    />
+                    <img src="/lovable-uploads/08298171-85bd-4aa4-aafd-34ef4f3a6f35.png" alt="MNQT Strategy Performance - +$3,454 profit with 73.53% win rate" className="w-full rounded-lg border border-border/50" />
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Total P&L:</span>
@@ -157,11 +138,7 @@ const RealResults = () => {
                     <Badge variant="outline" className="border-blue-primary/30 text-blue-primary">Third-Party Verified</Badge>
                   </div>
                   <div className="space-y-4">
-                    <img 
-                      src="/lovable-uploads/3074f886-3a5f-4ea4-9003-d8deaeb98a8a.png" 
-                      alt="MyFXBook verified trading results showing consistent profitability" 
-                      className="w-full rounded-lg border border-border/50" 
-                    />
+                    <img src="/lovable-uploads/3074f886-3a5f-4ea4-9003-d8deaeb98a8a.png" alt="MyFXBook verified trading results showing consistent profitability" className="w-full rounded-lg border border-border/50" />
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Gain:</span>
@@ -191,11 +168,7 @@ const RealResults = () => {
                   <h3 className="text-xl font-semibold">TradingView Strategy Results</h3>
                   <Badge variant="secondary" className="bg-teal-primary/10 text-teal-primary">Backtested</Badge>
                 </div>
-                <img 
-                  src="/lovable-uploads/2d9186ef-9e5e-42f3-80b8-1c53cc234070.png" 
-                  alt="TradingView strategy backtest showing systematic trading approach with clear entry/exit signals" 
-                  className="w-full rounded-lg border border-border/50" 
-                />
+                <img src="/lovable-uploads/2d9186ef-9e5e-42f3-80b8-1c53cc234070.png" alt="TradingView strategy backtest showing systematic trading approach with clear entry/exit signals" className="w-full rounded-lg border border-border/50" />
                 <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Starting Capital:</span>
@@ -222,11 +195,7 @@ const RealResults = () => {
                   <Badge variant="secondary" className="bg-green-500/10 text-green-500">Real Invoice</Badge>
                 </div>
                 <div className="space-y-6">
-                  <img 
-                    src="/lovable-uploads/fd0974dc-cbd8-4af8-b3c8-35c6a8182cf5.png" 
-                    alt="Real invoice showing €500 payment for software development services - demonstrating earning potential" 
-                    className="w-full max-w-2xl mx-auto rounded-lg border border-border/50" 
-                  />
+                  <img alt="Real invoice showing €500 payment for software development services - demonstrating earning potential" className="w-full max-w-2xl mx-auto rounded-lg border border-border/50" src="/lovable-uploads/6f3fa911-a1b7-4196-8b30-018201f4844f.png" />
                   <div className="text-center space-y-4">
                     <h4 className="text-2xl font-bold text-green-500">€500 for Software Development</h4>
                     <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -266,14 +235,9 @@ const RealResults = () => {
                   <h3 className="text-xl font-semibold">Student Community & Success Stories</h3>
                   <Badge variant="secondary" className="bg-purple-500/10 text-purple-500">Live Discord</Badge>
                 </div>
-                <img 
-                  src="/lovable-uploads/092e779f-ca42-4a2e-9752-a237970a22a0.png" 
-                  alt="Discord community showing students sharing their strategy development and backtest results" 
-                  className="w-full rounded-lg border border-border/50" 
-                />
+                <img src="/lovable-uploads/092e779f-ca42-4a2e-9752-a237970a22a0.png" alt="Discord community showing students sharing their strategy development and backtest results" className="w-full rounded-lg border border-border/50" />
                 <div className="mt-6 space-y-4">
-                  {testimonialResults.map((testimonial, index) => (
-                    <div key={index} className="border-l-4 border-blue-primary pl-4">
+                  {testimonialResults.map((testimonial, index) => <div key={index} className="border-l-4 border-blue-primary pl-4">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-semibold">{testimonial.name}</h4>
                         <Badge variant="outline" className="text-green-500 border-green-500/30">
@@ -285,8 +249,7 @@ const RealResults = () => {
                         <span className="text-muted-foreground">Strategy:</span> {testimonial.strategy} | 
                         <span className="text-muted-foreground"> Win Rate:</span> {testimonial.winRate}
                       </p>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </Card>
             </TabsContent>
@@ -301,11 +264,7 @@ const RealResults = () => {
                     <h3 className="text-xl font-semibold">Student-Built Expert Advisor</h3>
                     <Badge variant="secondary" className="bg-green-500/10 text-green-500">MT5/MT4 Ready</Badge>
                   </div>
-                  <img 
-                    src="/lovable-uploads/16032624-d005-48c6-b40a-e0d46408b1ee.png" 
-                    alt="MetaTrader Expert Advisor code showing scalping strategy with risk management parameters" 
-                    className="w-full rounded-lg border border-border/50" 
-                  />
+                  <img src="/lovable-uploads/16032624-d005-48c6-b40a-e0d46408b1ee.png" alt="MetaTrader Expert Advisor code showing scalping strategy with risk management parameters" className="w-full rounded-lg border border-border/50" />
                   <div className="mt-4 space-y-2 text-sm">
                     <p><span className="text-muted-foreground">Strategy:</span> Scalping Expert Advisor</p>
                     <p><span className="text-muted-foreground">Features:</span> Risk Management, Time Filters, Take Profit/Stop Loss</p>
@@ -320,11 +279,7 @@ const RealResults = () => {
                     <h3 className="text-xl font-semibold">PineScript Strategy</h3>
                     <Badge variant="outline" className="border-blue-primary/30 text-blue-primary">TradingView</Badge>
                   </div>
-                  <img 
-                    src="/lovable-uploads/a0cbe4a3-1779-4021-b72c-382396c6d71e.png" 
-                    alt="PineScript code for RoboQuant setup strategy with detailed explanations and parameters" 
-                    className="w-full rounded-lg border border-border/50" 
-                  />
+                  <img src="/lovable-uploads/a0cbe4a3-1779-4021-b72c-382396c6d71e.png" alt="PineScript code for RoboQuant setup strategy with detailed explanations and parameters" className="w-full rounded-lg border border-border/50" />
                   <div className="mt-4 space-y-2 text-sm">
                     <p><span className="text-muted-foreground">Strategy:</span> Pattern-based Trading Setup</p>
                     <p><span className="text-muted-foreground">Features:</span> Day Filter, Stop Loss Offset, Risk Management</p>
@@ -340,11 +295,7 @@ const RealResults = () => {
                   <h3 className="text-xl font-semibold">Live MetaTrader Results</h3>
                   <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500">MT5 Account</Badge>
                 </div>
-                <img 
-                  src="/lovable-uploads/2a682adf-28b8-4b9e-b062-a5acfc9b04b1.png" 
-                  alt="Live MetaTrader trading account showing real trades and profit/loss history" 
-                  className="w-full rounded-lg border border-border/50" 
-                />
+                <img src="/lovable-uploads/2a682adf-28b8-4b9e-b062-a5acfc9b04b1.png" alt="Live MetaTrader trading account showing real trades and profit/loss history" className="w-full rounded-lg border border-border/50" />
                 <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Account Balance:</span>
@@ -372,11 +323,7 @@ const RealResults = () => {
                     <h3 className="text-xl font-semibold">Gold Breakout EA - Free Download</h3>
                     <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500">Community Shared</Badge>
                   </div>
-                  <img 
-                    src="/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png" 
-                    alt="Discord community member Gabriel sharing Gold breakout Expert Advisor source code and backtest results" 
-                    className="w-full rounded-lg border border-border/50" 
-                  />
+                  <img src="/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png" alt="Discord community member Gabriel sharing Gold breakout Expert Advisor source code and backtest results" className="w-full rounded-lg border border-border/50" />
                   <div className="mt-4 space-y-3">
                     <div className="bg-emerald-500/10 p-3 rounded-lg">
                       <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
@@ -399,11 +346,7 @@ const RealResults = () => {
                     <h3 className="text-xl font-semibold">Strategy Development Process</h3>
                     <Badge variant="outline" className="border-blue-500/30 text-blue-500">Step-by-Step</Badge>
                   </div>
-                  <img 
-                    src="/lovable-uploads/c963f161-8e34-4c56-be8a-40e2625c6be0.png" 
-                    alt="TradingView interface showing strategy optimization and backtesting workflow with multiple charts and performance metrics" 
-                    className="w-full rounded-lg border border-border/50" 
-                  />
+                  <img src="/lovable-uploads/c963f161-8e34-4c56-be8a-40e2625c6be0.png" alt="TradingView interface showing strategy optimization and backtesting workflow with multiple charts and performance metrics" className="w-full rounded-lg border border-border/50" />
                   <div className="mt-4 space-y-2 text-sm">
                     <p><span className="text-muted-foreground">Platform:</span> TradingView Strategy Development</p>
                     <p><span className="text-muted-foreground">Process:</span> Optimization, Backtesting, Parameter Tuning</p>
@@ -420,11 +363,7 @@ const RealResults = () => {
                   <h3 className="text-xl font-semibold">Community Backtest Results</h3>
                   <Badge variant="secondary" className="bg-purple-500/10 text-purple-500">Shared Results</Badge>
                 </div>
-                <img 
-                  src="/lovable-uploads/1db84306-2667-4e34-b98f-aefc881b060d.png" 
-                  alt="Detailed backtest results showing consistent upward performance curve with detailed statistics" 
-                  className="w-full rounded-lg border border-border/50" 
-                />
+                <img src="/lovable-uploads/1db84306-2667-4e34-b98f-aefc881b060d.png" alt="Detailed backtest results showing consistent upward performance curve with detailed statistics" className="w-full rounded-lg border border-border/50" />
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Trend:</span>
@@ -462,11 +401,7 @@ const RealResults = () => {
                     <h3 className="text-xl font-semibold">Learning Platform</h3>
                     <Badge variant="secondary" className="bg-green-500/10 text-green-500">Interactive</Badge>
                   </div>
-                  <img 
-                    src="/lovable-uploads/b134c8c1-d7a7-48a1-84e0-55320c8bb248.png" 
-                    alt="RoboQuant Academy learning platform showing course modules and progress tracking" 
-                    className="w-full rounded-lg border border-border/50" 
-                  />
+                  <img src="/lovable-uploads/b134c8c1-d7a7-48a1-84e0-55320c8bb248.png" alt="RoboQuant Academy learning platform showing course modules and progress tracking" className="w-full rounded-lg border border-border/50" />
                   <div className="mt-4 space-y-2 text-sm">
                     <p><span className="text-muted-foreground">Features:</span> Video Lessons, Progress Tracking, Resources</p>
                     <p><span className="text-muted-foreground">Modules:</span> 8 comprehensive trading modules</p>
@@ -481,11 +416,7 @@ const RealResults = () => {
                     <h3 className="text-xl font-semibold">Community Hub</h3>
                     <Badge variant="outline" className="border-purple-500/30 text-purple-500">Whop.com</Badge>
                   </div>
-                  <img 
-                    src="/lovable-uploads/bfafb034-810b-4230-a98b-7bb00b2c9c5d.png" 
-                    alt="Whop.com community platform showing course access and student interaction" 
-                    className="w-full rounded-lg border border-border/50" 
-                  />
+                  <img src="/lovable-uploads/bfafb034-810b-4230-a98b-7bb00b2c9c5d.png" alt="Whop.com community platform showing course access and student interaction" className="w-full rounded-lg border border-border/50" />
                   <div className="mt-4 space-y-2 text-sm">
                     <p><span className="text-muted-foreground">Platform:</span> Professional community management</p>
                     <p><span className="text-muted-foreground">Features:</span> Course access, chat, resources</p>
@@ -511,8 +442,6 @@ const RealResults = () => {
           </Card>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default RealResults;
