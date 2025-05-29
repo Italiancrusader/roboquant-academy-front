@@ -323,7 +323,7 @@ const RealResults = () => {
                     <h3 className="text-xl font-semibold">Gold Breakout EA - Free Download</h3>
                     <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500">Community Shared</Badge>
                   </div>
-                  <img src="/lovable-uploads/84929246-b3ad-45e9-99c1-497718c3a71c.png" alt="Discord community member Gabriel sharing Gold breakout Expert Advisor source code and backtest results" className="w-full rounded-lg border border-border/50" />
+                  <img alt="Discord community member Gabriel sharing Gold breakout Expert Advisor source code and backtest results" className="w-full rounded-lg border border-border/50" src="/lovable-uploads/5f277fde-bc29-4465-8f06-7f61f9f343c5.png" />
                   <div className="mt-4 space-y-3">
                     <div className="bg-emerald-500/10 p-3 rounded-lg">
                       <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
@@ -343,10 +343,10 @@ const RealResults = () => {
                 <Card className="p-6 bg-card/50 backdrop-blur-sm">
                   <div className="flex items-center gap-3 mb-4">
                     <TrendingUp className="w-6 h-6 text-blue-500" />
-                    <h3 className="text-xl font-semibold">Strategy Development Process</h3>
-                    <Badge variant="outline" className="border-blue-500/30 text-blue-500">Step-by-Step</Badge>
+                    <h3 className="text-xl font-semibold">Pinescript free source code</h3>
+                    <Badge variant="outline" className="border-blue-500/30 text-blue-500">Tradingview ready</Badge>
                   </div>
-                  <img src="/lovable-uploads/c963f161-8e34-4c56-be8a-40e2625c6be0.png" alt="TradingView interface showing strategy optimization and backtesting workflow with multiple charts and performance metrics" className="w-full rounded-lg border border-border/50" />
+                  <img alt="TradingView interface showing strategy optimization and backtesting workflow with multiple charts and performance metrics" className="w-full rounded-lg border border-border/50" src="/lovable-uploads/01bdbe2d-bcd6-4d9e-8d6d-3fd8623714b3.png" />
                   <div className="mt-4 space-y-2 text-sm">
                     <p><span className="text-muted-foreground">Platform:</span> TradingView Strategy Development</p>
                     <p><span className="text-muted-foreground">Process:</span> Optimization, Backtesting, Parameter Tuning</p>
