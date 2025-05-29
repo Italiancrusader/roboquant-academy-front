@@ -1,56 +1,42 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, Code, BarChart3, Users, CheckCircle, ArrowRight, DollarSign, Target, Trophy, FileCode, Euro } from 'lucide-react';
-
 const RealResults = () => {
   const [activeTab, setActiveTab] = useState('performance');
-  
-  const performanceStats = [
-    {
-      label: 'Student Success Rate',
-      value: '87%',
-      icon: <Trophy className="w-5 h-5" />
-    },
-    {
-      label: 'Average Monthly Return',
-      value: '+12.4%',
-      icon: <TrendingUp className="w-5 h-5" />
-    },
-    {
-      label: 'Strategies Deployed',
-      value: '500+',
-      icon: <Target className="w-5 h-5" />
-    },
-    {
-      label: 'Active Trading Bots',
-      value: '1,200+',
-      icon: <BarChart3 className="w-5 h-5" />
-    }
-  ];
-
-  const testimonialResults = [
-    {
-      name: "dmarks2585",
-      result: "+$3,454 (3.45% return)",
-      timeframe: "68 trades over 3 months",
-      winRate: "73.53%",
-      strategy: "EMA Crossover Bot"
-    },
-    {
-      name: "TraderPilot_EA",
-      result: "+$14,200 profit",
-      timeframe: "Live trading account",
-      winRate: "84%",
-      strategy: "MNQT 15min No Wick Strategy"
-    }
-  ];
-
-  return (
-    <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
+  const performanceStats = [{
+    label: 'Student Success Rate',
+    value: '87%',
+    icon: <Trophy className="w-5 h-5" />
+  }, {
+    label: 'Average Monthly Return',
+    value: '+12.4%',
+    icon: <TrendingUp className="w-5 h-5" />
+  }, {
+    label: 'Strategies Deployed',
+    value: '500+',
+    icon: <Target className="w-5 h-5" />
+  }, {
+    label: 'Active Trading Bots',
+    value: '1,200+',
+    icon: <BarChart3 className="w-5 h-5" />
+  }];
+  const testimonialResults = [{
+    name: "dmarks2585",
+    result: "+$3,454 (3.45% return)",
+    timeframe: "68 trades over 3 months",
+    winRate: "73.53%",
+    strategy: "EMA Crossover Bot"
+  }, {
+    name: "TraderPilot_EA",
+    result: "+$14,200 profit",
+    timeframe: "Live trading account",
+    winRate: "84%",
+    strategy: "MNQT 15min No Wick Strategy"
+  }];
+  return <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-blue-primary/5 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-primary/5 rounded-full filter blur-3xl"></div>
@@ -72,15 +58,13 @@ const RealResults = () => {
 
         {/* Performance Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16 animate-fade-in-up animation-delay-200">
-          {performanceStats.map((stat, index) => (
-            <Card key={index} className="p-6 text-center bg-card/50 backdrop-blur-sm border-border/50 hover:border-blue-primary/30 transition-all duration-300">
+          {performanceStats.map((stat, index) => <Card key={index} className="p-6 text-center bg-card/50 backdrop-blur-sm border-border/50 hover:border-blue-primary/30 transition-all duration-300">
               <div className="flex justify-center mb-3 text-blue-primary">
                 {stat.icon}
               </div>
               <div className="text-2xl font-bold mb-2">{stat.value}</div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Main Content Tabs */}
@@ -212,11 +196,7 @@ const RealResults = () => {
                   <Badge variant="secondary" className="bg-green-500/10 text-green-500">Real Invoice</Badge>
                 </div>
                 <div className="space-y-6">
-                  <img 
-                    src="/lovable-uploads/6f3fa911-a1b7-4196-8b30-018201f4844f.png" 
-                    alt="Real invoice showing €500 payment for software development services - demonstrating earning potential" 
-                    className="w-full max-w-2xl mx-auto rounded-lg border border-border/50" 
-                  />
+                  <img src="/lovable-uploads/6f3fa911-a1b7-4196-8b30-018201f4844f.png" alt="Real invoice showing €500 payment for software development services - demonstrating earning potential" className="w-full max-w-2xl mx-auto rounded-lg border border-border/50" />
                   <div className="text-center space-y-4">
                     <h4 className="text-2xl font-bold text-green-500">€500 for Software Development</h4>
                     <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -235,11 +215,7 @@ const RealResults = () => {
                   <Badge variant="outline" className="border-purple-500/30 text-purple-500">Live Gigs</Badge>
                 </div>
                 <div className="space-y-6">
-                  <img 
-                    src="/lovable-uploads/1f17282c-bec6-4d8a-b3c2-3c2a04bec716.png" 
-                    alt="Fiverr marketplace showing MT5 trading bot development services with prices ranging from €6,533 to €1,867 per project" 
-                    className="w-full rounded-lg border border-border/50" 
-                  />
+                  <img src="/lovable-uploads/1f17282c-bec6-4d8a-b3c2-3c2a04bec716.png" alt="Fiverr marketplace showing MT5 trading bot development services with prices ranging from €6,533 to €1,867 per project" className="w-full rounded-lg border border-border/50" />
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-purple-500">€6,533</div>
@@ -275,11 +251,7 @@ const RealResults = () => {
                   <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">100% Success Rate</Badge>
                 </div>
                 <div className="space-y-6">
-                  <img 
-                    src="/lovable-uploads/9c04def2-6fd1-43d7-9528-9f49b69962e2.png" 
-                    alt="Upwork profiles showing trading bot developers with 100% job success rates earning $400K+, $300K+, and $100K+ annually" 
-                    className="w-full rounded-lg border border-border/50" 
-                  />
+                  <img alt="Upwork profiles showing trading bot developers with 100% job success rates earning $400K+, $300K+, and $100K+ annually" className="w-full rounded-lg border border-border/50" src="/lovable-uploads/a65481e8-d542-45cf-a33f-7e959bccd6ca.png" />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-cyan-500/10">
                       <div className="text-2xl font-bold text-blue-500">$400K+</div>
@@ -537,8 +509,6 @@ const RealResults = () => {
           </Card>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default RealResults;
