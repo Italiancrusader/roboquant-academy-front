@@ -1,42 +1,56 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, Code, BarChart3, Users, CheckCircle, ArrowRight, DollarSign, Target, Trophy, FileCode, Euro } from 'lucide-react';
+
 const RealResults = () => {
   const [activeTab, setActiveTab] = useState('performance');
-  const performanceStats = [{
-    label: 'Student Success Rate',
-    value: '87%',
-    icon: <Trophy className="w-5 h-5" />
-  }, {
-    label: 'Average Monthly Return',
-    value: '+12.4%',
-    icon: <TrendingUp className="w-5 h-5" />
-  }, {
-    label: 'Strategies Deployed',
-    value: '500+',
-    icon: <Target className="w-5 h-5" />
-  }, {
-    label: 'Active Trading Bots',
-    value: '1,200+',
-    icon: <BarChart3 className="w-5 h-5" />
-  }];
-  const testimonialResults = [{
-    name: "dmarks2585",
-    result: "+$3,454 (3.45% return)",
-    timeframe: "68 trades over 3 months",
-    winRate: "73.53%",
-    strategy: "EMA Crossover Bot"
-  }, {
-    name: "TraderPilot_EA",
-    result: "+$14,200 profit",
-    timeframe: "Live trading account",
-    winRate: "84%",
-    strategy: "MNQT 15min No Wick Strategy"
-  }];
-  return <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
+  
+  const performanceStats = [
+    {
+      label: 'Student Success Rate',
+      value: '87%',
+      icon: <Trophy className="w-5 h-5" />
+    },
+    {
+      label: 'Average Monthly Return',
+      value: '+12.4%',
+      icon: <TrendingUp className="w-5 h-5" />
+    },
+    {
+      label: 'Strategies Deployed',
+      value: '500+',
+      icon: <Target className="w-5 h-5" />
+    },
+    {
+      label: 'Active Trading Bots',
+      value: '1,200+',
+      icon: <BarChart3 className="w-5 h-5" />
+    }
+  ];
+
+  const testimonialResults = [
+    {
+      name: "dmarks2585",
+      result: "+$3,454 (3.45% return)",
+      timeframe: "68 trades over 3 months",
+      winRate: "73.53%",
+      strategy: "EMA Crossover Bot"
+    },
+    {
+      name: "TraderPilot_EA",
+      result: "+$14,200 profit",
+      timeframe: "Live trading account",
+      winRate: "84%",
+      strategy: "MNQT 15min No Wick Strategy"
+    }
+  ];
+
+  return (
+    <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-blue-primary/5 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-primary/5 rounded-full filter blur-3xl"></div>
@@ -58,13 +72,15 @@ const RealResults = () => {
 
         {/* Performance Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16 animate-fade-in-up animation-delay-200">
-          {performanceStats.map((stat, index) => <Card key={index} className="p-6 text-center bg-card/50 backdrop-blur-sm border-border/50 hover:border-blue-primary/30 transition-all duration-300">
+          {performanceStats.map((stat, index) => (
+            <Card key={index} className="p-6 text-center bg-card/50 backdrop-blur-sm border-border/50 hover:border-blue-primary/30 transition-all duration-300">
               <div className="flex justify-center mb-3 text-blue-primary">
                 {stat.icon}
               </div>
               <div className="text-2xl font-bold mb-2">{stat.value}</div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </Card>)}
+            </Card>
+          ))}
         </div>
 
         {/* Main Content Tabs */}
@@ -393,6 +409,22 @@ const RealResults = () => {
                   </div>
                 </Card>
               </div>
+
+              {/* Discord Community Channel */}
+              <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <Users className="w-6 h-6 text-indigo-500" />
+                  <h3 className="text-xl font-semibold">Active Discord Community</h3>
+                  <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-500">Live Chat</Badge>
+                </div>
+                <img src="/lovable-uploads/34f58562-03ee-4e14-9ae1-564f8124482a.png" alt="Discord community channels showing active student discussions about trading strategies and bot development" className="w-full rounded-lg border border-border/50" />
+                <div className="mt-4 space-y-2 text-sm">
+                  <p><span className="text-muted-foreground">Channels:</span> General chat, strategy discussions, code sharing, support</p>
+                  <p><span className="text-muted-foreground">Activity:</span> Real-time strategy optimization and troubleshooting</p>
+                  <p><span className="text-muted-foreground">Support:</span> Direct access to instructors and peer assistance</p>
+                  <p><span className="text-muted-foreground">Community:</span> Share results, get feedback, collaborate on projects</p>
+                </div>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
@@ -411,6 +443,8 @@ const RealResults = () => {
           </Card>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default RealResults;
