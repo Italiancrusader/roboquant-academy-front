@@ -85,37 +85,31 @@ const RealResults = () => {
         {/* Main Content Tabs */}
         <div className="animate-fade-in-up animation-delay-300 relative z-20">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex justify-center mb-16 md:mb-12 lg:mb-16 relative z-30">
+            <div className="flex justify-center mb-16 md:mb-8 lg:mb-12 relative z-30">
               <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full max-w-6xl gap-1 md:gap-0 p-1 h-auto bg-background/95 backdrop-blur-sm border shadow-lg">
                 <TabsTrigger value="performance" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
                   <BarChart3 className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                  <span className="hidden sm:inline">Performance</span>
-                  <span className="sm:hidden">Perf</span>
+                  Performance
                 </TabsTrigger>
                 <TabsTrigger value="earnings" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
                   <Euro className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                  <span className="hidden sm:inline">Earnings</span>
-                  <span className="sm:hidden">Earn</span>
+                  Earnings
                 </TabsTrigger>
                 <TabsTrigger value="community" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
                   <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                  <span className="hidden sm:inline">Community</span>
-                  <span className="sm:hidden">Comm</span>
+                  Community
                 </TabsTrigger>
                 <TabsTrigger value="code" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
                   <Code className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                  <span className="hidden sm:inline">Real Code</span>
-                  <span className="sm:hidden">Code</span>
+                  Real Code
                 </TabsTrigger>
                 <TabsTrigger value="freecode" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
                   <FileCode className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                  <span className="hidden sm:inline">Free Code</span>
-                  <span className="sm:hidden">Free</span>
+                  Free Code
                 </TabsTrigger>
                 <TabsTrigger value="platform" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
                   <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                  <span className="hidden sm:inline">Platform</span>
-                  <span className="sm:hidden">Plat</span>
+                  Platform
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -466,7 +460,7 @@ const RealResults = () => {
                 {/* Community Shared EA */}
                 <Card className="p-4 md:p-6 bg-card/50 backdrop-blur-sm">
                   <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-                    <FileCode className="w-5 h-5 md:w-6 md:h-6 text-emerald-500" />
+                    <FileCode className="w-5 h-5 md:w-6 md:h-4 mr-1" />
                     <h3 className="text-lg md:text-xl font-semibold">Gold Breakout EA - Free Download</h3>
                     <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 text-xs">Community Shared</Badge>
                   </div>
