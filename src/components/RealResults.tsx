@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -84,40 +83,42 @@ const RealResults = () => {
         </div>
 
         {/* Main Content Tabs */}
-        <div className="animate-fade-in-up animation-delay-300">
+        <div className="animate-fade-in-up animation-delay-300 relative z-20">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full max-w-4xl mx-auto mb-8 md:mb-12">
-              <TabsTrigger value="performance" className="text-xs md:text-sm">
-                <BarChart3 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Performance</span>
-                <span className="sm:hidden">Perf</span>
-              </TabsTrigger>
-              <TabsTrigger value="earnings" className="text-xs md:text-sm">
-                <Euro className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Earnings</span>
-                <span className="sm:hidden">Earn</span>
-              </TabsTrigger>
-              <TabsTrigger value="community" className="text-xs md:text-sm">
-                <Users className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Community</span>
-                <span className="sm:hidden">Comm</span>
-              </TabsTrigger>
-              <TabsTrigger value="code" className="text-xs md:text-sm">
-                <Code className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Real Code</span>
-                <span className="sm:hidden">Code</span>
-              </TabsTrigger>
-              <TabsTrigger value="freecode" className="text-xs md:text-sm">
-                <FileCode className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Free Code</span>
-                <span className="sm:hidden">Free</span>
-              </TabsTrigger>
-              <TabsTrigger value="platform" className="text-xs md:text-sm">
-                <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Platform</span>
-                <span className="sm:hidden">Plat</span>
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex justify-center mb-16 md:mb-12 lg:mb-16 relative z-30">
+              <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full max-w-6xl gap-1 md:gap-0 p-1 h-auto bg-background/95 backdrop-blur-sm border shadow-lg">
+                <TabsTrigger value="performance" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
+                  <BarChart3 className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="hidden sm:inline">Performance</span>
+                  <span className="sm:hidden">Perf</span>
+                </TabsTrigger>
+                <TabsTrigger value="earnings" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
+                  <Euro className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="hidden sm:inline">Earnings</span>
+                  <span className="sm:hidden">Earn</span>
+                </TabsTrigger>
+                <TabsTrigger value="community" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
+                  <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="hidden sm:inline">Community</span>
+                  <span className="sm:hidden">Comm</span>
+                </TabsTrigger>
+                <TabsTrigger value="code" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
+                  <Code className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="hidden sm:inline">Real Code</span>
+                  <span className="sm:hidden">Code</span>
+                </TabsTrigger>
+                <TabsTrigger value="freecode" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
+                  <FileCode className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="hidden sm:inline">Free Code</span>
+                  <span className="sm:hidden">Free</span>
+                </TabsTrigger>
+                <TabsTrigger value="platform" className="text-xs md:text-sm px-1 md:px-2 lg:px-3 py-2 h-auto">
+                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="hidden sm:inline">Platform</span>
+                  <span className="sm:hidden">Plat</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* Performance Results Tab */}
             <TabsContent value="performance" className="space-y-6 md:space-y-8">
