@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,62 +115,88 @@ const RealResults = () => {
 
             {/* Performance Results Tab */}
             <TabsContent value="performance" className="space-y-8">
-              {/* Live Trading Results */}
-              <Card className="p-6 bg-card/50 backdrop-blur-sm">
-                <div className="flex items-center gap-3 mb-4">
-                  <TrendingUp className="w-6 h-6 text-green-500" />
-                  <h3 className="text-xl font-semibold">Live Trading Performance</h3>
-                  <Badge variant="secondary" className="bg-green-500/10 text-green-500">Verified</Badge>
-                </div>
-                <div className="space-y-4">
-                  <img src="/lovable-uploads/08298171-85bd-4aa4-aafd-34ef4f3a6f35.png" alt="MNQT Strategy Performance - +$3,454 profit with 73.53% win rate" className="w-full rounded-lg border border-border/50" />
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Total P&L:</span>
-                      <span className="ml-2 font-semibold text-green-500">+$3,454.00</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Win Rate:</span>
-                      <span className="ml-2 font-semibold">73.53%</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Total Trades:</span>
-                      <span className="ml-2 font-semibold">68</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Profit Factor:</span>
-                      <span className="ml-2 font-semibold">2.109</span>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Live Trading Results */}
+                <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <TrendingUp className="w-6 h-6 text-green-500" />
+                    <h3 className="text-xl font-semibold">Live Trading Performance</h3>
+                    <Badge variant="secondary" className="bg-green-500/10 text-green-500">Verified</Badge>
+                  </div>
+                  <div className="space-y-4">
+                    <img src="/lovable-uploads/08298171-85bd-4aa4-aafd-34ef4f3a6f35.png" alt="MNQT Strategy Performance - +$3,454 profit with 73.53% win rate" className="w-full rounded-lg border border-border/50" />
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Total P&L:</span>
+                        <span className="ml-2 font-semibold text-green-500">+$3,454.00</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Win Rate:</span>
+                        <span className="ml-2 font-semibold">73.53%</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Total Trades:</span>
+                        <span className="ml-2 font-semibold">68</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Profit Factor:</span>
+                        <span className="ml-2 font-semibold">2.109</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
 
-              {/* MyFXBook Verified Results */}
+                {/* MyFXBook Verified Results */}
+                <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <DollarSign className="w-6 h-6 text-blue-primary" />
+                    <h3 className="text-xl font-semibold">MyFXBook Verified</h3>
+                    <Badge variant="outline" className="border-blue-primary/30 text-blue-primary">Third-Party Verified</Badge>
+                  </div>
+                  <div className="space-y-4">
+                    <img src="/lovable-uploads/3074f886-3a5f-4ea4-9003-d8deaeb98a8a.png" alt="MyFXBook verified trading results showing consistent profitability" className="w-full rounded-lg border border-border/50" />
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Gain:</span>
+                        <span className="ml-2 font-semibold text-green-500">+514.06%</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Drawdown:</span>
+                        <span className="ml-2 font-semibold">48.44%</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Balance:</span>
+                        <span className="ml-2 font-semibold">$614,102.15</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Live Update:</span>
+                        <span className="ml-2 font-semibold text-green-500">Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* TradingView Results */}
               <Card className="p-6 bg-card/50 backdrop-blur-sm">
                 <div className="flex items-center gap-3 mb-4">
-                  <DollarSign className="w-6 h-6 text-blue-primary" />
-                  <h3 className="text-xl font-semibold">MyFXBook Verified</h3>
-                  <Badge variant="outline" className="border-blue-primary/30 text-blue-primary">Third-Party Verified</Badge>
+                  <BarChart3 className="w-6 h-6 text-teal-primary" />
+                  <h3 className="text-xl font-semibold">TradingView Strategy Results</h3>
+                  <Badge variant="secondary" className="bg-teal-primary/10 text-teal-primary">Backtested</Badge>
                 </div>
-                <div className="space-y-4">
-                  <img src="/lovable-uploads/3074f886-3a5f-4ea4-9003-d8deaeb98a8a.png" alt="MyFXBook verified trading results showing consistent profitability" className="w-full rounded-lg border border-border/50" />
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Gain:</span>
-                      <span className="ml-2 font-semibold text-green-500">+514.06%</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Drawdown:</span>
-                      <span className="ml-2 font-semibold">48.44%</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Balance:</span>
-                      <span className="ml-2 font-semibold">$614,102.15</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Live Update:</span>
-                      <span className="ml-2 font-semibold text-green-500">Active</span>
-                    </div>
+                <img src="/lovable-uploads/2d9186ef-9e5e-42f3-80b8-1c53cc234070.png" alt="TradingView strategy backtest showing systematic trading approach with clear entry/exit signals" className="w-full rounded-lg border border-border/50" />
+                <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Starting Capital:</span>
+                    <span className="ml-2 font-semibold">$100,000</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Return:</span>
+                    <span className="ml-2 font-semibold text-green-500">3.45%</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Win Rate:</span>
+                    <span className="ml-2 font-semibold">73.53%</span>
                   </div>
                 </div>
               </Card>
@@ -208,13 +235,11 @@ const RealResults = () => {
                   <Badge variant="outline" className="border-purple-500/30 text-purple-500">Live Gigs</Badge>
                 </div>
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <img 
-                      src="/lovable-uploads/1f17282c-bec6-4d8a-b3c2-3c2a04bec716.png" 
-                      alt="Fiverr marketplace showing MT5 trading bot development services with prices ranging from €6,533 to €1,867 per project" 
-                      className="w-full rounded-lg border border-border/50" 
-                    />
-                  </div>
+                  <img 
+                    src="/lovable-uploads/1f17282c-bec6-4d8a-b3c2-3c2a04bec716.png" 
+                    alt="Fiverr marketplace showing MT5 trading bot development services with prices ranging from €6,533 to €1,867 per project" 
+                    className="w-full rounded-lg border border-border/50" 
+                  />
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-purple-500">€6,533</div>
@@ -250,13 +275,11 @@ const RealResults = () => {
                   <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">100% Success Rate</Badge>
                 </div>
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <img 
-                      src="/lovable-uploads/9c04def2-6fd1-43d7-9528-9f49b69962e2.png" 
-                      alt="Upwork profiles showing trading bot developers with 100% job success rates earning $400K+, $300K+, and $100K+ annually" 
-                      className="w-full rounded-lg border border-border/50" 
-                    />
-                  </div>
+                  <img 
+                    src="/lovable-uploads/9c04def2-6fd1-43d7-9528-9f49b69962e2.png" 
+                    alt="Upwork profiles showing trading bot developers with 100% job success rates earning $400K+, $300K+, and $100K+ annually" 
+                    className="w-full rounded-lg border border-border/50" 
+                  />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-cyan-500/10">
                       <div className="text-2xl font-bold text-blue-500">$400K+</div>
@@ -287,21 +310,21 @@ const RealResults = () => {
               <Card className="p-6 bg-gradient-to-r from-green-500/10 to-blue-500/10 border-green-500/20">
                 <div className="text-center space-y-4">
                   <h3 className="text-2xl font-bold">Your Earning Potential Timeline</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                     <div className="space-y-2">
                       <div className="text-lg font-semibold text-green-500">Months 1-3</div>
-                      <div className="text-xl font-bold">€500-2,000</div>
-                      <div className="text-xs text-muted-foreground">First projects & skill building</div>
+                      <div className="text-2xl font-bold">€500-2,000</div>
+                      <div className="text-sm text-muted-foreground">First projects & skill building</div>
                     </div>
                     <div className="space-y-2">
                       <div className="text-lg font-semibold text-blue-500">Months 4-12</div>
-                      <div className="text-xl font-bold">€2,000-10,000</div>
-                      <div className="text-xs text-muted-foreground">Regular clients & higher rates</div>
+                      <div className="text-2xl font-bold">€2,000-10,000</div>
+                      <div className="text-sm text-muted-foreground">Regular clients & higher rates</div>
                     </div>
                     <div className="space-y-2">
                       <div className="text-lg font-semibold text-purple-500">Year 2+</div>
-                      <div className="text-xl font-bold">€10,000-50,000+</div>
-                      <div className="text-xs text-muted-foreground">Expert status & premium projects</div>
+                      <div className="text-2xl font-bold">€10,000-50,000+</div>
+                      <div className="text-sm text-muted-foreground">Expert status & premium projects</div>
                     </div>
                   </div>
                   <div className="mt-6 p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
