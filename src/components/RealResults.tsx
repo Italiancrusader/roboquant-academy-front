@@ -357,38 +357,7 @@ const RealResults = () => {
               </div>
 
               {/* Backtest Results */}
-              <Card className="p-6 bg-card/50 backdrop-blur-sm">
-                <div className="flex items-center gap-3 mb-4">
-                  <BarChart3 className="w-6 h-6 text-purple-500" />
-                  <h3 className="text-xl font-semibold">Community Backtest Results</h3>
-                  <Badge variant="secondary" className="bg-purple-500/10 text-purple-500">Shared Results</Badge>
-                </div>
-                <img src="/lovable-uploads/1db84306-2667-4e34-b98f-aefc881b060d.png" alt="Detailed backtest results showing consistent upward performance curve with detailed statistics" className="w-full rounded-lg border border-border/50" />
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Trend:</span>
-                    <span className="ml-2 font-semibold text-green-500">Strong Upward</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Consistency:</span>
-                    <span className="ml-2 font-semibold">High</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Drawdown:</span>
-                    <span className="ml-2 font-semibold">Minimal</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Community:</span>
-                    <span className="ml-2 font-semibold text-blue-500">Verified</span>
-                  </div>
-                </div>
-                <div className="mt-4 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    💎 <strong>Free Access:</strong> All community-shared strategies and source codes are available 
-                    to course members at no additional cost. Learn from real implementations!
-                  </p>
-                </div>
-              </Card>
+              
             </TabsContent>
 
             {/* Platform Tab */}
