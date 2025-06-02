@@ -135,6 +135,55 @@ async function handleCheckoutSessionCompleted(supabase: any, session: any) {
           
           console.log(`✅ Enrollment created for user ${userId} and course ${courseId}`);
           
+          // Get user details for Meta Conversions API
+          const { data: userData, error: authError } = await supabase.auth.admin.getUserById(userId);
+          const { data: userProfile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+          // Send Meta Conversions API event for purchase
+          try {
+            console.log(`📊 Sending Meta Conversions API purchase event`);
+            
+            const metaEventData = {
+              eventName: 'Purchase',
+              userData: {
+                email: userData?.user?.email,
+                firstName: userProfile?.first_name,
+                lastName: userProfile?.last_name,
+                externalId: userId,
+              },
+              customData: {
+                value: session.amount_total ? session.amount_total / 100 : 1500, // Convert from cents
+                currency: session.currency?.toUpperCase() || 'USD',
+                contentName: 'RoboQuant Academy',
+                contentCategory: 'online_course',
+              },
+              eventId: `purchase_${session.id}`, // Use session ID for deduplication
+            };
+
+            const metaResponse = await fetch(`${supabaseUrl}/functions/v1/meta-conversions-api`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseServiceKey}`
+              },
+              body: JSON.stringify(metaEventData)
+            });
+
+            if (metaResponse.ok) {
+              console.log(`✅ Meta Conversions API purchase event sent successfully`);
+            } else {
+              const errorData = await metaResponse.json();
+              console.error(`❌ Meta Conversions API error:`, errorData);
+            }
+          } catch (metaError) {
+            console.error(`❌ Error sending Meta Conversions API event:`, metaError);
+            // Continue with the process even if Meta API fails
+          }
+          
           // Send purchase confirmation email
           try {
             console.log(`📧 Sending purchase confirmation email`);

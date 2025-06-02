@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Check, Calendar, UserPlus, MessageCircle } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
 import { trackPurchase } from '@/utils/metaPixel';
+import { trackPurchaseConversionsAPI } from '@/utils/metaConversionsApi';
 import { Link } from 'react-router-dom';
 
 const ThankYou = () => {
@@ -17,12 +18,26 @@ const ThankYou = () => {
       value: 1500
     });
     
-    // Track Meta pixel purchase event
+    // Track Meta pixel purchase event (client-side)
     trackPurchase({
       value: 1500,
       currency: 'USD',
       content_name: 'RoboQuant Academy',
       content_type: 'product'
+    });
+
+    // Track Meta Conversions API purchase event (server-side)
+    trackPurchaseConversionsAPI({
+      value: 1500,
+      currency: 'USD',
+      userData: {
+        // Note: In a real implementation, you'd get this from your user context or localStorage
+        // For now, we'll send anonymous data - you can enhance this later
+      },
+      contentName: 'RoboQuant Academy',
+      contentCategory: 'online_course',
+    }).catch(error => {
+      console.error('Failed to send Conversions API event:', error);
     });
   }, []);
   
