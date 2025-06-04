@@ -1,42 +1,17 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { FileType } from '@/types/mt5reportgenie';
-import { 
-  CircleDollarSign, 
-  Trash2, 
-  Download, 
-  Circle,
-  BarChart2,
-} from 'lucide-react';
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 
-import ModernReportDashboard from './ModernReportDashboard';
-
-interface ReportDashboardProps {
-  files: FileType[];
-  onClearFiles: () => void;
-  onGeneratePDF: () => void;
-  onMonteCarloSimulation: () => void;
-  onOptimizeStrategy: () => void;
-}
-
-const ReportDashboard: React.FC<ReportDashboardProps> = ({ 
-  files, 
-  onClearFiles, 
-  onGeneratePDF, 
-  onMonteCarloSimulation, 
-  onOptimizeStrategy 
-}) => {
-  // Using the new modern dashboard instead of the old implementation
+// This component is deprecated - mt5reportgenie was removed
+const ReportDashboard: React.FC = () => {
   return (
-    <ModernReportDashboard
-      files={files}
-      onClearFiles={onClearFiles}
-      onGeneratePDF={onGeneratePDF}
-      onMonteCarloSimulation={onMonteCarloSimulation}
-      onOptimizeStrategy={onOptimizeStrategy}
-    />
+    <Card>
+      <CardContent className="p-6">
+        <div className="text-center text-muted-foreground">
+          <p>This feature has been removed.</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
