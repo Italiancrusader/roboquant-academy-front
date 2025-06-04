@@ -40,7 +40,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   
   const handleApplyNow = async () => {
     setIsLoading(true);
@@ -58,10 +57,13 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         event_label: 'Mobile Apply Now'
       });
       
-      // Navigate directly to quiz page - Typeform is shown immediately
-      navigate('/quiz');
+      // Scroll to pricing section
+      const pricingSection = document.getElementById('pricing');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth' });
+      }
     } catch (error) {
-      console.error("Error navigating to quiz:", error);
+      console.error("Error scrolling to pricing:", error);
     } finally {
       setIsLoading(false);
     }

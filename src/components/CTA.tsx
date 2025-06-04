@@ -5,13 +5,11 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackEvent } from '@/utils/googleAnalytics';
-import { useNavigate } from 'react-router-dom';
 
 const CTA: React.FC = () => {
   const { ref, isVisible } = useIntersectionObserver();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   
   const handleApplyNow = async () => {
     setIsLoading(true);
@@ -23,10 +21,13 @@ const CTA: React.FC = () => {
         event_label: 'Apply Now Button'
       });
       
-      // Navigate directly to quiz page - Typeform is shown immediately
-      navigate('/quiz');
+      // Scroll to pricing section
+      const pricingSection = document.getElementById('pricing');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth' });
+      }
     } catch (error) {
-      console.error('Error navigating to quiz:', error);
+      console.error('Error scrolling to pricing:', error);
     } finally {
       setIsLoading(false);
     }

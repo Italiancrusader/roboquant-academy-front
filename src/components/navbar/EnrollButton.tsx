@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackEvent } from "@/utils/googleAnalytics";
-import { useNavigate } from "react-router-dom";
 
 interface EnrollButtonProps {
   isScrolled: boolean;
@@ -13,7 +12,6 @@ interface EnrollButtonProps {
 
 export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   
   const handleApplyNow = async () => {
     setIsLoading(true);
@@ -24,10 +22,13 @@ export const EnrollButton: React.FC<EnrollButtonProps> = ({ isScrolled }) => {
         event_label: 'Apply Now Button'
       });
       
-      // Navigate directly to quiz page - the quiz page now shows Typeform immediately
-      navigate('/quiz');
+      // Scroll to pricing section
+      const pricingSection = document.getElementById('pricing');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth' });
+      }
     } catch (error) {
-      console.error('Error navigating to quiz:', error);
+      console.error('Error scrolling to pricing:', error);
     } finally {
       setIsLoading(false);
     }

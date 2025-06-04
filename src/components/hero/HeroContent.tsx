@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Loader2 } from 'lucide-react';
 import { trackEvent } from '@/utils/googleAnalytics';
-import { useNavigate } from 'react-router-dom';
 
 interface HeroContentProps {
   imageLoaded: boolean;
@@ -12,7 +11,6 @@ interface HeroContentProps {
 
 const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialog }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   
   const handleApplyNow = async () => {
     setIsLoading(true);
@@ -23,10 +21,13 @@ const HeroContent: React.FC<HeroContentProps> = ({ imageLoaded, onOpenVideoDialo
         event_label: 'Hero Apply Now Button'
       });
       
-      // Navigate directly to quiz - TypeForm is shown immediately
-      navigate('/quiz');
+      // Scroll to pricing section
+      const pricingSection = document.getElementById('pricing');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth' });
+      }
     } catch (error) {
-      console.error('Error navigating to quiz:', error);
+      console.error('Error scrolling to pricing:', error);
     } finally {
       setIsLoading(false);
     }

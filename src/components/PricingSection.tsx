@@ -21,7 +21,7 @@ const PricingSection: React.FC = () => {
         event_label: 'Apply Button'
       });
 
-      // Navigate directly to quiz - Typeform is shown immediately
+      // Navigate to quiz page - Typeform is shown immediately
       navigate('/quiz');
     } catch (error) {
       console.error("Error navigating to quiz:", error);
