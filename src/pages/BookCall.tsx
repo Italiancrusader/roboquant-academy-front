@@ -12,6 +12,20 @@ const BookCall = () => {
       content_category: 'consultation',
       content_type: 'booking_page'
     });
+
+    // Load Calendly widget script
+    const script = document.createElement('script');
+    script.src = 'https://assets.calendly.com/assets/external/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup script when component unmounts
+      const existingScript = document.querySelector('script[src="https://assets.calendly.com/assets/external/widget.js"]');
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
+    };
   }, []);
 
   return (
@@ -28,23 +42,13 @@ const BookCall = () => {
             Schedule a personalized strategy session to discuss your trading goals and see if RoboQuant Academy is right for you.
           </p>
           
-          <div className="bg-card p-8 rounded-lg shadow-md">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold mb-4">
-                Calendar Integration Coming Soon
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                We're setting up our calendar integration. In the meantime, please contact us directly to schedule your strategy call.
-              </p>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Email: support@roboquant.ai
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  We'll get back to you within 24 hours to schedule your call.
-                </p>
-              </div>
-            </div>
+          <div className="bg-card rounded-lg shadow-md overflow-hidden">
+            {/* Calendly inline widget embed */}
+            <div 
+              className="calendly-inline-widget" 
+              data-url="https://calendly.com/your-calendly-username/strategy-call" 
+              style={{ minWidth: '320px', height: '700px' }}
+            ></div>
           </div>
         </div>
       </div>
