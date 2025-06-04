@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Download, TrendingUp, BarChart3, AlertTriangle, DollarSign, Calendar, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -237,8 +238,10 @@ const StrategyReportGenie = () => {
 
         <LeadCaptureDialog 
           isOpen={showLeadDialog}
-          onClose={() => setShowLeadDialog(false)}
-          onLeadCaptured={handleLeadCapture}
+          onClose={() => {
+            setShowLeadDialog(false);
+            handleLeadCapture();
+          }}
         />
       </div>
       
