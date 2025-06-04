@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -76,10 +75,10 @@ const Quiz = () => {
       event_label: userInfo.email || 'Unknown'
     });
 
-    // Track Meta Pixel custom event for quiz completion
-    trackCustomEvent('quiz_completed', {
+    // Track Meta Pixel Lead event (this is the main conversion event)
+    trackLead({
       content_name: 'Quiz Completed',
-      content_category: 'assessment'
+      content_category: 'lead_generation'
     });
   };
   
