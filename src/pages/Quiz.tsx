@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -64,8 +63,18 @@ const Quiz = () => {
     // Show completed state
     setStep('completed');
     
-    // Track completion as Lead event with Meta Pixel
+    // Track completion as Lead event with Meta Pixel (direct)
     trackLead();
+    
+    // Track Lead event through dataLayer for GTM
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push({
+        event: 'lead_generated',
+        event_category: 'Quiz',
+        event_label: 'Quiz Completion',
+        user_email: userInfo.email || 'Unknown'
+      });
+    }
     
     // Track completion event with Google Analytics
     trackEvent('quiz_completed', {
