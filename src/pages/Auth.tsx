@@ -1,44 +1,28 @@
 
-import React from 'react';
-import AuthCallback from '@/components/auth/AuthCallback';
+import React, { useEffect } from 'react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import AuthFormContainer from '@/components/auth/AuthFormContainer';
-import { useAuthPage } from '@/hooks/useAuthPage';
+import { trackViewContent } from '@/utils/metaPixel';
 
 const Auth = () => {
-  const {
-    authLoading,
-    authError,
-    setAuthError,
-    isAuthLoading,
-    setIsAuthLoading,
-    isProcessingCallback,
-    callbackStatus,
-    defaultTab,
-    errorMessage
-  } = useAuthPage();
-
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  // Show special callback processing UI
-  if (isProcessingCallback) {
-    return <AuthCallback callbackStatus={callbackStatus} />;
-  }
+  useEffect(() => {
+    // Track ViewContent event for auth/registration page
+    trackViewContent({
+      content_name: 'Registration Page',
+      content_category: 'account',
+      content_type: 'registration_page'
+    });
+  }, []);
 
   return (
-    <AuthFormContainer
-      defaultTab={defaultTab}
-      authError={authError}
-      isRedirectError={!!errorMessage}
-      isAuthLoading={isAuthLoading}
-      setAuthError={setAuthError}
-      setIsLoading={setIsAuthLoading}
-    />
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <div className="flex-grow flex items-center justify-center px-4 pt-20 pb-20">
+        <AuthFormContainer />
+      </div>
+      <Footer />
+    </div>
   );
 };
 

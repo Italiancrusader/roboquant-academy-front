@@ -1,153 +1,135 @@
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
-import { useToast } from './ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
-import { trackLead } from '@/utils/metaPixel';
+import { trackEvent } from '@/utils/googleAnalytics';
+import { trackCustomEvent } from '@/utils/metaPixel';
+import { trackCustomEventConversionsAPI } from '@/utils/metaConversionsApi';
 
-const formSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  email: z.string().email({ message: 'Please enter a valid email address.' }),
-  subject: z.string().min(5, { message: 'Subject must be at least 5 characters.' }),
-  message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
-});
-
-type FormData = z.infer<typeof formSchema>;
-
-const ContactForm: React.FC = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-  
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      subject: '',
-      message: '',
-    },
+const ContactForm = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
   });
-  
-  const onSubmit = async (data: FormData) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
-      // Track Lead event
-      trackLead({
-        content_name: data.subject,
-        content_category: 'contact'
+      const { error } = await supabase.functions.invoke('send-contact-notification', {
+        body: formData
       });
-      
-      // Save to Supabase
-      const { error: supabaseError } = await supabase
-        .from('contact_submissions')
-        .insert({
-          name: data.name,
-          email: data.email,
-          subject: data.subject,
-          message: data.message,
-        });
-      
-      if (supabaseError) throw supabaseError;
-      
-      // Call edge function to send email notification
-      try {
-        const response = await fetch('/api/send-contact-notification', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-        
-        if (!response.ok) {
-          console.warn('Email notification may not have been sent, but submission was saved');
-        }
-      } catch (notificationError) {
-        console.warn('Failed to send notification email, but submission was saved');
-      }
-      
+
+      if (error) throw error;
+
+      // Track contact form submission
+      trackEvent('contact_form_submit', {
+        event_category: 'Contact',
+        event_label: 'Contact Form Submission'
+      });
+
+      // Track Meta Pixel Contact event
+      trackCustomEvent('Contact', {
+        content_name: 'Contact Form',
+        content_category: 'communication'
+      });
+
+      // Track Meta Conversions API Contact event
+      trackCustomEventConversionsAPI({
+        eventName: 'Contact',
+        userData: {
+          email: formData.email,
+          firstName: formData.name.split(' ')[0],
+          lastName: formData.name.split(' ').slice(1).join(' '),
+        },
+        customData: {
+          contentName: 'Contact Form',
+          contentCategory: 'communication',
+        },
+      }).catch(error => {
+        console.error('Failed to send Contact Conversions API event:', error);
+      });
+
       toast({
         title: "Message sent!",
-        description: "Thank you for contacting us. We'll get back to you soon.",
+        description: "We'll get back to you as soon as possible."
       });
-      
-      // Clear the form
-      reset();
-      
+
+      setFormData({ name: '', email: '', message: '' });
     } catch (error: any) {
-      console.error('Error submitting contact form:', error);
+      console.error('Error sending message:', error);
       toast({
-        title: "Something went wrong",
-        description: error.message || "Failed to send your message. Please try again.",
-        variant: "destructive",
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div>
-        <Input
-          type="text"
-          id="name"
-          placeholder="Your Name"
-          {...register('name')}
-        />
-        {errors.name && (
-          <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
-        )}
-      </div>
-      <div>
-        <Input
-          type="email"
-          id="email"
-          placeholder="Your Email"
-          {...register('email')}
-        />
-        {errors.email && (
-          <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
-        )}
-      </div>
-      <div>
-        <Input
-          type="text"
-          id="subject"
-          placeholder="Subject"
-          {...register('subject')}
-        />
-        {errors.subject && (
-          <p className="text-sm text-red-500 mt-1">{errors.subject.message}</p>
-        )}
-      </div>
-      <div>
-        <Textarea
-          id="message"
-          placeholder="Your Message"
-          rows={4}
-          {...register('message')}
-        />
-        {errors.message && (
-          <p className="text-sm text-red-500 mt-1">{errors.message.message}</p>
-        )}
-      </div>
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Sending...
-          </>
-        ) : (
-          "Send Message"
-        )}
-      </Button>
-    </form>
+    <Card className="w-full max-w-lg mx-auto">
+      <CardHeader>
+        <CardTitle>Get in Touch</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Input
+              type="text"
+              name="name"
+              placeholder="Your Name"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div>
+            <Input
+              type="email"
+              name="email"
+              placeholder="Your Email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div>
+            <Textarea
+              name="message"
+              placeholder="Your Message"
+              value={formData.message}
+              onChange={handleInputChange}
+              rows={4}
+              required
+            />
+          </div>
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Sending...' : 'Send Message'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 
