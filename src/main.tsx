@@ -28,10 +28,9 @@ if (typeof window !== 'undefined') {
   // Initialize GA dataLayer
   window.dataLayer.push({ event: 'page_load' });
   
-  // Initialize Meta Pixel if fbq exists - but only once
-  if (window.fbq && !window.fbPixelInitialized) {
-    window.fbq('init', '1570199587006306');
-    window.fbPixelInitialized = true;
+  // Initialize Meta Pixel if fbq exists
+  if (window.fbq) {
+    window.fbq('init', '1234567890'); // Replace with your actual Pixel ID
   }
 }
 

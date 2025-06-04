@@ -1,7 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { trackLead } from '@/utils/metaPixel';
-import { trackLeadConversionsAPI } from '@/utils/metaConversionsApi';
 
 export interface LeadData {
   name: string; // Required to match database schema
@@ -48,25 +47,6 @@ export const submitLead = async (leadData: LeadData) => {
     }
     
     console.log("Lead submitted successfully, ID:", data);
-    
-    // Track Meta Pixel Lead event
-    trackLead({
-      content_name: leadData.leadMagnet || 'Lead Capture',
-      content_category: 'lead_generation'
-    });
-
-    // Track Meta Conversions API Lead event
-    trackLeadConversionsAPI({
-      userData: {
-        email: leadData.email,
-        firstName: leadData.name.split(' ')[0],
-        lastName: leadData.name.split(' ').slice(1).join(' '),
-      },
-      contentName: leadData.leadMagnet || 'Lead Capture',
-    }).catch(error => {
-      console.error('Failed to send Lead Conversions API event:', error);
-    });
-    
     return { success: true, data };
   } catch (error: any) {
     console.error('Error submitting lead:', error);

@@ -1,3 +1,4 @@
+
 export interface FileType {
   id: string;
   name: string;
@@ -24,26 +25,6 @@ export interface TradeType {
   swap: number;
   commission: number;
   duration: string;
-}
-
-// Add TradeData as an alias for MT5Trade for compatibility
-export interface TradeData extends MT5Trade {}
-
-// Add ReportData interface
-export interface ReportData {
-  trades: TradeData[];
-  summary: {
-    totalTrades: number;
-    winningTrades: number;
-    losingTrades: number;
-    totalProfit: number;
-    totalVolume: number;
-    winRate: number;
-    averageProfit: number;
-    profitFactor: number;
-  };
-  fileName: string;
-  uploadDate: Date;
 }
 
 export interface StrategyMetrics {

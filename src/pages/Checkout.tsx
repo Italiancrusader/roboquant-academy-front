@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -6,36 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Check, Loader2 } from 'lucide-react';
 import { handleStripeCheckout } from '@/services/stripe';
 import { trackEvent } from '@/utils/googleAnalytics';
-import { trackViewContent, trackInitiateCheckout } from '@/utils/metaPixel';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Checkout = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   
-  useEffect(() => {
-    // Track ViewContent event for checkout page
-    trackViewContent({
-      content_name: 'RoboQuant Academy Checkout',
-      content_category: 'education',
-      content_type: 'checkout_page',
-      value: 1500,
-      currency: 'USD'
-    });
-  }, []);
-  
   const handlePurchase = async () => {
     setIsLoading(true);
     
     try {
-      // Track InitiateCheckout event
-      trackInitiateCheckout({
-        value: 1500,
-        currency: 'USD',
-        content_name: 'RoboQuant Academy',
-        content_category: 'education'
-      });
-      
       trackEvent('direct_checkout_started', {
         event_category: 'Checkout',
         event_label: 'Academy Direct Purchase',

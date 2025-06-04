@@ -422,19 +422,6 @@ export const parseMT5Excel = async (file: File): Promise<ParsedMT5Report> => {
   };
 };
 
-/**
- * Main function to parse trade data from uploaded file
- */
-export const parseTradeData = async (file: File): Promise<MT5Trade[]> => {
-  try {
-    const result = await parseMT5Excel(file);
-    return result.trades;
-  } catch (error) {
-    console.error('Error parsing trade data:', error);
-    throw error;
-  }
-};
-
 export const validateMT5File = (file: File): boolean => {
   return file.name.endsWith('.xlsx');
 };

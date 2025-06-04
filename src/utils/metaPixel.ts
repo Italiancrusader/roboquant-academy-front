@@ -19,7 +19,6 @@ export type PixelEventParams = {
 declare global {
   interface Window {
     fbq?: (eventType: string, eventName: string, params?: PixelEventParams) => void;
-    fbPixelInitialized?: boolean;
   }
 }
 
@@ -78,7 +77,7 @@ export const trackCompleteRegistration = (params: PixelEventParams = {}): void =
 };
 
 /**
- * Track custom event using trackCustom (for non-standard events)
+ * Track custom event
  */
 export const trackCustomEvent = (eventName: string, params: PixelEventParams = {}): void => {
   if (typeof window !== 'undefined' && window.fbq) {
