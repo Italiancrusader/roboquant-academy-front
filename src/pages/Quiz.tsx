@@ -64,7 +64,10 @@ const Quiz = () => {
     // Show completed state
     setStep('completed');
     
-    // Track completion event
+    // Track completion as Lead event with Meta Pixel
+    trackLead();
+    
+    // Track completion event with Google Analytics
     trackEvent('quiz_completed', {
       event_category: 'Quiz',
       event_label: userInfo.email || 'Unknown'
