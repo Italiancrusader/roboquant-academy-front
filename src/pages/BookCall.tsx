@@ -29,15 +29,22 @@ const BookCall = () => {
           </p>
           
           <div className="bg-card p-8 rounded-lg shadow-md">
-            <iframe
-              src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0jGkdGGnC_FlCx8U8t1hQXrK4Z7TiYaHlEDH5mV6F7UQP8pjBvdZj5jZV5Z5Z5Z5Z5"
-              style={{ border: 0 }}
-              width="100%"
-              height="600"
-              frameBorder="0"
-              scrolling="no"
-              title="Book Strategy Call"
-            />
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-4">
+                Calendar Integration Coming Soon
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                We're setting up our calendar integration. In the meantime, please contact us directly to schedule your strategy call.
+              </p>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Email: support@roboquant.ai
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  We'll get back to you within 24 hours to schedule your call.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

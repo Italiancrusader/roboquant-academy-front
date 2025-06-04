@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { toast } from '@/components/ui/use-toast';
 import { trackEvent } from '@/utils/googleAnalytics';
-import { trackLead } from '@/utils/metaPixel';
+import { trackLead, trackCustomEvent } from '@/utils/metaPixel';
 import { submitLead } from '@/services/leadService';
 import { LoaderCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -33,6 +33,12 @@ const Quiz = () => {
     trackEvent('quiz_page_view', {
       event_category: 'Quiz',
       event_label: 'Quiz Page'
+    });
+
+    // Track Meta Pixel custom event for quiz page view
+    trackCustomEvent('quiz_page_view', {
+      content_name: 'Quiz Page',
+      content_category: 'assessment'
     });
 
     // Check for query parameters to show quiz directly
@@ -68,6 +74,12 @@ const Quiz = () => {
     trackEvent('quiz_completed', {
       event_category: 'Quiz',
       event_label: userInfo.email || 'Unknown'
+    });
+
+    // Track Meta Pixel custom event for quiz completion
+    trackCustomEvent('quiz_completed', {
+      content_name: 'Quiz Completed',
+      content_category: 'assessment'
     });
   };
   
